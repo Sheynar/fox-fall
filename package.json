@@ -1,0 +1,23 @@
+{
+  "name": "fox-fall",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vueuse/core": "^10.5.0",
+    "vue": "^3.3.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.4.0",
+    "prettier": "^3.0.3",
+    "sass": "^1.69.4",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0",
+    "vue-tsc": "1.2.1"
+  }
+}
