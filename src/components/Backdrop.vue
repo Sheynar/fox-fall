@@ -19,6 +19,9 @@
 		:style="{
 			'--background-x': backgroundOffset.x,
 			'--background-y': backgroundOffset.y,
+
+			'--viewport-deg': viewport.rotation,
+			'--viewport-zoom': viewport.resolvedZoom,
 		}"
 	/>
 
@@ -40,15 +43,15 @@
 		background: linear-gradient(
 				180deg,
 				rgba(0, 0, 0, 1) 0%,
-				rgba(0, 0, 0, 0) 1px,
-				rgba(0, 0, 0, 0) calc(100% - 1px),
+				rgba(0, 0, 0, 0) 0.1em,
+				rgba(0, 0, 0, 0) calc(100% - 0.1em),
 				rgba(0, 0, 0, 1) 100%
 			),
 			linear-gradient(
 				90deg,
 				rgba(0, 0, 0, 1) 0%,
-				rgba(0, 0, 0, 0) 1px,
-				rgba(0, 0, 0, 0) calc(100% - 1px),
+				rgba(0, 0, 0, 0) 0.1em,
+				rgba(0, 0, 0, 0) calc(100% - 0.1em),
 				rgba(0, 0, 0, 1) 100%
 			);
 

@@ -1,12 +1,6 @@
 <template>
 	<div
 		class="App__container"
-		:style="{
-			'--viewport-x': viewport.position.x,
-			'--viewport-y': viewport.position.y,
-			'--viewport-deg': viewport.rotation,
-			'--viewport-zoom': viewport.resolvedZoom,
-		}"
 		@pointerdown="onPointerDown"
 		@pointermove="onPointerMove"
 		@pointerup="onPointerUp"
@@ -62,6 +56,7 @@
 	.App__container {
 		position: fixed;
 		inset: 0;
+		font-size: 2vmin;
 	}
 
 	.App__locations {
@@ -83,6 +78,8 @@
 		height: 0;
 
 		overflow: visible;
+
+		pointer-events: none;
 	}
 
 	.App__controls {
