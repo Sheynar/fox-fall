@@ -1,7 +1,7 @@
 <template>
-	<img class="icon" :src="StormCannonIcon" alt="artillery" :draggable="false" />
+	<img class="icon" :src="LightArtilleryIcon" alt="artillery" :draggable="false" />
 </template>
 
 <script setup lang="ts">
-	import StormCannonIcon from '@/assets/images/StormCannonIcon.webp';
+	import LightArtilleryIcon from '@/assets/images/LightArtilleryIcon.webp';
 </script>
