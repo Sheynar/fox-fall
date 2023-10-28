@@ -12,7 +12,9 @@
 		}"
 		tabIndex="{-1}"
 	>
-		<div class="Location__label" v-if="location.label">{{ location.label }}</div>
+		<div class="Location__label" v-if="location.label">
+			{{ location.label }}
+		</div>
 		<Component
 			:is="
 				location.type === LocationType.Artillery
@@ -33,7 +35,13 @@
 			<div class="Location__table">
 				<div class="Location__row">
 					<span>type:</span>
-					<span>{{ location.type === LocationType.Artillery ? 'Artillery' : location.type === LocationType.Spotter ? 'Spotter' : 'Target' }}</span>
+					<span>{{
+						location.type === LocationType.Artillery
+							? 'Artillery'
+							: location.type === LocationType.Spotter
+							? 'Spotter'
+							: 'Target'
+					}}</span>
 				</div>
 				<div class="Location__row">
 					<span>label:</span>
@@ -45,72 +53,25 @@
 				</div>
 				<div class="Location__row">
 					<span>distance:</span>
-					<input
-						type="number"
-						step="0.1"
-						:readonly="props.readonly"
-						:value="Math.round(location.vector.distance)"
-						@input="
-							location.vector.distance = Number(
-								($event.target as HTMLInputElement).value
-							)
-						"
+					<NumberInput
+						:model-value="Math.round(location.vector.distance)"
+						@update:model-value="location.vector.distance = $event"
 					/>
 				</div>
 				<div class="Location__row">
 					<span>azimuth to:</span>
-					<input
-						type="number"
-						step="0.1"
-						:readonly="props.readonly"
-						:value="location.vector.azimuth.toFixed(1)"
-						@input="
-							location.vector.azimuth = wrapDegrees(
-								Number(($event.target as HTMLInputElement).value)
-							)
-						"
+					<NumberInput
+						:model-value="Number(location.vector.azimuth.toFixed(1))"
+						@update:model-value="location.vector.azimuth = wrapDegrees($event)"
 					/>
 				</div>
 				<div class="Location__row">
 					<span>azimuth from:</span>
-					<input
-						type="number"
-						step="0.1"
-						:readonly="props.readonly"
-						:value="wrapDegrees(location.vector.azimuth + 180).toFixed(1)"
-						@input="
-							location.vector.azimuth = wrapDegrees(
-								Number(($event.target as HTMLInputElement).value) - 180
-							)
-						"
+					<NumberInput
+						:model-value="Number(wrapDegrees(location.vector.azimuth + 180).toFixed(1))"
+						@update:model-value="location.vector.azimuth = wrapDegrees($event)"
 					/>
 				</div>
-				<!-- <div class="Location__row">
-					<span>x:</span>
-					<input
-						type="number"
-						:readonly="props.readonly"
-						:value="Math.round(location.vector.x)"
-						@input="
-							location.vector.x = Number(
-								($event.target as HTMLInputElement).value
-							)
-						"
-					/>
-				</div>
-				<div class="Location__row">
-					<span>y:</span>
-					<input
-						type="number"
-						:readonly="props.readonly"
-						:value="Math.round(location.vector.y)"
-						@input="
-							location.vector.y = Number(
-								($event.target as HTMLInputElement).value
-							)
-						"
-					/>
-				</div> -->
 			</div>
 			<div class="Location__actions">
 				<button
@@ -303,6 +264,7 @@
 	import { wrapDegrees } from '@/lib/angle';
 	import { LocationType, getLocationResolvedVector } from '@/lib/location';
 	import { Vector } from '@/lib/vector';
+	import NumberInput from './NumberInput.vue';
 
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
 
