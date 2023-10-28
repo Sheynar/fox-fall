@@ -12,6 +12,7 @@
 		}"
 		tabIndex="{-1}"
 	>
+		<div class="Location__label" v-if="location.label">{{ location.label }}</div>
 		<Component
 			:is="
 				location.type === LocationType.Artillery
@@ -31,12 +32,16 @@
 		<div class="Location__tooltip">
 			<div class="Location__table">
 				<div class="Location__row">
-					<span>final distance:</span>
-					<span>{{ Math.round(resolvedVector.distance) }}</span>
+					<span>type:</span>
+					<span>{{ location.type === LocationType.Artillery ? 'Artillery' : location.type === LocationType.Spotter ? 'Spotter' : 'Target' }}</span>
 				</div>
 				<div class="Location__row">
-					<span>final azimuth:</span>
-					<span>{{ resolvedVector.azimuth.toFixed(1) }}</span>
+					<span>label:</span>
+					<input
+						type="text"
+						:readonly="props.readonly"
+						v-model="location.label"
+					/>
 				</div>
 				<div class="Location__row">
 					<span>distance:</span>
@@ -45,7 +50,6 @@
 						step="0.1"
 						:readonly="props.readonly"
 						:value="Math.round(location.vector.distance)"
-						@pointerdown.stop
 						@input="
 							location.vector.distance = Number(
 								($event.target as HTMLInputElement).value
@@ -60,7 +64,6 @@
 						step="0.1"
 						:readonly="props.readonly"
 						:value="location.vector.azimuth.toFixed(1)"
-						@pointerdown.stop
 						@input="
 							location.vector.azimuth = wrapDegrees(
 								Number(($event.target as HTMLInputElement).value)
@@ -75,7 +78,6 @@
 						step="0.1"
 						:readonly="props.readonly"
 						:value="wrapDegrees(location.vector.azimuth + 180).toFixed(1)"
-						@pointerdown.stop
 						@input="
 							location.vector.azimuth = wrapDegrees(
 								Number(($event.target as HTMLInputElement).value) - 180
@@ -83,13 +85,12 @@
 						"
 					/>
 				</div>
-				<div class="Location__row">
+				<!-- <div class="Location__row">
 					<span>x:</span>
 					<input
 						type="number"
 						:readonly="props.readonly"
 						:value="Math.round(location.vector.x)"
-						@pointerdown.stop
 						@input="
 							location.vector.x = Number(
 								($event.target as HTMLInputElement).value
@@ -103,14 +104,13 @@
 						type="number"
 						:readonly="props.readonly"
 						:value="Math.round(location.vector.y)"
-						@pointerdown.stop
 						@input="
 							location.vector.y = Number(
 								($event.target as HTMLInputElement).value
 							)
 						"
 					/>
-				</div>
+				</div> -->
 			</div>
 			<div class="Location__actions">
 				<button
@@ -177,7 +177,9 @@
 		&.Location__moving,
 		&.Location__pinned {
 			.Location__icon {
-				outline: 0.1em solid #90f;
+				background: var(--color-primary-contrast);
+
+				outline: 0.1em solid var(--color-selected);
 			}
 		}
 
@@ -205,15 +207,21 @@
 		}
 	}
 
+	.Location__label {
+		position: absolute;
+		left: 50%;
+		bottom: 100%;
+		transform: translateX(-50%);
+
+		pointer-events: none;
+		white-space: nowrap;
+	}
+
 	.Location__icon {
 		box-sizing: border-box;
 		width: 5em;
 		height: 5em;
 		border-radius: 10%;
-		/*
-		border-radius: 50%;
-		background: #fff;
-		*/
 	}
 
 	.Location__tooltip {
@@ -228,7 +236,6 @@
 		padding: 1em;
 		gap: 0.5em;
 		border: 1px solid;
-		font-size: 2vmin;
 
 		background: black;
 

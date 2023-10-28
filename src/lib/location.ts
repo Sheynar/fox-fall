@@ -9,6 +9,7 @@ export enum LocationType {
 
 export type Location = {
 	id: string;
+	label: string;
 	pinned: boolean;
 	type: LocationType;
 	vector: Vector;
@@ -26,6 +27,7 @@ export const createLocation = (
 ): Ref<Location> => {
 	return ref({
 		id: Math.random().toString(36).substring(7),
+		label: '',
 		pinned: false,
 		type,
 		vector,
