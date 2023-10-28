@@ -38,13 +38,15 @@
 				</button>
 			</div>
 		</div>
+
+		<button class="Controls__button" @click.stop="emit('show-help')">?</button>
 	</div>
 </template>
 
 <style lang="scss">
 	.Controls__container {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row-reverse;
 		gap: 0.5em;
 	}
 
@@ -104,5 +106,6 @@
 			event: 'create-location',
 			payload: { locationType: LocationType; pointerEvent: PointerEvent }
 		): void;
+		(event: 'show-help'): void;
 	}>();
 </script>

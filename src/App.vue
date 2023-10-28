@@ -53,6 +53,7 @@
 		<Controls
 			class="App__controls"
 			@create-location="addLocation($event.locationType, $event.pointerEvent)"
+			@show-help="showHelp()"
 		/>
 	</div>
 </template>
@@ -305,7 +306,10 @@
 		delete locationMap.value[locationId];
 	};
 
-	const getClosestParentOfType = (locationType: LocationType, locationId: string): Location | undefined => {
+	const getClosestParentOfType = (
+		locationType: LocationType,
+		locationId: string
+	): Location | undefined => {
 		const location = locationMap.value[locationId];
 
 		if (location.parentId == null) return undefined;
@@ -315,16 +319,23 @@
 		return getClosestParentOfType(locationType, parentLocation.id);
 	};
 	const firingArcs = computed(() => {
-		const output: { from: Location, to: Location }[] = [];
+		const output: { from: Location; to: Location }[] = [];
 		for (const locationId of Object.keys(locationMap.value)) {
 			const location = locationMap.value[locationId];
 			if (location.type !== LocationType.Target) continue;
-			const parentArtillery = getClosestParentOfType(LocationType.Artillery, locationId);
+			const parentArtillery = getClosestParentOfType(
+				LocationType.Artillery,
+				locationId
+			);
 			if (parentArtillery == null) continue;
 			output.push({ from: parentArtillery, to: locationMap.value[locationId] });
 		}
 		return output;
 	});
+
+	const showHelp = () => {
+		alert(`Controls:\nLeft click: move location\nMiddle click: pan camera\nCtrl + middle click: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nMouse over / click a location to edit its location details\n\nDrag from location's create button to insert a new child location`);
+	};
 
 	addLocation(
 		LocationType.Artillery,
