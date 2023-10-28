@@ -7,28 +7,26 @@
 		<path
 			:d="`M ${locationScreenPositionFrom.x} ${
 				locationScreenPositionFrom.y
-			} C ${locationScreenPositionFrom.x} ${
-				locationScreenPositionFrom.y + offset
-			}, ${midpointScreenPosition.x} ${midpointScreenPosition.y + offset}, ${
-				midpointScreenPosition.x
-			} ${midpointScreenPosition.y + offset}`"
-		/>
-		<path
-			:d="`M ${midpointScreenPosition.x} ${
-				midpointScreenPosition.y + offset
 			} C ${midpointScreenPosition.x} ${midpointScreenPosition.y + offset}, ${
-				locationScreenPositionTo.x
-			} ${locationScreenPositionTo.y + offset}, ${locationScreenPositionTo.x} ${
+				midpointScreenPosition.x
+			} ${midpointScreenPosition.y + offset}, ${locationScreenPositionTo.x} ${
 				locationScreenPositionTo.y
 			}`"
 		/>
 	</svg>
 	<div
 		class="FiringArc__label"
-		:style="{ '--label-x': midpointScreenPosition.x, '--label-y': midpointScreenPosition.y + offset }"
+		:style="{
+			'--label-x': midpointScreenPosition.x,
+			'--label-y': midpointScreenPosition.y + offset,
+		}"
 	>
-		<div>azimuth: {{ firingVector.azimuth.toFixed(1) }}</div>
-		<div>distance: {{ Math.round(firingVector.distance) }}</div>
+		<div class="FiringArc__label-row">
+			<span>distance:</span><span>{{ Math.round(firingVector.distance) }}</span>
+		</div>
+		<div class="FiringArc__label-row">
+			<span>azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}</span>
+		</div>
 	</div>
 </template>
 
@@ -53,14 +51,33 @@
 		position: absolute;
 		left: 0;
 		top: 0;
-		transform: translate(calc(var(--label-x) * 1px - 50%), calc(var(--label-y) * 1px - 50%));
+		transform: translate(
+			calc(var(--label-x) * 1px - 50%),
+			calc(var(--label-y) * 1px - 50%)
+		);
 		transform-origin: 50% 50%;
 
-		background: #222;
+		padding: 0.5em;
+		gap: 0.5em;
+
+		display: grid;
+		grid-template-columns: repeat(2, max-content);
+		grid-auto-rows: min-content;
+
+		background: var(--color-primary-contrast);
 		border: 1px solid;
 
 		pointer-events: none;
 		user-select: none;
+
+		.FiringArc__label-row {
+			grid-column: 1 / -1;
+
+			display: grid;
+			grid-template-columns: subgrid;
+			grid-template-rows: subgrid;
+			justify-items: end;
+		}
 	}
 </style>
 
