@@ -5,7 +5,7 @@
 			'--viewport-x': viewport.position.x,
 			'--viewport-y': viewport.position.y,
 			'--viewport-deg': viewport.rotation,
-			'--viewport-zoom': viewport.zoom,
+			'--viewport-zoom': viewport.resolvedZoom,
 		}"
 		@pointerdown="onPointerDown"
 		@pointermove="onPointerMove"
@@ -15,33 +15,45 @@
 		<Backdrop />
 		<div class="App__arrows">
 			<LocationLink
-				v-for="location in locations.filter((location) =>
-					locationParents.has(location)
+				v-for="locationId in Object.keys(locationMap).filter(
+					(locationId) => locationMap[locationId].parentId != null
 				)"
-				:key="location.id"
-				:location-from="locationParents.get(location)!"
-				:location-to="location"
+				:key="locationId"
+				:location-id-from="locationMap[locationId].parentId!"
+				:location-id-to="locationId"
 			/>
 		</div>
 		<div class="App__locations">
 			<LocationProvider
-				v-for="(location, index) in locations"
-				:location="location"
+				v-for="locationId in Object.keys(locationMap)"
+				:location="locationMap[locationId]"
 			>
 				<LocationComponent
-					:readonly="index === 0"
-					:create-event="locationCreateEvents.get(location)"
+					:create-event="locationCreateEvents.get(locationMap[locationId])"
 					@create-child="
 						addLocation(
-							$event,
+							$event.locationType,
+							$event.pointerEvent,
 							undefined,
-							computed(() => location)
+							locationId
 						)
 					"
-					@delete="removeLocation(index)"
+					@delete="removeLocation(locationId)"
 				/>
 			</LocationProvider>
 		</div>
+		<div class="App__firing-arcs">
+			<FiringArc
+				v-for="firingArc in firingArcs"
+				:key="firingArc.to.id"
+				:location-id-from="firingArc.from.id"
+				:location-id-to="firingArc.to.id"
+			/>
+		</div>
+		<Controls
+			class="App__controls"
+			@create-location="addLocation($event.locationType, $event.pointerEvent)"
+		/>
 	</div>
 </template>
 
@@ -59,16 +71,10 @@
 		height: 0;
 
 		overflow: visible;
-
-		transform: translate(
-				calc(var(--viewport-x) * 1px),
-				calc(var(--viewport-y) * 1px)
-			)
-			scale(var(--viewport-zoom))
-			rotate(calc(var(--viewport-deg) * 1deg));
 	}
 
-	.App__arrows {
+	.App__arrows,
+	.App__firing-arcs {
 		position: absolute;
 		left: 0;
 		top: 0;
@@ -76,27 +82,40 @@
 		height: 0;
 
 		overflow: visible;
+	}
 
-		transform: translate(
-				calc(var(--viewport-x) * 1px),
-				calc(var(--viewport-y) * 1px)
-			)
-			scale(var(--viewport-zoom))
-			rotate(calc(var(--viewport-deg) * 1deg));
+	.App__controls {
+		position: absolute;
+		right: 0.5em;
+		bottom: 0.5em;
+		z-index: 1000;
 	}
 </style>
 
 <script setup lang="ts">
 	import { type Ref, ref, computed } from 'vue';
 	import Backdrop from '@/components/Backdrop.vue';
+	import Controls from '@/components/Controls.vue';
+	import FiringArc from '@/components/FiringArc.vue';
 	import LocationComponent from '@/components/Location.vue';
 	import LocationLink from '@/components/LocationLink.vue';
+	import { provideLocationMap } from '@/contexts/location';
 	import LocationProvider from '@/contexts/location/LocationProvider.vue';
+	import { provideCursor } from '@/contexts/cursor';
 	import { provideViewport } from '@/contexts/viewport';
 	import { toRadians, wrapDegrees } from '@/lib/angle';
-	import { type Location, createLocation } from '@/lib/location';
+	import {
+		type Location,
+		type LocationMap,
+		createLocation,
+		LocationType,
+		getLocationResolvedVector,
+	} from '@/lib/location';
 	import { Vector } from '@/lib/vector';
 	import { Viewport } from '@/lib/viewport';
+
+	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
+	provideCursor(cursor);
 
 	const viewport = ref(
 		new Viewport(
@@ -104,7 +123,7 @@
 				x: document.body.clientWidth / 2,
 				y: document.body.clientHeight / 2,
 			}),
-			270,
+			0,
 			1
 		)
 	);
@@ -143,6 +162,11 @@
 	};
 
 	const onPointerMove = (event: PointerEvent) => {
+		cursor.value.cartesianVector = {
+			x: event.clientX,
+			y: event.clientY,
+		};
+
 		const movingData = moving.value;
 		if (!movingData) return;
 		event.stopPropagation();
@@ -153,8 +177,9 @@
 				((event.clientX - movingData.startEvent.clientX) * 720) /
 				window.document.body.clientWidth;
 
-			viewport.value.rotation =
-				movingData.startViewport.rotation + azimuthOffset;
+			viewport.value.rotation = wrapDegrees(
+				Number((movingData.startViewport.rotation + azimuthOffset).toFixed(1))
+			);
 
 			const viewportOffset = {
 				x: document.body.clientWidth / 2,
@@ -192,25 +217,36 @@
 	const onWheel = (event: WheelEvent) => {
 		event.stopPropagation();
 		event.preventDefault();
+		const zoomOffset =
+			(event.deltaY > 0 ? 0.1 : -0.1) * (event.ctrlKey ? 10 : 1);
 
-		const newZoom = Math.max(0.1, viewport.value.zoom - event.deltaY / 1000);
+		const globalCursorPosition = Vector.fromCartesianVector({
+			x: event.clientX,
+			y: event.clientY,
+		});
+		const localCursorPosition =
+			viewport.value.toViewportVector(globalCursorPosition);
 
-		viewport.value.position.cartesianVector = {
-			x:
-				viewport.value.position.x * newZoom / viewport.value.zoom + event.clientX * (1 - newZoom / viewport.value.zoom),
-			y:
-				viewport.value.position.y * newZoom / viewport.value.zoom + event.clientY * (1 - newZoom / viewport.value.zoom),
-		};
+		viewport.value.zoom = Math.max(0.1, viewport.value.zoom - zoomOffset);
 
-		viewport.value.zoom = newZoom;
+		const cursorDelta = viewport.value
+			.fromViewportVector(localCursorPosition)
+			.addVector(globalCursorPosition.scale(-1));
+
+		viewport.value.position = viewport.value.position.addVector(
+			cursorDelta.scale(-1)
+		);
 	};
 
-	const locations = ref<Location[]>([]);
+	const locationMap = ref<LocationMap>({});
 	const locationParents = new WeakMap<Location, Location>();
 	const locationChildren = new WeakMap<Location, Set<Location>>();
 
+	provideLocationMap(locationMap);
+
 	const locationCreateEvents = new WeakMap<Location, PointerEvent>();
 	const addLocation = (
+		type: LocationType,
 		event?: PointerEvent,
 		vector: Ref<Vector> = ref(
 			Vector.fromAngularVector({
@@ -218,38 +254,43 @@
 				distance: 50,
 			})
 		),
-		parentLocation?: Ref<Location>
+		parentLocationId?: string
 	) => {
-		const newLocation = createLocation(vector, parentLocation);
+		const parentLocation = parentLocationId
+			? locationMap.value[parentLocationId]
+			: undefined;
+		const newLocation = createLocation(type, vector, parentLocationId);
 
 		if (event) {
 			newLocation.value.vector = viewport.value.toViewportVector(
 				Vector.fromCartesianVector({
 					x: event.clientX,
 					y: event.clientY,
-				}).scale(viewport.value.zoom)
-			).scale(1 / viewport.value.zoom);
+				})
+			);
 			if (parentLocation) {
 				newLocation.value.vector = newLocation.value.vector.addVector(
-					parentLocation.value.resolvedVector.scale(-1)
+					getLocationResolvedVector(locationMap.value, parentLocation.id).scale(
+						-1
+					)
 				);
 			}
 			locationCreateEvents.set(newLocation.value, event);
 		}
 
-		locations.value.push(newLocation.value);
+		locationMap.value[newLocation.value.id] = newLocation.value;
 		if (parentLocation) {
-			locationParents.set(newLocation.value, parentLocation.value);
-			const siblings = locationChildren.get(parentLocation.value) ?? new Set();
+			locationParents.set(newLocation.value, parentLocation);
+			const siblings = locationChildren.get(parentLocation) ?? new Set();
 			siblings.add(newLocation.value);
-			locationChildren.set(parentLocation.value, siblings);
+			locationChildren.set(parentLocation, siblings);
 		}
 
 		return newLocation;
 	};
 
-	const removeLocation = (index: number) => {
-		const location = locations.value[index];
+	const removeLocation = (locationId: string) => {
+		const location = locationMap.value[locationId];
 		const children = locationChildren.get(location);
 		if (children != null && children.size > 0) {
 			return;
@@ -261,8 +302,33 @@
 				siblings.delete(location);
 			}
 		}
-		locations.value.splice(index, 1);
+		delete locationMap.value[locationId];
 	};
 
-	addLocation(undefined, ref(Vector.fromCartesianVector({ x: 0, y: 0 })));
+	const getClosestParentOfType = (locationType: LocationType, locationId: string): Location | undefined => {
+		const location = locationMap.value[locationId];
+
+		if (location.parentId == null) return undefined;
+
+		const parentLocation = locationMap.value[location.parentId];
+		if (parentLocation.type === locationType) return parentLocation;
+		return getClosestParentOfType(locationType, parentLocation.id);
+	};
+	const firingArcs = computed(() => {
+		const output: { from: Location, to: Location }[] = [];
+		for (const locationId of Object.keys(locationMap.value)) {
+			const location = locationMap.value[locationId];
+			if (location.type !== LocationType.Target) continue;
+			const parentArtillery = getClosestParentOfType(LocationType.Artillery, locationId);
+			if (parentArtillery == null) continue;
+			output.push({ from: parentArtillery, to: locationMap.value[locationId] });
+		}
+		return output;
+	});
+
+	addLocation(
+		LocationType.Artillery,
+		undefined,
+		ref(Vector.fromCartesianVector({ x: 0, y: 0 }))
+	);
 </script>

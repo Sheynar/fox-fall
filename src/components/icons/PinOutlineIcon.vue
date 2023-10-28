@@ -1,13 +1,8 @@
+https://www.veryicon.com/icons/miscellaneous/yunrenui-original-ui-of-fool-cloud/pin-o.html
+
 <template>
 	<svg
-		class="svg-icon"
-		style="
-			width: 1em;
-			height: 1em;
-			vertical-align: middle;
-			fill: currentColor;
-			overflow: hidden;
-		"
+		class="icon"
 		viewBox="0 0 1024 1024"
 		version="1.1"
 		xmlns="http://www.w3.org/2000/svg"

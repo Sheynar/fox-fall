@@ -7,12 +7,19 @@
 			Location__pinned: location.pinned,
 		}"
 		:style="{
-			'--location-x': location.resolvedVector.x,
-			'--location-y': location.resolvedVector.y,
+			'--location-x': screenPosition.x,
+			'--location-y': screenPosition.y,
 		}"
 		tabIndex="{-1}"
 	>
-		<div
+		<Component
+			:is="
+				location.type === LocationType.Artillery
+					? ArtilleryIcon
+					: location.type === LocationType.Spotter
+					? SpotterIcon
+					: TargetIcon
+			"
 			ref="iconElement"
 			class="Location__icon"
 			@pointerdown="onPointerDown"
@@ -25,18 +32,19 @@
 			<div class="Location__table">
 				<div class="Location__row">
 					<span>final distance:</span>
-					<span>{{ location.resolvedVector.distance.toFixed(1) }}</span>
+					<span>{{ Math.round(resolvedVector.distance) }}</span>
 				</div>
 				<div class="Location__row">
 					<span>final azimuth:</span>
-					<span>{{ location.resolvedVector.azimuth.toFixed(1) }}</span>
+					<span>{{ resolvedVector.azimuth.toFixed(1) }}</span>
 				</div>
 				<div class="Location__row">
 					<span>distance:</span>
 					<input
 						type="number"
+						step="0.1"
 						:readonly="props.readonly"
-						:value="Number(location.vector.distance.toFixed(1))"
+						:value="Math.round(location.vector.distance)"
 						@pointerdown.stop
 						@input="
 							location.vector.distance = Number(
@@ -49,8 +57,9 @@
 					<span>azimuth to:</span>
 					<input
 						type="number"
+						step="0.1"
 						:readonly="props.readonly"
-						:value="Number(location.vector.azimuth.toFixed(1))"
+						:value="location.vector.azimuth.toFixed(1)"
 						@pointerdown.stop
 						@input="
 							location.vector.azimuth = wrapDegrees(
@@ -63,10 +72,9 @@
 					<span>azimuth from:</span>
 					<input
 						type="number"
+						step="0.1"
 						:readonly="props.readonly"
-						:value="
-							Number(wrapDegrees(location.vector.azimuth + 180).toFixed(1))
-						"
+						:value="wrapDegrees(location.vector.azimuth + 180).toFixed(1)"
 						@pointerdown.stop
 						@input="
 							location.vector.azimuth = wrapDegrees(
@@ -106,21 +114,46 @@
 			</div>
 			<div class="Location__actions">
 				<button
+					v-if="
+						location.type === LocationType.Artillery ||
+						location.type === LocationType.Spotter
+					"
 					class="Location__action"
-					@pointerdown.stop="emit('create-child', $event)"
+					@pointerdown.stop="
+						emit('create-child', {
+							locationType: LocationType.Spotter,
+							pointerEvent: $event,
+						})
+					"
+					title="Create spotter"
 				>
-					+
+					<SpotterIcon />
+				</button>
+				<button
+					v-if="location.type === LocationType.Spotter"
+					class="Location__action"
+					@pointerdown.stop="
+						emit('create-child', {
+							locationType: LocationType.Target,
+							pointerEvent: $event,
+						})
+					"
+					title="Create target"
+				>
+					<TargetIcon />
 				</button>
 				<button
 					class="Location__action"
 					:disabled="props.readonly"
 					@click.stop="emit('delete')"
+					title="Delete"
 				>
-					-
+					<TrashIcon />
 				</button>
 				<button
 					class="Location__action"
 					@click.stop="location.pinned = !location.pinned"
+					title="Pin"
 				>
 					<Component :is="location.pinned ? PinIcon : PinOutlineIcon" />
 				</button>
@@ -136,17 +169,15 @@
 		top: calc(var(--location-y) * 1px);
 		z-index: 1000;
 
-		transform: translate(-50%, -50%) scale(calc(1 / var(--viewport-zoom))) rotate(calc(var(--viewport-deg) * -1deg));
+		transform: translate(-50%, -50%);
 		transform-origin: 50% 50%;
 
 		&:hover,
 		&:focus-within,
 		&.Location__moving,
 		&.Location__pinned {
-			padding: 0.5em;
-
 			.Location__icon {
-				border: 0.1em solid #90f;
+				outline: 0.1em solid #90f;
 			}
 		}
 
@@ -176,10 +207,13 @@
 
 	.Location__icon {
 		box-sizing: border-box;
-		width: 1em;
-		height: 1em;
+		width: 5em;
+		height: 5em;
+		border-radius: 10%;
+		/*
 		border-radius: 50%;
 		background: #fff;
+		*/
 	}
 
 	.Location__tooltip {
@@ -250,15 +284,20 @@
 </style>
 
 <script setup lang="ts">
-	import { onMounted, ref, shallowRef } from 'vue';
+	import { computed, onMounted, ref, shallowRef } from 'vue';
+	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
+	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
-	import { injectLocation } from '@/contexts/location';
+	import TargetIcon from '@/components/icons/TargetIcon.vue';
+	import TrashIcon from '@/components/icons/TrashIcon.vue';
+	import { injectLocation, injectLocationMap } from '@/contexts/location';
 	import { injectViewport } from '@/contexts/viewport';
 	import { wrapDegrees } from '@/lib/angle';
+	import { LocationType, getLocationResolvedVector } from '@/lib/location';
 	import { Vector } from '@/lib/vector';
 
-	const iconElement = shallowRef<HTMLDivElement>(null!);
+	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
 
 	const props = withDefaults(
 		defineProps<{ readonly?: boolean; createEvent?: PointerEvent }>(),
@@ -268,12 +307,24 @@
 	);
 
 	const emit = defineEmits<{
-		(event: 'create-child', triggerEvent: PointerEvent): void;
+		(
+			event: 'create-child',
+			payload: { locationType: LocationType; pointerEvent: PointerEvent }
+		): void;
 		(event: 'delete'): void;
 	}>();
 
+	const locationMap = injectLocationMap();
 	const location = injectLocation();
 	const viewport = injectViewport();
+
+	const resolvedVector = computed(() =>
+		getLocationResolvedVector(locationMap.value, location.value.id)
+	);
+
+	const screenPosition = computed(() =>
+		viewport.value.fromViewportVector(resolvedVector.value)
+	);
 
 	type MovingData = {
 		startEvent: PointerEvent;
@@ -296,7 +347,7 @@
 			),
 			startLocationPosition: location.value.vector.clone(),
 		};
-		iconElement.value.setPointerCapture(event.pointerId);
+		iconElement.value.$el.setPointerCapture(event.pointerId);
 	};
 
 	const onPointerUp = (event: PointerEvent) => {
@@ -304,7 +355,7 @@
 		event.stopPropagation();
 
 		moving.value = null;
-		iconElement.value.releasePointerCapture(event.pointerId);
+		iconElement.value.$el.releasePointerCapture(event.pointerId);
 	};
 
 	const onPointerMove = (event: PointerEvent) => {
@@ -335,7 +386,7 @@
 		location.value.vector.angularVector = {
 			distance: Math.round(location.value.vector.distance),
 			azimuth: Number(location.value.vector.azimuth.toFixed(1)),
-		}
+		};
 	};
 
 	onMounted(() => {

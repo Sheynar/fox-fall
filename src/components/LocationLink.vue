@@ -17,10 +17,10 @@
 			</marker>
 		</defs>
 		<line
-			:x1="props.locationFrom.resolvedVector.x"
-			:y1="props.locationFrom.resolvedVector.y"
-			:x2="props.locationTo.resolvedVector.x"
-			:y2="props.locationTo.resolvedVector.y"
+			:x1="locationScreenPositionFrom.x"
+			:y1="locationScreenPositionFrom.y"
+			:x2="locationScreenPositionTo.x"
+			:y2="locationScreenPositionTo.y"
 			marker-end="url(#arrowhead)"
 		/>
 	</svg>
@@ -39,16 +39,25 @@
 		overflow: visible;
 
 		stroke: currentColor;
-		stroke-width: calc(1px / var(--viewport-zoom));
+		stroke-width: 1px;
 		fill: currentColor;
 	}
 </style>
 
 <script setup lang="ts">
-	import type { Location } from '@/lib/location';
+	import { computed } from 'vue';
+	import { injectLocationMap } from '@/contexts/location';
+	import { injectViewport } from '@/contexts/viewport';
+	import { getLocationResolvedVector } from '@/lib/location';
 
 	const props = defineProps<{
-		locationFrom: Location;
-		locationTo: Location;
+		locationIdFrom: string;
+		locationIdTo: string;
 	}>();
+
+	const viewport = injectViewport();
+	const locationMap = injectLocationMap();
+
+	const locationScreenPositionFrom = computed(() => viewport.value.fromViewportVector(getLocationResolvedVector(locationMap.value, props.locationIdFrom)));
+	const locationScreenPositionTo = computed(() => viewport.value.fromViewportVector(getLocationResolvedVector(locationMap.value, props.locationIdTo)));
 </script>
