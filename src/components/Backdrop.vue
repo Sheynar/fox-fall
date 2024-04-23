@@ -1,19 +1,4 @@
 <template>
-	<div class="Backdrop__compass">
-		<div>
-			cursor: x{{ Math.round(resolvedCursor.x) }} y{{
-				Math.round(resolvedCursor.y)
-			}}
-		</div>
-		<div>
-			position: x{{ Math.round(position.x) }} y{{
-				Math.round(position.y)
-			}}
-		</div>
-		<div>rotation: {{ viewport.rotation.toFixed(1) }}</div>
-		<div>zoom: {{ Math.round(viewport.zoom * 100) }}%</div>
-	</div>
-
 	<div
 		class="Backdrop__grid"
 		:style="{
@@ -25,11 +10,18 @@
 		}"
 	/>
 
-	<svg
-		class="Backdrop__compass"
-		xmlns="http://www.w3.org/2000/svg"
-		preserve-aspect-ratio="none"
-	></svg>
+	<div class="Backdrop__compass">
+		<div>
+			cursor: x{{ Math.round(resolvedCursor.x) }} y{{
+				Math.round(resolvedCursor.y)
+			}}
+		</div>
+		<div>
+			position: x{{ Math.round(position.x) }} y{{ Math.round(position.y) }}
+		</div>
+		<div>rotation: {{ viewport.rotation.toFixed(1) }}</div>
+		<div>zoom: {{ Math.round(viewport.zoom * 100) }}%</div>
+	</div>
 </template>
 
 <style lang="scss">
@@ -55,8 +47,8 @@
 				rgba(0, 0, 0, 1) 100%
 			);
 
-		background-size: calc(100px * var(--viewport-zoom))
-			calc(100px * var(--viewport-zoom));
+		background-size: calc(20px * var(--viewport-zoom))
+			calc(20px * var(--viewport-zoom));
 		background-position: calc(var(--background-y) * 1px + 150vmax)
 			calc(var(--background-x) * 1px + 150vmax);
 

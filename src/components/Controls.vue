@@ -6,8 +6,8 @@
 				<button
 					class="Controls__button"
 					@pointerdown.stop="
-						emit('create-location', {
-							locationType: LocationType.Artillery,
+						emit('create-unit', {
+							unitType: UnitType.Artillery,
 							pointerEvent: $event,
 						})
 					"
@@ -17,8 +17,8 @@
 				<button
 					class="Controls__button"
 					@pointerdown.stop="
-						emit('create-location', {
-							locationType: LocationType.Spotter,
+						emit('create-unit', {
+							unitType: UnitType.Spotter,
 							pointerEvent: $event,
 						})
 					"
@@ -28,8 +28,8 @@
 				<button
 					class="Controls__button"
 					@pointerdown.stop="
-						emit('create-location', {
-							locationType: LocationType.Target,
+						emit('create-unit', {
+							unitType: UnitType.Target,
 							pointerEvent: $event,
 						})
 					"
@@ -83,7 +83,7 @@
 		color: inherit;
 		font-size: inherit;
 
-		.Location__icon {
+		.Unit__icon {
 			width: 1em;
 			height: 1em;
 		}
@@ -99,12 +99,12 @@
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
-	import { LocationType } from '@/lib/location';
+	import { UnitType } from '@/lib/unit';
 
 	const emit = defineEmits<{
 		(
-			event: 'create-location',
-			payload: { locationType: LocationType; pointerEvent: PointerEvent }
+			event: 'create-unit',
+			payload: { unitType: UnitType; pointerEvent: PointerEvent }
 		): void;
 		(event: 'show-help'): void;
 	}>();

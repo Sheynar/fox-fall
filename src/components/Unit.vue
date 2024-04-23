@@ -1,88 +1,97 @@
 <template>
 	<div
-		class="Location__container"
+		ref="containerElement"
+		class="Unit__container"
 		:class="{
-			Location__moving: !!moving,
-			Location__readonly: props.readonly,
-			Location__pinned: location.pinned,
+			Unit__moving: !!moving,
+			Unit__readonly: props.readonly,
+			Unit__pinned: unit.pinned,
 		}"
 		:style="{
-			'--location-x': screenPosition.x,
-			'--location-y': screenPosition.y,
+			'--unit-x': screenPosition.x,
+			'--unit-y': screenPosition.y,
+			'--viewport-zoom': viewport.resolvedZoom,
 		}"
-		tabIndex="{-1}"
+		tabIndex="-1"
+		@click="clickHighlighted = true"
 	>
-		<div class="Location__label" v-if="location.label">
-			{{ location.label }}
+		<div class="Unit__label" v-if="unit.label">
+			{{ unit.label }}
 		</div>
 		<Component
 			:is="
-				location.type === LocationType.Artillery
+				unit.type === UnitType.Artillery
 					? ArtilleryIcon
-					: location.type === LocationType.Spotter
-					? SpotterIcon
-					: TargetIcon
+					: unit.type === UnitType.Spotter
+						? SpotterIcon
+						: TargetIcon
 			"
 			ref="iconElement"
-			class="Location__icon"
+			class="Unit__icon"
 			@pointerdown="onPointerDown"
 			@pointermove="onPointerMove"
 			@pointerup="onPointerUp"
 			@pointercancel="onPointerUp"
 			@pointerleave="onPointerUp"
 		/>
-		<div class="Location__tooltip">
-			<div class="Location__table">
-				<div class="Location__row">
+		<div class="Unit__tooltip">
+			<div class="Unit__table">
+				<div class="Unit__row">
 					<span>type:</span>
 					<span>{{
-						location.type === LocationType.Artillery
+						unit.type === UnitType.Artillery
 							? 'Artillery'
-							: location.type === LocationType.Spotter
-							? 'Spotter'
-							: 'Target'
+							: unit.type === UnitType.Spotter
+								? 'Spotter'
+								: 'Target'
 					}}</span>
 				</div>
-				<div class="Location__row">
+				<div class="Unit__row">
 					<span>label:</span>
-					<input
-						type="text"
-						:readonly="props.readonly"
-						v-model="location.label"
-					/>
+					<input type="text" :readonly="props.readonly" v-model="unit.label" />
 				</div>
-				<div class="Location__row">
+				<div class="Unit__row">
 					<span>distance:</span>
 					<NumberInput
-						:model-value="Math.round(location.vector.distance)"
-						@update:model-value="location.vector.distance = $event"
+						:model-value="Math.round(unit.vector.distance)"
+						@update:model-value="unit.vector.distance = $event"
 					/>
 				</div>
-				<div class="Location__row">
+				<div class="Unit__row">
 					<span>azimuth to:</span>
 					<NumberInput
-						:model-value="Number(location.vector.azimuth.toFixed(1))"
-						@update:model-value="location.vector.azimuth = wrapDegrees($event)"
+						:model-value="Number(unit.vector.azimuth.toFixed(1))"
+						@update:model-value="unit.vector.azimuth = wrapDegrees($event)"
 					/>
 				</div>
-				<div class="Location__row">
+				<div class="Unit__row">
 					<span>azimuth from:</span>
 					<NumberInput
-						:model-value="Number(wrapDegrees(location.vector.azimuth + 180).toFixed(1))"
-						@update:model-value="location.vector.azimuth = wrapDegrees($event)"
+						:model-value="
+							Number(wrapDegrees(unit.vector.azimuth + 180).toFixed(1))
+						"
+						@update:model-value="unit.vector.azimuth = wrapDegrees($event)"
 					/>
 				</div>
 			</div>
-			<div class="Location__actions">
+			<div class="Unit__actions" v-if="unit.type === UnitType.Spotter">
 				<button
-					v-if="
-						location.type === LocationType.Artillery ||
-						location.type === LocationType.Spotter
-					"
-					class="Location__action"
+					class="Unit__action"
 					@pointerdown.stop="
 						emit('create-child', {
-							locationType: LocationType.Spotter,
+							unitType: UnitType.Artillery,
+							pointerEvent: $event,
+						})
+					"
+					title="Create Artillery"
+				>
+					<ArtilleryIcon />
+				</button>
+				<button
+					class="Unit__action"
+					@pointerdown.stop="
+						emit('create-child', {
+							unitType: UnitType.Spotter,
 							pointerEvent: $event,
 						})
 					"
@@ -91,11 +100,10 @@
 					<SpotterIcon />
 				</button>
 				<button
-					v-if="location.type === LocationType.Spotter"
-					class="Location__action"
+					class="Unit__action"
 					@pointerdown.stop="
 						emit('create-child', {
-							locationType: LocationType.Target,
+							unitType: UnitType.Target,
 							pointerEvent: $event,
 						})
 					"
@@ -103,8 +111,10 @@
 				>
 					<TargetIcon />
 				</button>
+			</div>
+			<div class="Unit__actions">
 				<button
-					class="Location__action"
+					class="Unit__action"
 					:disabled="props.readonly"
 					@click.stop="emit('delete')"
 					title="Delete"
@@ -112,11 +122,12 @@
 					<TrashIcon />
 				</button>
 				<button
-					class="Location__action"
-					@click.stop="location.pinned = !location.pinned"
+					v-if="unit.type !== UnitType.Spotter"
+					class="Unit__action"
+					@click.stop="unit.pinned = !unit.pinned"
 					title="Pin"
 				>
-					<Component :is="location.pinned ? PinIcon : PinOutlineIcon" />
+					<Component :is="unit.pinned ? PinIcon : PinOutlineIcon" />
 				</button>
 			</div>
 		</div>
@@ -124,51 +135,50 @@
 </template>
 
 <style lang="scss">
-	.Location__container {
+	.Unit__container {
 		position: absolute;
-		left: calc(var(--location-x) * 1px);
-		top: calc(var(--location-y) * 1px);
+		left: calc(var(--unit-x) * 1px);
+		top: calc(var(--unit-y) * 1px);
 		z-index: 1000;
 
-		transform: translate(-50%, -50%);
+		--_unit-scale: calc(var(--viewport-zoom) / 10);
+		transform: translate(-50%, -50%) scale(var(--_unit-scale));
 		transform-origin: 50% 50%;
 
 		&:hover,
 		&:focus-within,
-		&.Location__moving,
-		&.Location__pinned {
-			.Location__icon {
+		&.Unit__moving,
+		&.Unit__pinned {
+			.Unit__icon {
 				background: var(--color-primary-contrast);
 
 				outline: 0.1em solid var(--color-selected);
 			}
 		}
 
-		&.Location__moving {
-			.Location__tooltip {
+		&.Unit__moving {
+			.Unit__tooltip {
 				opacity: 0.5;
 			}
 		}
 
-		&:not(:hover):not(:focus-within):not(.Location__moving):not(
-				.Location__pinned
-			) {
+		&:not(:focus-within):not(.Unit__moving) {
 			z-index: initial;
-			.Location__tooltip {
+			.Unit__tooltip {
 				visibility: hidden;
 				pointer-events: none;
 			}
 		}
 
-		&:not(.Location__readonly) {
-			.Location__icon {
+		&:not(.Unit__readonly) {
+			.Unit__icon {
 				user-select: none;
 				cursor: pointer;
 			}
 		}
 	}
 
-	.Location__label {
+	.Unit__label {
 		position: absolute;
 		left: 50%;
 		bottom: 100%;
@@ -178,17 +188,19 @@
 		white-space: nowrap;
 	}
 
-	.Location__icon {
+	.Unit__icon {
 		box-sizing: border-box;
 		width: 5em;
 		height: 5em;
-		border-radius: 10%;
+		border-radius: 50%;
+		padding: 0.5em;
 	}
 
-	.Location__tooltip {
+	.Unit__tooltip {
 		position: absolute;
 		left: 50%;
-		transform: translateX(-50%);
+		transform: translateX(-50%) scale(calc(1 / var(--_unit-scale)));
+		transform-origin: 50% 0%;
 
 		display: flex;
 		flex-direction: column;
@@ -204,7 +216,7 @@
 			font-size: inherit;
 		}
 
-		.Location__table {
+		.Unit__table {
 			display: grid;
 			grid-template-columns: repeat(2, max-content);
 			grid-auto-rows: min-content;
@@ -213,7 +225,7 @@
 
 			text-align: end;
 
-			.Location__row {
+			.Unit__row {
 				grid-column: 1 / -1;
 
 				display: grid;
@@ -222,14 +234,14 @@
 			}
 		}
 
-		.Location__actions {
+		.Unit__actions {
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
 
 			gap: 0.5em;
 
-			.Location__action {
+			.Unit__action {
 				flex: 1 0 auto;
 
 				display: flex;
@@ -240,7 +252,7 @@
 				color: inherit;
 				font-size: inherit;
 
-				.Location__icon {
+				.Unit__icon {
 					width: 1em;
 					height: 1em;
 					background: currentColor;
@@ -252,43 +264,69 @@
 </style>
 
 <script setup lang="ts">
-	import { computed, onMounted, ref, shallowRef } from 'vue';
+	import {
+		computed,
+		onMounted,
+		onScopeDispose,
+		ref,
+		shallowRef,
+		watchEffect,
+	} from 'vue';
+	import { onClickOutside } from '@vueuse/core';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
-	import { injectLocation, injectLocationMap } from '@/contexts/location';
+	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
+	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { injectViewport } from '@/contexts/viewport';
 	import { wrapDegrees } from '@/lib/angle';
-	import { LocationType, getLocationResolvedVector } from '@/lib/location';
+	import { UnitType, getUnitResolvedVector } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 	import NumberInput from './NumberInput.vue';
 
+	const containerElement = ref<HTMLElement | null>(null);
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
 
-	const props = withDefaults(
-		defineProps<{ readonly?: boolean; createEvent?: PointerEvent }>(),
-		{
-			readonly: false,
-		}
-	);
+	const props = defineProps<{
+		readonly?: boolean;
+		createEvent?: PointerEvent;
+	}>();
 
 	const emit = defineEmits<{
 		(
 			event: 'create-child',
-			payload: { locationType: LocationType; pointerEvent: PointerEvent }
+			payload: { unitType: UnitType; pointerEvent: PointerEvent }
 		): void;
 		(event: 'delete'): void;
 	}>();
 
-	const locationMap = injectLocationMap();
-	const location = injectLocation();
+	const unitMap = injectUnitMap();
+	const unit = injectUnit();
 	const viewport = injectViewport();
+	const highlightedUnits = injectHighlightedUnits();
+
+	const clickHighlighted = ref(false);
+
+	watchEffect(() => {
+		if (clickHighlighted.value || unit.value.pinned) {
+			highlightedUnits.value.add(unit.value.id);
+		} else {
+			highlightedUnits.value.delete(unit.value.id);
+		}
+	});
+	onScopeDispose(() => {
+		highlightedUnits.value.delete(unit.value.id);
+	});
+
+	onClickOutside(containerElement, () => {
+		clickHighlighted.value = false;
+	});
 
 	const resolvedVector = computed(() =>
-		getLocationResolvedVector(locationMap.value, location.value.id)
+		getUnitResolvedVector(unitMap.value, unit.value.id)
 	);
 
 	const screenPosition = computed(() =>
@@ -298,7 +336,7 @@
 	type MovingData = {
 		startEvent: PointerEvent;
 		startCursorViewport: Vector;
-		startLocationPosition: Vector;
+		startUnitPosition: Vector;
 	};
 	const moving = ref<null | MovingData>(null);
 
@@ -314,7 +352,7 @@
 					y: event.clientY,
 				})
 			),
-			startLocationPosition: location.value.vector.clone(),
+			startUnitPosition: unit.value.vector.clone(),
 		};
 		iconElement.value.$el.setPointerCapture(event.pointerId);
 	};
@@ -340,21 +378,21 @@
 			})
 		);
 
-		location.value.vector.cartesianVector = {
+		unit.value.vector.cartesianVector = {
 			x:
-				movingData.startLocationPosition.x +
+				movingData.startUnitPosition.x +
 				currentCursorViewport.x -
 				movingData.startCursorViewport.x,
 			y:
-				movingData.startLocationPosition.y +
+				movingData.startUnitPosition.y +
 				currentCursorViewport.y -
 				movingData.startCursorViewport.y,
 		};
 
 		// Round values
-		location.value.vector.angularVector = {
-			distance: Math.round(location.value.vector.distance),
-			azimuth: Number(location.value.vector.azimuth.toFixed(1)),
+		unit.value.vector.angularVector = {
+			distance: Math.round(unit.value.vector.distance),
+			azimuth: Number(unit.value.vector.azimuth.toFixed(1)),
 		};
 	};
 

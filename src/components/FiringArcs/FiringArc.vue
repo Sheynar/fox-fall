@@ -1,33 +1,37 @@
 <template>
-	<svg
-		class="FiringArc__svg"
-		xmlns="http://www.w3.org/2000/svg"
-		preserve-aspect-ratio="none"
-	>
-		<path
-			:d="`M ${locationScreenPositionFrom.x} ${
-				locationScreenPositionFrom.y
-			} C ${midpointScreenPosition.x} ${midpointScreenPosition.y + offset}, ${
-				midpointScreenPosition.x
-			} ${midpointScreenPosition.y + offset}, ${locationScreenPositionTo.x} ${
-				locationScreenPositionTo.y
-			}`"
-		/>
-	</svg>
-	<div
-		class="FiringArc__label"
-		:style="{
-			'--label-x': midpointScreenPosition.x,
-			'--label-y': midpointScreenPosition.y + offset,
-		}"
-	>
-		<div class="FiringArc__label-row">
-			<span>distance:</span><span>{{ Math.round(firingVector.distance) }}</span>
+	<Teleport :to="props.lineContainer">
+		<svg
+			class="FiringArc__svg"
+			xmlns="http://www.w3.org/2000/svg"
+			preserve-aspect-ratio="none"
+		>
+			<path
+				:d="`M ${unitScreenPositionFrom.x} ${
+					unitScreenPositionFrom.y
+				} C ${midpointScreenPosition.x} ${midpointScreenPosition.y + offset}, ${
+					midpointScreenPosition.x
+				} ${midpointScreenPosition.y + offset}, ${unitScreenPositionTo.x} ${
+					unitScreenPositionTo.y
+				}`"
+			/>
+		</svg>
+	</Teleport>
+	<Teleport :to="props.labelContainer">
+		<div
+			class="FiringArc__label"
+			:style="{
+				'--label-x': midpointScreenPosition.x,
+				'--label-y': midpointScreenPosition.y + offset,
+			}"
+		>
+			<div class="FiringArc__label-row">
+				<span>distance:</span><span>{{ Math.round(firingVector.distance) }}</span>
+			</div>
+			<div class="FiringArc__label-row">
+				<span>azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}</span>
+			</div>
 		</div>
-		<div class="FiringArc__label-row">
-			<span>azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}</span>
-		</div>
-	</div>
+	</Teleport>
 </template>
 
 <style lang="scss">
@@ -83,39 +87,42 @@
 
 <script setup lang="ts">
 	import { computed } from 'vue';
-	import { injectLocationMap } from '@/contexts/location';
+	import { injectUnitMap } from '@/contexts/unit';
 	import { injectViewport } from '@/contexts/viewport';
-	import { getLocationResolvedVector } from '@/lib/location';
+	import { getUnitResolvedVector } from '@/lib/unit';
 
 	const offset = computed(() => -40 * viewport.value.resolvedZoom);
 
 	const props = defineProps<{
-		locationIdFrom: string;
-		locationIdTo: string;
+		lineContainer: HTMLElement;
+		labelContainer: HTMLElement;
+
+		unitIdFrom: string;
+		unitIdTo: string;
 	}>();
 
 	const viewport = injectViewport();
-	const locationMap = injectLocationMap();
+	const unitMap = injectUnitMap();
 
 	const resolvedVectorFrom = computed(() =>
-		getLocationResolvedVector(locationMap.value, props.locationIdFrom)
+		getUnitResolvedVector(unitMap.value, props.unitIdFrom)
 	);
 	const resolvedVectorTo = computed(() =>
-		getLocationResolvedVector(locationMap.value, props.locationIdTo)
+		getUnitResolvedVector(unitMap.value, props.unitIdTo)
 	);
 	const firingVector = computed(() =>
 		resolvedVectorTo.value.getRelativeOffset(resolvedVectorFrom.value)
 	);
 
-	const locationScreenPositionFrom = computed(() =>
+	const unitScreenPositionFrom = computed(() =>
 		viewport.value.fromViewportVector(resolvedVectorFrom.value)
 	);
-	const locationScreenPositionTo = computed(() =>
+	const unitScreenPositionTo = computed(() =>
 		viewport.value.fromViewportVector(resolvedVectorTo.value)
 	);
 	const midpointScreenPosition = computed(() =>
-		locationScreenPositionFrom.value
-			.addVector(locationScreenPositionTo.value)
+		unitScreenPositionFrom.value
+			.addVector(unitScreenPositionTo.value)
 			.scale(0.5)
 	);
 </script>

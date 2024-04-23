@@ -8,45 +8,35 @@
 	>
 		<Backdrop />
 		<div class="App__arrows">
-			<LocationLink
-				v-for="locationId in Object.keys(locationMap).filter(
-					(locationId) => locationMap[locationId].parentId != null
+			<UnitLink
+				v-for="unitId in Object.keys(unitMap).filter(
+					(unitId) => unitMap[unitId].parentId != null
 				)"
-				:key="locationId"
-				:location-id-from="locationMap[locationId].parentId!"
-				:location-id-to="locationId"
+				:key="unitId"
+				:unit-id-from="unitMap[unitId].parentId!"
+				:unit-id-to="unitId"
 			/>
 		</div>
-		<div class="App__locations">
-			<LocationProvider
-				v-for="locationId in Object.keys(locationMap)"
-				:location="locationMap[locationId]"
+		<div class="App__units">
+			<UnitProvider
+				v-for="unitId in Object.keys(unitMap)"
+				:unit="unitMap[unitId]"
 			>
-				<LocationComponent
-					:create-event="locationCreateEvents.get(locationMap[locationId])"
+				<UnitComponent
+					:create-event="unitCreateEvents.get(unitMap[unitId])"
 					@create-child="
-						addLocation(
-							$event.locationType,
-							$event.pointerEvent,
-							undefined,
-							locationId
-						)
+						addUnit($event.unitType, $event.pointerEvent, undefined, unitId)
 					"
-					@delete="removeLocation(locationId)"
+					@delete="removeUnit(unitId)"
 				/>
-			</LocationProvider>
+			</UnitProvider>
 		</div>
-		<div class="App__firing-arcs">
-			<FiringArc
-				v-for="firingArc in firingArcs"
-				:key="firingArc.to.id"
-				:location-id-from="firingArc.from.id"
-				:location-id-to="firingArc.to.id"
-			/>
-		</div>
+
+		<FiringArcs />
+
 		<Controls
 			class="App__controls"
-			@create-location="addLocation($event.locationType, $event.pointerEvent)"
+			@create-unit="addUnit($event.unitType, $event.pointerEvent)"
 			@show-help="showHelp()"
 		/>
 	</div>
@@ -59,7 +49,7 @@
 		font-size: 2vmin;
 	}
 
-	.App__locations {
+	.App__units {
 		position: absolute;
 		left: 0;
 		top: 0;
@@ -69,8 +59,7 @@
 		overflow: visible;
 	}
 
-	.App__arrows,
-	.App__firing-arcs {
+	.App__arrows {
 		position: absolute;
 		left: 0;
 		top: 0;
@@ -94,21 +83,22 @@
 	import { type Ref, ref, computed } from 'vue';
 	import Backdrop from '@/components/Backdrop.vue';
 	import Controls from '@/components/Controls.vue';
-	import FiringArc from '@/components/FiringArc.vue';
-	import LocationComponent from '@/components/Location.vue';
-	import LocationLink from '@/components/LocationLink.vue';
-	import { provideLocationMap } from '@/contexts/location';
-	import LocationProvider from '@/contexts/location/LocationProvider.vue';
+	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
+	import UnitComponent from '@/components/Unit.vue';
+	import UnitLink from '@/components/UnitLink.vue';
+	import { type HighlightedUnits, provideHighlightedUnits } from '@/contexts/highlighted-units';
+	import { provideUnitMap } from '@/contexts/unit';
+	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
 	import { provideCursor } from '@/contexts/cursor';
 	import { provideViewport } from '@/contexts/viewport';
 	import { toRadians, wrapDegrees } from '@/lib/angle';
 	import {
-		type Location,
-		type LocationMap,
-		createLocation,
-		LocationType,
-		getLocationResolvedVector,
-	} from '@/lib/location';
+		type Unit,
+		type UnitMap,
+		createUnit,
+		UnitType,
+		getUnitResolvedVector,
+	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 	import { Viewport } from '@/lib/viewport';
 
@@ -236,15 +226,17 @@
 		);
 	};
 
-	const locationMap = ref<LocationMap>({});
-	const locationParents = new WeakMap<Location, Location>();
-	const locationChildren = new WeakMap<Location, Set<Location>>();
+	const unitMap = ref<UnitMap>({});
+	const highlightedUnits = ref<HighlightedUnits>(new Set());
+	const unitParents = new WeakMap<Unit, Unit>();
+	const unitChildren = new WeakMap<Unit, Set<Unit>>();
 
-	provideLocationMap(locationMap);
+	provideHighlightedUnits(highlightedUnits);
+	provideUnitMap(unitMap);
 
-	const locationCreateEvents = new WeakMap<Location, PointerEvent>();
-	const addLocation = (
-		type: LocationType,
+	const unitCreateEvents = new WeakMap<Unit, PointerEvent>();
+	const addUnit = (
+		type: UnitType,
 		event?: PointerEvent,
 		vector: Ref<Vector> = ref(
 			Vector.fromAngularVector({
@@ -252,90 +244,74 @@
 				distance: 50,
 			})
 		),
-		parentLocationId?: string
+		parentUnitId?: string
 	) => {
-		const parentLocation = parentLocationId
-			? locationMap.value[parentLocationId]
-			: undefined;
-		const newLocation = createLocation(type, vector, parentLocationId);
+		const parentUnit = parentUnitId ? unitMap.value[parentUnitId] : undefined;
+		const newUnit = createUnit(type, vector, parentUnitId);
 
 		if (event) {
-			newLocation.value.vector = viewport.value.toViewportVector(
+			newUnit.value.vector = viewport.value.toViewportVector(
 				Vector.fromCartesianVector({
 					x: event.clientX,
 					y: event.clientY,
 				})
 			);
-			if (parentLocation) {
-				newLocation.value.vector = newLocation.value.vector.addVector(
-					getLocationResolvedVector(locationMap.value, parentLocation.id).scale(
-						-1
-					)
+			if (parentUnit) {
+				newUnit.value.vector = newUnit.value.vector.addVector(
+					getUnitResolvedVector(unitMap.value, parentUnit.id).scale(-1)
 				);
 			}
-			locationCreateEvents.set(newLocation.value, event);
+			unitCreateEvents.set(newUnit.value, event);
 		}
 
-		locationMap.value[newLocation.value.id] = newLocation.value;
-		if (parentLocation) {
-			locationParents.set(newLocation.value, parentLocation);
-			const siblings = locationChildren.get(parentLocation) ?? new Set();
-			siblings.add(newLocation.value);
-			locationChildren.set(parentLocation, siblings);
+		unitMap.value[newUnit.value.id] = newUnit.value;
+		if (parentUnit) {
+			unitParents.set(newUnit.value, parentUnit);
+			const siblings = unitChildren.get(parentUnit) ?? new Set();
+			siblings.add(newUnit.value);
+			unitChildren.set(parentUnit, siblings);
 		}
 
-		return newLocation;
+		return newUnit;
 	};
 
-	const removeLocation = (locationId: string) => {
-		const location = locationMap.value[locationId];
-		const children = locationChildren.get(location);
+	const removeUnit = (unitId: string) => {
+		const unit = unitMap.value[unitId];
+		const children = unitChildren.get(unit);
 		if (children != null && children.size > 0) {
 			return;
 		}
-		const parent = locationParents.get(location);
+		const parent = unitParents.get(unit);
 		if (parent != null) {
-			const siblings = locationChildren.get(parent);
+			const siblings = unitChildren.get(parent);
 			if (siblings != null) {
-				siblings.delete(location);
+				siblings.delete(unit);
 			}
 		}
-		delete locationMap.value[locationId];
+		delete unitMap.value[unitId];
 	};
 
 	const getClosestParentOfType = (
-		locationType: LocationType,
-		locationId: string
-	): Location | undefined => {
-		const location = locationMap.value[locationId];
+		unitType: UnitType,
+		unitId: string
+	): Unit | undefined => {
+		const unit = unitMap.value[unitId];
 
-		if (location.parentId == null) return undefined;
+		if (unit.parentId == null) return undefined;
 
-		const parentLocation = locationMap.value[location.parentId];
-		if (parentLocation.type === locationType) return parentLocation;
-		return getClosestParentOfType(locationType, parentLocation.id);
+		const parentUnit = unitMap.value[unit.parentId];
+		if (parentUnit.type === unitType) return parentUnit;
+		return getClosestParentOfType(unitType, parentUnit.id);
 	};
-	const firingArcs = computed(() => {
-		const output: { from: Location; to: Location }[] = [];
-		for (const locationId of Object.keys(locationMap.value)) {
-			const location = locationMap.value[locationId];
-			if (location.type !== LocationType.Target) continue;
-			const parentArtillery = getClosestParentOfType(
-				LocationType.Artillery,
-				locationId
-			);
-			if (parentArtillery == null) continue;
-			output.push({ from: parentArtillery, to: locationMap.value[locationId] });
-		}
-		return output;
-	});
 
 	const showHelp = () => {
-		alert(`Controls:\nLeft click: move location\nMiddle click: pan camera\nCtrl + middle click: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nMouse over / click a location to edit its location details\n\nDrag from location's create button to insert a new child location`);
+		alert(
+			`Controls:\nLeft click: move unit\nMiddle click: pan camera\nShift + middle click: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nMouse over / click a unit to edit its unit details\n\nDrag from spotter's create button to insert a new child unit\n\nPin an artillery or target to show firing arcs`
+		);
 	};
 
-	addLocation(
-		LocationType.Artillery,
+	addUnit(
+		UnitType.Spotter,
 		undefined,
 		ref(Vector.fromCartesianVector({ x: 0, y: 0 }))
 	);
