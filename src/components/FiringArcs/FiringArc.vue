@@ -8,8 +8,8 @@
 			<path
 				:d="`M ${unitScreenPositionFrom.x} ${
 					unitScreenPositionFrom.y
-				} C ${midpointScreenPosition.x} ${midpointScreenPosition.y + offset}, ${
-					midpointScreenPosition.x
+				} C ${unitScreenPositionFrom.x} ${midpointScreenPosition.y + offset}, ${
+					unitScreenPositionTo.x
 				} ${midpointScreenPosition.y + offset}, ${unitScreenPositionTo.x} ${
 					unitScreenPositionTo.y
 				}`"
@@ -21,7 +21,7 @@
 			class="FiringArc__label"
 			:style="{
 				'--label-x': midpointScreenPosition.x,
-				'--label-y': midpointScreenPosition.y + offset,
+				'--label-y': midpointScreenPosition.y + offset * 0.75,
 			}"
 		>
 			<div class="FiringArc__label-row">
@@ -91,8 +91,6 @@
 	import { injectViewport } from '@/contexts/viewport';
 	import { getUnitResolvedVector } from '@/lib/unit';
 
-	const offset = computed(() => -40 * viewport.value.resolvedZoom);
-
 	const props = defineProps<{
 		lineContainer: HTMLElement;
 		labelContainer: HTMLElement;
@@ -125,4 +123,6 @@
 			.addVector(unitScreenPositionTo.value)
 			.scale(0.5)
 	);
+
+	const offset = computed(() => unitScreenPositionTo.value.addVector(unitScreenPositionFrom.value.scale(-1)).scale(0.5).distance * -1);
 </script>
