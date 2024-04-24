@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
   "dependencies": {
     "@kaosdlanor/kanim": "^1.0.1",
     "@vueuse/core": "^10.5.0",
