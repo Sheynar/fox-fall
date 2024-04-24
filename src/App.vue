@@ -20,6 +20,7 @@
 		<div class="App__units">
 			<UnitProvider
 				v-for="unitId in Object.keys(unitMap)"
+				:key="unitId"
 				:unit="unitMap[unitId]"
 			>
 				<UnitComponent
