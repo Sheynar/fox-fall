@@ -81,13 +81,16 @@
 </style>
 
 <script setup lang="ts">
-	import { type Ref, ref, computed } from 'vue';
+	import { type Ref, ref } from 'vue';
 	import Backdrop from '@/components/Backdrop.vue';
 	import Controls from '@/components/Controls.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
 	import UnitComponent from '@/components/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
-	import { type HighlightedUnits, provideHighlightedUnits } from '@/contexts/highlighted-units';
+	import {
+		type HighlightedUnits,
+		provideHighlightedUnits,
+	} from '@/contexts/highlighted-units';
 	import { provideUnitMap } from '@/contexts/unit';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
 	import { provideCursor } from '@/contexts/cursor';
