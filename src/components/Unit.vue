@@ -13,7 +13,6 @@
 			'--viewport-zoom': viewport.resolvedZoom,
 		}"
 		tabIndex="-1"
-		@click="clickHighlighted = true"
 	>
 		<div class="Unit__label" v-if="unit.label">
 			{{ unit.label }}
@@ -264,15 +263,15 @@
 </style>
 
 <script setup lang="ts">
+	import { useEventListener } from '@vueuse/core';
 	import {
 		computed,
 		onMounted,
 		onScopeDispose,
 		ref,
 		shallowRef,
-		watchEffect,
+		watch,
 	} from 'vue';
-	import { onClickOutside } from '@vueuse/core';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
@@ -310,18 +309,24 @@
 
 	const clickHighlighted = ref(false);
 
-	watchEffect(() => {
-		if (clickHighlighted.value || unit.value.pinned) {
-			highlightedUnits.value.add(unit.value.id);
-		} else {
-			highlightedUnits.value.delete(unit.value.id);
+	watch(
+		() => clickHighlighted.value || unit.value.pinned,
+		(isHighlighted) => {
+			if (isHighlighted) {
+				highlightedUnits.value.add(unit.value.id);
+			} else {
+				highlightedUnits.value.delete(unit.value.id);
+			}
 		}
-	});
+	);
 	onScopeDispose(() => {
 		highlightedUnits.value.delete(unit.value.id);
 	});
 
-	onClickOutside(containerElement, () => {
+	useEventListener(containerElement, 'mouseover', () => {
+		clickHighlighted.value = true;
+	});
+	useEventListener(containerElement, 'mouseleave', () => {
 		clickHighlighted.value = false;
 	});
 
