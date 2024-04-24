@@ -37,13 +37,11 @@
 			<div class="Unit__table">
 				<div class="Unit__row">
 					<span>type:</span>
-					<span>{{
-						unit.type === UnitType.Artillery
-							? 'Artillery'
-							: unit.type === UnitType.Spotter
-								? 'Spotter'
-								: 'Target'
-					}}</span>
+					<select :disabled="props.readonly" v-model="unit.type">
+						<option :value="UnitType.Artillery">Artillery</option>
+						<option :value="UnitType.Spotter">Spotter</option>
+						<option :value="UnitType.Target">Target</option>
+					</select>
 				</div>
 				<div class="Unit__row">
 					<span>label:</span>
@@ -73,7 +71,7 @@
 					/>
 				</div>
 			</div>
-			<div class="Unit__actions" v-if="unit.type === UnitType.Spotter">
+			<div class="Unit__actions">
 				<button
 					class="Unit__action"
 					@pointerdown.stop="
@@ -121,7 +119,6 @@
 					<TrashIcon />
 				</button>
 				<button
-					v-if="unit.type !== UnitType.Spotter"
 					class="Unit__action"
 					@click.stop="unit.pinned = !unit.pinned"
 					title="Pin"
