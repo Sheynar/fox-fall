@@ -129,7 +129,7 @@
 		dragType: DragType;
 	}>(null);
 	const onPointerDown = (event: PointerEvent) => {
-		if (event.button !== 1) return;
+		if (event.button !== 0) return;
 		event.stopPropagation();
 
 		moving.value = {
@@ -307,7 +307,7 @@
 
 	const showHelp = () => {
 		alert(
-			`Controls:\nLeft click: move unit\nMiddle click: pan camera\nShift + middle click: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nMouse over / click a unit to edit its unit details\n\nDrag from spotter's create button to insert a new child unit\n\nPin an artillery or target to show firing arcs`
+			`Controls:\nLeft click: move unit / pan camera\nShift + left click: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nMouse over / click a unit to edit its unit details\n\nDrag from spotter's create button to insert a new child unit\n\nPin an artillery or target to show firing arcs`
 		);
 	};
 

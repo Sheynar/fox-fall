@@ -33,7 +33,7 @@
 			@pointercancel="onPointerUp"
 			@pointerleave="onPointerUp"
 		/>
-		<div class="Unit__tooltip">
+		<div class="Unit__tooltip" @pointerdown.stop>
 			<div class="Unit__table">
 				<div class="Unit__row">
 					<span>type:</span>
