@@ -92,7 +92,7 @@
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
 	import { provideCursor } from '@/contexts/cursor';
 	import { provideViewport } from '@/contexts/viewport';
-	import { toRadians, wrapDegrees } from '@/lib/angle';
+	import { wrapDegrees } from '@/lib/angle';
 	import {
 		type Unit,
 		type UnitMap,
@@ -166,29 +166,9 @@
 				((event.clientX - movingData.startEvent.clientX) * 720) /
 				window.document.body.clientWidth;
 
-			viewport.value.rotation = wrapDegrees(
-				Number((movingData.startViewport.rotation + azimuthOffset).toFixed(1))
+			viewport.value.rotateTo(
+				movingData.startViewport.rotation + azimuthOffset
 			);
-
-			const viewportOffset = {
-				x: document.body.clientWidth / 2,
-				y: document.body.clientHeight / 2,
-			};
-
-			viewport.value.position.cartesianVector = {
-				x:
-					viewportOffset.x +
-					(movingData.startViewport.position.x - viewportOffset.x) *
-						Math.cos(toRadians(azimuthOffset)) -
-					(movingData.startViewport.position.y - viewportOffset.y) *
-						Math.sin(toRadians(azimuthOffset)),
-				y:
-					viewportOffset.y +
-					(movingData.startViewport.position.y - viewportOffset.y) *
-						Math.cos(toRadians(azimuthOffset)) +
-					(movingData.startViewport.position.x - viewportOffset.x) *
-						Math.sin(toRadians(azimuthOffset)),
-			};
 		} else {
 			// Translate viewport
 			const delta = {

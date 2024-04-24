@@ -1,14 +1,23 @@
 import { ComputedRef, computed } from "vue";
 import { useWindowSize } from '@vueuse/core';
+import { toRadians, wrapDegrees } from "@/lib/angle";
 import { globalScope } from "@/lib/globalScope";
 import { Vector } from "@/lib/vector";
 
 let distanceScale: ComputedRef<number>;
+let viewportOffset: ComputedRef<{ x: number; y: number; }>;
 
 globalScope.run(() => {
 	const { height, width } = useWindowSize();
 	distanceScale = computed(() => {
 		return Math.min(height.value, width.value) / 250;
+	});
+
+	viewportOffset = computed(() => {
+		return {
+			x: width.value / 2,
+			y: height.value / 2,
+		};
 	});
 });
 
@@ -40,6 +49,29 @@ export class Viewport {
 			azimuth: vector.azimuth + this.rotation,
 		});
 		return rotated.scale(this.resolvedZoom).addVector(this.position);
+	}
+
+	rotateBy(rotationDelta: number): void {
+		this.rotation = wrapDegrees(this.rotation + rotationDelta);
+
+		this.position.cartesianVector = {
+			x:
+				viewportOffset.value.x +
+				(this.position.x - viewportOffset.value.x) *
+					Math.cos(toRadians(rotationDelta)) -
+				(this.position.y - viewportOffset.value.y) *
+					Math.sin(toRadians(rotationDelta)),
+			y:
+				viewportOffset.value.y +
+				(this.position.y - viewportOffset.value.y) *
+					Math.cos(toRadians(rotationDelta)) +
+				(this.position.x - viewportOffset.value.x) *
+					Math.sin(toRadians(rotationDelta)),
+		};
+	}
+
+	rotateTo(newRotation: number): void {
+		return this.rotateBy(newRotation - this.rotation);
 	}
 
 	clone(): Viewport {

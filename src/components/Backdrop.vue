@@ -10,7 +10,16 @@
 		}"
 	/>
 
-	<div class="Backdrop__compass">
+	<CompassIcon
+		class="Backdrop__compass"
+		:style="{
+			'--viewport-deg': viewport.rotation,
+		}"
+		alt="Reset rotation"
+		@click="resetRotation()"
+	/>
+
+	<div class="Backdrop__debug-info">
 		<div>
 			cursor: x{{ Math.round(resolvedCursor.x) }} y{{
 				Math.round(resolvedCursor.y)
@@ -59,6 +68,22 @@
 	.Backdrop__compass {
 		position: absolute;
 		top: 1em;
+		left: 1em;
+
+		width: 10em;
+		height: 10em;
+		border-radius: 50%;
+
+		transform: rotate(calc(var(--viewport-deg) * 1deg));
+		transform-origin: 50% 50%;
+
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.Backdrop__debug-info {
+		position: absolute;
+		top: 1em;
 		right: 1em;
 
 		user-select: none;
@@ -66,7 +91,9 @@
 </style>
 
 <script setup lang="ts">
+	import { KAnim } from '@kaosdlanor/kanim';
 	import { computed } from 'vue';
+	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import { injectCursor } from '@/contexts/cursor';
 	import { injectViewport } from '@/contexts/viewport';
 	import { toRadians } from '@/lib/angle';
@@ -99,4 +126,24 @@
 			viewport.value.position.y * Math.sin(toRadians(viewport.value.rotation)) +
 			viewport.value.position.x * Math.cos(toRadians(viewport.value.rotation)),
 	}));
+
+	const resetRotation = async () => {
+		const viewportProxy = {
+			get rotation() {
+				return viewport.value.rotation;
+			},
+			set rotation(value: number) {
+				viewport.value.rotateTo(value);
+			},
+		}
+
+		await KAnim.animate({
+			element: viewportProxy,
+			property: 'rotation',
+			from: viewport.value.rotation,
+			to: viewport.value.rotation > 180 ? 360 : 0,
+			duration: 250,
+			easing: 'easeInOutQuad',
+		});
+	};
 </script>

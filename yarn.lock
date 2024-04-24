@@ -122,6 +122,11 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.15.tgz#d7c6e6755c78567a951e04ab52ef0fd26de59f32"
   integrity sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==
 
+"@kaosdlanor/kanim@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@kaosdlanor/kanim/-/kanim-1.0.1.tgz#393e6a4328a0de8cb81e8052c4f20e26d416a30f"
+  integrity sha512-efUoNVhaGWt46t8dDB6+jjAcB0UMD8kz9V1oSYbLIOH9cOj+3oIU9Z1Zw11XIyDNvJsQPzexiLTgGQtlylcBFw==
+
 "@types/web-bluetooth@^0.0.20":
   version "0.0.20"
   resolved "https://registry.yarnpkg.com/@types/web-bluetooth/-/web-bluetooth-0.0.20.tgz#f066abfcd1cbe66267cdbbf0de010d8a41b41597"
