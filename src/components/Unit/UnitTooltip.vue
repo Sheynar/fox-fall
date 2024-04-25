@@ -7,7 +7,7 @@
 	>
 		<div class="UnitTooltip__table">
 			<div class="UnitTooltip__row">
-				<span>type:</span>
+				<span>Type:</span>
 				<select :disabled="props.readonly" v-model="unit.type">
 					<option :value="UnitType.Artillery">Artillery</option>
 					<option :value="UnitType.Spotter">Spotter</option>
@@ -15,32 +15,49 @@
 				</select>
 			</div>
 			<div class="UnitTooltip__row">
-				<span>label:</span>
+				<span>Name:</span>
 				<input type="text" :readonly="props.readonly" v-model="unit.label" />
 			</div>
-			<div class="UnitTooltip__row">
-				<span>distance:</span>
-				<NumberInput
-					:model-value="Math.round(unit.vector.distance)"
-					@update:model-value="unit.vector.distance = $event"
-				/>
-			</div>
-			<div class="UnitTooltip__row">
-				<span>azimuth to:</span>
-				<NumberInput
-					:model-value="Number(unit.vector.azimuth.toFixed(1))"
-					@update:model-value="unit.vector.azimuth = wrapDegrees($event)"
-				/>
-			</div>
-			<div class="UnitTooltip__row">
-				<span>azimuth from:</span>
-				<NumberInput
-					:model-value="
-						Number(wrapDegrees(unit.vector.azimuth + 180).toFixed(1))
-					"
-					@update:model-value="unit.vector.azimuth = wrapDegrees($event)"
-				/>
-			</div>
+			<template v-if="parent">
+				<div class="UnitTooltip__row">
+					<span class="UnitTooltip__span"
+						>{{ parent.label }} -> {{ unit.label }}</span
+					>
+				</div>
+				<div class="UnitTooltip__row">
+					<span>Distance:</span>
+					<NumberInput
+						:model-value="Math.round(unit.vector.distance)"
+						@update:model-value="unit.vector.distance = $event"
+					/>
+				</div>
+				<div class="UnitTooltip__row">
+					<span>Azimuth:</span>
+					<NumberInput
+						:model-value="
+							Number(wrapDegrees(unit.vector.azimuth + 180).toFixed(1))
+						"
+						@update:model-value="unit.vector.azimuth = wrapDegrees($event - 180)"
+					/>
+				</div>
+				<span class="UnitTooltip__span"
+					>{{ unit.label }} -> {{ parent.label }}</span
+				>
+				<div class="UnitTooltip__row">
+					<span>Distance:</span>
+					<NumberInput
+						:model-value="Math.round(unit.vector.distance)"
+						@update:model-value="unit.vector.distance = $event"
+					/>
+				</div>
+				<div class="UnitTooltip__row">
+					<span>Azimuth:</span>
+					<NumberInput
+						:model-value="Number(unit.vector.azimuth.toFixed(1))"
+						@update:model-value="unit.vector.azimuth = wrapDegrees($event)"
+					/>
+				</div>
+			</template>
 		</div>
 		<div class="UnitTooltip__actions">
 			<button
@@ -136,6 +153,10 @@
 				grid-template-columns: subgrid;
 				grid-template-rows: subgrid;
 			}
+
+			.UnitTooltip__span {
+				grid-column: 1 / -1;
+			}
 		}
 
 		.UnitTooltip__actions {
@@ -168,7 +189,7 @@
 </style>
 
 <script setup lang="ts">
-	import { ref } from 'vue';
+	import { computed, ref } from 'vue';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
@@ -176,7 +197,7 @@
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import NumberInput from '@/components/NumberInput.vue';
-	import { injectUnit } from '@/contexts/unit';
+	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
 	import { UnitType } from '@/lib/unit';
 
@@ -187,6 +208,10 @@
 	}>();
 
 	const unit = injectUnit();
+	const unitMap = injectUnitMap();
+	const parent = computed(() =>
+		unit.value.parentId != null ? unitMap.value[unit.value.parentId] : undefined
+	);
 
 	const emit = defineEmits<{
 		(
