@@ -1,5 +1,5 @@
 <template>
-	<div class="Controls__container">
+	<div class="Controls__container" @touchstart.stop>
 		<div class="Controls__menu" tabindex="-1">
 			<button class="Controls__button">+</button>
 			<div class="Controls__submenu">

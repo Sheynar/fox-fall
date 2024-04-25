@@ -1,6 +1,5 @@
 <template>
 	<div
-		ref="containerElement"
 		class="Unit__container"
 		:class="{
 			Unit__moving: !!moving,
@@ -12,7 +11,8 @@
 			'--unit-y': screenPosition.y,
 			'--viewport-zoom': viewport.resolvedZoom,
 		}"
-		tabIndex="-1"
+		@mouseover="clickHighlighted = true"
+		@mouseleave="clickHighlighted = false"
 	>
 		<div class="Unit__label" v-if="unit.label">
 			{{ unit.label }}
@@ -22,8 +22,8 @@
 				unit.type === UnitType.Artillery
 					? ArtilleryIcon
 					: unit.type === UnitType.Spotter
-						? SpotterIcon
-						: TargetIcon
+					? SpotterIcon
+					: TargetIcon
 			"
 			ref="iconElement"
 			class="Unit__icon"
@@ -33,7 +33,7 @@
 			@pointercancel="onPointerUp"
 			@pointerleave="onPointerUp"
 		/>
-		<div class="Unit__tooltip" @pointerdown.stop>
+		<div ref="tooltipElement" class="Unit__tooltip" tabIndex="-1" @pointerdown="onTooltipPointerDown">
 			<div class="Unit__table">
 				<div class="Unit__row">
 					<span>type:</span>
@@ -260,7 +260,6 @@
 </style>
 
 <script setup lang="ts">
-	import { useEventListener } from '@vueuse/core';
 	import {
 		computed,
 		onMounted,
@@ -283,7 +282,7 @@
 	import { Vector } from '@/lib/vector';
 	import NumberInput from './NumberInput.vue';
 
-	const containerElement = ref<HTMLElement | null>(null);
+	const tooltipElement = ref<HTMLElement | null>(null);
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
 
 	const props = defineProps<{
@@ -320,13 +319,6 @@
 		highlightedUnits.value.delete(unit.value.id);
 	});
 
-	useEventListener(containerElement, 'mouseover', () => {
-		clickHighlighted.value = true;
-	});
-	useEventListener(containerElement, 'mouseleave', () => {
-		clickHighlighted.value = false;
-	});
-
 	const resolvedVector = computed(() =>
 		getUnitResolvedVector(unitMap.value, unit.value.id)
 	);
@@ -345,6 +337,7 @@
 	const onPointerDown = (event: PointerEvent) => {
 		if (props.readonly || event.button !== 0) return;
 		event.stopPropagation();
+		event.preventDefault();
 
 		moving.value = {
 			startEvent: event,
@@ -362,6 +355,7 @@
 	const onPointerUp = (event: PointerEvent) => {
 		if (!moving.value) return;
 		event.stopPropagation();
+		tooltipElement.value!.focus();
 
 		moving.value = null;
 		iconElement.value.$el.releasePointerCapture(event.pointerId);
@@ -396,6 +390,17 @@
 			distance: Math.round(unit.value.vector.distance),
 			azimuth: Number(unit.value.vector.azimuth.toFixed(1)),
 		};
+	};
+
+	const onTooltipPointerDown = (event: PointerEvent) => {
+		event.stopPropagation();
+		if (event.target instanceof HTMLInputElement) {
+			event.target.focus();
+		} else if (event.target instanceof HTMLSelectElement) {
+			event.target.focus();
+		} else if (event.target instanceof HTMLButtonElement) {
+			event.target.click();
+		}
 	};
 
 	onMounted(() => {

@@ -1,10 +1,11 @@
 <template>
 	<div
+		ref="containerElement"
 		class="App__container"
-		@pointerdown="onPointerDown"
+		@touchstart.prevent
 		@pointermove="onPointerMove"
-		@pointerup="onPointerUp"
 		@wheel="onWheel"
+		tabIndex="-1"
 	>
 		<Backdrop />
 		<div class="App__arrows">
@@ -45,8 +46,12 @@
 
 <style lang="scss">
 	.App__container {
+		contain: content;
 		position: fixed;
-		inset: 0;
+		left: 0;
+		top: 0;
+		width: 100dvw;
+		height: 100dvh;
 		font-size: 2vmin;
 	}
 
@@ -105,6 +110,9 @@
 	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 	import { Viewport } from '@/lib/viewport';
+	import { DragStatus, useMultiPointerDrag } from '@/mixins/multi-pointer';
+
+	const containerElement = ref<null | HTMLDivElement>(null);
 
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	provideCursor(cursor);
@@ -125,65 +133,53 @@
 		Translate,
 		Rotate,
 	}
-
 	const moving = ref<null | {
-		startViewport: Viewport;
-		startEvent: PointerEvent;
+		// startViewport: Viewport;
 		dragType: DragType;
 	}>(null);
-	const onPointerDown = (event: PointerEvent) => {
-		if (event.button !== 0) return;
-		event.stopPropagation();
 
-		moving.value = {
-			startViewport: viewport.value.clone(),
-			startEvent: event,
-			dragType: event.shiftKey ? DragType.Rotate : DragType.Translate,
-		};
-		(event.currentTarget as HTMLDivElement).setPointerCapture(event.pointerId);
-	};
+	useMultiPointerDrag({
+		element: containerElement,
+		onBeforePointerDown: (event) => {
+			containerElement.value?.focus();
+			return event.button === 0;
+		},
+		onDragStart: (event) => {
+			moving.value = {
+				// startViewport: viewport.value.clone(),
+				dragType: event.shiftKey ? DragType.Rotate : DragType.Translate,
+			};
+		},
+		onUpdate: (dragStatus) => {
+			if (!moving.value) return;
 
-	const onPointerUp = (event: PointerEvent) => {
-		if (!moving.value) return;
-		event.stopPropagation();
+			if (moving.value.dragType === DragType.Rotate) {
+				const rotation =
+					dragStatus.rotationDelta +
+					(dragStatus.transformDelta.x * 720) / window.document.body.clientWidth;
 
-		moving.value = null;
-		(event.currentTarget as HTMLDivElement).releasePointerCapture(
-			event.pointerId
-		);
-	};
+				viewport.value.rotateBy(rotation);
+			} else {
+				viewport.value.position.cartesianVector.x += dragStatus.transformDelta.x;
+				viewport.value.position.cartesianVector.y += dragStatus.transformDelta.y;
+				viewport.value.rotateBy(
+					dragStatus.rotationDelta,
+					dragStatus.currentPosition
+				);
+			}
+
+			viewport.value.zoom = Math.max(0.1, viewport.value.zoom + dragStatus.zoomDelta);
+		},
+		onDragEnd: () => {
+			moving.value = null;
+		},
+	});
 
 	const onPointerMove = (event: PointerEvent) => {
 		cursor.value.cartesianVector = {
 			x: event.clientX,
 			y: event.clientY,
 		};
-
-		const movingData = moving.value;
-		if (!movingData) return;
-		event.stopPropagation();
-
-		if (movingData.dragType === DragType.Rotate) {
-			// Rotate viewport
-			const azimuthOffset =
-				((event.clientX - movingData.startEvent.clientX) * 720) /
-				window.document.body.clientWidth;
-
-			viewport.value.rotateTo(
-				movingData.startViewport.rotation + azimuthOffset
-			);
-		} else {
-			// Translate viewport
-			const delta = {
-				x: event.clientX - movingData.startEvent.clientX,
-				y: event.clientY - movingData.startEvent.clientY,
-			};
-
-			viewport.value.position.cartesianVector = {
-				x: movingData.startViewport.position.x + delta.x,
-				y: movingData.startViewport.position.y + delta.y,
-			};
-		}
 	};
 
 	const onWheel = (event: WheelEvent) => {
