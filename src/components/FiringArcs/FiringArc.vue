@@ -25,6 +25,9 @@
 			}"
 		>
 			<div class="FiringArc__label-row">
+				<span class="FiringArc__span">{{ unitMap[unitIdFrom].label }} -> {{ unitMap[unitIdTo].label }}</span>
+			</div>
+			<div class="FiringArc__label-row">
 				<span>distance:</span><span>{{ Math.round(firingVector.distance) }}</span>
 			</div>
 			<div class="FiringArc__label-row">
@@ -81,6 +84,10 @@
 			grid-template-columns: subgrid;
 			grid-template-rows: subgrid;
 			justify-items: end;
+		}
+
+		.FiringArc__span {
+			grid-column: 1 / -1;
 		}
 	}
 </style>
