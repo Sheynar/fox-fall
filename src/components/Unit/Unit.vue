@@ -71,7 +71,7 @@
 	.Unit__label {
 		position: absolute;
 		left: 50%;
-		bottom: 100%;
+		top: 100%;
 		transform: translateX(-50%);
 
 		pointer-events: none;
