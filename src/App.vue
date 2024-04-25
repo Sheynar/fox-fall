@@ -4,6 +4,7 @@
 		class="App__container"
 		@touchstart.prevent
 		@pointermove="onPointerMove"
+		@contextmenu.prevent
 		@wheel="onWheel"
 	>
 		<Backdrop />
@@ -145,12 +146,12 @@
 		element: containerElement,
 		onBeforePointerDown: (event) => {
 			selectedUnit.value = null;
-			return event.button === 0;
+			return event.button <= 2;
 		},
 		onDragStart: (event) => {
 			moving.value = {
 				// startViewport: viewport.value.clone(),
-				dragType: event.shiftKey ? DragType.Rotate : DragType.Translate,
+				dragType: (event.shiftKey || event.button === 2) ? DragType.Rotate : DragType.Translate,
 			};
 		},
 		onUpdate: (dragStatus) => {
@@ -297,7 +298,7 @@
 
 	const showHelp = () => {
 		alert(
-			`Controls:\nLeft click: select unit\nLeft click drag: move unit / pan camera\nShift + left click drag: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nMouse over / click a unit to edit its unit details\n\nDrag from spotter's create button to insert a new child unit\n\nPin an artillery or target to show firing arcs`
+			`Controls:\nLeft click: select unit\nLeft click drag: move unit / pan camera\nRight click drag / shift + left click drag: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nDrag from unit's create buttons to insert a new child units\n\nShow firing arcs by selecting an artillery unit or a target.\nAlternatively pin/hover an artillery unit and a target`
 		);
 	};
 
