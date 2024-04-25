@@ -1,5 +1,6 @@
 import { type Ref, ref } from 'vue';
 import { generateId } from '@/lib/id';
+import { getName } from '@/lib/names';
 import type { Vector } from '@/lib/vector';
 
 export enum UnitType {
@@ -28,7 +29,7 @@ export const createUnit = (
 ): Ref<Unit> => {
 	return ref({
 		id: generateId(),
-		label: '',
+		label: getName(),
 		pinned: false,
 		type,
 		vector,
