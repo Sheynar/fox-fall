@@ -4,7 +4,7 @@
 		:class="{
 			Unit__moving: !!moving,
 			Unit__readonly: props.readonly,
-			Unit__pinned: unit.pinned,
+			Unit__highlighted: highlightedUnits.has(unit.id) || selectedUnit === unit.id,
 		}"
 		:style="{
 			'--unit-x': screenPosition.x,
@@ -22,111 +22,15 @@
 				unit.type === UnitType.Artillery
 					? ArtilleryIcon
 					: unit.type === UnitType.Spotter
-					? SpotterIcon
-					: TargetIcon
+						? SpotterIcon
+						: TargetIcon
 			"
 			ref="iconElement"
 			class="Unit__icon"
 			@pointerdown="onPointerDown"
 			@pointermove="onPointerMove"
 			@pointerup="onPointerUp"
-			@pointercancel="onPointerUp"
-			@pointerleave="onPointerUp"
 		/>
-		<div ref="tooltipElement" class="Unit__tooltip" tabIndex="-1" @pointerdown="onTooltipPointerDown">
-			<div class="Unit__table">
-				<div class="Unit__row">
-					<span>type:</span>
-					<select :disabled="props.readonly" v-model="unit.type">
-						<option :value="UnitType.Artillery">Artillery</option>
-						<option :value="UnitType.Spotter">Spotter</option>
-						<option :value="UnitType.Target">Target</option>
-					</select>
-				</div>
-				<div class="Unit__row">
-					<span>label:</span>
-					<input type="text" :readonly="props.readonly" v-model="unit.label" />
-				</div>
-				<div class="Unit__row">
-					<span>distance:</span>
-					<NumberInput
-						:model-value="Math.round(unit.vector.distance)"
-						@update:model-value="unit.vector.distance = $event"
-					/>
-				</div>
-				<div class="Unit__row">
-					<span>azimuth to:</span>
-					<NumberInput
-						:model-value="Number(unit.vector.azimuth.toFixed(1))"
-						@update:model-value="unit.vector.azimuth = wrapDegrees($event)"
-					/>
-				</div>
-				<div class="Unit__row">
-					<span>azimuth from:</span>
-					<NumberInput
-						:model-value="
-							Number(wrapDegrees(unit.vector.azimuth + 180).toFixed(1))
-						"
-						@update:model-value="unit.vector.azimuth = wrapDegrees($event)"
-					/>
-				</div>
-			</div>
-			<div class="Unit__actions">
-				<button
-					class="Unit__action"
-					@pointerdown.stop="
-						emit('create-child', {
-							unitType: UnitType.Artillery,
-							pointerEvent: $event,
-						})
-					"
-					title="Create Artillery"
-				>
-					<ArtilleryIcon />
-				</button>
-				<button
-					class="Unit__action"
-					@pointerdown.stop="
-						emit('create-child', {
-							unitType: UnitType.Spotter,
-							pointerEvent: $event,
-						})
-					"
-					title="Create spotter"
-				>
-					<SpotterIcon />
-				</button>
-				<button
-					class="Unit__action"
-					@pointerdown.stop="
-						emit('create-child', {
-							unitType: UnitType.Target,
-							pointerEvent: $event,
-						})
-					"
-					title="Create target"
-				>
-					<TargetIcon />
-				</button>
-			</div>
-			<div class="Unit__actions">
-				<button
-					class="Unit__action"
-					:disabled="props.readonly"
-					@click.stop="emit('delete')"
-					title="Delete"
-				>
-					<TrashIcon />
-				</button>
-				<button
-					class="Unit__action"
-					@click.stop="unit.pinned = !unit.pinned"
-					title="Pin"
-				>
-					<Component :is="unit.pinned ? PinIcon : PinOutlineIcon" />
-				</button>
-			</div>
-		</div>
 	</div>
 </template>
 
@@ -144,7 +48,7 @@
 		&:hover,
 		&:focus-within,
 		&.Unit__moving,
-		&.Unit__pinned {
+		&.Unit__highlighted {
 			.Unit__icon {
 				background: var(--color-primary-contrast);
 
@@ -152,18 +56,8 @@
 			}
 		}
 
-		&.Unit__moving {
-			.Unit__tooltip {
-				opacity: 0.5;
-			}
-		}
-
 		&:not(:focus-within):not(.Unit__moving) {
 			z-index: initial;
-			.Unit__tooltip {
-				visibility: hidden;
-				pointer-events: none;
-			}
 		}
 
 		&:not(.Unit__readonly) {
@@ -191,72 +85,6 @@
 		border-radius: 50%;
 		padding: 0.5em;
 	}
-
-	.Unit__tooltip {
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%) scale(calc(1 / var(--_unit-scale)));
-		transform-origin: 50% 0%;
-
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-
-		padding: 1em;
-		gap: 0.5em;
-		border: 1px solid;
-
-		background: black;
-
-		input {
-			font-size: inherit;
-		}
-
-		.Unit__table {
-			display: grid;
-			grid-template-columns: repeat(2, max-content);
-			grid-auto-rows: min-content;
-
-			gap: 0 0.5em;
-
-			text-align: end;
-
-			.Unit__row {
-				grid-column: 1 / -1;
-
-				display: grid;
-				grid-template-columns: subgrid;
-				grid-template-rows: subgrid;
-			}
-		}
-
-		.Unit__actions {
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-
-			gap: 0.5em;
-
-			.Unit__action {
-				flex: 1 0 auto;
-
-				display: flex;
-				flex-direction: row;
-				align-items: center;
-				justify-content: center;
-
-				color: inherit;
-				font-size: inherit;
-
-				.Unit__icon {
-					width: 1em;
-					height: 1em;
-					background: currentColor;
-					mask: var(--icon-url) no-repeat center;
-				}
-			}
-		}
-	}
 </style>
 
 <script setup lang="ts">
@@ -270,19 +98,14 @@
 	} from 'vue';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
-	import PinIcon from '@/components/icons/PinIcon.vue';
-	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
-	import TrashIcon from '@/components/icons/TrashIcon.vue';
 	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
+	import { injectSelectedUnit } from '@/contexts/selected-unit';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { injectViewport } from '@/contexts/viewport';
-	import { wrapDegrees } from '@/lib/angle';
 	import { UnitType, getUnitResolvedVector } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
-	import NumberInput from './NumberInput.vue';
 
-	const tooltipElement = ref<HTMLElement | null>(null);
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
 
 	const props = defineProps<{
@@ -290,18 +113,11 @@
 		createEvent?: PointerEvent;
 	}>();
 
-	const emit = defineEmits<{
-		(
-			event: 'create-child',
-			payload: { unitType: UnitType; pointerEvent: PointerEvent }
-		): void;
-		(event: 'delete'): void;
-	}>();
-
 	const unitMap = injectUnitMap();
 	const unit = injectUnit();
 	const viewport = injectViewport();
 	const highlightedUnits = injectHighlightedUnits();
+	const selectedUnit = injectSelectedUnit();
 
 	const clickHighlighted = ref(false);
 
@@ -317,6 +133,9 @@
 	);
 	onScopeDispose(() => {
 		highlightedUnits.value.delete(unit.value.id);
+		if (selectedUnit.value === unit.value.id) {
+			selectedUnit.value = null;
+		}
 	});
 
 	const resolvedVector = computed(() =>
@@ -339,6 +158,8 @@
 		event.stopPropagation();
 		event.preventDefault();
 
+		selectedUnit.value = unit.value.id;
+
 		moving.value = {
 			startEvent: event,
 			startCursorViewport: viewport.value.toViewportVector(
@@ -355,7 +176,6 @@
 	const onPointerUp = (event: PointerEvent) => {
 		if (!moving.value) return;
 		event.stopPropagation();
-		tooltipElement.value!.focus();
 
 		moving.value = null;
 		iconElement.value.$el.releasePointerCapture(event.pointerId);
@@ -390,17 +210,6 @@
 			distance: Math.round(unit.value.vector.distance),
 			azimuth: Number(unit.value.vector.azimuth.toFixed(1)),
 		};
-	};
-
-	const onTooltipPointerDown = (event: PointerEvent) => {
-		event.stopPropagation();
-		if (event.target instanceof HTMLInputElement) {
-			event.target.focus();
-		} else if (event.target instanceof HTMLSelectElement) {
-			event.target.focus();
-		} else if (event.target instanceof HTMLButtonElement) {
-			event.target.click();
-		}
 	};
 
 	onMounted(() => {

@@ -28,6 +28,7 @@
 <script setup lang="ts">
 	import { computed, ref } from 'vue';
 	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
+	import { injectSelectedUnit } from '@/contexts/selected-unit';
 	import { injectUnitMap } from '@/contexts/unit';
 	import { UnitType, type Unit } from '@/lib/unit';
 	import FiringArc from './FiringArc.vue';
@@ -35,6 +36,7 @@
 	const firingLines = ref<HTMLElement | null>(null);
 	const firingLabels = ref<HTMLElement | null>(null);
 
+	const selectedUnit = injectSelectedUnit();
 	const highlightedUnits = injectHighlightedUnits();
 	const unitMap = injectUnitMap();
 
@@ -76,7 +78,12 @@
 	const firingArcList = computed(() => {
 		const output: { from: Unit; to: Unit }[] = [];
 
-		for (const unitId of highlightedUnits.value) {
+		const unitIds = new Set(highlightedUnits.value);
+		if (selectedUnit.value != null) {
+			unitIds.add(selectedUnit.value);
+		}
+
+		for (const unitId of unitIds) {
 			const unit = unitMap.value[unitId];
 			if (unit.type === UnitType.Target) {
 				const rootParent = getRootParent(unitId);
