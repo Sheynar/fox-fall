@@ -1,9 +1,9 @@
 <template>
 	<div
+		ref="containerElement"
 		class="App__container"
-		@pointerdown="onPointerDown"
+		@touchstart.prevent
 		@pointermove="onPointerMove"
-		@pointerup="onPointerUp"
 		@wheel="onWheel"
 	>
 		<Backdrop />
@@ -23,17 +23,20 @@
 				:key="unitId"
 				:unit="unitMap[unitId]"
 			>
-				<UnitComponent
-					:create-event="unitCreateEvents.get(unitMap[unitId])"
-					@create-child="
-						addUnit($event.unitType, $event.pointerEvent, undefined, unitId)
-					"
-					@delete="removeUnit(unitId)"
-				/>
+				<UnitComponent :create-event="unitCreateEvents.get(unitMap[unitId])" />
 			</UnitProvider>
 		</div>
 
 		<FiringArcs />
+
+		<UnitProvider v-if="selectedUnit" :unit="unitMap[selectedUnit]">
+			<UnitTooltip
+				@create-child="
+					addUnit($event.unitType, $event.pointerEvent, undefined, selectedUnit)
+				"
+				@delete="removeUnit(selectedUnit)"
+			/>
+		</UnitProvider>
 
 		<Controls
 			class="App__controls"
@@ -45,8 +48,12 @@
 
 <style lang="scss">
 	.App__container {
+		contain: content;
 		position: fixed;
-		inset: 0;
+		left: 0;
+		top: 0;
+		width: 100dvw;
+		height: 100dvh;
 		font-size: 2vmin;
 	}
 
@@ -85,15 +92,17 @@
 	import Backdrop from '@/components/Backdrop.vue';
 	import Controls from '@/components/Controls.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
-	import UnitComponent from '@/components/Unit.vue';
+	import UnitComponent from '@/components/Unit/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
+	import UnitTooltip from '@/components/Unit/UnitTooltip.vue';
+	import { provideCursor } from '@/contexts/cursor';
 	import {
 		type HighlightedUnits,
 		provideHighlightedUnits,
 	} from '@/contexts/highlighted-units';
 	import { provideUnitMap } from '@/contexts/unit';
+	import { provideSelectedUnit } from '@/contexts/selected-unit';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
-	import { provideCursor } from '@/contexts/cursor';
 	import { provideViewport } from '@/contexts/viewport';
 	import { wrapDegrees } from '@/lib/angle';
 	import {
@@ -105,6 +114,9 @@
 	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 	import { Viewport } from '@/lib/viewport';
+	import { useMultiPointerDrag } from '@/mixins/multi-pointer';
+
+	const containerElement = ref<null | HTMLDivElement>(null);
 
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	provideCursor(cursor);
@@ -125,65 +137,58 @@
 		Translate,
 		Rotate,
 	}
-
 	const moving = ref<null | {
-		startViewport: Viewport;
-		startEvent: PointerEvent;
 		dragType: DragType;
 	}>(null);
-	const onPointerDown = (event: PointerEvent) => {
-		if (event.button !== 0) return;
-		event.stopPropagation();
 
-		moving.value = {
-			startViewport: viewport.value.clone(),
-			startEvent: event,
-			dragType: event.shiftKey ? DragType.Rotate : DragType.Translate,
-		};
-		(event.currentTarget as HTMLDivElement).setPointerCapture(event.pointerId);
-	};
+	useMultiPointerDrag({
+		element: containerElement,
+		onBeforePointerDown: (event) => {
+			selectedUnit.value = null;
+			return event.button === 0;
+		},
+		onDragStart: (event) => {
+			moving.value = {
+				// startViewport: viewport.value.clone(),
+				dragType: event.shiftKey ? DragType.Rotate : DragType.Translate,
+			};
+		},
+		onUpdate: (dragStatus) => {
+			if (!moving.value) return;
 
-	const onPointerUp = (event: PointerEvent) => {
-		if (!moving.value) return;
-		event.stopPropagation();
+			if (moving.value.dragType === DragType.Rotate) {
+				const rotation =
+					dragStatus.rotationDelta +
+					(dragStatus.transformDelta.x * 720) /
+						window.document.body.clientWidth;
 
-		moving.value = null;
-		(event.currentTarget as HTMLDivElement).releasePointerCapture(
-			event.pointerId
-		);
-	};
+				viewport.value.rotateBy(rotation);
+			} else {
+				viewport.value.position.cartesianVector.x +=
+					dragStatus.transformDelta.x;
+				viewport.value.position.cartesianVector.y +=
+					dragStatus.transformDelta.y;
+				viewport.value.rotateBy(
+					dragStatus.rotationDelta,
+					dragStatus.currentPosition
+				);
+			}
+
+			viewport.value.zoom = Math.max(
+				0.1,
+				viewport.value.zoom + dragStatus.zoomDelta
+			);
+		},
+		onDragEnd: () => {
+			moving.value = null;
+		},
+	});
 
 	const onPointerMove = (event: PointerEvent) => {
 		cursor.value.cartesianVector = {
 			x: event.clientX,
 			y: event.clientY,
 		};
-
-		const movingData = moving.value;
-		if (!movingData) return;
-		event.stopPropagation();
-
-		if (movingData.dragType === DragType.Rotate) {
-			// Rotate viewport
-			const azimuthOffset =
-				((event.clientX - movingData.startEvent.clientX) * 720) /
-				window.document.body.clientWidth;
-
-			viewport.value.rotateTo(
-				movingData.startViewport.rotation + azimuthOffset
-			);
-		} else {
-			// Translate viewport
-			const delta = {
-				x: event.clientX - movingData.startEvent.clientX,
-				y: event.clientY - movingData.startEvent.clientY,
-			};
-
-			viewport.value.position.cartesianVector = {
-				x: movingData.startViewport.position.x + delta.x,
-				y: movingData.startViewport.position.y + delta.y,
-			};
-		}
 	};
 
 	const onWheel = (event: WheelEvent) => {
@@ -211,10 +216,12 @@
 	};
 
 	const unitMap = ref<UnitMap>({});
+	const selectedUnit = ref<Unit['id'] | null>(null);
 	const highlightedUnits = ref<HighlightedUnits>(new Set());
 	const unitParents = new WeakMap<Unit, Unit>();
 	const unitChildren = new WeakMap<Unit, Set<Unit>>();
 
+	provideSelectedUnit(selectedUnit);
 	provideHighlightedUnits(highlightedUnits);
 	provideUnitMap(unitMap);
 
@@ -290,7 +297,7 @@
 
 	const showHelp = () => {
 		alert(
-			`Controls:\nLeft click: move unit / pan camera\nShift + left click: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nMouse over / click a unit to edit its unit details\n\nDrag from spotter's create button to insert a new child unit\n\nPin an artillery or target to show firing arcs`
+			`Controls:\nLeft click: select unit\nLeft click drag: move unit / pan camera\nShift + left click drag: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nMouse over / click a unit to edit its unit details\n\nDrag from spotter's create button to insert a new child unit\n\nPin an artillery or target to show firing arcs`
 		);
 	};
 

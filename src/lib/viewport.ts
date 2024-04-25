@@ -51,21 +51,21 @@ export class Viewport {
 		return rotated.scale(this.resolvedZoom).addVector(this.position);
 	}
 
-	rotateBy(rotationDelta: number): void {
+	rotateBy(rotationDelta: number, center: Vector = Vector.fromCartesianVector({ x: viewportOffset.value.x, y: viewportOffset.value.y })): void {
 		this.rotation = wrapDegrees(this.rotation + rotationDelta);
 
 		this.position.cartesianVector = {
 			x:
-				viewportOffset.value.x +
-				(this.position.x - viewportOffset.value.x) *
+				center.x +
+				(this.position.x - center.x) *
 					Math.cos(toRadians(rotationDelta)) -
-				(this.position.y - viewportOffset.value.y) *
+				(this.position.y - center.y) *
 					Math.sin(toRadians(rotationDelta)),
 			y:
-				viewportOffset.value.y +
-				(this.position.y - viewportOffset.value.y) *
+				center.y +
+				(this.position.y - center.y) *
 					Math.cos(toRadians(rotationDelta)) +
-				(this.position.x - viewportOffset.value.x) *
+				(this.position.x - center.x) *
 					Math.sin(toRadians(rotationDelta)),
 		};
 	}

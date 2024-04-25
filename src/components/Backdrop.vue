@@ -16,7 +16,7 @@
 			'--viewport-deg': viewport.rotation,
 		}"
 		alt="Reset rotation"
-		@click="resetRotation()"
+		@pointerdown.stop="resetRotation()"
 	/>
 
 	<div class="Backdrop__debug-info">
