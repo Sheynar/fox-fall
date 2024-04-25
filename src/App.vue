@@ -302,7 +302,7 @@
 	};
 
 	addUnit(
-		UnitType.Spotter,
+		UnitType.Artillery,
 		undefined,
 		ref(Vector.fromCartesianVector({ x: 0, y: 0 }))
 	);
