@@ -114,6 +114,10 @@
 		createEvent?: PointerEvent;
 	}>();
 
+	const emit = defineEmits<{
+		(event: 'updated'): void;
+	}>();
+
 	const unitMap = injectUnitMap();
 	const unit = injectUnit();
 	const viewport = injectViewport();
@@ -211,6 +215,8 @@
 			distance: Math.round(unit.value.vector.distance),
 			azimuth: Number(unit.value.vector.azimuth.toFixed(1)),
 		};
+
+		emit('updated');
 	};
 
 	onMounted(() => {

@@ -11,8 +11,10 @@
   "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
   "dependencies": {
     "@kaosdlanor/kanim": "^1.0.1",
+    "@kaosdlanor/vue-reactivity": "^1.0.1",
     "@vueuse/core": "^10.5.0",
     "peerjs": "^1.5.2",
+    "typescript-event-target": "^1.1.1",
     "vue": "^3.3.7"
   },
   "devDependencies": {

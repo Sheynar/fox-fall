@@ -16,7 +16,12 @@
 			</div>
 			<div class="UnitTooltip__row">
 				<span>Name:</span>
-				<input type="text" :readonly="props.readonly" v-model="unit.label" />
+				<input
+					type="text"
+					:readonly="props.readonly"
+					v-model="unit.label"
+					@input="emit('updated')"
+				/>
 			</div>
 			<template v-if="parent">
 				<div class="UnitTooltip__row">
@@ -28,7 +33,10 @@
 					<span>Distance:</span>
 					<NumberInput
 						:model-value="Math.round(unit.vector.distance)"
-						@update:model-value="unit.vector.distance = $event"
+						@update:model-value="
+							unit.vector.distance = $event;
+							emit('updated');
+						"
 					/>
 				</div>
 				<div class="UnitTooltip__row">
@@ -38,7 +46,8 @@
 							Number(wrapDegrees(unit.vector.azimuth + 180).toFixed(1))
 						"
 						@update:model-value="
-							unit.vector.azimuth = wrapDegrees($event - 180)
+							unit.vector.azimuth = wrapDegrees($event - 180);
+							emit('updated');
 						"
 					/>
 				</div>
@@ -49,14 +58,20 @@
 					<span>Distance:</span>
 					<NumberInput
 						:model-value="Math.round(unit.vector.distance)"
-						@update:model-value="unit.vector.distance = $event"
+						@update:model-value="
+							unit.vector.distance = $event;
+							emit('updated');
+						"
 					/>
 				</div>
 				<div class="UnitTooltip__row">
 					<span>Azimuth:</span>
 					<NumberInput
 						:model-value="Number(unit.vector.azimuth.toFixed(1))"
-						@update:model-value="unit.vector.azimuth = wrapDegrees($event)"
+						@update:model-value="
+							unit.vector.azimuth = wrapDegrees($event);
+							emit('updated');
+						"
 					/>
 				</div>
 			</template>
@@ -221,5 +236,6 @@
 			payload: { unitType: UnitType; pointerEvent: PointerEvent }
 		): void;
 		(event: 'delete'): void;
+		(event: 'updated'): void;
 	}>();
 </script>

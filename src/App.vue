@@ -19,11 +19,13 @@
 		</div>
 		<div class="App__units">
 			<UnitProvider
-				v-for="unitId in Object.keys(unitMap)"
+				v-for="unitId in Object.keys(unitMap).filter(
+					(unitId) => unitMap[unitId]
+				)"
 				:key="unitId"
 				:unit="unitMap[unitId]"
 			>
-				<UnitComponent :create-event="unitCreateEvents.get(unitMap[unitId])" />
+				<UnitComponent :create-event="unitCreateEvents.get(unitMap[unitId])" @updated="manualUpdate(unitId)" />
 			</UnitProvider>
 		</div>
 
@@ -35,12 +37,14 @@
 					addUnit($event.unitType, $event.pointerEvent, undefined, selectedUnit)
 				"
 				@delete="removeUnit(selectedUnit)"
+				@updated="manualUpdate(selectedUnit)"
 			/>
 		</UnitProvider>
 
 		<Controls
 			class="App__controls"
 			@create-unit="addUnit($event.unitType, $event.pointerEvent)"
+			@show-peer-to-peer="showPeerToPeer()"
 			@show-help="showHelp()"
 		/>
 	</div>
@@ -114,7 +118,11 @@
 	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 	import { Viewport } from '@/lib/viewport';
+	import { usePeerToPeer } from '@/mixins/peer-to-peer';
+	import { useSyncedUnitMap } from '@/mixins/synced-unit-map';
 	import { useViewPortControl } from '@/mixins/viewport-control';
+
+	(<any>window).Vector = Vector;
 
 	const containerElement = ref<null | HTMLDivElement>(null);
 
@@ -222,4 +230,29 @@
 		undefined,
 		ref(Vector.fromCartesianVector({ x: 0, y: 0 }))
 	);
+
+	const peerConnection = usePeerToPeer();
+	const isMaster = ref(true);
+	const { manualUpdate } = useSyncedUnitMap(
+		unitMap,
+		peerConnection,
+		isMaster
+	);
+
+	const showPeerToPeer = () => {
+		const peer = peerConnection.peer.value;
+		if (!peer) {
+			alert('PeerJS not connected');
+			return;
+		}
+
+		const otherPeer = prompt(`Your ID is ${peer.id}\nEnter peer to connect to:`);
+		if (otherPeer) {
+			isMaster.value = false;
+			const connection = peer.connect(otherPeer);
+			connection.once('open', () => {
+				peerConnection.addConnection(connection);
+			});
+		}
+	};
 </script>

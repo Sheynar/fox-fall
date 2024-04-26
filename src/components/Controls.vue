@@ -1,5 +1,5 @@
 <template>
-	<div class="Controls__container" @pointerdown.stop>
+	<div class="Controls__container" @pointerdown.stop @touchstart.stop>
 		<div class="Controls__menu" tabindex="-1">
 			<button class="Controls__button">+</button>
 			<div class="Controls__submenu">
@@ -38,6 +38,8 @@
 				</button>
 			</div>
 		</div>
+
+		<button class="Controls__button" @click.stop="emit('show-peer-to-peer')">Sync</button>
 
 		<button class="Controls__button" @click.stop="emit('show-help')">?</button>
 	</div>
@@ -106,6 +108,7 @@
 			event: 'create-unit',
 			payload: { unitType: UnitType; pointerEvent: PointerEvent }
 		): void;
+		(event: 'show-peer-to-peer'): void;
 		(event: 'show-help'): void;
 	}>();
 </script>

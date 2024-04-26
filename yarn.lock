@@ -263,6 +263,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kaosdlanor/vue-reactivity@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@kaosdlanor/vue-reactivity@npm:1.0.1"
+  peerDependencies:
+    vue: ^3
+  checksum: 10c0/644c2071bad91bf5a3906ec12defb75c86c9149fcf541ecdbcbf32e28262a0e06d369205a06570950435969c1b50344fc435fd0fed10fa1a383aa816f014123c
+  languageName: node
+  linkType: hard
+
 "@msgpack/msgpack@npm:^2.8.0":
   version: 2.8.0
   resolution: "@msgpack/msgpack@npm:2.8.0"
@@ -863,12 +872,14 @@ __metadata:
   resolution: "fox-fall@workspace:."
   dependencies:
     "@kaosdlanor/kanim": "npm:^1.0.1"
+    "@kaosdlanor/vue-reactivity": "npm:^1.0.1"
     "@vitejs/plugin-vue": "npm:^4.4.0"
     "@vueuse/core": "npm:^10.5.0"
     peerjs: "npm:^1.5.2"
     prettier: "npm:^3.0.3"
     sass: "npm:^1.69.4"
     typescript: "npm:^5.2.2"
+    typescript-event-target: "npm:^1.1.1"
     vite: "npm:^4.5.0"
     vue: "npm:^3.3.7"
   languageName: unknown
@@ -1615,6 +1626,13 @@ __metadata:
   dependencies:
     is-number: "npm:^7.0.0"
   checksum: 10c0/487988b0a19c654ff3e1961b87f471702e708fa8a8dd02a298ef16da7206692e8552a0250e8b3e8759270f62e9d8314616f6da274734d3b558b1fc7b7724e892
+  languageName: node
+  linkType: hard
+
+"typescript-event-target@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "typescript-event-target@npm:1.1.1"
+  checksum: 10c0/022a8b4389056a84c1c33ec35eb18826db20aed826990b3381bf09e3d4c03f5717d0adeb4154dff4fb3340d4a439b05a850271caf538204e18891b1586bb7f4f
   languageName: node
   linkType: hard
 
