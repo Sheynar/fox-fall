@@ -1,5 +1,10 @@
 <template>
-	<img class="icon" :src="LightArtilleryIcon" alt="artillery" :draggable="false" />
+	<img
+		class="icon"
+		:src="LightArtilleryIcon"
+		alt="artillery"
+		:draggable="false"
+	/>
 </template>
 
 <script setup lang="ts">

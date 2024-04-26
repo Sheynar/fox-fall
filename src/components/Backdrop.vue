@@ -135,7 +135,7 @@
 			set rotation(value: number) {
 				viewport.value.rotateTo(value);
 			},
-		}
+		};
 
 		await KAnim.animate({
 			element: viewportProxy,

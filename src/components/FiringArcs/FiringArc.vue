@@ -25,10 +25,14 @@
 			}"
 		>
 			<div class="FiringArc__label-row">
-				<span class="FiringArc__span">{{ unitMap[unitIdFrom].label }} -> {{ unitMap[unitIdTo].label }}</span>
+				<span class="FiringArc__span"
+					>{{ unitMap[unitIdFrom].label }} ->
+					{{ unitMap[unitIdTo].label }}</span
+				>
 			</div>
 			<div class="FiringArc__label-row">
-				<span>distance:</span><span>{{ Math.round(firingVector.distance) }}</span>
+				<span>distance:</span
+				><span>{{ Math.round(firingVector.distance) }}</span>
 			</div>
 			<div class="FiringArc__label-row">
 				<span>azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}</span>
@@ -131,5 +135,10 @@
 			.scale(0.5)
 	);
 
-	const offset = computed(() => unitScreenPositionTo.value.addVector(unitScreenPositionFrom.value.scale(-1)).scale(0.5).distance * -1);
+	const offset = computed(
+		() =>
+			unitScreenPositionTo.value
+				.addVector(unitScreenPositionFrom.value.scale(-1))
+				.scale(0.5).distance * -1
+	);
 </script>

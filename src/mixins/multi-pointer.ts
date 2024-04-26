@@ -72,8 +72,12 @@ export const useMultiPointerDrag = (options: MultiPointerDragOptions) => {
 			return endFromCenter.azimuth - startFromCenter.azimuth;
 		});
 		let rotation =
-			wrapDegrees(rotations.reduce((acc, delta) => acc + delta)) / rotations.length;
-		let rotationDelta = currentDrag.value.lastStatus != null ? rotation - currentDrag.value.lastStatus.rotation : rotation;
+			wrapDegrees(rotations.reduce((acc, delta) => acc + delta)) /
+			rotations.length;
+		let rotationDelta =
+			currentDrag.value.lastStatus != null
+				? rotation - currentDrag.value.lastStatus.rotation
+				: rotation;
 		// this is disgusting but necessary
 		if (Math.abs(rotationDelta) > 160) {
 			rotation += rotationDelta > 0 ? -180 : 180;
@@ -94,11 +98,19 @@ export const useMultiPointerDrag = (options: MultiPointerDragOptions) => {
 
 		const newStatus: DragStatus = {
 			transform,
-			transformDelta: currentDrag.value.lastStatus != null ? transform.addVector(currentDrag.value.lastStatus.transform.scale(-1)) : transform,
+			transformDelta:
+				currentDrag.value.lastStatus != null
+					? transform.addVector(
+							currentDrag.value.lastStatus.transform.scale(-1)
+						)
+					: transform,
 			rotation,
 			rotationDelta,
 			zoom,
-			zoomDelta: currentDrag.value.lastStatus != null ? (zoom - currentDrag.value.lastStatus.zoom) || 0 : 0,
+			zoomDelta:
+				currentDrag.value.lastStatus != null
+					? zoom - currentDrag.value.lastStatus.zoom || 0
+					: 0,
 			startPosition: centerPointStart,
 			currentPosition: centerPointEnd,
 		};
