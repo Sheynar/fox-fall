@@ -211,19 +211,6 @@
 		delete unitMap.value[unitId];
 	};
 
-	const getClosestParentOfType = (
-		unitType: UnitType,
-		unitId: string
-	): Unit | undefined => {
-		const unit = unitMap.value[unitId];
-
-		if (unit.parentId == null) return undefined;
-
-		const parentUnit = unitMap.value[unit.parentId];
-		if (parentUnit.type === unitType) return parentUnit;
-		return getClosestParentOfType(unitType, parentUnit.id);
-	};
-
 	const showHelp = () => {
 		alert(
 			`Controls:\nLeft click: select unit\nLeft click drag: move unit / pan camera\nRight click drag / shift + left click drag: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nDrag from unit's create buttons to insert a new child units\n\nShow firing arcs by selecting an artillery unit or a target.\nAlternatively pin/hover an artillery unit and a target`
