@@ -5,7 +5,6 @@
 		@touchstart.prevent
 		@pointermove="onPointerMove"
 		@contextmenu.prevent
-		@wheel="onWheel"
 	>
 		<Backdrop />
 		<div class="App__arrows">
@@ -115,12 +114,21 @@
 	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 	import { Viewport } from '@/lib/viewport';
-	import { useMultiPointerDrag } from '@/mixins/multi-pointer';
+	import { useViewPortControl } from '@/mixins/viewport-control';
 
 	const containerElement = ref<null | HTMLDivElement>(null);
 
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
+	const unitMap = ref<UnitMap>({});
+	const selectedUnit = ref<Unit['id'] | null>(null);
+	const highlightedUnits = ref<HighlightedUnits>(new Set());
+	const unitParents = new WeakMap<Unit, Unit>();
+	const unitChildren = new WeakMap<Unit, Set<Unit>>();
+
 	provideCursor(cursor);
+	provideSelectedUnit(selectedUnit);
+	provideHighlightedUnits(highlightedUnits);
+	provideUnitMap(unitMap);
 
 	const viewport = ref(
 		new Viewport(
@@ -132,58 +140,12 @@
 			1
 		)
 	);
-	provideViewport(viewport);
-
-	enum DragType {
-		Translate,
-		Rotate,
-	}
-	const moving = ref<null | {
-		dragType: DragType;
-	}>(null);
-
-	useMultiPointerDrag({
-		element: containerElement,
-		onBeforePointerDown: (event) => {
-			selectedUnit.value = null;
-			return event.button <= 2;
-		},
-		onDragStart: (event) => {
-			moving.value = {
-				// startViewport: viewport.value.clone(),
-				dragType: (event.shiftKey || event.button === 2) ? DragType.Rotate : DragType.Translate,
-			};
-		},
-		onUpdate: (dragStatus) => {
-			if (!moving.value) return;
-
-			if (moving.value.dragType === DragType.Rotate) {
-				const rotation =
-					dragStatus.rotationDelta +
-					(dragStatus.transformDelta.x * 720) /
-						window.document.body.clientWidth;
-
-				viewport.value.rotateBy(rotation);
-			} else {
-				viewport.value.position.cartesianVector.x +=
-					dragStatus.transformDelta.x;
-				viewport.value.position.cartesianVector.y +=
-					dragStatus.transformDelta.y;
-				viewport.value.rotateBy(
-					dragStatus.rotationDelta,
-					dragStatus.currentPosition
-				);
-			}
-
-			viewport.value.zoom = Math.max(
-				0.1,
-				viewport.value.zoom + dragStatus.zoomDelta
-			);
-		},
-		onDragEnd: () => {
-			moving.value = null;
-		},
+	useViewPortControl({
+		containerElement,
+		viewport,
+		selectedUnit,
 	});
+	provideViewport(viewport);
 
 	const onPointerMove = (event: PointerEvent) => {
 		cursor.value.cartesianVector = {
@@ -191,40 +153,6 @@
 			y: event.clientY,
 		};
 	};
-
-	const onWheel = (event: WheelEvent) => {
-		event.stopPropagation();
-		event.preventDefault();
-		const zoomOffset =
-			(event.deltaY > 0 ? 0.1 : -0.1) * (event.ctrlKey ? 10 : 1);
-
-		const globalCursorPosition = Vector.fromCartesianVector({
-			x: event.clientX,
-			y: event.clientY,
-		});
-		const localCursorPosition =
-			viewport.value.toViewportVector(globalCursorPosition);
-
-		viewport.value.zoom = Math.max(0.1, viewport.value.zoom - zoomOffset);
-
-		const cursorDelta = viewport.value
-			.fromViewportVector(localCursorPosition)
-			.addVector(globalCursorPosition.scale(-1));
-
-		viewport.value.position = viewport.value.position.addVector(
-			cursorDelta.scale(-1)
-		);
-	};
-
-	const unitMap = ref<UnitMap>({});
-	const selectedUnit = ref<Unit['id'] | null>(null);
-	const highlightedUnits = ref<HighlightedUnits>(new Set());
-	const unitParents = new WeakMap<Unit, Unit>();
-	const unitChildren = new WeakMap<Unit, Set<Unit>>();
-
-	provideSelectedUnit(selectedUnit);
-	provideHighlightedUnits(highlightedUnits);
-	provideUnitMap(unitMap);
 
 	const unitCreateEvents = new WeakMap<Unit, PointerEvent>();
 	const addUnit = (
@@ -281,19 +209,6 @@
 			}
 		}
 		delete unitMap.value[unitId];
-	};
-
-	const getClosestParentOfType = (
-		unitType: UnitType,
-		unitId: string
-	): Unit | undefined => {
-		const unit = unitMap.value[unitId];
-
-		if (unit.parentId == null) return undefined;
-
-		const parentUnit = unitMap.value[unit.parentId];
-		if (parentUnit.type === unitType) return parentUnit;
-		return getClosestParentOfType(unitType, parentUnit.id);
 	};
 
 	const showHelp = () => {
