@@ -96,35 +96,43 @@ export const useSyncedUnitMap = (
 	useScopePerKey(unitMap, (key) => {
 		const stringifiedValue = computed(() => JSON.stringify(unitMap.value[key]));
 		watchEffect(() => {
-			peerConnection.broadcast({
+			const message: SyncedUnitMapMessage = {
 				type: SyncedUnitMapMessageType.update,
 				key,
 				value: JSON.parse(stringifiedValue.value),
-			} satisfies SyncedUnitMapMessage);
+			};
+			console.log('sending', message);
+			peerConnection.broadcast(message);
 		});
 
 		onScopeDispose(() => {
-			peerConnection.broadcast({
+			const message: SyncedUnitMapMessage = {
 				type: SyncedUnitMapMessageType.update,
 				key,
 				value: undefined,
-			} satisfies SyncedUnitMapMessage);
+			};
+			console.log('sending', message);
+			peerConnection.broadcast(message);
 		});
 	});
 
 	const manualUpdate = (unitId: string) => {
-		peerConnection.broadcast({
+		const message: SyncedUnitMapMessage = {
 			type: SyncedUnitMapMessageType.manualUpdate,
 			key: unitId,
-			value: JSON.parse(JSON.stringify(unitMap.value[unitId])),
-		} satisfies SyncedUnitMapMessage);
+			value: unitMap.value[unitId] != null ? JSON.parse(JSON.stringify(unitMap.value[unitId])) : undefined,
+		}
+		console.log('sending', message);
+		peerConnection.broadcast(message);
 	};
 
 	const manualFullSync = () => {
-		peerConnection.broadcast({
+		const message: SyncedUnitMapMessage = {
 			type: SyncedUnitMapMessageType.manualFullSync,
 			data: JSON.parse(JSON.stringify(unitMap.value)),
-		} satisfies SyncedUnitMapMessage);
+		};
+		console.log('sending', message);
+		peerConnection.broadcast(message);
 	};
 
 	return {

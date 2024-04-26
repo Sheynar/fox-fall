@@ -25,7 +25,10 @@
 				:key="unitId"
 				:unit="unitMap[unitId]"
 			>
-				<UnitComponent :create-event="unitCreateEvents.get(unitMap[unitId])" @updated="manualUpdate(unitId)" />
+				<UnitComponent
+					:create-event="unitCreateEvents.get(unitMap[unitId])"
+					@updated="manualUpdate(unitId)"
+				/>
 			</UnitProvider>
 		</div>
 
@@ -215,14 +218,8 @@
 		if (children != null && children.size > 0) {
 			return;
 		}
-		const parent = unitParents.get(unit);
-		if (parent != null) {
-			const siblings = unitChildren.get(parent);
-			if (siblings != null) {
-				siblings.delete(unit);
-			}
-		}
 		delete unitMap.value[unitId];
+		manualUpdate(unitId);
 	};
 
 	const showHelp = () => {
@@ -239,11 +236,7 @@
 
 	const peerConnection = usePeerToPeer();
 	const isMaster = ref(true);
-	const { manualUpdate } = useSyncedUnitMap(
-		unitMap,
-		peerConnection,
-		isMaster
-	);
+	const { manualUpdate } = useSyncedUnitMap(unitMap, peerConnection, isMaster);
 
 	const showPeerToPeer = () => {
 		const peer = peerConnection.peer.value;
@@ -252,7 +245,9 @@
 			return;
 		}
 
-		const otherPeer = prompt(`Your ID is ${peer.id}\nEnter peer to connect to:`);
+		const otherPeer = prompt(
+			`Your ID is ${peer.id}\nEnter peer to connect to:`
+		);
 		if (otherPeer) {
 			isMaster.value = false;
 			const connection = peer.connect(otherPeer);
