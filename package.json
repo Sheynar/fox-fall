@@ -21,5 +21,6 @@
     "sass": "^1.69.4",
     "typescript": "^5.2.2",
     "vite": "^4.5.0"
-  }
+  },
+  "packageManager": "yarn@4.1.1"
 }
