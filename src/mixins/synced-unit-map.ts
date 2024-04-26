@@ -101,7 +101,6 @@ export const useSyncedUnitMap = (
 				key,
 				value: JSON.parse(stringifiedValue.value),
 			};
-			console.log('sending', message);
 			peerConnection.broadcast(message);
 		});
 
@@ -111,7 +110,6 @@ export const useSyncedUnitMap = (
 				key,
 				value: undefined,
 			};
-			console.log('sending', message);
 			peerConnection.broadcast(message);
 		});
 	});
@@ -122,7 +120,6 @@ export const useSyncedUnitMap = (
 			key: unitId,
 			value: unitMap.value[unitId] != null ? JSON.parse(JSON.stringify(unitMap.value[unitId])) : undefined,
 		}
-		console.log('sending', message);
 		peerConnection.broadcast(message);
 	};
 
@@ -131,7 +128,6 @@ export const useSyncedUnitMap = (
 			type: SyncedUnitMapMessageType.manualFullSync,
 			data: JSON.parse(JSON.stringify(unitMap.value)),
 		};
-		console.log('sending', message);
 		peerConnection.broadcast(message);
 	};
 

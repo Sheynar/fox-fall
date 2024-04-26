@@ -14,7 +14,6 @@ export const usePeerToPeer = (peerPromise = getPeer()) => {
 	}>();
 
 	const onMessage = (data: unknown) => {
-		console.log('Received message', data);
 		peerEventEmitter.dispatchTypedEvent(
 			'message',
 			new CustomEvent('message', { detail: data })
@@ -22,7 +21,6 @@ export const usePeerToPeer = (peerPromise = getPeer()) => {
 	};
 
 	const addConnection = (connection: DataConnection) => {
-		console.log('New connection', connection.peer);
 		connections.value[connection.peer] = markRaw(connection);
 		connection.addListener('data', onMessage);
 
@@ -53,7 +51,6 @@ export const usePeerToPeer = (peerPromise = getPeer()) => {
 	};
 
 	peerPromise.then((newPeer) => {
-		console.log('Peer ready', newPeer);
 		peer.value = markRaw(newPeer);
 		if (stopped.value) return;
 		newPeer.on('connection', (connection) => {
