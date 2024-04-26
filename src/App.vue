@@ -27,7 +27,7 @@
 			>
 				<UnitComponent
 					:create-event="unitCreateEvents.get(unitMap[unitId])"
-					@updated="manualUpdate(unitId)"
+					@updated="updateUnit(unitId)"
 				/>
 			</UnitProvider>
 		</div>
@@ -40,14 +40,14 @@
 					addUnit($event.unitType, $event.pointerEvent, undefined, selectedUnit)
 				"
 				@delete="removeUnit(selectedUnit)"
-				@updated="manualUpdate(selectedUnit)"
+				@updated="updateUnit(selectedUnit)"
 			/>
 		</UnitProvider>
 
 		<Controls
 			class="App__controls"
 			@create-unit="addUnit($event.unitType, $event.pointerEvent)"
-			@show-peer-to-peer="showPeerToPeer()"
+			@show-sync="showSync()"
 			@show-help="showHelp()"
 		/>
 	</div>
@@ -95,7 +95,7 @@
 </style>
 
 <script setup lang="ts">
-	import { type Ref, ref } from 'vue';
+	import { type Ref, ref, getCurrentScope } from 'vue';
 	import Backdrop from '@/components/Backdrop.vue';
 	import Controls from '@/components/Controls.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
@@ -125,7 +125,7 @@
 	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 	import { Viewport } from '@/lib/viewport';
-	import { usePeerToPeer } from '@/mixins/peer-to-peer';
+	import { useServerConnection } from '@/mixins/server-connection';
 	import { useSyncedUnitMap } from '@/mixins/synced-unit-map';
 	import { useViewPortControl } from '@/mixins/viewport-control';
 
@@ -219,7 +219,7 @@
 			return;
 		}
 		delete unitMap.value[unitId];
-		manualUpdate(unitId);
+		updateUnit(unitId);
 	};
 
 	const showHelp = () => {
@@ -234,26 +234,21 @@
 		ref(Vector.fromCartesianVector({ x: 0, y: 0 }))
 	);
 
-	const peerConnection = usePeerToPeer();
-	const isMaster = ref(true);
-	const { manualUpdate } = useSyncedUnitMap(unitMap, peerConnection, isMaster);
+	const unitUpdateMethods: ((unitId: string) => unknown)[] = [];
+	const updateUnit = (unitId: string) => {
+		unitUpdateMethods.forEach((method) => method(unitId));
+	};
 
-	const showPeerToPeer = () => {
-		const peer = peerConnection.peer.value;
-		if (!peer) {
-			alert('PeerJS not connected');
-			return;
-		}
-
-		const otherPeer = prompt(
-			`Your ID is ${peer.id}\nEnter peer to connect to:`
-		);
-		if (otherPeer) {
-			isMaster.value = false;
-			const connection = peer.connect(otherPeer);
-			connection.once('open', () => {
-				peerConnection.addConnection(connection);
-			});
-		}
+	const scope = getCurrentScope()!;
+	const showSync = () => {
+		scope.run(() => {
+			const serverUrl = prompt('Enter server URL:', 'ws://localhost:80/?code=');
+			const serverConnection = useServerConnection(serverUrl ?? '');
+			const { update: updateUnit } = useSyncedUnitMap(
+				unitMap,
+				serverConnection
+			);
+			unitUpdateMethods.push(updateUnit);
+		});
 	};
 </script>

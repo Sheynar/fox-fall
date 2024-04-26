@@ -1,30 +1,26 @@
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 import { computed, onScopeDispose, ref, watchEffect, type Ref } from 'vue';
-import { usePeerToPeer } from '@/mixins/peer-to-peer';
 import { UnitMap, Unit } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
+import { useServerConnection } from '@/mixins/server-connection';
 
-export enum SyncedUnitMapMessageType {
-	update = 'update',
-	fullSync = 'fullSync',
-	manualUpdate = 'manualUpdate',
-	manualFullSync = 'manualFullSync',
+enum UpdateType {
+	unit = 'unit',
+	full = 'full',
 }
 
-export type SyncedUnitMapMessage =
-	| {
-			type:
-				| SyncedUnitMapMessageType.fullSync
-				| SyncedUnitMapMessageType.manualFullSync;
-			data: UnitMap;
-	  }
-	| {
-			type:
-				| SyncedUnitMapMessageType.update
-				| SyncedUnitMapMessageType.manualUpdate;
-			key: keyof UnitMap;
-			value: UnitMap[keyof UnitMap] | null | undefined;
-	  };
+type RoomUpdate = {
+	type: UpdateType.full;
+	value: Record<string, unknown>;
+} | {
+	type: UpdateType.unit;
+	unitId: string;
+	value: unknown;
+};
+
+const isRoomUpdate = (value: unknown): value is RoomUpdate => {
+	return typeof value === 'object' && value !== null && 'type' in value;
+};
 
 const parseUnit = (unit: Unit): Unit => {
 	if (!(unit.vector instanceof Vector)) {
@@ -37,102 +33,48 @@ const parseUnit = (unit: Unit): Unit => {
 	return unit;
 };
 
-const isSyncedUnitMapMessage = (
-	message: unknown
-): message is SyncedUnitMapMessage => {
-	return (
-		typeof message === 'object' &&
-		message !== null &&
-		'type' in message &&
-		typeof message['type'] === 'string'
-	);
-};
-
 export const useSyncedUnitMap = (
 	unitMap: Ref<UnitMap>,
-	peerConnection: ReturnType<typeof usePeerToPeer>,
-	isMaster = ref(false)
+	serverConnection: ReturnType<typeof useServerConnection>
 ) => {
-	peerConnection.events.addEventListener(
-		'connection',
-		({ detail: connection }) => {
-			connection.send({
-				type: SyncedUnitMapMessageType.fullSync,
-				data: JSON.parse(JSON.stringify(unitMap.value)),
-			} satisfies SyncedUnitMapMessage);
-		}
-	);
-
-	peerConnection.events.addEventListener('message', ({ detail: message }) => {
-		if (!isSyncedUnitMapMessage(message)) return;
-		if (
-			isMaster.value &&
-			message.type !== SyncedUnitMapMessageType.manualFullSync &&
-			message.type !== SyncedUnitMapMessageType.manualUpdate
-		)
-			return;
-
-		if (
-			message.type === SyncedUnitMapMessageType.fullSync ||
-			message.type === SyncedUnitMapMessageType.manualFullSync
-		) {
+	serverConnection.webSocket.addEventListener('message', (event) => {
+		const roomUpdate = JSON.parse(event.data);
+		if (!isRoomUpdate(roomUpdate)) return;
+		if (roomUpdate.type === UpdateType.full) {
 			const newValue: UnitMap = {};
-			Object.keys(message.data).forEach((key) => {
-				newValue[key] = parseUnit(message.data[key]);
+			Object.keys(roomUpdate.value).forEach((key) => {
+				newValue[key] = parseUnit(roomUpdate.value[key] as Unit);
 			});
 			unitMap.value = newValue;
-		} else if (
-			message.type === SyncedUnitMapMessageType.update ||
-			message.type === SyncedUnitMapMessageType.manualUpdate
-		) {
-			if (message.value == null) {
-				delete unitMap.value[message.key];
+		} else if (roomUpdate.type === UpdateType.unit) {
+			const unitId = roomUpdate.unitId;
+			if (roomUpdate.value == null) {
+				delete unitMap.value[unitId];
 			} else {
-				unitMap.value[message.key] = parseUnit(message.value);
+				unitMap.value[unitId] = parseUnit(roomUpdate.value as Unit);
 			}
 		}
 	});
 
-	useScopePerKey(unitMap, (key) => {
-		const stringifiedValue = computed(() => JSON.stringify(unitMap.value[key]));
-		watchEffect(() => {
-			const message: SyncedUnitMapMessage = {
-				type: SyncedUnitMapMessageType.update,
-				key,
-				value: JSON.parse(stringifiedValue.value),
-			};
-			peerConnection.broadcast(message);
-		});
-
-		onScopeDispose(() => {
-			const message: SyncedUnitMapMessage = {
-				type: SyncedUnitMapMessageType.update,
-				key,
-				value: undefined,
-			};
-			peerConnection.broadcast(message);
-		});
-	});
-
-	const manualUpdate = (unitId: string) => {
-		const message: SyncedUnitMapMessage = {
-			type: SyncedUnitMapMessageType.manualUpdate,
-			key: unitId,
+	const update = (unitId: string) => {
+		const roomUpdate: RoomUpdate = {
+			type: UpdateType.unit,
+			unitId,
 			value: unitMap.value[unitId] != null ? JSON.parse(JSON.stringify(unitMap.value[unitId])) : undefined,
 		}
-		peerConnection.broadcast(message);
+		serverConnection.webSocket.send(JSON.stringify(roomUpdate));
 	};
 
-	const manualFullSync = () => {
-		const message: SyncedUnitMapMessage = {
-			type: SyncedUnitMapMessageType.manualFullSync,
-			data: JSON.parse(JSON.stringify(unitMap.value)),
+	const fullSync = () => {
+		const roomUpdate: RoomUpdate = {
+			type: UpdateType.full,
+			value: JSON.parse(JSON.stringify(unitMap.value)),
 		};
-		peerConnection.broadcast(message);
+		serverConnection.webSocket.send(JSON.stringify(roomUpdate));
 	};
 
 	return {
-		manualUpdate,
-		manualFullSync,
+		update,
+		fullSync,
 	};
 };

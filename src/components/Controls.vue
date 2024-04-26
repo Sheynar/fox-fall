@@ -39,7 +39,7 @@
 			</div>
 		</div>
 
-		<button class="Controls__button" @click.stop="emit('show-peer-to-peer')">Sync</button>
+		<button class="Controls__button" @click.stop="emit('show-sync')">Sync</button>
 
 		<button class="Controls__button" @click.stop="emit('show-help')">?</button>
 	</div>
@@ -108,7 +108,7 @@
 			event: 'create-unit',
 			payload: { unitType: UnitType; pointerEvent: PointerEvent }
 		): void;
-		(event: 'show-peer-to-peer'): void;
+		(event: 'show-sync'): void;
 		(event: 'show-help'): void;
 	}>();
 </script>
