@@ -104,6 +104,10 @@
 		type HighlightedUnits,
 		provideHighlightedUnits,
 	} from '@/contexts/highlighted-units';
+	import {
+		providePinnedUnits,
+		type PinnedUnits,
+	} from '@/contexts/pinned-units';
 	import { provideUnitMap } from '@/contexts/unit';
 	import { provideSelectedUnit } from '@/contexts/selected-unit';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
@@ -129,12 +133,14 @@
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const unitMap = ref<UnitMap>({});
 	const selectedUnit = ref<Unit['id'] | null>(null);
+	const pinnedUnits = ref<PinnedUnits>(new Set());
 	const highlightedUnits = ref<HighlightedUnits>(new Set());
 	const unitParents = new WeakMap<Unit, Unit>();
 	const unitChildren = new WeakMap<Unit, Set<Unit>>();
 
 	provideCursor(cursor);
 	provideSelectedUnit(selectedUnit);
+	providePinnedUnits(pinnedUnits);
 	provideHighlightedUnits(highlightedUnits);
 	provideUnitMap(unitMap);
 

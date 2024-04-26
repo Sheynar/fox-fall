@@ -28,6 +28,7 @@
 <script setup lang="ts">
 	import { computed, ref } from 'vue';
 	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
+	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectSelectedUnit } from '@/contexts/selected-unit';
 	import { injectUnitMap } from '@/contexts/unit';
 	import { UnitType, type Unit } from '@/lib/unit';
@@ -38,6 +39,7 @@
 
 	const selectedUnit = injectSelectedUnit();
 	const highlightedUnits = injectHighlightedUnits();
+	const pinnedUnits = injectPinnedUnits();
 	const unitMap = injectUnitMap();
 
 	const getRootParent = (unitId: string): Unit => {
@@ -78,13 +80,15 @@
 	const firingArcList = computed(() => {
 		const output: { from: Unit; to: Unit }[] = [];
 
-		const unitIds = new Set(highlightedUnits.value);
+		const unitIds = new Set([...highlightedUnits.value, ...pinnedUnits.value]);
 		if (selectedUnit.value != null) {
 			unitIds.add(selectedUnit.value);
 		}
 
 		for (const unitId of unitIds) {
 			const unit = unitMap.value[unitId];
+			if (unit == null) continue;
+
 			if (unit.type === UnitType.Target) {
 				const rootParent = getRootParent(unitId);
 				const artilleryList = artilleryByRootParent.value[rootParent.id] ?? [];

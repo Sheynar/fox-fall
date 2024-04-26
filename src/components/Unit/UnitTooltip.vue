@@ -125,10 +125,10 @@
 			</button>
 			<button
 				class="UnitTooltip__action"
-				@click.stop="unit.pinned = !unit.pinned"
+				@click.stop="pinnedUnits.has(unit.id) ? pinnedUnits.delete(unit.id) : pinnedUnits.add(unit.id)"
 				title="Pin"
 			>
-				<Component :is="unit.pinned ? PinIcon : PinOutlineIcon" />
+				<Component :is="pinnedUnits.has(unit.id) ? PinIcon : PinOutlineIcon" />
 			</button>
 		</div>
 	</div>
@@ -214,6 +214,7 @@
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import NumberInput from '@/components/NumberInput.vue';
+	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
 	import { UnitType } from '@/lib/unit';
@@ -226,6 +227,7 @@
 
 	const unit = injectUnit();
 	const unitMap = injectUnitMap();
+	const pinnedUnits = injectPinnedUnits();
 	const parent = computed(() =>
 		unit.value.parentId != null ? unitMap.value[unit.value.parentId] : undefined
 	);

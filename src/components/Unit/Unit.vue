@@ -5,15 +5,17 @@
 			Unit__moving: !!moving,
 			Unit__readonly: props.readonly,
 			Unit__highlighted:
-				highlightedUnits.has(unit.id) || selectedUnit === unit.id,
+				pinnedUnits.has(unit.id) ||
+				highlightedUnits.has(unit.id) ||
+				selectedUnit === unit.id,
 		}"
 		:style="{
 			'--unit-x': screenPosition.x,
 			'--unit-y': screenPosition.y,
 			'--viewport-zoom': viewport.resolvedZoom,
 		}"
-		@mouseover="clickHighlighted = true"
-		@mouseleave="clickHighlighted = false"
+		@mouseover="isHovered = true"
+		@mouseleave="isHovered = false"
 	>
 		<div class="Unit__label" v-if="unit.label">
 			{{ unit.label }}
@@ -101,6 +103,7 @@
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
+	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectSelectedUnit } from '@/contexts/selected-unit';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { injectViewport } from '@/contexts/viewport';
@@ -121,13 +124,14 @@
 	const unitMap = injectUnitMap();
 	const unit = injectUnit();
 	const viewport = injectViewport();
+	const pinnedUnits = injectPinnedUnits();
 	const highlightedUnits = injectHighlightedUnits();
 	const selectedUnit = injectSelectedUnit();
 
-	const clickHighlighted = ref(false);
+	const isHovered = ref(false);
 
 	watch(
-		() => clickHighlighted.value || unit.value.pinned,
+		() => isHovered.value,
 		(isHighlighted) => {
 			if (isHighlighted) {
 				highlightedUnits.value.add(unit.value.id);

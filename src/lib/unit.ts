@@ -12,7 +12,6 @@ export enum UnitType {
 export type Unit = {
 	id: string;
 	label: string;
-	pinned: boolean;
 	type: UnitType;
 	vector: Vector;
 	parentId?: string;
@@ -30,7 +29,6 @@ export const createUnit = (
 	return ref({
 		id: generateId(),
 		label: getName(),
-		pinned: false,
 		type,
 		vector,
 		parentId,
