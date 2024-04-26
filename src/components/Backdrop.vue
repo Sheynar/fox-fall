@@ -74,7 +74,7 @@
 		height: 10em;
 		border-radius: 50%;
 
-		transform: rotate(calc(var(--viewport-deg) * 1deg));
+		transform: rotate(calc(var(--viewport-deg) * 1deg - 90deg));
 		transform-origin: 50% 50%;
 
 		cursor: pointer;
@@ -141,7 +141,7 @@
 			element: viewportProxy,
 			property: 'rotation',
 			from: viewport.value.rotation,
-			to: viewport.value.rotation > 180 ? 360 : 0,
+			to: viewport.value.rotation > 270 ? 360 + 90 : 90,
 			duration: 250,
 			easing: 'easeInOutQuad',
 		});
