@@ -39,7 +39,7 @@ export const createUnit = (
 
 export const getUnitResolvedVector = (
 	unitMap: UnitMap,
-	unitId: string,
+	unitId: string
 ): Vector => {
 	const unit = unitMap[unitId];
 
@@ -48,9 +48,7 @@ export const getUnitResolvedVector = (
 	}
 
 	if (unit.parentId != null)
-		return unit.vector.addVector(
-			getUnitResolvedVector(unitMap, unit.parentId)
-		);
+		return unit.vector.addVector(getUnitResolvedVector(unitMap, unit.parentId));
 
 	return unit.vector;
 };

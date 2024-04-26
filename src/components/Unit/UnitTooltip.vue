@@ -37,7 +37,9 @@
 						:model-value="
 							Number(wrapDegrees(unit.vector.azimuth + 180).toFixed(1))
 						"
-						@update:model-value="unit.vector.azimuth = wrapDegrees($event - 180)"
+						@update:model-value="
+							unit.vector.azimuth = wrapDegrees($event - 180)
+						"
 					/>
 				</div>
 				<span class="UnitTooltip__span"

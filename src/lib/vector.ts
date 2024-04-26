@@ -22,7 +22,9 @@ export const toCartesianVector = (
 export const toAngularVector = (
 	cartesianVector: CartesianVector
 ): AngularVector => {
-	const azimuth = wrapDegrees(toDegrees(Math.atan2(cartesianVector.y, cartesianVector.x)));
+	const azimuth = wrapDegrees(
+		toDegrees(Math.atan2(cartesianVector.y, cartesianVector.x))
+	);
 	const distance = Math.sqrt(
 		Math.pow(cartesianVector.x, 2) + Math.pow(cartesianVector.y, 2)
 	);

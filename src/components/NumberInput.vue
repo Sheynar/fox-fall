@@ -1,8 +1,5 @@
 <template>
-	<input
-		type="text"
-		v-model="stringValue"
-	/>
+	<input type="text" v-model="stringValue" />
 </template>
 
 <script setup lang="ts">
@@ -17,7 +14,8 @@
 
 	const numberValue = computed(() => Number(stringValue.value));
 	watch(numberValue, () => {
-		if (isNaN(numberValue.value) || numberValue.value === props.modelValue) return;
+		if (isNaN(numberValue.value) || numberValue.value === props.modelValue)
+			return;
 		emit('update:modelValue', numberValue.value);
 	});
 

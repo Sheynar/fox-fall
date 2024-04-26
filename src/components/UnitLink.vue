@@ -58,13 +58,31 @@
 	const viewport = injectViewport();
 	const unitMap = injectUnitMap();
 
-	const unitPositionFrom = computed(() => getUnitResolvedVector(unitMap.value, props.unitIdFrom));
-	const unitPositionTo = computed(() => getUnitResolvedVector(unitMap.value, props.unitIdTo));
+	const unitPositionFrom = computed(() =>
+		getUnitResolvedVector(unitMap.value, props.unitIdFrom)
+	);
+	const unitPositionTo = computed(() =>
+		getUnitResolvedVector(unitMap.value, props.unitIdTo)
+	);
 
-	const lineRelativePosition = computed(() => unitPositionTo.value.addVector(unitPositionFrom.value.scale(-1)));
-	const linePositionFrom = computed(() => unitPositionFrom.value.addVector(lineRelativePosition.value.normalize().scale(5)));
-	const linePositionTo = computed(() => unitPositionTo.value.addVector(lineRelativePosition.value.normalize().scale(-5)));
+	const lineRelativePosition = computed(() =>
+		unitPositionTo.value.addVector(unitPositionFrom.value.scale(-1))
+	);
+	const linePositionFrom = computed(() =>
+		unitPositionFrom.value.addVector(
+			lineRelativePosition.value.normalize().scale(5)
+		)
+	);
+	const linePositionTo = computed(() =>
+		unitPositionTo.value.addVector(
+			lineRelativePosition.value.normalize().scale(-5)
+		)
+	);
 
-	const lineScreenPositionFrom = computed(() => viewport.value.fromViewportVector(linePositionFrom.value));
-	const lineScreenPositionTo = computed(() => viewport.value.fromViewportVector(linePositionTo.value));
+	const lineScreenPositionFrom = computed(() =>
+		viewport.value.fromViewportVector(linePositionFrom.value)
+	);
+	const lineScreenPositionTo = computed(() =>
+		viewport.value.fromViewportVector(linePositionTo.value)
+	);
 </script>

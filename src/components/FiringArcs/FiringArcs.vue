@@ -89,7 +89,12 @@
 				const rootParent = getRootParent(unitId);
 				const artilleryList = artilleryByRootParent.value[rootParent.id] ?? [];
 				for (const artilleryId of artilleryList) {
-					if (!unitIds.has(artilleryId) && artilleryId !== selectedUnit.value && unitId !== selectedUnit.value) continue;
+					if (
+						!unitIds.has(artilleryId) &&
+						artilleryId !== selectedUnit.value &&
+						unitId !== selectedUnit.value
+					)
+						continue;
 					const artillery = unitMap.value[artilleryId];
 					output.push({ from: artillery, to: unit });
 				}
@@ -98,7 +103,12 @@
 				const rootParent = getRootParent(unitId);
 				const targetList = targetByRootParent.value[rootParent.id] ?? [];
 				for (const targetId of targetList) {
-					if (!unitIds.has(targetId) && targetId !== selectedUnit.value && unitId !== selectedUnit.value) continue;
+					if (
+						!unitIds.has(targetId) &&
+						targetId !== selectedUnit.value &&
+						unitId !== selectedUnit.value
+					)
+						continue;
 					const target = unitMap.value[targetId];
 					output.push({ from: unit, to: target });
 				}

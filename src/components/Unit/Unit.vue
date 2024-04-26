@@ -4,7 +4,8 @@
 		:class="{
 			Unit__moving: !!moving,
 			Unit__readonly: props.readonly,
-			Unit__highlighted: highlightedUnits.has(unit.id) || selectedUnit === unit.id,
+			Unit__highlighted:
+				highlightedUnits.has(unit.id) || selectedUnit === unit.id,
 		}"
 		:style="{
 			'--unit-x': screenPosition.x,

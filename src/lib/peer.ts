@@ -3,14 +3,14 @@ import { Peer } from 'peerjs';
 export const _getPeer = async () => {
 	const peer = new Peer();
 	await new Promise<string>((resolve, reject) => {
-		peer.once('open', (id) => resolve(id))
-		peer.once('error', reject)
+		peer.once('open', (id) => resolve(id));
+		peer.once('error', reject);
 	});
 	return peer;
 };
 
 export const getPeer = async () => {
-	while(true) {
+	while (true) {
 		try {
 			return await _getPeer();
 		} catch (e) {
