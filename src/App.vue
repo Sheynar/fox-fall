@@ -45,7 +45,7 @@
 			/>
 		</UnitProvider>
 
-		<Wind class="App__wind" />
+		<Wind class="App__wind" @reset="resetWind()" />
 
 		<div class="App__banner" v-if="unitSelector != null"> {{ unitSelector.prompt ?? 'Click on a unit to select it' }} </div>
 
@@ -148,6 +148,7 @@
 		addUnit,
 		removeUnit,
 		editWind,
+		resetWind,
 
 		cursor,
 		wind,

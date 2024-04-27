@@ -141,6 +141,11 @@ export const useArtillery = ({
 		}
 	};
 
+	const resetWind = () => {
+		wind.value = Vector.fromCartesianVector({ x: 0, y: 0 });
+		onWindUpdated?.();
+	};
+
 	useScopePerKey(unitMap, (key) => {
 		watchEffect(() => {
 			const unit = unitMap.value[key];
@@ -156,6 +161,7 @@ export const useArtillery = ({
 		addUnit,
 		removeUnit,
 		editWind,
+		resetWind,
 
 		cursor,
 		wind,

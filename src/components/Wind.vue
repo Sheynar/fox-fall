@@ -17,7 +17,7 @@
 			<span>Wind distance: {{ wind.distance }}</span>
 			<button
 				class="Wind__button"
-				@pointerdown.stop="wind = Vector.fromCartesianVector({ x: 0, y: 0 })"
+				@pointerdown.stop="emit('reset')"
 			>
 				Reset
 			</button>
@@ -77,7 +77,7 @@
 	import { Vector } from '@/lib/vector';
 
 	const emit = defineEmits<{
-		(event: 'updated'): void;
+		(event: 'reset'): void;
 	}>();
 
 	const viewport = injectViewport();
