@@ -41,8 +41,13 @@
 				"
 				@delete="removeUnit(selectedUnit)"
 				@updated="updateUnit(selectedUnit)"
+				@update-wind="editWind(selectedUnit)"
 			/>
 		</UnitProvider>
+
+		<Wind class="App__wind" />
+
+		<div class="App__banner" v-if="unitSelector != null"> {{ unitSelector.prompt ?? 'Click on a unit to select it' }} </div>
 
 		<Controls
 			class="App__controls"
@@ -86,6 +91,28 @@
 		pointer-events: none;
 	}
 
+	.App__wind {
+		position: absolute;
+		left: 0.5em;
+		bottom: 0.5em;
+		z-index: 1000;
+	}
+
+	.App__banner {
+		position: fixed;
+    top: 1em;
+    left: 50%;
+    transform: translateX(-50%);
+
+    padding: 1em;
+    border: 1px solid;
+
+    background: black;
+    opacity: 0.5;
+
+    pointer-events: none;
+	}
+
 	.App__controls {
 		position: absolute;
 		right: 0.5em;
@@ -95,75 +122,50 @@
 </style>
 
 <script setup lang="ts">
-	import { type Ref, ref, getCurrentScope, watchEffect } from 'vue';
-	import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
+	import { type Ref, ref, getCurrentScope } from 'vue';
 	import Backdrop from '@/components/Backdrop.vue';
 	import Controls from '@/components/Controls.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
 	import UnitComponent from '@/components/Unit/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
 	import UnitTooltip from '@/components/Unit/UnitTooltip.vue';
-	import { provideCursor } from '@/contexts/cursor';
-	import {
-		type HighlightedUnits,
-		provideHighlightedUnits,
-	} from '@/contexts/highlighted-units';
-	import {
-		providePinnedUnits,
-		type PinnedUnits,
-	} from '@/contexts/pinned-units';
-	import { provideUnitMap } from '@/contexts/unit';
-	import { provideSelectedUnit } from '@/contexts/selected-unit';
+	import Wind from '@/components/Wind.vue';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
-	import { provideViewport } from '@/contexts/viewport';
-	import { wrapDegrees } from '@/lib/angle';
-	import {
-		type Unit,
-		type UnitMap,
-		createUnit,
-		UnitType,
-		getUnitResolvedVector,
-	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
-	import { Viewport } from '@/lib/viewport';
+	import { useArtillery } from '@/mixins/artillery';
 	import { useServerConnection } from '@/mixins/server-connection';
-	import { useSyncedUnitMap } from '@/mixins/synced-unit-map';
+	import { useSyncedRoom } from '@/mixins/synced-room';
 	import { useViewPortControl } from '@/mixins/viewport-control';
 
 	(<any>window).Vector = Vector;
 
 	const containerElement = ref<null | HTMLDivElement>(null);
 
-	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
-	const unitMap = ref<UnitMap>({});
-	const selectedUnit = ref<Unit['id'] | null>(null);
-	const pinnedUnits = ref<PinnedUnits>(new Set());
-	const highlightedUnits = ref<HighlightedUnits>(new Set());
-	const unitParents = new WeakMap<Unit, Unit>();
-	const unitChildren = new WeakMap<Unit, Set<Unit>>();
+	let updateUnit = (unitId: string): void => {};
+	let updateWind = (): void => {};
 
-	provideCursor(cursor);
-	provideSelectedUnit(selectedUnit);
-	providePinnedUnits(pinnedUnits);
-	provideHighlightedUnits(highlightedUnits);
-	provideUnitMap(unitMap);
+	const {
+		addUnit,
+		removeUnit,
+		editWind,
 
-	const viewport = ref(
-		new Viewport(
-			Vector.fromCartesianVector({
-				x: document.body.clientWidth / 2,
-				y: document.body.clientHeight / 2,
-			}),
-			90,
-			1
-		)
-	);
+		cursor,
+		wind,
+		selectedUnit,
+		unitMap,
+		unitSelector,
+		unitCreateEvents,
+		viewport,
+	} = useArtillery({
+		onUnitUpdated: (unitId: string) => updateUnit(unitId),
+		onWindUpdated: () => updateWind(),
+	});
+
 	useViewPortControl({
 		containerElement,
 		viewport,
 		selectedUnit,
 	});
-	provideViewport(viewport);
 
 	const onPointerMove = (event: PointerEvent) => {
 		cursor.value.cartesianVector = {
@@ -172,68 +174,10 @@
 		};
 	};
 
-	const unitCreateEvents = new WeakMap<Unit, PointerEvent>();
-	const addUnit = (
-		type: UnitType,
-		event?: PointerEvent,
-		vector: Ref<Vector> = ref(
-			Vector.fromAngularVector({
-				azimuth: wrapDegrees(-viewport.value.rotation - 90),
-				distance: 50,
-			})
-		),
-		parentUnitId?: string
-	) => {
-		const parentUnit = parentUnitId ? unitMap.value[parentUnitId] : undefined;
-		const newUnit = createUnit(type, vector, parentUnitId);
-
-		if (event) {
-			newUnit.value.vector = viewport.value.toViewportVector(
-				Vector.fromCartesianVector({
-					x: event.clientX,
-					y: event.clientY,
-				})
-			);
-			if (parentUnit) {
-				newUnit.value.vector = newUnit.value.vector.addVector(
-					getUnitResolvedVector(unitMap.value, parentUnit.id).scale(-1)
-				);
-			}
-			unitCreateEvents.set(newUnit.value, event);
-		}
-
-		unitMap.value[newUnit.value.id] = newUnit.value;
-		if (parentUnit) {
-			unitParents.set(newUnit.value, parentUnit);
-			const siblings = unitChildren.get(parentUnit) ?? new Set();
-			siblings.add(newUnit.value);
-			unitChildren.set(parentUnit, siblings);
-		}
-
-		return newUnit;
-	};
-
-	const removeUnit = (unitId: string) => {
-		const unit = unitMap.value[unitId];
-		delete unitMap.value[unitId];
-		updateUnit(unitId);
-	};
-
 	const showHelp = () => {
 		alert(
 			`Controls:\nLeft click: select unit\nLeft click drag: move unit / pan camera\nRight click drag / shift + left click drag: rotate camera\nScroll: zoom camera (hold CTRL to zoom 10x faster)\n\nDrag from unit's create buttons to insert a new child units\n\nShow firing arcs by selecting an artillery unit or a target.\nAlternatively pin/hover an artillery unit and a target`
 		);
-	};
-
-	addUnit(
-		UnitType.Artillery,
-		undefined,
-		ref(Vector.fromCartesianVector({ x: 0, y: 0 }))
-	);
-
-	let unitUpdateMethods: ((unitId: string) => unknown)[] = [];
-	const updateUnit = (unitId: string) => {
-		unitUpdateMethods.forEach((method) => method(unitId));
 	};
 
 	const scope = getCurrentScope()!;
@@ -244,11 +188,13 @@
 			const serverConnection = useServerConnection(serverUrl ?? '');
 			if (webSocket.value) webSocket.value.close();
 			webSocket.value = serverConnection.webSocket;
-			const { update: updateUnit } = useSyncedUnitMap(
+			const { updateUnit: syncUnit, updateWind: syncWind } = useSyncedRoom(
 				unitMap,
+				wind,
 				webSocket as Ref<WebSocket>
 			);
-			unitUpdateMethods = [updateUnit];
+			updateUnit = syncUnit;
+			updateWind = syncWind;
 		});
 	};
 
@@ -259,7 +205,10 @@
 				window.location.hostname
 		);
 		if (!serverIp) return;
-		const code = prompt('Enter sync code:', 'yourmom');
+		const code = prompt(
+			'Enter sync code:',
+			new URL(window.location.href).searchParams.get('code') || undefined
+		);
 		if (!code) return;
 		setupSync(serverIp, code);
 	};
@@ -272,15 +221,4 @@
 		setupSync(ipAddress, code);
 	};
 	loadSyncFromUrl();
-
-	useScopePerKey(unitMap, (key) => {
-		watchEffect(() => {
-			const unit = unitMap.value[key];
-			if (unit.parentId == null) return;
-			const parent = unitMap.value[unit.parentId];
-			if (parent == null) {
-				removeUnit(unit.id);
-			}
-		})
-	})
 </script>

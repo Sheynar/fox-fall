@@ -36,6 +36,17 @@
 				>
 					<TargetIcon class="Controls__icon" />
 				</button>
+				<button
+					class="Controls__button"
+					@pointerdown.stop="
+						emit('create-unit', {
+							unitType: UnitType.LandingZone,
+							pointerEvent: $event,
+						})
+					"
+				>
+					<ExplosionIcon class="Controls__icon" />
+				</button>
 			</div>
 		</div>
 
@@ -99,6 +110,7 @@
 
 <script setup lang="ts">
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
+	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import { UnitType } from '@/lib/unit';

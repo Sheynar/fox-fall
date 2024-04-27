@@ -7,6 +7,7 @@ export enum UnitType {
 	Artillery,
 	Spotter,
 	Target,
+	LandingZone,
 }
 
 export type Unit = {

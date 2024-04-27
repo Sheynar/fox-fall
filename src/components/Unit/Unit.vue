@@ -26,7 +26,9 @@
 					? ArtilleryIcon
 					: unit.type === UnitType.Spotter
 						? SpotterIcon
-						: TargetIcon
+						: unit.type === UnitType.Target
+							? TargetIcon
+							: ExplosionIcon
 			"
 			ref="iconElement"
 			class="Unit__icon"
@@ -78,6 +80,7 @@
 		transform: translateX(-50%);
 
 		pointer-events: none;
+		user-select: none;
 		white-space: nowrap;
 	}
 
@@ -102,10 +105,12 @@
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
+	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
 	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectSelectedUnit } from '@/contexts/selected-unit';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
+	import { injectUnitSelector } from '@/contexts/unit-selector';
 	import { injectViewport } from '@/contexts/viewport';
 	import { UnitType, getUnitResolvedVector } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
@@ -123,6 +128,7 @@
 
 	const unitMap = injectUnitMap();
 	const unit = injectUnit();
+	const unitSelector = injectUnitSelector();
 	const viewport = injectViewport();
 	const pinnedUnits = injectPinnedUnits();
 	const highlightedUnits = injectHighlightedUnits();
@@ -166,6 +172,11 @@
 		if (props.readonly || event.button !== 0) return;
 		event.stopPropagation();
 		event.preventDefault();
+
+		if (unitSelector.value != null) {
+			unitSelector.value.selectUnit(unit.value.id);
+			return;
+		}
 
 		selectedUnit.value = unit.value.id;
 

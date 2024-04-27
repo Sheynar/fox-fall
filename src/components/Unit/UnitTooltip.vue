@@ -12,6 +12,7 @@
 					<option :value="UnitType.Artillery">Artillery</option>
 					<option :value="UnitType.Spotter">Spotter</option>
 					<option :value="UnitType.Target">Target</option>
+					<option :value="UnitType.LandingZone">Landing zone</option>
 				</select>
 			</div>
 			<div class="UnitTooltip__row">
@@ -85,7 +86,7 @@
 						pointerEvent: $event,
 					})
 				"
-				title="Create Artillery"
+				title="Create artillery"
 			>
 				<ArtilleryIcon />
 			</button>
@@ -113,6 +114,18 @@
 			>
 				<TargetIcon />
 			</button>
+			<button
+				class="UnitTooltip__action"
+				@pointerdown.stop="
+					emit('create-child', {
+						unitType: UnitType.LandingZone,
+						pointerEvent: $event,
+					})
+				"
+				title="Create landing zone"
+			>
+				<ExplosionIcon />
+			</button>
 		</div>
 		<div class="UnitTooltip__actions">
 			<button
@@ -129,6 +142,14 @@
 				title="Pin"
 			>
 				<Component :is="pinnedUnits.has(unit.id) ? PinIcon : PinOutlineIcon" />
+			</button>
+			<button
+				v-if="unit.type === UnitType.LandingZone"
+				class="UnitTooltip__action"
+				@click.stop="emit('update-wind')"
+				title="Update wind"
+			>
+				<WindIcon />
 			</button>
 		</div>
 	</div>
@@ -208,11 +229,13 @@
 <script setup lang="ts">
 	import { computed, ref } from 'vue';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
+	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
+	import WindIcon from '@/components/icons/WindIcon.vue';
 	import NumberInput from '@/components/NumberInput.vue';
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
@@ -239,5 +262,6 @@
 		): void;
 		(event: 'delete'): void;
 		(event: 'updated'): void;
+		(event: 'update-wind'): void;
 	}>();
 </script>

@@ -32,10 +32,10 @@
 			</div>
 			<div class="FiringArc__label-row">
 				<span>distance:</span
-				><span>{{ Math.round(firingVector.distance) }}</span>
+				><span>{{ Math.round(firingVectorWithWind.distance) }}</span>
 			</div>
 			<div class="FiringArc__label-row">
-				<span>azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}</span>
+				<span>azimuth:</span><span>{{ firingVectorWithWind.azimuth.toFixed(1) }}</span>
 			</div>
 		</div>
 	</Teleport>
@@ -100,6 +100,7 @@
 	import { computed } from 'vue';
 	import { injectUnitMap } from '@/contexts/unit';
 	import { injectViewport } from '@/contexts/viewport';
+	import { injectWind } from '@/contexts/wind';
 	import { getUnitResolvedVector } from '@/lib/unit';
 
 	const props = defineProps<{
@@ -110,8 +111,9 @@
 		unitIdTo: string;
 	}>();
 
-	const viewport = injectViewport();
 	const unitMap = injectUnitMap();
+	const viewport = injectViewport();
+	const wind = injectWind();
 
 	const resolvedVectorFrom = computed(() =>
 		getUnitResolvedVector(unitMap.value, props.unitIdFrom)
@@ -121,6 +123,9 @@
 	);
 	const firingVector = computed(() =>
 		resolvedVectorTo.value.getRelativeOffset(resolvedVectorFrom.value)
+	);
+	const firingVectorWithWind = computed(() =>
+		firingVector.value.addVector(wind.value.scale(-1))
 	);
 
 	const unitScreenPositionFrom = computed(() =>
