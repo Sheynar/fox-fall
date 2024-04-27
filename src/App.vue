@@ -95,7 +95,8 @@
 </style>
 
 <script setup lang="ts">
-	import { type Ref, ref, getCurrentScope } from 'vue';
+	import { type Ref, ref, getCurrentScope, watchEffect } from 'vue';
+	import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 	import Backdrop from '@/components/Backdrop.vue';
 	import Controls from '@/components/Controls.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
@@ -214,10 +215,6 @@
 
 	const removeUnit = (unitId: string) => {
 		const unit = unitMap.value[unitId];
-		const children = unitChildren.get(unit);
-		if (children != null && children.size > 0) {
-			return;
-		}
 		delete unitMap.value[unitId];
 		updateUnit(unitId);
 	};
@@ -234,7 +231,7 @@
 		ref(Vector.fromCartesianVector({ x: 0, y: 0 }))
 	);
 
-	const unitUpdateMethods: ((unitId: string) => unknown)[] = [];
+	let unitUpdateMethods: ((unitId: string) => unknown)[] = [];
 	const updateUnit = (unitId: string) => {
 		unitUpdateMethods.forEach((method) => method(unitId));
 	};
@@ -251,12 +248,16 @@
 				unitMap,
 				webSocket as Ref<WebSocket>
 			);
-			unitUpdateMethods.push(updateUnit);
+			unitUpdateMethods = [updateUnit];
 		});
 	};
 
 	const showSync = () => {
-		const serverIp = prompt('Enter server adress:', new URL(window.location.href).searchParams.get('serverAddress') || window.location.hostname);
+		const serverIp = prompt(
+			'Enter server adress:',
+			new URL(window.location.href).searchParams.get('serverAddress') ||
+				window.location.hostname
+		);
 		if (!serverIp) return;
 		const code = prompt('Enter sync code:', 'yourmom');
 		if (!code) return;
@@ -271,4 +272,15 @@
 		setupSync(ipAddress, code);
 	};
 	loadSyncFromUrl();
+
+	useScopePerKey(unitMap, (key) => {
+		watchEffect(() => {
+			const unit = unitMap.value[key];
+			if (unit.parentId == null) return;
+			const parent = unitMap.value[unit.parentId];
+			if (parent == null) {
+				removeUnit(unit.id);
+			}
+		})
+	})
 </script>

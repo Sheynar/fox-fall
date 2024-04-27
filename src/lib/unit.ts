@@ -1,7 +1,7 @@
 import { type Ref, ref } from 'vue';
 import { generateId } from '@/lib/id';
 import { getName } from '@/lib/names';
-import type { Vector } from '@/lib/vector';
+import { Vector } from '@/lib/vector';
 
 export enum UnitType {
 	Artillery,
@@ -42,7 +42,7 @@ export const getUnitResolvedVector = (
 	const unit = unitMap[unitId];
 
 	if (unit == null) {
-		throw new Error('No unit found');
+		return Vector.fromCartesianVector({ x: 0, y: 0 });
 	}
 
 	if (unit.parentId != null)
