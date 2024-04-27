@@ -8,6 +8,7 @@ export const providePinnedUnits = (
 	pinnedUnits: Ref<PinnedUnits>
 ) => {
 	provide(pinnedUnitsSymbol, pinnedUnits);
+	(<any>window).pinnedUnits = pinnedUnits;
 };
 
 export const injectPinnedUnitsOptional = ():

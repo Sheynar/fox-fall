@@ -27,6 +27,7 @@ export const unitMapSymbol = Symbol('unitMap');
 
 export const provideUnitMap = (unitMap: Ref<UnitMap>) => {
 	provide(unitMapSymbol, unitMap);
+	(<any>window).unitMap = unitMap;
 };
 
 export const injectUnitMapOptional = (): Ref<UnitMap> | undefined => {

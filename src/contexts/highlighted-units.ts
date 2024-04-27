@@ -8,6 +8,7 @@ export const provideHighlightedUnits = (
 	highlightedUnits: Ref<HighlightedUnits>
 ) => {
 	provide(highlightedUnitsSymbol, highlightedUnits);
+	(<any>window).highlightedUnits = highlightedUnits;
 };
 
 export const injectHighlightedUnitsOptional = ():

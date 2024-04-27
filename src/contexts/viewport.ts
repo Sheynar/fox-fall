@@ -5,6 +5,7 @@ export const viewportSymbol = Symbol('viewport');
 
 export const provideViewport = (viewport: Ref<Viewport>) => {
 	provide(viewportSymbol, viewport);
+	(<any>window).viewport = viewport;
 };
 
 export const injectViewportOptional = (): Ref<Viewport> | undefined => {

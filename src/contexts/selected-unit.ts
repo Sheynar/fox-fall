@@ -6,6 +6,7 @@ export type SelectedUnit = Unit['id'] | null;
 
 export const provideSelectedUnit = (selectedUnit: Ref<SelectedUnit>) => {
 	provide(selectedUnitSymbol, selectedUnit);
+	(<any>window).selectedUnit = selectedUnit;
 };
 
 export const injectSelectedUnitOptional = (): Ref<SelectedUnit> | undefined => {

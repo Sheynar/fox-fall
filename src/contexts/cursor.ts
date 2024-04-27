@@ -5,6 +5,7 @@ export const cursorSymbol = Symbol('cursor');
 
 export const provideCursor = (cursor: Ref<Vector>) => {
 	provide(cursorSymbol, cursor);
+	(<any>window).cursor = cursor;
 };
 
 export const injectCursorOptional = (): Ref<Vector> | undefined => {
