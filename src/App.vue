@@ -265,7 +265,7 @@
 
 	const loadSyncFromUrl = () => {
 		const url = new URL(window.location.href);
-		const ipAddress = url.searchParams.get('serverAddress');
+		const ipAddress = url.searchParams.get('serverAddress') || url.hostname;
 		const code = url.searchParams.get('code');
 		if (!ipAddress || !code) return;
 		setupSync(ipAddress, code);
