@@ -243,7 +243,7 @@
 	const webSocket = ref<WebSocket | null>(null);
 	const setupSync = (serverIp: string, code: string) => {
 		scope.run(() => {
-			const serverUrl = `ws://${serverIp}:80/?code=${encodeURIComponent(code)}`;
+			const serverUrl = `ws://${serverIp}:81/?code=${encodeURIComponent(code)}`;
 			const serverConnection = useServerConnection(serverUrl ?? '');
 			if (webSocket.value) webSocket.value.close();
 			webSocket.value = serverConnection.webSocket;
@@ -257,8 +257,10 @@
 
 	const showSync = () => {
 		const serverIp = prompt('Enter server adress:', new URL(window.location.href).searchParams.get('serverAddress') || window.location.hostname);
+		if (!serverIp) return;
 		const code = prompt('Enter sync code:', 'yourmom');
-		setupSync(serverIp || '127.0.0.1', code || 'yourmom');
+		if (!code) return;
+		setupSync(serverIp, code);
 	};
 
 	const loadSyncFromUrl = () => {
