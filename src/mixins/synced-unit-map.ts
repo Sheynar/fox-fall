@@ -1,5 +1,5 @@
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
-import { computed, onScopeDispose, ref, watchEffect, type Ref } from 'vue';
+import { computed, onScopeDispose, ref, watch, watchEffect, type Ref } from 'vue';
 import { UnitMap, Unit } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
 import { useServerConnection } from '@/mixins/server-connection';
@@ -35,9 +35,9 @@ const parseUnit = (unit: Unit): Unit => {
 
 export const useSyncedUnitMap = (
 	unitMap: Ref<UnitMap>,
-	serverConnection: ReturnType<typeof useServerConnection>
+	webSocket: Ref<WebSocket>
 ) => {
-	serverConnection.webSocket.addEventListener('message', (event) => {
+	const onMessage = (event: MessageEvent<any>) => {
 		const roomUpdate = JSON.parse(event.data);
 		if (!isRoomUpdate(roomUpdate)) return;
 		if (roomUpdate.type === UpdateType.full) {
@@ -54,7 +54,15 @@ export const useSyncedUnitMap = (
 				unitMap.value[unitId] = parseUnit(roomUpdate.value as Unit);
 			}
 		}
-	});
+	};
+
+	watch(webSocket, (newWebSocket, oldWebSocket) => {
+		if (oldWebSocket) {
+			oldWebSocket.removeEventListener('message', onMessage);
+		}
+
+		newWebSocket.addEventListener('message', onMessage);
+	}, { immediate: true });
 
 	const update = (unitId: string) => {
 		const roomUpdate: RoomUpdate = {
@@ -62,7 +70,7 @@ export const useSyncedUnitMap = (
 			unitId,
 			value: unitMap.value[unitId] != null ? JSON.parse(JSON.stringify(unitMap.value[unitId])) : undefined,
 		}
-		serverConnection.webSocket.send(JSON.stringify(roomUpdate));
+		webSocket.value.send(JSON.stringify(roomUpdate));
 	};
 
 	const fullSync = () => {
@@ -70,7 +78,7 @@ export const useSyncedUnitMap = (
 			type: UpdateType.full,
 			value: JSON.parse(JSON.stringify(unitMap.value)),
 		};
-		serverConnection.webSocket.send(JSON.stringify(roomUpdate));
+		webSocket.value.send(JSON.stringify(roomUpdate));
 	};
 
 	return {

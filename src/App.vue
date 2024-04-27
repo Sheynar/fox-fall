@@ -240,15 +240,33 @@
 	};
 
 	const scope = getCurrentScope()!;
-	const showSync = () => {
+	const webSocket = ref<WebSocket | null>(null);
+	const setupSync = (serverIp: string, code: string) => {
 		scope.run(() => {
-			const serverUrl = prompt('Enter server URL:', 'ws://localhost:80/?code=');
+			const serverUrl = `ws://${serverIp}:80/?code=${encodeURIComponent(code)}`;
 			const serverConnection = useServerConnection(serverUrl ?? '');
+			if (webSocket.value) webSocket.value.close();
+			webSocket.value = serverConnection.webSocket;
 			const { update: updateUnit } = useSyncedUnitMap(
 				unitMap,
-				serverConnection
+				webSocket as Ref<WebSocket>
 			);
 			unitUpdateMethods.push(updateUnit);
 		});
 	};
+
+	const showSync = () => {
+		const serverIp = prompt('Enter server adress:', new URL(window.location.href).searchParams.get('serverAddress') || window.location.hostname);
+		const code = prompt('Enter sync code:', 'yourmom');
+		setupSync(serverIp || '127.0.0.1', code || 'yourmom');
+	};
+
+	const loadSyncFromUrl = () => {
+		const url = new URL(window.location.href);
+		const ipAddress = url.searchParams.get('serverAddress');
+		const code = url.searchParams.get('code');
+		if (!ipAddress || !code) return;
+		setupSync(ipAddress, code);
+	};
+	loadSyncFromUrl();
 </script>
