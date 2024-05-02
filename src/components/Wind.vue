@@ -74,7 +74,6 @@
 	import WindIcon from '@/components/icons/WindIcon.vue';
 	import { injectViewport } from '@/contexts/viewport';
 	import { injectWind } from '@/contexts/wind';
-	import { Vector } from '@/lib/vector';
 
 	const emit = defineEmits<{
 		(event: 'reset'): void;
