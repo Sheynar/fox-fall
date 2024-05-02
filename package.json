@@ -20,7 +20,7 @@
     "@vitejs/plugin-vue": "^4.4.0",
     "prettier": "^3.0.3",
     "sass": "^1.69.4",
-    "typescript": "^5.2.2",
+    "typescript": "^5.4.5",
     "vite": "^4.5.0"
   },
   "packageManager": "yarn@4.1.1"
