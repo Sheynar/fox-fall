@@ -47,7 +47,9 @@
 
 		<Wind class="App__wind" @reset="resetWind()" />
 
-		<div class="App__banner" v-if="unitSelector != null"> {{ unitSelector.prompt ?? 'Click on a unit to select it' }} </div>
+		<div class="App__banner" v-if="unitSelector != null">
+			{{ unitSelector.prompt ?? 'Click on a unit to select it' }}
+		</div>
 
 		<Controls
 			class="App__controls"
@@ -100,17 +102,17 @@
 
 	.App__banner {
 		position: fixed;
-    top: 1em;
-    left: 50%;
-    transform: translateX(-50%);
+		top: 1em;
+		left: 50%;
+		transform: translateX(-50%);
 
-    padding: 1em;
-    border: 1px solid;
+		padding: 1em;
+		border: 1px solid;
 
-    background: black;
-    opacity: 0.5;
+		background: black;
+		opacity: 0.5;
 
-    pointer-events: none;
+		pointer-events: none;
 	}
 
 	.App__controls {
@@ -122,7 +124,7 @@
 </style>
 
 <script setup lang="ts">
-	import { type Ref, ref, getCurrentScope } from 'vue';
+	import { computed, ref } from 'vue';
 	import Backdrop from '@/components/Backdrop.vue';
 	import Controls from '@/components/Controls.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
@@ -140,9 +142,6 @@
 	(<any>window).Vector = Vector;
 
 	const containerElement = ref<null | HTMLDivElement>(null);
-
-	let updateUnit = (unitId: string): void => {};
-	let updateWind = (): void => {};
 
 	const {
 		addUnit,
@@ -181,45 +180,44 @@
 		);
 	};
 
-	const scope = getCurrentScope()!;
-	const webSocket = ref<WebSocket | null>(null);
-	const setupSync = (serverIp: string, code: string) => {
-		scope.run(() => {
-			const serverUrl = `ws://${serverIp}:81/?code=${encodeURIComponent(code)}`;
-			const serverConnection = useServerConnection(serverUrl ?? '');
-			if (webSocket.value) webSocket.value.close();
-			webSocket.value = serverConnection.webSocket;
-			const { updateUnit: syncUnit, updateWind: syncWind } = useSyncedRoom(
-				unitMap,
-				wind,
-				webSocket as Ref<WebSocket>
-			);
-			updateUnit = syncUnit;
-			updateWind = syncWind;
-		});
-	};
+	const serverIp = ref<string | null>(null);
+	const serverCode = ref<string | null>(null);
+	const serverUrl = computed(() =>
+		serverIp.value && serverCode.value
+			? `ws://${serverIp.value}:81/?code=${encodeURIComponent(serverCode.value)}`
+			: null
+	);
+
+	const serverConnection = useServerConnection(serverUrl);
+	const { updateUnit, updateWind } = useSyncedRoom(
+		unitMap,
+		wind,
+		serverConnection.webSocket
+	);
 
 	const showSync = () => {
-		const serverIp = prompt(
+		const newServerIp = prompt(
 			'Enter server adress:',
 			new URL(window.location.href).searchParams.get('serverAddress') ||
 				window.location.hostname
 		);
-		if (!serverIp) return;
-		const code = prompt(
+		if (!newServerIp) return;
+		const newServerCode = prompt(
 			'Enter sync code:',
 			new URL(window.location.href).searchParams.get('code') || undefined
 		);
-		if (!code) return;
-		setupSync(serverIp, code);
+		if (!newServerCode) return;
+		serverIp.value = newServerIp;
+		serverCode.value = newServerCode;
 	};
 
 	const loadSyncFromUrl = () => {
 		const url = new URL(window.location.href);
-		const ipAddress = url.searchParams.get('serverAddress') || url.hostname;
-		const code = url.searchParams.get('code');
-		if (!ipAddress || !code) return;
-		setupSync(ipAddress, code);
+		const newServerIp = url.searchParams.get('serverAddress') || url.hostname;
+		const newServerCode = url.searchParams.get('code');
+		if (!newServerIp || !newServerCode) return;
+		serverIp.value = newServerIp;
+		serverCode.value = newServerCode;
 	};
 	loadSyncFromUrl();
 </script>

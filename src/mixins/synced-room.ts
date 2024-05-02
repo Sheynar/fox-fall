@@ -44,7 +44,7 @@ const parseUnit = (unit: Unit): Unit => {
 export const useSyncedRoom = (
 	unitMap: Ref<UnitMap>,
 	wind: Ref<Vector>,
-	webSocket: Ref<WebSocket>
+	webSocket: Ref<WebSocket | null | undefined>
 ) => {
 	const onMessage = (event: MessageEvent<any>) => {
 		const roomUpdate = JSON.parse(event.data);
@@ -78,7 +78,9 @@ export const useSyncedRoom = (
 				oldWebSocket.removeEventListener('message', onMessage);
 			}
 
-			newWebSocket.addEventListener('message', onMessage);
+			if (newWebSocket) {
+				newWebSocket.addEventListener('message', onMessage);
+			}
 		},
 		{ immediate: true }
 	);
@@ -92,7 +94,7 @@ export const useSyncedRoom = (
 					? JSON.parse(JSON.stringify(unitMap.value[unitId]))
 					: undefined,
 		};
-		webSocket.value.send(JSON.stringify(roomUpdate));
+		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
 
 	const updateWind = () => {
@@ -100,7 +102,7 @@ export const useSyncedRoom = (
 			type: UpdateType.wind,
 			value: JSON.parse(JSON.stringify(wind.value)),
 		};
-		webSocket.value.send(JSON.stringify(roomUpdate));
+		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
 
 	const fullSync = () => {
@@ -109,7 +111,7 @@ export const useSyncedRoom = (
 			units: JSON.parse(JSON.stringify(unitMap.value)),
 			wind: JSON.parse(JSON.stringify(wind.value)),
 		};
-		webSocket.value.send(JSON.stringify(roomUpdate));
+		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
 
 	return {
