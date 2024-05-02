@@ -221,12 +221,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kaosdlanor/vue-reactivity@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@kaosdlanor/vue-reactivity@npm:1.0.1"
+"@kaosdlanor/vue-reactivity@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@kaosdlanor/vue-reactivity@npm:1.0.2"
   peerDependencies:
     vue: ^3
-  checksum: 10c0/644c2071bad91bf5a3906ec12defb75c86c9149fcf541ecdbcbf32e28262a0e06d369205a06570950435969c1b50344fc435fd0fed10fa1a383aa816f014123c
+  checksum: 10c0/be5de6b8afe6bb02f4d4c3e0324b06e1c247b22abf21a253cfbf6ba71df57a0df74d1a41ad51f80d6e8b0c8106bbb193101e7c279bf55925f1b791678ff9a691
   languageName: node
   linkType: hard
 
@@ -766,7 +766,7 @@ __metadata:
   resolution: "fox-fall@workspace:."
   dependencies:
     "@kaosdlanor/kanim": "npm:^1.0.1"
-    "@kaosdlanor/vue-reactivity": "npm:^1.0.1"
+    "@kaosdlanor/vue-reactivity": "npm:^1.0.2"
     "@vitejs/plugin-vue": "npm:^4.4.0"
     "@vueuse/core": "npm:^10.5.0"
     prettier: "npm:^3.0.3"

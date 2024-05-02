@@ -11,7 +11,7 @@
   "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
   "dependencies": {
     "@kaosdlanor/kanim": "^1.0.1",
-    "@kaosdlanor/vue-reactivity": "^1.0.1",
+    "@kaosdlanor/vue-reactivity": "^1.0.2",
     "@vueuse/core": "^10.5.0",
     "typescript-event-target": "^1.1.1",
     "vue": "^3.3.7"
