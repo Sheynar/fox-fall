@@ -11,6 +11,7 @@ import {
 	provideUnitSelector,
 	type UnitSelector,
 } from '@/contexts/unit-selector';
+import { provideReadyToFire } from '@/contexts/ready-to-fire';
 import { provideSelectedUnit } from '@/contexts/selected-unit';
 import { provideViewport } from '@/contexts/viewport';
 import { provideWind } from '@/contexts/wind';
@@ -34,6 +35,7 @@ export const useArtillery = ({
 	onWindUpdated,
 }: ArtilleryOptions) => {
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
+	const readyToFire = ref(false);
 	const wind = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const unitMap = ref<UnitMap>({});
 	const unitSelector = ref<UnitSelector>(null);
@@ -53,6 +55,7 @@ export const useArtillery = ({
 
 	provideCursor(cursor);
 	provideWind(wind);
+	provideReadyToFire(readyToFire);
 	provideSelectedUnit(selectedUnit);
 	providePinnedUnits(pinnedUnits);
 	provideHighlightedUnits(highlightedUnits);
@@ -166,6 +169,7 @@ export const useArtillery = ({
 		cursor,
 		wind,
 		unitMap,
+		readyToFire,
 		unitSelector,
 		selectedUnit,
 		pinnedUnits,

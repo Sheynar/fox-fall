@@ -53,6 +53,11 @@
 
 		<Controls
 			class="App__controls"
+			:ready-to-fire="readyToFire"
+			@update:ready-to-fire="
+				readyToFire = $event;
+				updateReadyToFire();
+			"
 			@create-unit="addUnit($event.unitType, $event.pointerEvent)"
 			@show-sync="showSync()"
 			@show-help="showHelp()"
@@ -151,6 +156,7 @@
 
 		cursor,
 		wind,
+		readyToFire,
 		selectedUnit,
 		unitMap,
 		unitSelector,
@@ -189,7 +195,8 @@
 	);
 
 	const serverConnection = useServerConnection(serverUrl);
-	const { updateUnit, updateWind } = useSyncedRoom(
+	const { updateReadyToFire, updateUnit, updateWind } = useSyncedRoom(
+		readyToFire,
 		unitMap,
 		wind,
 		serverConnection.webSocket

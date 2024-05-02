@@ -3,16 +3,22 @@ import { UnitMap, Unit } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
 
 enum UpdateType {
-	unit = 'unit',
 	full = 'full',
+	readyToFire = 'readyToFire',
+	unit = 'unit',
 	wind = 'wind',
 }
 
 type RoomUpdate =
 	| {
 			type: UpdateType.full;
+			readyToFire?: boolean;
 			units: Record<string, unknown>;
 			wind?: unknown;
+	  }
+	| {
+			type: UpdateType.readyToFire;
+			value: boolean;
 	  }
 	| {
 			type: UpdateType.unit;
@@ -42,6 +48,7 @@ const parseUnit = (unit: Unit): Unit => {
 };
 
 export const useSyncedRoom = (
+	readyToFire: Ref<boolean>,
 	unitMap: Ref<UnitMap>,
 	wind: Ref<Vector>,
 	webSocket: Ref<WebSocket | null | undefined>
@@ -59,6 +66,12 @@ export const useSyncedRoom = (
 			if (roomUpdate.wind != null) {
 				wind.value = parseVector(roomUpdate.wind);
 			}
+
+			if (roomUpdate.readyToFire != null) {
+				readyToFire.value = roomUpdate.readyToFire;
+			}
+		} else if (roomUpdate.type === UpdateType.readyToFire) {
+			readyToFire.value = roomUpdate.value;
 		} else if (roomUpdate.type === UpdateType.unit) {
 			const unitId = roomUpdate.unitId;
 			if (roomUpdate.value == null) {
@@ -105,9 +118,18 @@ export const useSyncedRoom = (
 		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
 
+	const updateReadyToFire = () => {
+		const roomUpdate: RoomUpdate = {
+			type: UpdateType.readyToFire,
+			value: readyToFire.value,
+		};
+		webSocket.value?.send(JSON.stringify(roomUpdate));
+	};
+
 	const fullSync = () => {
 		const roomUpdate: RoomUpdate = {
 			type: UpdateType.full,
+			readyToFire: readyToFire.value,
 			units: JSON.parse(JSON.stringify(unitMap.value)),
 			wind: JSON.parse(JSON.stringify(wind.value)),
 		};
@@ -115,8 +137,9 @@ export const useSyncedRoom = (
 	};
 
 	return {
+		fullSync,
+		updateReadyToFire,
 		updateUnit,
 		updateWind,
-		fullSync,
 	};
 };

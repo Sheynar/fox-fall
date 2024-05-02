@@ -50,9 +50,13 @@
 			</div>
 		</div>
 
-		<button class="Controls__button" @click.stop="emit('show-sync')">Sync</button>
+		<button class="Controls__button" @click.stop="emit('show-sync')">
+			Sync
+		</button>
 
 		<button class="Controls__button" @click.stop="emit('show-help')">?</button>
+
+		<ToggleSwitch :model-value="props.readyToFire" @update:model-value="emit('update:ready-to-fire', $event)" />
 	</div>
 </template>
 
@@ -61,6 +65,19 @@
 		display: flex;
 		flex-direction: row-reverse;
 		gap: 0.5em;
+
+		.ToggleSwitch__container {
+			height: 4em;
+			width: 4em;
+
+			border-radius: 8px;
+    	overflow: hidden;
+
+			.ToggleSwitch__slider::before {
+				border-radius: 4px;
+				overflow: hidden;
+			}
+		}
 	}
 
 	.Controls__menu {
@@ -113,7 +130,12 @@
 	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
+	import ToggleSwitch from '@/components/ToggleSwitch.vue';
 	import { UnitType } from '@/lib/unit';
+
+	const props = defineProps<{
+		readyToFire: boolean;
+	}>();
 
 	const emit = defineEmits<{
 		(
@@ -122,5 +144,6 @@
 		): void;
 		(event: 'show-sync'): void;
 		(event: 'show-help'): void;
+		(event: 'update:ready-to-fire', value: boolean): void;
 	}>();
 </script>
