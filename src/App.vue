@@ -214,8 +214,12 @@
 			new URL(window.location.href).searchParams.get('code') || undefined
 		);
 		if (!newServerCode) return;
-		serverIp.value = newServerIp;
-		serverCode.value = newServerCode;
+		const newSearch = `?serverAddress=${encodeURIComponent(newServerIp)}&code=${encodeURIComponent(newServerCode)}`;
+		if (newSearch === location.search) {
+			location.reload();
+		} else {
+			location.search = newSearch;
+		}
 	};
 
 	const loadSyncFromUrl = () => {

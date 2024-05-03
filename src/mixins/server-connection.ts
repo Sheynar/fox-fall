@@ -1,11 +1,19 @@
+import { provideServerConnection } from '@/contexts/server-connection';
 import { type Ref, onScopeDispose, ref, watch } from 'vue';
 
-const RECONNECT_INTERVAL = 1000;
+const RECONNECT_INTERVAL = 10_000;
+
+export enum ServerConnectionState {
+	disconnected = 'Disconnected',
+	connecting = 'Connecting',
+	connected = 'Connected',
+}
 
 export const useServerConnection = (url: Ref<string | null | undefined>) => {
 	const webSocket = ref<WebSocket>();
 	const ready = ref(Promise.resolve());
 	const destroyed = ref(false);
+	const connectionState = ref(ServerConnectionState.disconnected);
 
 	const disconnect = () => {
 		if (!webSocket.value) return;
@@ -16,11 +24,15 @@ export const useServerConnection = (url: Ref<string | null | undefined>) => {
 	const connect = async () => {
 		if (webSocket.value) disconnect();
 		if (destroyed.value || !url.value) return;
+		connectionState.value = ServerConnectionState.connecting;
 
 		const newSocket = webSocket.value = new WebSocket(url.value);
 		await new Promise<void>((resolve, reject) => {
 			newSocket.addEventListener('open', () => resolve(), { once: true });
-			newSocket.addEventListener('error', (_event) => reject(new Error('Failed to connect')), { once: true });
+			newSocket.addEventListener('error', (_event) => {
+				connectionState.value	= ServerConnectionState.disconnected;
+				reject(new Error('Failed to connect'));
+			}, { once: true });
 		});
 	};
 
@@ -36,12 +48,23 @@ export const useServerConnection = (url: Ref<string | null | undefined>) => {
 		await ready.value;
 	};
 
+	const onConnect = () => {
+		connectionState.value = ServerConnectionState.connected;
+	};
+
+	const onDisconnect = () => {
+		connectionState.value = ServerConnectionState.disconnected;
+		reconnect();
+	};
+
 	watch(webSocket, (newSocket, oldSocket) => {
 		if (oldSocket) {
-			oldSocket.removeEventListener('close', reconnect);
+			oldSocket.removeEventListener('open', onConnect);
+			oldSocket.removeEventListener('close', onDisconnect);
 		}
 		if (newSocket) {
-			newSocket.addEventListener('close', reconnect);
+			newSocket.addEventListener('open', onConnect);
+			newSocket.addEventListener('close', onDisconnect);
 		}
 	});
 
@@ -50,14 +73,19 @@ export const useServerConnection = (url: Ref<string | null | undefined>) => {
 		disconnect();
 	};
 
-	watch(url, () => reconnect(), { immediate: true });
+	watch(url, () => connect(), { immediate: true });
 	onScopeDispose(stop);
 
-	return {
+	const output = {
 		stop,
 		ready,
+		connectionState,
 		reconnect,
 
 		webSocket,
 	};
+
+	provideServerConnection(output);
+
+	return output;
 };

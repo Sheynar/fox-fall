@@ -51,7 +51,7 @@
 		</div>
 
 		<button class="Controls__button" @click.stop="emit('show-sync')">
-			Sync
+			{{ serverConnection.connectionState.value }}
 		</button>
 
 		<button class="Controls__button" @click.stop="emit('show-help')">?</button>
@@ -117,6 +117,18 @@
 			width: 1em;
 			height: 1em;
 		}
+
+		&.Controls__sync-button {
+			background: black;
+			color: white;
+			border: 1px solid;
+
+			&.Controls__sync-button--active {
+				background: white;
+				color: black;
+				border: 1px solid black;
+			}
+		}
 	}
 
 	.Controls__icon {
@@ -131,11 +143,14 @@
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import ToggleSwitch from '@/components/ToggleSwitch.vue';
+	import { injectServerConnection } from '@/contexts/server-connection';
 	import { UnitType } from '@/lib/unit';
 
 	const props = defineProps<{
 		readyToFire: boolean;
 	}>();
+
+	const serverConnection = injectServerConnection();
 
 	const emit = defineEmits<{
 		(
