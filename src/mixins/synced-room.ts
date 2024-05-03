@@ -108,6 +108,9 @@ export const useSyncedRoom = (
 					: undefined,
 		};
 		webSocket.value?.send(JSON.stringify(roomUpdate));
+
+		readyToFire.value = false;
+		updateReadyToFire();
 	};
 
 	const updateWind = () => {
