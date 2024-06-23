@@ -96,6 +96,7 @@ export const useArtillery = ({
 
 		unitMap.value[newUnit.value.id] = newUnit.value;
 		selectedUnits.value.push(newUnit.value.id);
+		onUnitUpdated?.(newUnit.value.id);
 
 		return newUnit;
 	};
