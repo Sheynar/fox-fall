@@ -1,6 +1,5 @@
 import { type Ref, ref } from "vue";
 import { useEventListener } from "@vueuse/core";
-import type { SelectedUnit } from "@/contexts/selected-unit";
 import type { Viewport } from "@/lib/viewport";
 import { useMultiPointerDrag } from "@/mixins/multi-pointer";
 import { Vector } from "@/lib/vector";
@@ -13,7 +12,6 @@ export enum DragType {
 export type ViewportControlOptions = {
 	containerElement: Ref<HTMLElement | null>;
 	viewport: Ref<Viewport>;
-	selectedUnit: Ref<SelectedUnit>;
 };
 export const useViewPortControl = (options: ViewportControlOptions) => {
 	const moving = ref<null | {
@@ -23,7 +21,6 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 	useMultiPointerDrag({
 		element: options.containerElement,
 		onBeforePointerDown: (event) => {
-			options.selectedUnit.value = null;
 			return event.button <= 2;
 		},
 		onDragStart: (event) => {

@@ -12,10 +12,9 @@ import {
 	type UnitSelector,
 } from '@/contexts/unit-selector';
 import { provideReadyToFire } from '@/contexts/ready-to-fire';
-import { provideSelectedUnit } from '@/contexts/selected-unit';
+import { provideSelectedUnits } from '@/contexts/selected-unit';
 import { provideViewport } from '@/contexts/viewport';
 import { provideWind } from '@/contexts/wind';
-import { wrapDegrees } from '@/lib/angle';
 import {
 	type Unit,
 	type UnitMap,
@@ -39,7 +38,7 @@ export const useArtillery = ({
 	const wind = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const unitMap = ref<UnitMap>({});
 	const unitSelector = ref<UnitSelector>(null);
-	const selectedUnit = ref<Unit['id'] | null>(null);
+	const selectedUnits = ref<Unit['id'][]>([]);
 	const pinnedUnits = ref<PinnedUnits>(new Set());
 	const highlightedUnits = ref<HighlightedUnits>(new Set());
 	const viewport = ref(
@@ -56,25 +55,28 @@ export const useArtillery = ({
 	provideCursor(cursor);
 	provideWind(wind);
 	provideReadyToFire(readyToFire);
-	provideSelectedUnit(selectedUnit);
+	provideSelectedUnits(selectedUnits);
 	providePinnedUnits(pinnedUnits);
 	provideHighlightedUnits(highlightedUnits);
 	provideUnitSelector(unitSelector);
 	provideUnitMap(unitMap);
 	provideViewport(viewport);
 
-	const unitCreateEvents = new WeakMap<Unit, PointerEvent>();
 	const addUnit = (
 		type: UnitType,
 		event?: PointerEvent,
-		vector: Ref<Vector> = ref(
-			Vector.fromAngularVector({
-				azimuth: wrapDegrees(-viewport.value.rotation - 90),
-				distance: 50,
-			})
-		),
+		vector?: Ref<Vector>,
 		parentUnitId?: string
 	) => {
+		if (vector == null) {
+			vector = ref(
+				Vector.fromAngularVector({
+					azimuth: 180,
+					distance: parentUnitId == null ? 0 : 10,
+				})
+			);
+		}
+
 		const parentUnit = parentUnitId ? unitMap.value[parentUnitId] : undefined;
 		const newUnit = createUnit(type, vector, parentUnitId);
 
@@ -90,10 +92,10 @@ export const useArtillery = ({
 					getUnitResolvedVector(unitMap.value, parentUnit.id).scale(-1)
 				);
 			}
-			unitCreateEvents.set(newUnit.value, event);
 		}
 
 		unitMap.value[newUnit.value.id] = newUnit.value;
+		selectedUnits.value.push(newUnit.value.id);
 
 		return newUnit;
 	};
@@ -171,11 +173,9 @@ export const useArtillery = ({
 		unitMap,
 		readyToFire,
 		unitSelector,
-		selectedUnit,
+		selectedUnits,
 		pinnedUnits,
 		highlightedUnits,
 		viewport,
-
-		unitCreateEvents,
 	};
 };

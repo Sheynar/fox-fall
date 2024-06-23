@@ -5,20 +5,25 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "build": "rimraf dist && vite build",
     "preview": "vite preview"
   },
   "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
   "dependencies": {
     "@kaosdlanor/kanim": "^1.0.1",
     "@kaosdlanor/vue-reactivity": "^1.0.2",
+    "@primevue/themes": "4.0.0-rc.2",
     "@vueuse/core": "^10.5.0",
+    "primeicons": "^7.0.0",
+    "primevue": "4.0.0-rc.2",
     "typescript-event-target": "^1.1.1",
-    "vue": "^3.3.7"
+    "vue": "^3.3.7",
+    "vue-angle-input": "^1.0.3"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.4.0",
     "prettier": "^3.0.3",
+    "rimraf": "^5.0.7",
     "sass": "^1.69.4",
     "typescript": "^5.4.5",
     "vite": "^4.5.0"

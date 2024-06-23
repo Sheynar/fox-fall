@@ -7,7 +7,7 @@
 			Unit__highlighted:
 				pinnedUnits.has(unit.id) ||
 				highlightedUnits.has(unit.id) ||
-				selectedUnit === unit.id,
+				open,
 		}"
 		:style="{
 			'--unit-x': screenPosition.x,
@@ -37,6 +37,15 @@
 			@pointerup="onPointerUp"
 		/>
 	</div>
+
+	<UnitTooltip
+		v-model:visible="open"
+		v-model:can-drag="canDrag"
+		@create-child="emit('create-child', $event)"
+		@remove="emit('remove')"
+		@updated="emit('updated')"
+		@update-wind="emit('update-wind')"
+	/>
 </template>
 
 <style lang="scss">
@@ -96,7 +105,6 @@
 <script setup lang="ts">
 	import {
 		computed,
-		onMounted,
 		onScopeDispose,
 		ref,
 		shallowRef,
@@ -106,9 +114,10 @@
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
+	import UnitTooltip from '@/components/Unit/UnitTooltip.vue';
 	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
-	import { injectSelectedUnit } from '@/contexts/selected-unit';
+	import { injectSelectedUnits } from '@/contexts/selected-unit';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { injectUnitSelector } from '@/contexts/unit-selector';
 	import { injectViewport } from '@/contexts/viewport';
@@ -119,11 +128,16 @@
 
 	const props = defineProps<{
 		readonly?: boolean;
-		createEvent?: PointerEvent;
 	}>();
 
 	const emit = defineEmits<{
+		(
+			event: 'create-child',
+			payload: UnitType
+		): void;
 		(event: 'updated'): void;
+		(event: 'remove'): void;
+		(event: 'update-wind'): void;
 	}>();
 
 	const unitMap = injectUnitMap();
@@ -132,9 +146,23 @@
 	const viewport = injectViewport();
 	const pinnedUnits = injectPinnedUnits();
 	const highlightedUnits = injectHighlightedUnits();
-	const selectedUnit = injectSelectedUnit();
+	const selectedUnits = injectSelectedUnits();
 
 	const isHovered = ref(false);
+	const canDrag = ref(false);
+	const open = computed({
+		get: () => selectedUnits.value.includes(unit.value.id),
+		set: (value) => {
+			if (value === selectedUnits.value.includes(unit.value.id)) {
+				return;
+			}
+			if (value) {
+				selectedUnits.value.push(unit.value.id);
+			} else {
+				selectedUnits.value.splice(selectedUnits.value.indexOf(unit.value.id), 1);
+			}
+		},
+	});
 
 	watch(
 		() => isHovered.value,
@@ -148,8 +176,9 @@
 	);
 	onScopeDispose(() => {
 		highlightedUnits.value.delete(unit.value.id);
-		if (selectedUnit.value === unit.value.id) {
-			selectedUnit.value = null;
+		const selectedIndex = selectedUnits.value.indexOf(unit.value.id);
+		if (selectedIndex > -1) {
+			selectedUnits.value.splice(selectedIndex, 1);
 		}
 	});
 
@@ -178,7 +207,10 @@
 			return;
 		}
 
-		selectedUnit.value = unit.value.id;
+		if (!canDrag.value) {
+			open.value = !open.value;
+			return;
+		}
 
 		moving.value = {
 			startEvent: event,
@@ -196,6 +228,14 @@
 	const onPointerUp = (event: PointerEvent) => {
 		if (!moving.value) return;
 		event.stopPropagation();
+
+		const distanceMoved = Vector.fromCartesianVector({
+			x: event.clientX - moving.value.startEvent.clientX,
+			y: event.clientY - moving.value.startEvent.clientY,
+		});
+		if (distanceMoved.distance <= 5) {
+			open.value = !open.value;
+		}
 
 		moving.value = null;
 		iconElement.value.$el.releasePointerCapture(event.pointerId);
@@ -233,10 +273,4 @@
 
 		emit('updated');
 	};
-
-	onMounted(() => {
-		if (props.createEvent != null) {
-			onPointerDown(props.createEvent);
-		}
-	});
 </script>

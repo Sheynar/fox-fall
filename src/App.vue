@@ -26,24 +26,17 @@
 				:unit="unitMap[unitId]"
 			>
 				<UnitComponent
-					:create-event="unitCreateEvents.get(unitMap[unitId])"
+					@create-child="
+						addUnit($event, undefined, undefined, unitId)
+					"
 					@updated="updateUnit(unitId)"
+					@remove="removeUnit(unitId)"
+					@update-wind="editWind(unitId)"
 				/>
 			</UnitProvider>
 		</div>
 
 		<FiringArcs />
-
-		<UnitProvider v-if="selectedUnit" :unit="unitMap[selectedUnit]">
-			<UnitTooltip
-				@create-child="
-					addUnit($event.unitType, $event.pointerEvent, undefined, selectedUnit)
-				"
-				@delete="removeUnit(selectedUnit)"
-				@updated="updateUnit(selectedUnit)"
-				@update-wind="editWind(selectedUnit)"
-			/>
-		</UnitProvider>
 
 		<Wind class="App__wind" @reset="resetWind()" />
 
@@ -51,17 +44,16 @@
 			{{ unitSelector.prompt ?? 'Click on a unit to select it' }}
 		</div>
 
-		<Controls
-			class="App__controls"
+		<Dock
 			:ready-to-fire="readyToFire"
-			@update:ready-to-fire="
-				readyToFire = $event;
-				updateReadyToFire();
-			"
-			@create-unit="addUnit($event.unitType, $event.pointerEvent)"
-			@show-sync="showSync()"
+			@update:ready-to-fire="readyToFire = $event; updateReadyToFire()"
+			@show-add-unit="addUnit(UnitType.Artillery, undefined, undefined)"
 			@show-help="showHelp()"
+			@show-settings="() => (settingsVisible = true)"
+			@show-sync="showSync()"
 		/>
+
+		<Settings v-model:visible="settingsVisible" />
 	</div>
 </template>
 
@@ -131,14 +123,15 @@
 <script setup lang="ts">
 	import { computed, ref } from 'vue';
 	import Backdrop from '@/components/Backdrop.vue';
-	import Controls from '@/components/Controls.vue';
+	import Dock from '@/components/Dock.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
+	import Settings from '@/components/Settings/Settings.vue';
 	import UnitComponent from '@/components/Unit/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
-	import UnitTooltip from '@/components/Unit/UnitTooltip.vue';
 	import Wind from '@/components/Wind.vue';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
 	import { Vector } from '@/lib/vector';
+	import { UnitType } from '@/lib/unit';
 	import { useArtillery } from '@/mixins/artillery';
 	import { useServerConnection } from '@/mixins/server-connection';
 	import { useSyncedRoom } from '@/mixins/synced-room';
@@ -157,10 +150,8 @@
 		cursor,
 		wind,
 		readyToFire,
-		selectedUnit,
 		unitMap,
 		unitSelector,
-		unitCreateEvents,
 		viewport,
 	} = useArtillery({
 		onUnitUpdated: (unitId: string) => updateUnit(unitId),
@@ -170,7 +161,6 @@
 	useViewPortControl({
 		containerElement,
 		viewport,
-		selectedUnit,
 	});
 
 	const onPointerMove = (event: PointerEvent) => {
@@ -231,4 +221,6 @@
 		serverCode.value = newServerCode;
 	};
 	loadSyncFromUrl();
+
+	const settingsVisible = ref(false);
 </script>

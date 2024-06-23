@@ -1,7 +1,6 @@
 <template>
 	<div
 		class="Wind__container"
-		:class="{ Wind__open: open }"
 		@pointerdown.stop="open = !open"
 		@touchstart.stop
 	>
@@ -12,39 +11,35 @@
 				'--viewport-deg': viewport.rotation,
 			}"
 		/>
-		<div class="Wind_information">
-			<span>Wind direction: {{ wind.azimuth.toFixed(1) }}°</span>
-			<span>Wind distance: {{ wind.distance }}</span>
-			<button
-				class="Wind__button"
-				@pointerdown.stop="emit('reset')"
-			>
-				Reset
-			</button>
-		</div>
+
+		<PrimeDialog
+			v-model:visible="open"
+			header="Wind"
+			position="bottomleft"
+			@pointerdown.stop
+			@wheel.stop
+		>
+			<div class="Wind__information">
+				<div class="Wind__information__item">
+					<label>Wind direction:</label>
+					<DirectionInput v-model="wind.azimuth" />
+				</div>
+				<div class="Wind__information__item">
+					<label>Wind distance:</label>
+					<DistanceInput v-model="wind.distance" />
+				</div>
+				<PrimeButton
+					class="Wind__information__button"
+					label="Reset"
+					@pointerdown.stop="emit('reset')"
+				/>
+			</div>
+		</PrimeDialog>
 	</div>
 </template>
 
 <style lang="scss">
 	.Wind__container {
-		&:not(.Wind__open) {
-			.Wind_information {
-				display: none;
-			}
-		}
-
-		&.Wind__open {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-
-			padding: 1em;
-			gap: 0.5em;
-			border: 1px solid;
-
-			background: black;
-		}
-
 		cursor: pointer;
 		user-select: none;
 	}
@@ -55,23 +50,42 @@
 
 		border-radius: 50%;
 
-		transform: rotate(calc((var(--wind-deg) + var(--viewport-deg)) * 1deg + 180deg));
+		transform: rotate(
+			calc((var(--wind-deg) + var(--viewport-deg)) * 1deg + 180deg)
+		);
 		transform-origin: 50% 50%;
 	}
 
-	.Wind_information {
-		display: contents;
+	.Wind__information {
+		display: grid;
+		grid-template-columns: max-content 1fr;
+		gap: 1rem;
+		align-items: center;
 	}
 
-	.Wind__button {
-		color: inherit;
-		font-size: inherit;
+	.Wind__information__item {
+		grid-column: auto / span 2;
+		display: grid;
+		grid-template-columns: subgrid;
+		align-items: inherit;
+	}
+
+	.Wind__information__item__angle-input {
+		margin: 0 !important;
+	}
+
+	.Wind__information__button {
+		grid-column: auto / span 2;
 	}
 </style>
 
 <script setup lang="ts">
+	import PrimeButton from 'primevue/button';
+	import PrimeDialog from 'primevue/dialog';
 	import { ref } from 'vue';
 	import WindIcon from '@/components/icons/WindIcon.vue';
+	import DirectionInput from '@/components/inputs/DirectionInput.vue';
+	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import { injectViewport } from '@/contexts/viewport';
 	import { injectWind } from '@/contexts/wind';
 

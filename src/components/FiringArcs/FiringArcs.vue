@@ -29,7 +29,7 @@
 	import { computed, ref } from 'vue';
 	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
-	import { injectSelectedUnit } from '@/contexts/selected-unit';
+	import { injectSelectedUnits } from '@/contexts/selected-unit';
 	import { injectUnitMap } from '@/contexts/unit';
 	import { UnitType, type Unit } from '@/lib/unit';
 	import FiringArc from './FiringArc.vue';
@@ -37,7 +37,7 @@
 	const firingLines = ref<HTMLElement | null>(null);
 	const firingLabels = ref<HTMLElement | null>(null);
 
-	const selectedUnit = injectSelectedUnit();
+	const selectedUnits = injectSelectedUnits();
 	const highlightedUnits = injectHighlightedUnits();
 	const pinnedUnits = injectPinnedUnits();
 	const unitMap = injectUnitMap();
@@ -80,10 +80,7 @@
 	const firingArcList = computed(() => {
 		const output: { from: Unit; to: Unit }[] = [];
 
-		const unitIds = new Set([...highlightedUnits.value, ...pinnedUnits.value]);
-		if (selectedUnit.value != null) {
-			unitIds.add(selectedUnit.value);
-		}
+		const unitIds = new Set([...highlightedUnits.value, ...pinnedUnits.value, ...selectedUnits.value]);
 
 		for (const unitId of unitIds) {
 			const unit = unitMap.value[unitId];
