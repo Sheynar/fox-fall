@@ -26,9 +26,7 @@
 				:unit="unitMap[unitId]"
 			>
 				<UnitComponent
-					@create-child="
-						addUnit($event, undefined, undefined, unitId)
-					"
+					@create-child="addUnit($event, undefined, undefined, unitId)"
 					@updated="updateUnit(unitId)"
 					@remove="removeUnit(unitId)"
 					@update-wind="editWind(unitId)"
@@ -44,15 +42,20 @@
 
 		<Dock
 			:ready-to-fire="readyToFire"
-			@update:ready-to-fire="readyToFire = $event; updateReadyToFire()"
-			@reset-wind="resetWind()"
+			@update:ready-to-fire="
+				readyToFire = $event;
+				updateReadyToFire();
+			"
 			@show-add-unit="addUnit(UnitType.Artillery, undefined, undefined)"
 			@show-help="showHelp()"
 			@show-settings="() => (settingsVisible = true)"
 			@show-sync="showSync()"
+			@show-wind-settings="() => (windSettingsVisible = !windSettingsVisible)"
 		/>
 
 		<Settings v-model:visible="settingsVisible" />
+
+		<WindSettings v-model:visible="windSettingsVisible" @reset="resetWind()" />
 	</div>
 </template>
 
@@ -127,6 +130,7 @@
 	import { useServerConnection } from '@/mixins/server-connection';
 	import { useSyncedRoom } from '@/mixins/synced-room';
 	import { useViewPortControl } from '@/mixins/viewport-control';
+	import WindSettings from './components/WindSettings.vue';
 
 	(<any>window).Vector = Vector;
 
@@ -214,4 +218,5 @@
 	loadSyncFromUrl();
 
 	const settingsVisible = ref(false);
+	const windSettingsVisible = ref(false);
 </script>

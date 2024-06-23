@@ -21,6 +21,7 @@
 		width: 3rem;
 		height: 3rem;
 		padding: 0;
+		display: grid !important;
 	}
 </style>
 
@@ -29,7 +30,7 @@
 	import PrimeDock from 'primevue/dock';
 	import vPrimeTooltip from 'primevue/tooltip';
 	import { computed, defineModel} from 'vue';
-	import WindComponent from '@/components/Wind.vue';
+	import WindIndicator from '@/components/WindIndicator.vue';
 	import { injectServerConnection } from '@/contexts/server-connection';
 	import { injectUnitMap } from '@/contexts/unit';
 	import { ServerConnectionState } from '@/mixins/server-connection';
@@ -40,11 +41,11 @@
 	const serverConnection = injectServerConnection();
 
 	const emit = defineEmits<{
-		(event: 'reset-wind'): void;
 		(event: 'show-add-unit'): void;
 		(event: 'show-help'): void;
 		(event: 'show-settings'): void;
 		(event: 'show-sync'): void;
+		(event: 'show-wind-settings'): void;
 	}>();
 
 	type Item = {
@@ -74,9 +75,9 @@
 	const items = computed<Item[]>(() => [
 		{
 			label: 'Wind',
-			iconComponent: WindComponent,
+			iconComponent: WindIndicator,
 			severity: 'secondary',
-			command: () => emit('reset-wind'),
+			command: () => emit('show-wind-settings'),
 		},
 		{
 			label: 'Add unit',
