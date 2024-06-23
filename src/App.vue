@@ -38,8 +38,6 @@
 
 		<FiringArcs />
 
-		<Wind class="App__wind" @reset="resetWind()" />
-
 		<div class="App__banner" v-if="unitSelector != null">
 			{{ unitSelector.prompt ?? 'Click on a unit to select it' }}
 		</div>
@@ -47,6 +45,7 @@
 		<Dock
 			:ready-to-fire="readyToFire"
 			@update:ready-to-fire="readyToFire = $event; updateReadyToFire()"
+			@reset-wind="resetWind()"
 			@show-add-unit="addUnit(UnitType.Artillery, undefined, undefined)"
 			@show-help="showHelp()"
 			@show-settings="() => (settingsVisible = true)"
@@ -90,13 +89,6 @@
 		pointer-events: none;
 	}
 
-	.App__wind {
-		position: absolute;
-		left: 0.5em;
-		bottom: 0.5em;
-		z-index: 1000;
-	}
-
 	.App__banner {
 		position: fixed;
 		top: 1em;
@@ -128,7 +120,6 @@
 	import Settings from '@/components/Settings/Settings.vue';
 	import UnitComponent from '@/components/Unit/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
-	import Wind from '@/components/Wind.vue';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
 	import { Vector } from '@/lib/vector';
 	import { UnitType } from '@/lib/unit';

@@ -9,7 +9,8 @@
 				@pointerdown.stop="item.command()"
 				v-prime-tooltip.top="item.label"
 			>
-				<i :class="item.icon" />
+				<i v-if="item.icon" :class="item.icon" />
+				<Component v-else-if="item.iconComponent" :is="item.iconComponent" />
 			</PrimeButton>
 		</template>
 	</PrimeDock>
@@ -28,6 +29,7 @@
 	import PrimeDock from 'primevue/dock';
 	import vPrimeTooltip from 'primevue/tooltip';
 	import { computed, defineModel} from 'vue';
+	import WindComponent from '@/components/Wind.vue';
 	import { injectServerConnection } from '@/contexts/server-connection';
 	import { injectUnitMap } from '@/contexts/unit';
 	import { ServerConnectionState } from '@/mixins/server-connection';
@@ -38,6 +40,7 @@
 	const serverConnection = injectServerConnection();
 
 	const emit = defineEmits<{
+		(event: 'reset-wind'): void;
 		(event: 'show-add-unit'): void;
 		(event: 'show-help'): void;
 		(event: 'show-settings'): void;
@@ -46,7 +49,8 @@
 
 	type Item = {
 		label: string;
-		icon: string;
+		icon?: string;
+		iconComponent?: any;
 		severity?: string;
 		disabled?: boolean;
 		command: () => void;
@@ -68,6 +72,12 @@
 	}));
 
 	const items = computed<Item[]>(() => [
+		{
+			label: 'Wind',
+			iconComponent: WindComponent,
+			severity: 'secondary',
+			command: () => emit('reset-wind'),
+		},
 		{
 			label: 'Add unit',
 			icon: 'pi pi-plus',

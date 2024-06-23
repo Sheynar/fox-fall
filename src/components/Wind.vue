@@ -45,8 +45,8 @@
 	}
 
 	.Wind__indicator {
-		height: 5em;
-		width: 5em;
+		height: 2em;
+		width: 2em;
 
 		border-radius: 50%;
 
