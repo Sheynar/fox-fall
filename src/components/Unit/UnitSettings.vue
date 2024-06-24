@@ -6,19 +6,19 @@
 		@pointerdown.stop
 		@wheel.stop
 	>
-		<div class="UnitTooltip__container" @pointerdown.stop @touchstart.stop>
-			<div class="UnitTooltip__table">
-				<div class="UnitTooltip__row">
+		<div class="UnitSettings__container" @pointerdown.stop @touchstart.stop>
+			<div class="UnitSettings__table">
+				<div class="UnitSettings__row">
 					<span>Type:</span>
 					<PrimeSelect
-						class="UnitTooltip__select"
+						class="UnitSettings__select"
 						v-model="selectedUnitType"
 						:disabled="props.readonly"
 						:options="unitTypeOptions"
 						optionLabel="label"
 					/>
 				</div>
-				<div class="UnitTooltip__row">
+				<div class="UnitSettings__row">
 					<label>Name:</label>
 					<PrimeInputText
 						:readonly="props.readonly"
@@ -27,12 +27,12 @@
 					/>
 				</div>
 				<template v-if="parent">
-					<div class="UnitTooltip__row">
-						<span class="UnitTooltip__span">
+					<div class="UnitSettings__row">
+						<span class="UnitSettings__span">
 							{{ parent.label }} -> {{ unit.label }}
 						</span>
 					</div>
-					<div class="UnitTooltip__row">
+					<div class="UnitSettings__row">
 						<span>Distance:</span>
 						<DistanceInput
 							:model-value="unit.vector.distance"
@@ -43,7 +43,7 @@
 							"
 						/>
 					</div>
-					<div class="UnitTooltip__row">
+					<div class="UnitSettings__row">
 						<span>Azimuth:</span>
 						<DirectionInput
 							:model-value="wrapDegrees(unit.vector.azimuth + 180)"
@@ -53,10 +53,10 @@
 							"
 						/>
 					</div>
-					<span class="UnitTooltip__span">
+					<span class="UnitSettings__span">
 						{{ unit.label }} -> {{ parent.label }}
 					</span>
-					<div class="UnitTooltip__row">
+					<div class="UnitSettings__row">
 						<span>Distance:</span>
 						<DistanceInput
 							:model-value="unit.vector.distance"
@@ -66,7 +66,7 @@
 							"
 						/>
 					</div>
-					<div class="UnitTooltip__row">
+					<div class="UnitSettings__row">
 						<span>Azimuth:</span>
 						<DirectionInput
 							:model-value="wrapDegrees(unit.vector.azimuth)"
@@ -78,9 +78,9 @@
 					</div>
 				</template>
 			</div>
-			<div class="UnitTooltip__actions">
+			<div class="UnitSettings__actions">
 				<PrimeButton
-					class="UnitTooltip__action"
+					class="UnitSettings__action"
 					@click.stop="
 						emit('create-child', UnitType.Artillery);
 						visible = false;
@@ -91,7 +91,7 @@
 					<ArtilleryIcon />
 				</PrimeButton>
 				<PrimeButton
-					class="UnitTooltip__action"
+					class="UnitSettings__action"
 					@click.stop="
 						emit('create-child', UnitType.Spotter);
 						visible = false;
@@ -102,7 +102,7 @@
 					<SpotterIcon />
 				</PrimeButton>
 				<PrimeButton
-					class="UnitTooltip__action"
+					class="UnitSettings__action"
 					@click.stop="
 						emit('create-child', UnitType.Target);
 						visible = false;
@@ -113,7 +113,7 @@
 					<TargetIcon />
 				</PrimeButton>
 				<PrimeButton
-					class="UnitTooltip__action"
+					class="UnitSettings__action"
 					@click.stop="
 						emit('create-child', UnitType.LandingZone);
 						visible = false;
@@ -124,9 +124,9 @@
 					<ExplosionIcon />
 				</PrimeButton>
 			</div>
-			<div class="UnitTooltip__actions">
+			<div class="UnitSettings__actions">
 				<PrimeButton
-					class="UnitTooltip__action"
+					class="UnitSettings__action"
 					:disabled="props.readonly"
 					@click.stop="emit('remove')"
 					severity="danger"
@@ -135,7 +135,7 @@
 					<TrashIcon />
 				</PrimeButton>
 				<PrimeButton
-					class="UnitTooltip__action"
+					class="UnitSettings__action"
 					@click.stop="
 						pinnedUnits.has(unit.id)
 							? pinnedUnits.delete(unit.id)
@@ -149,7 +149,7 @@
 					/>
 				</PrimeButton>
 				<PrimeButton
-					class="UnitTooltip__action"
+					class="UnitSettings__action"
 					@click.stop="canDrag = !canDrag"
 					:severity="canDrag ? 'success' : 'danger'"
 					title="Can drag"
@@ -158,7 +158,7 @@
 				</PrimeButton>
 				<PrimeButton
 					v-if="unit.type === UnitType.LandingZone"
-					class="UnitTooltip__action"
+					class="UnitSettings__action"
 					@click.stop="emit('update-wind')"
 					title="Update wind"
 				>
@@ -170,7 +170,7 @@
 </template>
 
 <style lang="scss">
-	.UnitTooltip__container {
+	.UnitSettings__container {
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
@@ -182,7 +182,7 @@
 			font-size: inherit;
 		}
 
-		.UnitTooltip__table {
+		.UnitSettings__table {
 			display: grid;
 			grid-template-columns: max-content 1fr;
 			grid-auto-rows: min-content;
@@ -192,7 +192,7 @@
 
 			text-align: end;
 
-			.UnitTooltip__row {
+			.UnitSettings__row {
 				grid-column: 1 / -1;
 
 				display: grid;
@@ -201,24 +201,24 @@
 				align-items: inherit;
 			}
 
-			.UnitTooltip__span {
+			.UnitSettings__span {
 				grid-column: 1 / -1;
 				text-align: center;
 			}
 
-			.UnitTooltip__select {
+			.UnitSettings__select {
 				text-align: initial;
 			}
 		}
 
-		.UnitTooltip__actions {
+		.UnitSettings__actions {
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
 
 			gap: 0.5em;
 
-			.UnitTooltip__action {
+			.UnitSettings__action {
 				flex: 1 0 auto;
 
 				display: flex;

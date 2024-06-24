@@ -38,7 +38,7 @@
 		/>
 	</div>
 
-	<UnitTooltip
+	<UnitSettings
 		v-model:visible="open"
 		v-model:can-drag="canDrag"
 		@create-child="emit('create-child', $event)"
@@ -114,7 +114,7 @@
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
-	import UnitTooltip from '@/components/Unit/UnitTooltip.vue';
+	import UnitSettings from '@/components/Unit/UnitSettings.vue';
 	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectSelectedUnits } from '@/contexts/selected-unit';
