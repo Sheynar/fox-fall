@@ -1,13 +1,13 @@
-import { type Ref, ref } from "vue";
-import { useEventListener } from "@vueuse/core";
-import type { Viewport } from "@/lib/viewport";
-import { useMultiPointerDrag } from "@/mixins/multi-pointer";
-import { Vector } from "@/lib/vector";
+import { type Ref, ref } from 'vue';
+import { useEventListener } from '@vueuse/core';
+import type { Viewport } from '@/lib/viewport';
+import { useMultiPointerDrag } from '@/mixins/multi-pointer';
+import { Vector } from '@/lib/vector';
 
 export enum DragType {
 	Translate,
 	Rotate,
-};
+}
 
 export type ViewportControlOptions = {
 	containerElement: Ref<HTMLElement | null>;
@@ -26,7 +26,10 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		onDragStart: (event) => {
 			moving.value = {
 				// startViewport: viewport.value.clone(),
-				dragType: (event.shiftKey || event.button === 2) ? DragType.Rotate : DragType.Translate,
+				dragType:
+					event.shiftKey || event.button === 2
+						? DragType.Rotate
+						: DragType.Translate,
 			};
 		},
 		onUpdate: (dragStatus) => {
@@ -50,10 +53,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 				);
 			}
 
-			options.viewport.value.zoom = Math.max(
-				0.1,
-				options.viewport.value.zoom + dragStatus.zoomDelta
-			);
+			options.viewport.value.zoomBy(-dragStatus.zoomDelta, dragStatus.currentPosition);
 		},
 		onDragEnd: () => {
 			moving.value = null;
@@ -63,25 +63,16 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 	const onWheel = (event: WheelEvent) => {
 		event.stopPropagation();
 		event.preventDefault();
-		const zoomOffset =
+		const zoomDelta =
 			(event.deltaY > 0 ? 0.1 : -0.1) * (event.ctrlKey ? 10 : 1);
 
-		const globalCursorPosition = Vector.fromCartesianVector({
-			x: event.clientX,
-			y: event.clientY,
-		});
-		const localCursorPosition =
-			options.viewport.value.toViewportVector(globalCursorPosition);
-
-		options.viewport.value.zoom = Math.max(0.1, options.viewport.value.zoom - zoomOffset);
-
-		const cursorDelta = options.viewport.value
-			.fromViewportVector(localCursorPosition)
-			.addVector(globalCursorPosition.scale(-1));
-
-		options.viewport.value.position = options.viewport.value.position.addVector(
-			cursorDelta.scale(-1)
+		options.viewport.value.zoomBy(
+			zoomDelta,
+			Vector.fromCartesianVector({
+				x: event.clientX,
+				y: event.clientY,
+			})
 		);
 	};
 	useEventListener(options.containerElement, 'wheel', onWheel);
-}
+};

@@ -78,6 +78,22 @@ export class Viewport {
 		return this.rotateBy(newRotation - this.rotation);
 	}
 
+	zoomBy(zoomDelta: number, globalPinPosition: Vector = this.position): void {
+		const viewportPinPosition = this.toViewportVector(globalPinPosition);
+
+		this.zoom = Math.max(0.1, this.zoom - zoomDelta);
+
+		const cursorDelta = this.fromViewportVector(viewportPinPosition).addVector(
+			globalPinPosition.scale(-1)
+		);
+
+		this.position = this.position.addVector(cursorDelta.scale(-1));
+	}
+
+	zoomTo(newZoom: number, globalPinPosition?: Vector): void {
+		return this.zoomBy(newZoom - this.zoom, globalPinPosition);
+	}
+
 	clone(): Viewport {
 		return new Viewport(this.position.clone(), this.rotation, this.zoom);
 	}

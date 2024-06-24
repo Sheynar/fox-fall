@@ -92,7 +92,7 @@ export const useMultiPointerDrag = (options: MultiPointerDragOptions) => {
 				centerPointEnd.scale(-1)
 			);
 
-			return endFromCenter.distance / startFromCenter.distance;
+			return (endFromCenter.distance - startFromCenter.distance) / 100;
 		});
 		const zoom = zooms.reduce((acc, delta) => acc + delta, 0);
 
