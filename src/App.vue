@@ -29,6 +29,7 @@
 					@create-child="addUnit($event, undefined, undefined, unitId)"
 					@updated="updateUnit(unitId)"
 					@remove="removeUnit(unitId)"
+					@set-unit-source="setUnitSource(unitId)"
 					@update-wind="editWind(unitId)"
 				/>
 			</UnitProvider>
@@ -139,6 +140,7 @@
 	const {
 		addUnit,
 		removeUnit,
+		setUnitSource,
 		editWind,
 		resetWind,
 

@@ -2,9 +2,12 @@
 	<PrimeDialog
 		v-model:visible="visible"
 		:header="'Unit: ' + unit.label"
+		:style="{ minWidth: '30rem' }"
 		position="bottomright"
 		@pointerdown.stop
 		@wheel.stop
+		@show="customPosition = false"
+		@dragend="customPosition = true"
 	>
 		<div class="UnitSettings__container" @pointerdown.stop @touchstart.stop>
 			<div class="UnitSettings__table">
@@ -83,7 +86,7 @@
 					class="UnitSettings__action"
 					@click.stop="
 						emit('create-child', UnitType.Artillery);
-						visible = false;
+						visible = customPosition;
 					"
 					severity="secondary"
 					title="Create artillery"
@@ -94,7 +97,7 @@
 					class="UnitSettings__action"
 					@click.stop="
 						emit('create-child', UnitType.Spotter);
-						visible = false;
+						visible = customPosition;
 					"
 					severity="secondary"
 					title="Create spotter"
@@ -105,7 +108,7 @@
 					class="UnitSettings__action"
 					@click.stop="
 						emit('create-child', UnitType.Target);
-						visible = false;
+						visible = customPosition;
 					"
 					severity="secondary"
 					title="Create target"
@@ -127,12 +130,11 @@
 			<div class="UnitSettings__actions">
 				<PrimeButton
 					class="UnitSettings__action"
-					:disabled="props.readonly"
-					@click.stop="emit('remove')"
-					severity="danger"
-					title="Delete"
+					@click.stop="canDrag = !canDrag"
+					:severity="canDrag ? 'success' : 'danger'"
+					title="Can drag"
 				>
-					<TrashIcon />
+					<DragIcon />
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
@@ -150,14 +152,28 @@
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="canDrag = !canDrag"
-					:severity="canDrag ? 'success' : 'danger'"
-					title="Can drag"
+					:disabled="props.readonly"
+					@click.stop="emit('remove')"
+					severity="danger"
+					title="Delete"
 				>
-					<DragIcon />
+					<TrashIcon />
 				</PrimeButton>
 				<PrimeButton
-					v-if="unit.type === UnitType.LandingZone"
+					class="UnitSettings__action"
+					:disabled="props.readonly"
+					@click.stop="emit('set-unit-source')"
+					severity="secondary"
+					title="Set position source"
+				>
+					<i class="pi pi-link" />
+				</PrimeButton>
+			</div>
+			<div
+				class="UnitSettings__actions"
+				v-if="unit.type === UnitType.LandingZone"
+			>
+				<PrimeButton
 					class="UnitSettings__action"
 					@click.stop="emit('update-wind')"
 					title="Update wind"
@@ -245,7 +261,7 @@
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeInputText from 'primevue/inputtext';
 	import PrimeSelect from 'primevue/select';
-	import { computed } from 'vue';
+	import { computed, ref } from 'vue';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
@@ -273,6 +289,8 @@
 	const unitMap = injectUnitMap();
 	const pinnedUnits = injectPinnedUnits();
 
+	const customPosition = ref(false);
+
 	const unitTypeOptions = computed(() => {
 		return [
 			UnitType.Artillery,
@@ -297,6 +315,7 @@
 	const emit = defineEmits<{
 		(event: 'create-child', payload: UnitType): void;
 		(event: 'remove'): void;
+		(event: 'set-unit-source'): void;
 		(event: 'updated'): void;
 		(event: 'update-wind'): void;
 	}>();

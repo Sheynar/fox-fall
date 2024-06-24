@@ -102,8 +102,57 @@ export const useArtillery = ({
 	};
 
 	const removeUnit = (unitId: string) => {
+		const unit = unitMap.value[unitId];
+		if (unit == null) return;
+
+		if (selectedUnits.value.includes(unitId)) {
+			selectedUnits.value.splice(selectedUnits.value.indexOf(unitId), 1);
+			if (unit.parentId != null && !selectedUnits.value.includes(unit.parentId)) {
+				selectedUnits.value.push(unit.parentId);
+			}
+		}
+		if (pinnedUnits.value.has(unitId)) {
+			pinnedUnits.value.delete(unitId);
+		}
+		if (highlightedUnits.value.has(unitId)) {
+			highlightedUnits.value.delete(unitId);
+		}
+
+		for (const otherUnit of Object.values(unitMap.value)) {
+			if (otherUnit.parentId === unitId) {
+				otherUnit.parentId = unit.parentId;
+				otherUnit.vector = otherUnit.vector.addVector(unit.vector);
+			}
+		}
 		delete unitMap.value[unitId];
 		onUnitUpdated?.(unitId);
+	};
+
+	const setUnitSource = async (unitId: string) => {
+		try {
+			const unit = unitMap.value[unitId];
+			if (unit == null) return;
+
+			const newSourceUnitId = await new Promise<string>((resolve, reject) => {
+				unitSelector.value = {
+					selectUnit: (unitId) => {
+						unitSelector.value = null;
+						resolve(unitId);
+					},
+					prompt: 'Select new unit source',
+				};
+			});
+
+			const newSourceUnit = unitMap.value[newSourceUnitId];
+			if (newSourceUnit == null) return;
+
+			unit.vector = getUnitResolvedVector(unitMap.value, unitId).addVector(
+				getUnitResolvedVector(unitMap.value, newSourceUnitId).scale(-1)
+			);
+			unit.parentId = newSourceUnitId;
+		} catch (e) {
+			alert(`Failed to set unit source: ${e}`);
+		}
 	};
 
 	const editWind = async (unitId: string) => {
@@ -155,7 +204,7 @@ export const useArtillery = ({
 	useScopePerKey(unitMap, (key) => {
 		watchEffect(() => {
 			const unit = unitMap.value[key];
-			if (unit.parentId == null) return;
+			if (unit?.parentId == null) return;
 			const parent = unitMap.value[unit.parentId];
 			if (parent == null) {
 				removeUnit(unit.id);
@@ -166,6 +215,7 @@ export const useArtillery = ({
 	return {
 		addUnit,
 		removeUnit,
+		setUnitSource,
 		editWind,
 		resetWind,
 
