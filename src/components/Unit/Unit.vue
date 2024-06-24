@@ -17,8 +17,8 @@
 		@mouseover="isHovered = true"
 		@mouseleave="isHovered = false"
 	>
-		<div class="Unit__label" v-if="unit.label">
-			{{ unit.label }}
+		<div class="Unit__label" v-if="unitLabel">
+			{{ unitLabel }}
 		</div>
 		<Component
 			:is="
@@ -89,6 +89,7 @@
 		top: 100%;
 		transform: translateX(-50%);
 
+    font-size: 200%;
 		pointer-events: none;
 		user-select: none;
 		white-space: nowrap;
@@ -122,7 +123,7 @@
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { injectUnitSelector } from '@/contexts/unit-selector';
 	import { injectViewport } from '@/contexts/viewport';
-	import { UnitType, getUnitResolvedVector } from '@/lib/unit';
+	import { getUnitLabel, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
@@ -149,6 +150,8 @@
 	const pinnedUnits = injectPinnedUnits();
 	const highlightedUnits = injectHighlightedUnits();
 	const selectedUnits = injectSelectedUnits();
+
+	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
 
 	const isHovered = ref(false);
 	const canDrag = ref(false);

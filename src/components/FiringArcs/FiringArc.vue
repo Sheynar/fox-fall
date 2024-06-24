@@ -25,17 +25,18 @@
 			}"
 		>
 			<div class="FiringArc__label-row">
-				<span class="FiringArc__span"
-					>{{ unitMap[unitIdFrom].label }} ->
-					{{ unitMap[unitIdTo].label }}</span
-				>
+				<span class="FiringArc__span">
+					{{ getUnitLabel(unitMap, unitIdFrom) }} ->
+					{{ getUnitLabel(unitMap, unitIdTo) }}
+				</span>
 			</div>
 			<div class="FiringArc__label-row">
 				<span>distance:</span
 				><span>{{ Math.round(firingVectorWithWind.distance) }}</span>
 			</div>
 			<div class="FiringArc__label-row">
-				<span>azimuth:</span><span>{{ firingVectorWithWind.azimuth.toFixed(1) }}</span>
+				<span>azimuth:</span
+				><span>{{ firingVectorWithWind.azimuth.toFixed(1) }}</span>
 			</div>
 		</div>
 	</Teleport>
@@ -101,7 +102,7 @@
 	import { injectUnitMap } from '@/contexts/unit';
 	import { injectViewport } from '@/contexts/viewport';
 	import { injectWind } from '@/contexts/wind';
-	import { getUnitResolvedVector } from '@/lib/unit';
+	import { getUnitLabel, getUnitResolvedVector } from '@/lib/unit';
 
 	const props = defineProps<{
 		lineContainer: HTMLElement;

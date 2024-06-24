@@ -1,6 +1,5 @@
 import { type Ref, ref } from 'vue';
 import { generateId } from '@/lib/id';
-import { getName } from '@/lib/names';
 import { Vector } from '@/lib/vector';
 
 export enum UnitType {
@@ -12,7 +11,7 @@ export enum UnitType {
 
 export type Unit = {
 	id: string;
-	label: string;
+	label?: string;
 	type: UnitType;
 	vector: Vector;
 	parentId?: string;
@@ -29,7 +28,6 @@ export const createUnit = (
 ): Ref<Unit> => {
 	return ref({
 		id: generateId(),
-		label: getName(),
 		type,
 		vector,
 		parentId,
@@ -50,4 +48,14 @@ export const getUnitResolvedVector = (
 		return unit.vector.addVector(getUnitResolvedVector(unitMap, unit.parentId));
 
 	return unit.vector;
+};
+
+export const getUnitLabel = (unitMap: UnitMap, unitId: string): string => {
+	const unit = unitMap[unitId];
+
+	if (unit == null) {
+		return 'Unknown';
+	}
+
+	return unit.label || String(Object.values(unitMap).indexOf(unit) + 1);
 };

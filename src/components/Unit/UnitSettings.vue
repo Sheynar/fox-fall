@@ -1,7 +1,7 @@
 <template>
 	<PrimeDialog
 		v-model:visible="visible"
-		:header="'Unit: ' + unit.label"
+		:header="'Unit: ' + unitLabel"
 		:style="{ minWidth: '30rem' }"
 		position="bottomright"
 		@pointerdown.stop
@@ -32,7 +32,7 @@
 				<template v-if="parent">
 					<div class="UnitSettings__row">
 						<span class="UnitSettings__span">
-							{{ parent.label }} -> {{ unit.label }}
+							{{ parentLabel }} -> {{ unitLabel }}
 						</span>
 					</div>
 					<div class="UnitSettings__row">
@@ -57,7 +57,7 @@
 						/>
 					</div>
 					<span class="UnitSettings__span">
-						{{ unit.label }} -> {{ parent.label }}
+						{{ unitLabel }} -> {{ parentLabel }}
 					</span>
 					<div class="UnitSettings__row">
 						<span>Distance:</span>
@@ -276,7 +276,7 @@
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
-	import { UnitType } from '@/lib/unit';
+	import { getUnitLabel, UnitType } from '@/lib/unit';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
 	const canDrag = defineModel('canDrag', { type: Boolean, required: true });
@@ -288,6 +288,8 @@
 	const unit = injectUnit();
 	const unitMap = injectUnitMap();
 	const pinnedUnits = injectPinnedUnits();
+
+	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
 
 	const customPosition = ref(false);
 
@@ -310,6 +312,9 @@
 
 	const parent = computed(() =>
 		unit.value.parentId != null ? unitMap.value[unit.value.parentId] : undefined
+	);
+	const parentLabel = computed(() =>
+		parent.value == null ? 'Unknown' : getUnitLabel(unitMap.value, parent.value.id)
 	);
 
 	const emit = defineEmits<{
