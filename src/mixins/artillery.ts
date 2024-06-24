@@ -122,6 +122,8 @@ export const useArtillery = ({
 			if (otherUnit.parentId === unitId) {
 				otherUnit.parentId = unit.parentId;
 				otherUnit.vector = otherUnit.vector.addVector(unit.vector);
+
+				onUnitUpdated?.(otherUnit.id);
 			}
 		}
 		delete unitMap.value[unitId];
@@ -150,6 +152,7 @@ export const useArtillery = ({
 				getUnitResolvedVector(unitMap.value, newSourceUnitId).scale(-1)
 			);
 			unit.parentId = newSourceUnitId;
+			onUnitUpdated?.(unitId);
 		} catch (e) {
 			alert(`Failed to set unit source: ${e}`);
 		}
