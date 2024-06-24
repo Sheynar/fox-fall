@@ -123,10 +123,7 @@ export const useArtillery = ({
 
 		for (const otherUnit of Object.values(unitMap.value)) {
 			if (otherUnit.parentId === unitId) {
-				otherUnit.parentId = unit.parentId;
-				otherUnit.vector = otherUnit.vector.addVector(unit.vector);
-
-				onUnitUpdated?.(otherUnit.id);
+				setUnitSource(otherUnit.id, unit.parentId);
 			}
 		}
 		delete unitMap.value[unitId];
