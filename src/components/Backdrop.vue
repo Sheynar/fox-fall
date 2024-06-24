@@ -56,8 +56,8 @@
 				rgba(0, 0, 0, 1) 100%
 			);
 
-		background-size: calc(20px * var(--viewport-zoom))
-			calc(20px * var(--viewport-zoom));
+		background-size: calc(125px / 3 * var(--viewport-zoom))
+			calc(125px / 3 * var(--viewport-zoom));
 		background-position: calc(var(--background-y) * 1px + 150vmax)
 			calc(var(--background-x) * 1px + 150vmax);
 
