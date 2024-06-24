@@ -5,6 +5,7 @@
 		suffix="m"
 		locale="en-UK"
 		:allowEmpty="false"
+		highlightOnFocus
 		:minFractionDigits="0"
 		:maxFractionDigits="0"
 	/>
@@ -24,9 +25,6 @@
 
 	onMounted(() => {
 		const inputElement = primeInputNumber.value.$el.children[0] as HTMLInputElement;
-		inputElement.addEventListener('focus', () => {
-			inputElement.select();
-		});
 
 		if (props.autoFocus) {
 			nextTick(() => {
