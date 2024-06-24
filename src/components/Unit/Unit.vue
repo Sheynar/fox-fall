@@ -43,7 +43,7 @@
 		v-model:can-drag="canDrag"
 		@create-child="emit('create-child', $event)"
 		@remove="emit('remove')"
-		@set-unit-source="emit('set-unit-source')"
+		@set-unit-source="emit('set-unit-source', $event)"
 		@updated="emit('updated')"
 		@update-wind="emit('update-wind')"
 	/>
@@ -138,7 +138,7 @@
 			payload: UnitType
 		): void;
 		(event: 'remove'): void;
-		(event: 'set-unit-source'): void;
+		(event: 'set-unit-source', payload: string | undefined): void;
 		(event: 'updated'): void;
 		(event: 'update-wind'): void;
 	}>();

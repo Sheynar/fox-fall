@@ -107,7 +107,10 @@ export const useArtillery = ({
 
 		if (selectedUnits.value.includes(unitId)) {
 			selectedUnits.value.splice(selectedUnits.value.indexOf(unitId), 1);
-			if (unit.parentId != null && !selectedUnits.value.includes(unit.parentId)) {
+			if (
+				unit.parentId != null &&
+				!selectedUnits.value.includes(unit.parentId)
+			) {
 				selectedUnits.value.push(unit.parentId);
 			}
 		}
@@ -130,28 +133,26 @@ export const useArtillery = ({
 		onUnitUpdated?.(unitId);
 	};
 
-	const setUnitSource = async (unitId: string) => {
+	const setUnitSource = async (unitId: string, newParentId?: string) => {
 		try {
 			const unit = unitMap.value[unitId];
 			if (unit == null) return;
 
-			const newSourceUnitId = await new Promise<string>((resolve, reject) => {
-				unitSelector.value = {
-					selectUnit: (unitId) => {
-						unitSelector.value = null;
-						resolve(unitId);
-					},
-					prompt: 'Select new unit source',
-				};
-			});
+			let currentlyCheckingParent = newParentId;
+			while (currentlyCheckingParent != null) {
+				if (currentlyCheckingParent === unitId) {
+					setUnitSource(newParentId!, undefined);
+				}
+				currentlyCheckingParent = unitMap.value[currentlyCheckingParent]?.parentId;
+			}
 
-			const newSourceUnit = unitMap.value[newSourceUnitId];
-			if (newSourceUnit == null) return;
-
-			unit.vector = getUnitResolvedVector(unitMap.value, unitId).addVector(
-				getUnitResolvedVector(unitMap.value, newSourceUnitId).scale(-1)
-			);
-			unit.parentId = newSourceUnitId;
+			unit.vector = getUnitResolvedVector(unitMap.value, unitId);
+			if (newParentId != null) {
+				unit.vector = unit.vector.addVector(
+					getUnitResolvedVector(unitMap.value, newParentId).scale(-1)
+				);
+			}
+			unit.parentId = newParentId;
 			onUnitUpdated?.(unitId);
 		} catch (e) {
 			alert(`Failed to set unit source: ${e}`);
@@ -166,7 +167,9 @@ export const useArtillery = ({
 				throw new Error('Only landing zones can update wind');
 			}
 
-			const targets = Object.keys(unitMap.value).filter((unitId) => unitMap.value[unitId].type === UnitType.Target);
+			const targets = Object.keys(unitMap.value).filter(
+				(unitId) => unitMap.value[unitId].type === UnitType.Target
+			);
 			let target: string;
 			if (targets.length === 1) {
 				target = targets[0];

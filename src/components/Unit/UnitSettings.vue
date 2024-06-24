@@ -22,6 +22,18 @@
 					/>
 				</div>
 				<div class="UnitSettings__row">
+					<span>Positioned from:</span>
+					<PrimeSelect
+						class="UnitSettings__select"
+						filter
+						showClear
+						v-model="selectedUnitParent"
+						:disabled="props.readonly"
+						:options="unitParentOptions"
+						optionLabel="label"
+					/>
+				</div>
+				<div class="UnitSettings__row">
 					<label>Name:</label>
 					<PrimeInputText
 						:readonly="props.readonly"
@@ -158,15 +170,6 @@
 					title="Delete"
 				>
 					<TrashIcon />
-				</PrimeButton>
-				<PrimeButton
-					class="UnitSettings__action"
-					:disabled="props.readonly"
-					@click.stop="emit('set-unit-source')"
-					severity="secondary"
-					title="Set position source"
-				>
-					<i class="pi pi-link" />
 				</PrimeButton>
 			</div>
 			<div
@@ -310,17 +313,37 @@
 		set: (option) => (unit.value.type = option?.value ?? UnitType.Artillery),
 	});
 
+	const unitParentOptions = computed(() => {
+		return Object.values(unitMap.value)
+			.filter((otherUnit) => otherUnit.id !== unit.value.id)
+			.map((otherUnit) => ({
+				id: otherUnit.id,
+				label: getUnitLabel(unitMap.value, otherUnit.id),
+			}));
+	});
+	const selectedUnitParent = computed({
+		get: () =>
+			unitParentOptions.value.find(
+				(option) => option.id === unit.value.parentId
+			),
+		set: (option) => {
+			emit('set-unit-source', option?.id);
+		},
+	});
+
 	const parent = computed(() =>
 		unit.value.parentId != null ? unitMap.value[unit.value.parentId] : undefined
 	);
 	const parentLabel = computed(() =>
-		parent.value == null ? 'Unknown' : getUnitLabel(unitMap.value, parent.value.id)
+		parent.value == null
+			? 'Unknown'
+			: getUnitLabel(unitMap.value, parent.value.id)
 	);
 
 	const emit = defineEmits<{
 		(event: 'create-child', payload: UnitType): void;
 		(event: 'remove'): void;
-		(event: 'set-unit-source'): void;
+		(event: 'set-unit-source', payload: string | undefined): void;
 		(event: 'updated'): void;
 		(event: 'update-wind'): void;
 	}>();
