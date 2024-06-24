@@ -310,7 +310,10 @@
 	const selectedUnitType = computed({
 		get: () =>
 			unitTypeOptions.value.find((option) => option.value === unit.value.type),
-		set: (option) => (unit.value.type = option?.value ?? UnitType.Artillery),
+		set: (option) => {
+			unit.value.type = option?.value ?? UnitType.Artillery;
+			emit('updated');
+		},
 	});
 
 	const unitParentOptions = computed(() => {
@@ -344,6 +347,7 @@
 		(event: 'create-child', payload: UnitType): void;
 		(event: 'remove'): void;
 		(event: 'set-unit-source', payload: string | undefined): void;
+		(event: 'set-unit-type', payload: UnitType): void;
 		(event: 'updated'): void;
 		(event: 'update-wind'): void;
 	}>();
