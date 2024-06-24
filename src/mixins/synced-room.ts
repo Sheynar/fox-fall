@@ -1,6 +1,9 @@
 import { watch, type Ref } from 'vue';
+import { generateId } from '@/lib/id';
 import { UnitMap, Unit } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
+
+const myId = generateId();
 
 enum UpdateType {
 	full = 'full',
@@ -12,21 +15,25 @@ enum UpdateType {
 type RoomUpdate =
 	| {
 			type: UpdateType.full;
+			eventFrom?: string;
 			readyToFire?: boolean;
 			units: Record<string, unknown>;
 			wind?: unknown;
 	  }
 	| {
 			type: UpdateType.readyToFire;
+			eventFrom?: string;
 			value: boolean;
 	  }
 	| {
 			type: UpdateType.unit;
+			eventFrom?: string;
 			unitId: string;
 			value: unknown;
 	  }
 	| {
 			type: UpdateType.wind;
+			eventFrom?: string;
 			value: unknown;
 	  };
 
@@ -55,7 +62,7 @@ export const useSyncedRoom = (
 ) => {
 	const onMessage = (event: MessageEvent<any>) => {
 		const roomUpdate = JSON.parse(event.data);
-		if (!isRoomUpdate(roomUpdate)) return;
+		if (!isRoomUpdate(roomUpdate) || roomUpdate.eventFrom === myId) return;
 		if (roomUpdate.type === UpdateType.full) {
 			const newValue: UnitMap = {};
 			for (const unitId of Object.keys(roomUpdate.units)) {
@@ -101,6 +108,7 @@ export const useSyncedRoom = (
 	const updateUnit = (unitId: string) => {
 		const roomUpdate: RoomUpdate = {
 			type: UpdateType.unit,
+			eventFrom: myId,
 			unitId,
 			value:
 				unitMap.value[unitId] != null
@@ -116,6 +124,7 @@ export const useSyncedRoom = (
 	const updateWind = () => {
 		const roomUpdate: RoomUpdate = {
 			type: UpdateType.wind,
+			eventFrom: myId,
 			value: JSON.parse(JSON.stringify(wind.value)),
 		};
 		webSocket.value?.send(JSON.stringify(roomUpdate));
@@ -124,6 +133,7 @@ export const useSyncedRoom = (
 	const updateReadyToFire = () => {
 		const roomUpdate: RoomUpdate = {
 			type: UpdateType.readyToFire,
+			eventFrom: myId,
 			value: readyToFire.value,
 		};
 		webSocket.value?.send(JSON.stringify(roomUpdate));
@@ -132,6 +142,7 @@ export const useSyncedRoom = (
 	const fullSync = () => {
 		const roomUpdate: RoomUpdate = {
 			type: UpdateType.full,
+			eventFrom: myId,
 			readyToFire: readyToFire.value,
 			units: JSON.parse(JSON.stringify(unitMap.value)),
 			wind: JSON.parse(JSON.stringify(wind.value)),
