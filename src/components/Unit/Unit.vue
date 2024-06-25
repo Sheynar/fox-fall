@@ -5,9 +5,7 @@
 			Unit__moving: !!moving,
 			Unit__readonly: props.readonly,
 			Unit__highlighted:
-				pinnedUnits.has(unit.id) ||
-				highlightedUnits.has(unit.id) ||
-				open,
+				pinnedUnits.has(unit.id) || highlightedUnits.has(unit.id) || open,
 		}"
 		:style="{
 			'--unit-x': screenPosition.x,
@@ -41,6 +39,7 @@
 	<UnitSettings
 		v-model:visible="open"
 		v-model:can-drag="canDrag"
+		v-model:custom-position="unitSettingsHasCustomPosition"
 		@create-child="emit('create-child', $event)"
 		@remove="emit('remove')"
 		@set-unit-source="emit('set-unit-source', $event)"
@@ -89,7 +88,7 @@
 		top: 100%;
 		transform: translateX(-50%);
 
-    font-size: 200%;
+		font-size: 200%;
 		pointer-events: none;
 		user-select: none;
 		white-space: nowrap;
@@ -105,13 +104,7 @@
 </style>
 
 <script setup lang="ts">
-	import {
-		computed,
-		onScopeDispose,
-		ref,
-		shallowRef,
-		watch,
-	} from 'vue';
+	import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
@@ -133,10 +126,7 @@
 	}>();
 
 	const emit = defineEmits<{
-		(
-			event: 'create-child',
-			payload: UnitType
-		): void;
+		(event: 'create-child', payload: UnitType): void;
 		(event: 'remove'): void;
 		(event: 'set-unit-source', payload: string | undefined): void;
 		(event: 'updated'): void;
@@ -164,10 +154,27 @@
 			if (value) {
 				selectedUnits.value.push(unit.value.id);
 			} else {
-				selectedUnits.value.splice(selectedUnits.value.indexOf(unit.value.id), 1);
+				selectedUnits.value.splice(
+					selectedUnits.value.indexOf(unit.value.id),
+					1
+				);
 			}
 		},
 	});
+	const unitSettingsHasCustomPosition = ref(false);
+
+	watch(
+		() =>
+			!unitSettingsHasCustomPosition.value &&
+			selectedUnits.value.includes(unit.value.id) &&
+			selectedUnits.value.slice(-1)[0] !== unit.value.id,
+		(isSelectedErroneously) => {
+			if (isSelectedErroneously) {
+				const index = selectedUnits.value.indexOf(unit.value.id);
+				selectedUnits.value.splice(index, 1);
+			}
+		}
+	);
 
 	watch(
 		() => isHovered.value,

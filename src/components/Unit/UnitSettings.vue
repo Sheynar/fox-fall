@@ -96,10 +96,7 @@
 			<div class="UnitSettings__actions">
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="
-						emit('create-child', UnitType.Artillery);
-						visible = customPosition;
-					"
+					@click.stop="emit('create-child', UnitType.Artillery)"
 					severity="secondary"
 					title="Create artillery"
 				>
@@ -107,10 +104,7 @@
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="
-						emit('create-child', UnitType.Spotter);
-						visible = customPosition;
-					"
+					@click.stop="emit('create-child', UnitType.Spotter)"
 					severity="secondary"
 					title="Create spotter"
 				>
@@ -118,10 +112,7 @@
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="
-						emit('create-child', UnitType.Target);
-						visible = customPosition;
-					"
+					@click.stop="emit('create-child', UnitType.Target)"
 					severity="secondary"
 					title="Create target"
 				>
@@ -264,7 +255,7 @@
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeInputText from 'primevue/inputtext';
 	import PrimeSelect from 'primevue/select';
-	import { computed, ref } from 'vue';
+	import { computed } from 'vue';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
@@ -282,6 +273,10 @@
 	import { getUnitLabel, UnitType } from '@/lib/unit';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
+	const customPosition = defineModel('customPosition', {
+		type: Boolean,
+		required: true,
+	});
 	const canDrag = defineModel('canDrag', { type: Boolean, required: true });
 
 	const props = defineProps<{
@@ -293,8 +288,6 @@
 	const pinnedUnits = injectPinnedUnits();
 
 	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
-
-	const customPosition = ref(false);
 
 	const unitTypeOptions = computed(() => {
 		return [
