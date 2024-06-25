@@ -14,13 +14,20 @@
 <script setup lang="ts">
 	import PrimeSelect from 'primevue/select';
 	import { computed } from 'vue';
-	import { useSelectUnitOptions } from '.';
+	import {
+		useSelectUnitOptions,
+		type Options as SelectUnitOptions,
+	} from './index';
 
-	const modelValue = defineModel<string | undefined>('modelValue', { required: true });
+	const modelValue = defineModel<string | undefined>('modelValue', {
+		required: true,
+	});
 
 	const props = withDefaults(
 		defineProps<{
 			placeholder?: string;
+			whiteList?: SelectUnitOptions['whiteList'];
+			blackList?: SelectUnitOptions['blackList'];
 		}>(),
 		{
 			placeholder: 'Select a unit',
@@ -32,7 +39,10 @@
 		optionLabel,
 		optionGroupLabel,
 		optionGroupChildren,
-	} = useSelectUnitOptions();
+	} = useSelectUnitOptions({
+		whiteList: props.whiteList,
+		blackList: props.blackList,
+	});
 
 	const selectedUnit = computed({
 		get: () => {
@@ -42,6 +52,6 @@
 				}
 			}
 		},
-		set: (value) => modelValue.value = value?.id,
+		set: (value) => (modelValue.value = value?.id),
 	});
 </script>

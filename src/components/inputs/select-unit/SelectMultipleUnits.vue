@@ -14,13 +14,15 @@
 <script setup lang="ts">
 	import PrimeMultiSelect from 'primevue/multiselect';
 	import { computed } from 'vue';
-	import { useSelectUnitOptions } from '.';
+	import { useSelectUnitOptions, type Options as SelectUnitOptions } from './index';
 
 	const modelValue = defineModel<string[]>('modelValue', { required: true });
 
 	const props = withDefaults(
 		defineProps<{
 			placeholder?: string;
+			whiteList?: SelectUnitOptions['whiteList'];
+			blackList?: SelectUnitOptions['blackList'];
 		}>(),
 		{
 			placeholder: 'Select units',
@@ -32,7 +34,10 @@
 		optionLabel,
 		optionGroupLabel,
 		optionGroupChildren,
-	} = useSelectUnitOptions();
+	} = useSelectUnitOptions({
+		whiteList: props.whiteList,
+		blackList: props.blackList,
+	});
 
 	const selectedUnits = computed({
 		get: () => modelValue.value.map((unitId) => {

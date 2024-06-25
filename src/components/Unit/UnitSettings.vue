@@ -25,6 +25,7 @@
 					<span>Positioned from:</span>
 					<SelectOneUnit
 						class="UnitSettings__select"
+						:black-list="{ id: [unit.id] }"
 						:model-value="unit.parentId"
 						:disabled="props.readonly"
 						@update:model-value="emit('set-unit-source', $event)"
