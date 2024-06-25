@@ -9,6 +9,13 @@ export enum UnitType {
 	LandingZone,
 }
 
+export const unitTypeOrder = [
+	UnitType.Artillery,
+	UnitType.Spotter,
+	UnitType.Target,
+	UnitType.LandingZone,
+];
+
 export type Unit = {
 	id: string;
 	label?: string;

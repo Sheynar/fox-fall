@@ -23,14 +23,11 @@
 				</div>
 				<div class="UnitSettings__row">
 					<span>Positioned from:</span>
-					<PrimeSelect
+					<SelectOneUnit
 						class="UnitSettings__select"
-						filter
-						showClear
-						v-model="selectedUnitParent"
+						:model-value="unit.parentId"
 						:disabled="props.readonly"
-						:options="unitParentOptions"
-						optionLabel="label"
+						@update:model-value="emit('set-unit-source', $event)"
 					/>
 				</div>
 				<div class="UnitSettings__row">
@@ -267,6 +264,7 @@
 	import WindIcon from '@/components/icons/WindIcon.vue';
 	import DirectionInput from '@/components/inputs/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
+	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
@@ -306,24 +304,6 @@
 		set: (option) => {
 			unit.value.type = option?.value ?? UnitType.Artillery;
 			emit('updated');
-		},
-	});
-
-	const unitParentOptions = computed(() => {
-		return Object.values(unitMap.value)
-			.filter((otherUnit) => otherUnit.id !== unit.value.id)
-			.map((otherUnit) => ({
-				id: otherUnit.id,
-				label: getUnitLabel(unitMap.value, otherUnit.id),
-			}));
-	});
-	const selectedUnitParent = computed({
-		get: () =>
-			unitParentOptions.value.find(
-				(option) => option.id === unit.value.parentId
-			),
-		set: (option) => {
-			emit('set-unit-source', option?.id);
 		},
 	});
 

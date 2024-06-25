@@ -1,32 +1,18 @@
 <template>
 	<PrimeDialog
 		v-model:visible="visible"
+		:style="{ minWidth: '50vw' }"
 		header="Settings"
 		@pointerdown.stop
 		@wheel.stop
 	>
 		<PrimeFloatLabel>
-			<PrimeSelect
-				v-model="selectedUnit"
-				filter
-				showClear
-				:options="unitSelectOptions"
-				optionLabel="label"
-				optionGroupLabel="label"
-				optionGroupChildren="units"
-				placeholder="Select a unit to focus on"
-			/>
+			<SelectOneUnit v-model="selectedUnit" />
 			<label>You:</label>
 		</PrimeFloatLabel>
 		<PrimeFloatLabel>
-			<PrimeMultiSelect
+			<SelectMultipleUnits
 				v-model="pointsOfInterest"
-				filter
-				showClear
-				:options="unitSelectOptions"
-				optionLabel="label"
-				optionGroupLabel="label"
-				optionGroupChildren="units"
 				placeholder="Select other units to ensure are visible"
 			/>
 			<label>Points of interest:</label>
@@ -37,38 +23,13 @@
 <script setup lang="ts">
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeFloatLabel from 'primevue/floatlabel';
-	import PrimeMultiSelect from 'primevue/multiselect';
-	import PrimeSelect from 'primevue/select';
-	import { computed, ref } from 'vue';
-	import { injectUnitMap } from '@/contexts/unit';
-	import { UnitType, type Unit } from '@/lib/unit';
-
-	const unitMap = injectUnitMap();
+	import { ref } from 'vue';
+	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
+	import SelectMultipleUnits from '@/components/inputs/select-unit/SelectMultipleUnits.vue';
+	import { type Unit } from '@/lib/unit';
 
 	const visible = defineModel('visible', { default: false, type: Boolean });
 
-	const unitSelectOptions = computed(() => {
-		const output: { label: string; units: Unit[] }[] = [];
-
-		for (const unitType of [
-			UnitType.Artillery,
-			UnitType.Spotter,
-			UnitType.Target,
-			UnitType.LandingZone,
-		]) {
-			const units: Unit[] = [];
-			for (const unit of Object.values(unitMap.value)) {
-				if (unit.type !== unitType) continue;
-				units.push(unit);
-			}
-			if (units.length > 0) {
-				output.push({ label: UnitType[unitType], units });
-			}
-		}
-
-		return output;
-	});
-
-	const selectedUnit = ref<Unit | null>(null);
+	const selectedUnit = ref<Unit | undefined>(undefined);
 	const pointsOfInterest = ref<Unit[]>([]);
 </script>
