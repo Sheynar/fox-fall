@@ -55,8 +55,7 @@
 		top: calc(var(--unit-y) * 1px);
 		z-index: 1000;
 
-		--_unit-scale: calc(var(--viewport-zoom) / 10);
-		transform: translate(-50%, -50%) scale(var(--_unit-scale));
+		transform: translate(-50%, -50%);
 		transform-origin: 50% 50%;
 
 		&:hover,
