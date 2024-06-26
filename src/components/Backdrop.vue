@@ -28,7 +28,7 @@
 		<div>
 			position: x{{ Math.round(position.x) }}m y{{ Math.round(position.y) }}m
 		</div>
-		<div>rotation: {{ wrapDegrees(viewport.rotation - 90).toFixed(1) }}°</div>
+		<div>rotation: {{ wrapDegrees(90 - viewport.rotation).toFixed(1) }}°</div>
 		<div>zoom: {{ Math.round(viewport.zoom * 100) }}%</div>
 	</div>
 </template>
