@@ -1,5 +1,5 @@
 export const natoAlphabet = [
-	'Alfa',
+	'Alpha',
 	'Bravo',
 	'Charlie',
 	'Delta',
