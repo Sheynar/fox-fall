@@ -56,7 +56,40 @@
 
 		<Settings v-model:visible="settingsVisible" />
 
-		<WindSettings v-model:visible="windSettingsVisible" @reset="resetWind()" @update="updateWind()" />
+		<WindSettings
+			v-model:visible="windSettingsVisible"
+			@reset="resetWind()"
+			@update="updateWind()"
+		/>
+
+		<svg>
+			<defs>
+				<filter id="outline">
+				<feMorphology
+					in="SourceGraphic"
+					result="DILATED"
+					operator="dilate"
+					radius="1"
+				/>
+				<feColorMatrix
+					in="DILATED"
+					result="OUTLINED"
+					type="matrix"
+					values="
+						-1 0  0  0 0
+						0  -1 0  0 0
+						0  0  -1 0 0
+						0  0  0  1 0
+					"
+				/>
+
+				<feMerge>
+					<feMergeNode in="OUTLINED" />
+					<feMergeNode in="SourceGraphic" />
+				</feMerge>
+			</filter>
+			</defs>
+		</svg>
 	</div>
 </template>
 
@@ -184,7 +217,8 @@
 		}),
 		lockZoom: computed(() => {
 			if (!settings.value.automaticCameraZoom) return null;
-			if (unitGroup.units.value.length <= 1 || unitGroup.maxOffset.value <= 0) return null;
+			if (unitGroup.units.value.length <= 1 || unitGroup.maxOffset.value <= 0)
+				return null;
 			return 0.8 / (unitGroup.maxOffset.value / 100);
 		}),
 	});

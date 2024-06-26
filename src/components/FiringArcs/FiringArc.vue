@@ -43,6 +43,15 @@
 </template>
 
 <style lang="scss">
+	@keyframes FiringArc__dash {
+		from {
+			stroke-dashoffset: var(--_line-segment-size);
+		}
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
 	.FiringArc__svg {
 		position: absolute;
 		left: 0;
@@ -54,9 +63,16 @@
 
 		overflow: visible;
 
+		--_line-dash-size: 2em;
+		--_line-gap-size: 0.5em;
+		--_line-segment-size: calc(var(--_line-dash-size) + var(--_line-gap-size));
+
 		stroke: currentColor;
 		stroke-width: 0.2em;
+		stroke-dasharray: var(--_line-dash-size) var(--_line-gap-size);
+		animation: FiringArc__dash 1s linear infinite;
 		fill: transparent;
+		filter: url(#outline);
 	}
 
 	.FiringArc__label {

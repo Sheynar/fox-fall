@@ -90,6 +90,7 @@
 				const rootParent = getRootParent(unitId);
 				const artilleryList = artilleryByRootParent.value[rootParent.id] ?? [];
 				for (const artilleryId of artilleryList) {
+					if (unitIds.has(artilleryId)) continue;
 					const artillery = unitMap.value[artilleryId];
 					output.push({ from: artillery, to: unit });
 				}
@@ -106,4 +107,6 @@
 
 		return output;
 	});
+
+	(<any>window).firingArcList = firingArcList;
 </script>

@@ -5,30 +5,6 @@
 		preserve-aspect-ratio="none"
 	>
 		<defs>
-			<filter id="outline">
-				<feMorphology
-					in="SourceGraphic"
-					result="DILATED"
-					operator="dilate"
-					radius="1"
-				/>
-				<feColorMatrix
-					in="DILATED"
-					result="OUTLINED"
-					type="matrix"
-					values="
-						-1 0  0  0 0
-						0  -1 0  0 0
-						0  0  -1 0 0
-						0  0  0  1 0
-					"
-				/>
-
-				<feMerge>
-					<feMergeNode in="OUTLINED" />
-					<feMergeNode in="SourceGraphic" />
-				</feMerge>
-			</filter>
 			<marker
 				id="arrowhead"
 				markerWidth="10"

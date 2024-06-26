@@ -86,13 +86,14 @@
 	.Unit__label {
 		position: absolute;
 		left: 50%;
-		top: 100%;
+		top: 80%;
 		transform: translateX(-50%);
 
 		font-size: 200%;
 		pointer-events: none;
 		user-select: none;
 		white-space: nowrap;
+		filter: url(#outline);
 	}
 
 	.Unit__icon {
@@ -101,6 +102,7 @@
 		height: 5em;
 		border-radius: 50%;
 		padding: 0.5em;
+		filter: url(#outline);
 	}
 </style>
 
