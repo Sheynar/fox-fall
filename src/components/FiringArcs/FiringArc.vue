@@ -32,11 +32,11 @@
 			</div>
 			<div class="FiringArc__label-row">
 				<span>distance:</span
-				><span>{{ Math.round(firingVectorWithWind.distance) }}</span>
+				><span>{{ Math.round(firingVectorWithWind.distance) }}m</span>
 			</div>
 			<div class="FiringArc__label-row">
 				<span>azimuth:</span
-				><span>{{ firingVectorWithWind.azimuth.toFixed(1) }}</span>
+				><span>{{ firingVectorWithWind.azimuth.toFixed(1) }}°</span>
 			</div>
 		</div>
 	</Teleport>

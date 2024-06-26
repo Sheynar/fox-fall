@@ -21,14 +21,14 @@
 
 	<div class="Backdrop__debug-info">
 		<div>
-			cursor: x{{ Math.round(resolvedCursor.x) }} y{{
+			cursor: x{{ Math.round(resolvedCursor.x) }}m y{{
 				Math.round(resolvedCursor.y)
-			}}
+			}}m
 		</div>
 		<div>
-			position: x{{ Math.round(position.x) }} y{{ Math.round(position.y) }}
+			position: x{{ Math.round(position.x) }}m y{{ Math.round(position.y) }}m
 		</div>
-		<div>rotation: {{ viewport.rotation.toFixed(1) }}</div>
+		<div>rotation: {{ wrapDegrees(viewport.rotation - 90).toFixed(1) }}°</div>
 		<div>zoom: {{ Math.round(viewport.zoom * 100) }}%</div>
 	</div>
 </template>
@@ -96,7 +96,7 @@
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import { injectCursor } from '@/contexts/cursor';
 	import { injectViewport } from '@/contexts/viewport';
-	import { toRadians } from '@/lib/angle';
+	import { toRadians, wrapDegrees } from '@/lib/angle';
 
 	const cursor = injectCursor();
 	const viewport = injectViewport();
@@ -105,9 +105,7 @@
 		return viewport.value.toViewportVector(cursor.value);
 	});
 
-	const position = computed(() =>
-		viewport.value.getFocusedPosition()
-	);
+	const position = computed(() => viewport.value.getFocusedPosition());
 
 	const backgroundOffset = computed(() => ({
 		x:
