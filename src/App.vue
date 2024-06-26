@@ -121,10 +121,11 @@
 	import Backdrop from '@/components/Backdrop.vue';
 	import Dock from '@/components/Dock.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
-	import Settings from '@/components/Settings/Settings.vue';
+	import Settings from '@/components/Settings.vue';
 	import UnitComponent from '@/components/Unit/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
+	import { settings } from '@/lib/settings';
 	import { Vector } from '@/lib/vector';
 	import { UnitType } from '@/lib/unit';
 	import { useArtillery } from '@/mixins/artillery';
@@ -132,6 +133,7 @@
 	import { useSyncedRoom } from '@/mixins/synced-room';
 	import { useViewPortControl } from '@/mixins/viewport-control';
 	import WindSettings from './components/WindSettings.vue';
+	import { useUnitGroup } from './mixins/unit-group';
 
 	(<any>window).Vector = Vector;
 
@@ -155,9 +157,36 @@
 		onWindUpdated: () => updateWind(),
 	});
 
+	const unitGroupIds = computed(() => {
+		const output = [...settings.value.pointsOfInterest];
+		if (
+			settings.value.mainUnit != null &&
+			!output.includes(settings.value.mainUnit)
+		) {
+			output.push(settings.value.mainUnit);
+		}
+
+		if (output.length === 0) {
+			return Object.keys(unitMap.value);
+		}
+
+		return output;
+	});
+	const unitGroup = useUnitGroup(unitMap, unitGroupIds);
+
 	useViewPortControl({
 		containerElement,
 		viewport,
+		lockPosition: computed(() => {
+			if (!settings.value.automaticCameraTargeting) return null;
+			if (unitGroup.units.value.length === 0) return null;
+			return unitGroup.averageVector.value;
+		}),
+		lockZoom: computed(() => {
+			if (!settings.value.automaticCameraZoom) return null;
+			if (unitGroup.units.value.length <= 1 || unitGroup.maxOffset.value <= 0) return null;
+			return 0.8 / (unitGroup.maxOffset.value / 100);
+		}),
 	});
 
 	const onPointerMove = (event: PointerEvent) => {

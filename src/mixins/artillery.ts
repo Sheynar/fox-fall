@@ -44,13 +44,14 @@ export const useArtillery = ({
 	const viewport = ref(
 		new Viewport(
 			Vector.fromCartesianVector({
-				x: document.body.clientWidth / 2,
-				y: document.body.clientHeight / 2,
+				x: 0,
+				y: 0,
 			}),
 			90,
 			1
 		)
 	);
+	viewport.value.panToCentered(Vector.fromCartesianVector({ x: 0, y: 0 }));
 
 	provideCursor(cursor);
 	provideWind(wind);

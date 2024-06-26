@@ -3,7 +3,17 @@ import { useEventListener } from '@vueuse/core';
 import { wrapDegrees } from '@/lib/angle';
 import { Vector } from '@/lib/vector';
 
+export type PointerMap = {
+	[pointerId: string]: {
+		pointerDownEvent: PointerEvent;
+		startPointerPosition: Vector;
+		pointerPosition: Vector;
+		released: boolean;
+	};
+};
+
 export type DragStatus = {
+	pointers: PointerMap;
 	transform: Vector;
 	transformDelta: Vector;
 	rotation: number;
@@ -23,15 +33,7 @@ export type MultiPointerDragOptions = {
 };
 export const useMultiPointerDrag = (options: MultiPointerDragOptions) => {
 	const currentDrag = ref<{
-		pointers: Record<
-			string,
-			{
-				pointerDownEvent: PointerEvent;
-				startPointerPosition: Vector;
-				pointerPosition: Vector;
-				released: boolean;
-			}
-		>;
+		pointers: PointerMap;
 		lastStatus?: DragStatus;
 	} | null>(null);
 
@@ -97,6 +99,7 @@ export const useMultiPointerDrag = (options: MultiPointerDragOptions) => {
 		const zoom = zooms.reduce((acc, delta) => acc + delta, 0);
 
 		const newStatus: DragStatus = {
+			pointers: currentDrag.value.pointers,
 			transform,
 			transformDelta:
 				currentDrag.value.lastStatus != null

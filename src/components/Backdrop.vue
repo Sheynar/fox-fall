@@ -97,24 +97,16 @@
 	import { injectCursor } from '@/contexts/cursor';
 	import { injectViewport } from '@/contexts/viewport';
 	import { toRadians } from '@/lib/angle';
-	import { useWindowSize } from '@vueuse/core';
-	import { Vector } from '@/lib/vector';
 
 	const cursor = injectCursor();
 	const viewport = injectViewport();
-	const windowSize = useWindowSize();
 
 	const resolvedCursor = computed(() => {
 		return viewport.value.toViewportVector(cursor.value);
 	});
 
 	const position = computed(() =>
-		viewport.value.toViewportVector(
-			Vector.fromCartesianVector({
-				x: windowSize.width.value / 2,
-				y: windowSize.height.value / 2,
-			})
-		)
+		viewport.value.getFocusedPosition()
 	);
 
 	const backgroundOffset = computed(() => ({
