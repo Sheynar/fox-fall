@@ -7,16 +7,6 @@
 		@contextmenu.prevent
 	>
 		<Backdrop />
-		<div class="App__arrows">
-			<UnitLink
-				v-for="unitId in Object.keys(unitMap).filter(
-					(unitId) => unitMap[unitId].parentId != null
-				)"
-				:key="unitId"
-				:unit-id-from="unitMap[unitId].parentId!"
-				:unit-id-to="unitId"
-			/>
-		</div>
 		<div class="App__units">
 			<UnitProvider
 				v-for="unitId in Object.keys(unitMap).filter(
@@ -33,6 +23,16 @@
 					@update-wind="editWind(unitId)"
 				/>
 			</UnitProvider>
+		</div>
+		<div class="App__arrows">
+			<UnitLink
+				v-for="unitId in Object.keys(unitMap).filter(
+					(unitId) => unitMap[unitId].parentId != null
+				)"
+				:key="unitId"
+				:unit-id-from="unitMap[unitId].parentId!"
+				:unit-id-to="unitId"
+			/>
 		</div>
 
 		<FiringArcs />

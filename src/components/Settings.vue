@@ -1,7 +1,7 @@
 <template>
 	<PrimeDialog
 		v-model:visible="visible"
-		:style="{ minWidth: '50vw' }"
+		:style="{ minWidth: '25vw' }"
 		header="Settings"
 		@pointerdown.stop
 		@wheel.stop

@@ -5,6 +5,30 @@
 		preserve-aspect-ratio="none"
 	>
 		<defs>
+			<filter id="outline">
+				<feMorphology
+					in="SourceGraphic"
+					result="DILATED"
+					operator="dilate"
+					radius="1"
+				/>
+				<feColorMatrix
+					in="DILATED"
+					result="OUTLINED"
+					type="matrix"
+					values="
+						-1 0  0  0 0
+						0  -1 0  0 0
+						0  0  -1 0 0
+						0  0  0  1 0
+					"
+				/>
+
+				<feMerge>
+					<feMergeNode in="OUTLINED" />
+					<feMergeNode in="SourceGraphic" />
+				</feMerge>
+			</filter>
 			<marker
 				id="arrowhead"
 				markerWidth="10"
@@ -41,6 +65,7 @@
 		stroke: currentColor;
 		stroke-width: 1px;
 		fill: currentColor;
+		filter: url(#outline);
 	}
 </style>
 
@@ -68,21 +93,17 @@
 	const lineRelativePosition = computed(() =>
 		unitPositionTo.value.addVector(unitPositionFrom.value.scale(-1))
 	);
-	const linePositionFrom = computed(() =>
-		unitPositionFrom.value.addVector(
-			lineRelativePosition.value.normalize().scale(5)
-		)
-	);
-	const linePositionTo = computed(() =>
-		unitPositionTo.value.addVector(
-			lineRelativePosition.value.normalize().scale(-5)
-		)
-	);
+	const linePositionFrom = computed(() => unitPositionFrom.value);
+	const linePositionTo = computed(() => unitPositionTo.value);
 
 	const lineScreenPositionFrom = computed(() =>
-		viewport.value.fromViewportVector(linePositionFrom.value)
+		viewport.value
+			.fromViewportVector(linePositionFrom.value)
+			.addVector(viewport.value.fromViewportOffset(lineRelativePosition.value).normalize().scale(25))
 	);
 	const lineScreenPositionTo = computed(() =>
-		viewport.value.fromViewportVector(linePositionTo.value)
+		viewport.value
+			.fromViewportVector(linePositionTo.value)
+			.addVector(viewport.value.fromViewportOffset(lineRelativePosition.value).normalize().scale(-25))
 	);
 </script>
