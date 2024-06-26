@@ -49,9 +49,9 @@
 			"
 			@show-add-unit="addUnit(UnitType.Artillery, undefined, undefined)"
 			@show-help="showHelp()"
-			@show-settings="() => (settingsVisible = true)"
 			@show-sync="showSync()"
-			@show-wind-settings="() => (windSettingsVisible = !windSettingsVisible)"
+			@toggle-settings="() => (settingsVisible = !settingsVisible)"
+			@toggle-wind-settings="() => (windSettingsVisible = !windSettingsVisible)"
 		/>
 
 		<Settings v-model:visible="settingsVisible" />

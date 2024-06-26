@@ -43,9 +43,9 @@
 	const emit = defineEmits<{
 		(event: 'show-add-unit'): void;
 		(event: 'show-help'): void;
-		(event: 'show-settings'): void;
 		(event: 'show-sync'): void;
-		(event: 'show-wind-settings'): void;
+		(event: 'toggle-settings'): void;
+		(event: 'toggle-wind-settings'): void;
 	}>();
 
 	type Item = {
@@ -77,7 +77,7 @@
 			label: 'Wind',
 			iconComponent: WindIndicator,
 			severity: 'secondary',
-			command: () => emit('show-wind-settings'),
+			command: () => emit('toggle-wind-settings'),
 		},
 		{
 			label: 'Add unit',
@@ -92,7 +92,7 @@
 			label: 'Settings',
 			icon: 'pi pi-cog',
 			severity: 'secondary',
-			command: () => emit('show-settings'),
+			command: () => emit('toggle-settings'),
 		},
 		{
 			label: 'Help',
