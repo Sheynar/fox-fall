@@ -56,7 +56,7 @@
 
 		<Settings v-model:visible="settingsVisible" />
 
-		<WindSettings v-model:visible="windSettingsVisible" @reset="resetWind()" />
+		<WindSettings v-model:visible="windSettingsVisible" @reset="resetWind()" @update="updateWind()" />
 	</div>
 </template>
 

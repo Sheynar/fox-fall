@@ -9,11 +9,11 @@
 		<div class="Wind__information">
 			<div class="Wind__information__item">
 				<label>Wind direction:</label>
-				<DirectionInput v-model="wind.azimuth" />
+				<DirectionInput v-model="wind.azimuth" @update:model-value="emit('update')" />
 			</div>
 			<div class="Wind__information__item">
 				<label>Wind distance:</label>
-				<DistanceInput v-model="wind.distance" />
+				<DistanceInput v-model="wind.distance" @update:model-value="emit('update')" />
 			</div>
 			<PrimeButton
 				class="Wind__information__button"
@@ -61,5 +61,6 @@
 
 	const emit = defineEmits<{
 		(event: 'reset'): void;
+		(event: 'update'): void;
 	}>();
 </script>
