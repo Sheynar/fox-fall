@@ -212,13 +212,13 @@
 		viewport,
 		lockPosition: computed(() => {
 			if (!settings.value.automaticCameraTargeting) return null;
-			if (unitGroup.units.value.length === 0) return null;
+			if (unitGroup.units.value.length === 0) return Vector.fromCartesianVector({ x: 0, y: 0 });
 			return unitGroup.averageVector.value;
 		}),
 		lockZoom: computed(() => {
 			if (!settings.value.automaticCameraZoom) return null;
 			if (unitGroup.units.value.length <= 1 || unitGroup.maxOffset.value <= 0)
-				return null;
+				return 1;
 			return 0.8 / (unitGroup.maxOffset.value / 100);
 		}),
 	});
