@@ -43,17 +43,19 @@
 
 		background: linear-gradient(
 				180deg,
-				rgba(0, 0, 0, 1) 0%,
-				rgba(0, 0, 0, 0) 0.1em,
-				rgba(0, 0, 0, 0) calc(100% - 0.1em),
-				rgba(0, 0, 0, 1) 100%
+				rgba(0, 0, 0, 0) 0%,
+				rgba(0, 0, 0, 0) calc(50% - 0.1em),
+				rgba(0, 0, 0, 1) calc(50%),
+				rgba(0, 0, 0, 0) calc(50% + 0.1em),
+				rgba(0, 0, 0, 0) 100%
 			),
 			linear-gradient(
 				90deg,
-				rgba(0, 0, 0, 1) 0%,
-				rgba(0, 0, 0, 0) 0.1em,
-				rgba(0, 0, 0, 0) calc(100% - 0.1em),
-				rgba(0, 0, 0, 1) 100%
+				rgba(0, 0, 0, 0) 0%,
+				rgba(0, 0, 0, 0) calc(50% - 0.1em),
+				rgba(0, 0, 0, 1) calc(50%),
+				rgba(0, 0, 0, 0) calc(50% + 0.1em),
+				rgba(0, 0, 0, 0) 100%
 			);
 
 		background-size: calc(125px / 3 * var(--viewport-zoom))
