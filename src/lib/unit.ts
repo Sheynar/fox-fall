@@ -5,6 +5,7 @@ import { Vector } from '@/lib/vector';
 export enum UnitType {
 	Artillery,
 	Spotter,
+	Location,
 	Target,
 	LandingZone,
 }
@@ -12,6 +13,7 @@ export enum UnitType {
 export const unitTypeOrder = [
 	UnitType.Artillery,
 	UnitType.Spotter,
+	UnitType.Location,
 	UnitType.Target,
 	UnitType.LandingZone,
 ];

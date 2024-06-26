@@ -110,6 +110,16 @@
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
+					@click.stop="emit('create-child', UnitType.Location)"
+					severity="secondary"
+					title="Create location"
+				>
+					<LocationIcon />
+				</PrimeButton>
+			</div>
+			<div class="UnitSettings__actions">
+				<PrimeButton
+					class="UnitSettings__action"
 					@click.stop="emit('create-child', UnitType.Target)"
 					severity="secondary"
 					title="Create target"
@@ -223,6 +233,7 @@
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
+			font-size: 125%;
 
 			gap: 0.5em;
 
@@ -233,6 +244,7 @@
 				flex-direction: row;
 				align-items: center;
 				justify-content: center;
+				padding: 0.75em;
 
 				color: inherit;
 				font-size: inherit;
@@ -257,6 +269,7 @@
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
+	import LocationIcon from '@/components/icons/LocationIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
@@ -269,7 +282,7 @@
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
-	import { getUnitLabel, UnitType } from '@/lib/unit';
+	import { getUnitLabel, UnitType, unitTypeOrder } from '@/lib/unit';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
 	const customPosition = defineModel('customPosition', {
@@ -289,12 +302,7 @@
 	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
 
 	const unitTypeOptions = computed(() => {
-		return [
-			UnitType.Artillery,
-			UnitType.Spotter,
-			UnitType.Target,
-			UnitType.LandingZone,
-		].map((type) => ({
+		return unitTypeOrder.map((type) => ({
 			label: UnitType[type],
 			value: type,
 		}));

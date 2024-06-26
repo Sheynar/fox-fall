@@ -1,4 +1,4 @@
-https://www.veryicon.com/icons/miscellaneous/yunrenui-original-ui-of-fool-cloud/pin-75.html
+https://www.veryicon.com/icons/business/blue-round-office-icon-library/drag-28.html
 
 <template>
 	<svg

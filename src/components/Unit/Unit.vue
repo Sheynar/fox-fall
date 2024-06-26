@@ -24,9 +24,11 @@
 					? ArtilleryIcon
 					: unit.type === UnitType.Spotter
 						? SpotterIcon
-						: unit.type === UnitType.Target
-							? TargetIcon
-							: ExplosionIcon
+						: unit.type === UnitType.Location
+							? LocationIcon
+							: unit.type === UnitType.Target
+								? TargetIcon
+								: ExplosionIcon
 			"
 			ref="iconElement"
 			class="Unit__icon"
@@ -105,6 +107,7 @@
 <script setup lang="ts">
 	import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
+	import LocationIcon from '@/components/icons/LocationIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
