@@ -15,6 +15,10 @@
 				<label>Automatic camera zoom</label>
 				<PrimeCheckBox binary v-model="settings.automaticCameraZoom" />
 			</div>
+			<div class="Settings__row">
+				<label>Use NATO alphabet</label>
+				<PrimeCheckBox binary v-model="settings.useNatoAlphabet" />
+			</div>
 		</div>
 	</PrimeDialog>
 </template>

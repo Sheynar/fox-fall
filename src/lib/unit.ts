@@ -1,5 +1,7 @@
 import { type Ref, ref } from 'vue';
 import { generateId } from '@/lib/id';
+import { natoAlphabet } from '@/lib/names';
+import { settings } from '@/lib/settings';
 import { Vector } from '@/lib/vector';
 
 export enum UnitType {
@@ -59,6 +61,12 @@ export const getUnitResolvedVector = (
 	return unit.vector;
 };
 
+export const getUnitDefaultLabel = (unitMap: UnitMap, unitId: string): string => {
+	const unitNumber = Object.keys(unitMap).indexOf(unitId);
+	const natoName = settings.value.useNatoAlphabet ? natoAlphabet[unitNumber] : undefined;
+	return natoName || String(unitNumber + 1);
+};
+
 export const getUnitLabel = (unitMap: UnitMap, unitId: string): string => {
 	const unit = unitMap[unitId];
 
@@ -66,5 +74,5 @@ export const getUnitLabel = (unitMap: UnitMap, unitId: string): string => {
 		return 'Unknown';
 	}
 
-	return unit.label || String(Object.values(unitMap).indexOf(unit) + 1);
+	return unit.label || getUnitDefaultLabel(unitMap, unitId);
 };
