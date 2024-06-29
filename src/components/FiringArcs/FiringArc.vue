@@ -148,7 +148,7 @@
 		const unitFrom = unitMap.value[props.unitIdFrom];
 		if (!unitFrom.distanceIncrement) return firingVectorWithWind.value.distance;
 
-		return Math.round(firingVectorWithWind.value.distance / unitFrom.distanceIncrement) * unitFrom.distanceIncrement;
+		return Math.round(Math.round(firingVectorWithWind.value.distance / unitFrom.distanceIncrement) * unitFrom.distanceIncrement);
 	});
 	const firingDistanceLabel = computed(() => {
 		let output = `${roundedFiringDistance.value}m`;
