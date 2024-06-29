@@ -39,6 +39,18 @@
 						@input="emit('updated')"
 					/>
 				</div>
+				<template v-if="unit.type === UnitType.Artillery">
+					<div class="UnitSettings__row">
+						<span>Distance Increment:</span>
+						<DistanceInput
+							:model-value="unit.distanceIncrement"
+							@update:model-value="
+								unit.distanceIncrement = $event || undefined;
+								emit('updated');
+							"
+						/>
+					</div>
+				</template>
 				<template v-if="parent">
 					<div class="UnitSettings__row">
 						<span class="UnitSettings__span">
