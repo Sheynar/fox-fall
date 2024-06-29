@@ -152,7 +152,7 @@
 	});
 	const firingDistanceLabel = computed(() => {
 		let output = `${roundedFiringDistance.value}m`;
-		if (firingVectorWithWind.value.distance != roundedFiringDistance.value) {
+		if (Math.round(firingVectorWithWind.value.distance) != roundedFiringDistance.value) {
 			output += ` (${Math.round(firingVectorWithWind.value.distance)}m)`;
 		}
 		return output;
