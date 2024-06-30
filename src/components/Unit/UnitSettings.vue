@@ -43,7 +43,7 @@
 					<div class="UnitSettings__row">
 						<span>Distance Increment:</span>
 						<DistanceInput
-							:model-value="unit.distanceIncrement"
+							:model-value="unit.distanceIncrement || 0"
 							@update:model-value="
 								unit.distanceIncrement = $event || undefined;
 								emit('updated');
@@ -67,6 +67,7 @@
 								unit.vector.distance = $event;
 								emit('updated');
 							"
+							:min="1"
 						/>
 					</div>
 					<div class="UnitSettings__row">
@@ -90,6 +91,7 @@
 								unit.vector.distance = $event;
 								emit('updated');
 							"
+							:min="1"
 						/>
 					</div>
 					<div class="UnitSettings__row">

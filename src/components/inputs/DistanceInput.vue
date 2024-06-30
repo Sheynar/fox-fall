@@ -2,12 +2,14 @@
 	<PrimeInputNumber
 		ref="primeInputNumber"
 		v-model="modelValue"
+		@input="setValue($event.value)"
 		suffix="m"
 		locale="en-UK"
 		:allowEmpty="false"
 		highlightOnFocus
 		:minFractionDigits="0"
 		:maxFractionDigits="props.fractionDigits"
+		:min="props.min"
 	/>
 </template>
 
@@ -20,11 +22,17 @@
 	const props = withDefaults(defineProps<{
 		autoFocus?: boolean;
 		fractionDigits?: number;
+		min?: number;
 	}>(), {
 		fractionDigits: 0,
 	});
 
 	const modelValue = defineModel({ type: Number, required: true });
+
+	const setValue = (newValue: number) => {
+		if (props.min != null) newValue = Math.max(newValue, props.min);
+		modelValue.value = newValue;
+	};
 
 	onMounted(() => {
 		const inputElement = primeInputNumber.value.$el.children[0] as HTMLInputElement;

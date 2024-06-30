@@ -3,6 +3,7 @@
 		<PrimeInputNumber
 			ref="primeInputNumber"
 			v-model="modelValue"
+			@input="modelValue = $event.value"
 			suffix="°"
 			locale="en-UK"
 			:allowEmpty="false"
