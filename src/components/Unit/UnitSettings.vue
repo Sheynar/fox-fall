@@ -48,6 +48,7 @@
 								unit.distanceIncrement = $event || undefined;
 								emit('updated');
 							"
+							:fraction-digits="2"
 						/>
 					</div>
 				</template>

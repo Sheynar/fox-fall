@@ -7,7 +7,7 @@
 		:allowEmpty="false"
 		highlightOnFocus
 		:minFractionDigits="0"
-		:maxFractionDigits="0"
+		:maxFractionDigits="props.fractionDigits"
 	/>
 </template>
 
@@ -17,9 +17,12 @@
 
 	const primeInputNumber = ref<InstanceType<typeof PrimeInputNumber>>(null!);
 
-	const props = defineProps<{
+	const props = withDefaults(defineProps<{
 		autoFocus?: boolean;
-	}>();
+		fractionDigits?: number;
+	}>(), {
+		fractionDigits: 0,
+	});
 
 	const modelValue = defineModel({ type: Number, required: true });
 
