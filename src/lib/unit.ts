@@ -26,10 +26,6 @@ export type Unit = {
 	type: UnitType;
 	vector: Vector;
 	parentId?: string;
-
-	/* Only used for Artillery */
-	distanceIncrement?: number;
-	ignoreWind?: boolean;
 };
 
 export type UnitMap = {

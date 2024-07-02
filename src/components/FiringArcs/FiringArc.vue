@@ -32,7 +32,7 @@
 			</div>
 			<div class="FiringArc__label-row">
 				<span>distance:</span>
-				<span>{{ firingDistanceLabel }}</span>
+				<span>{{ Math.round(firingVectorWithWind.distance) }}m</span>
 			</div>
 			<div class="FiringArc__label-row">
 				<span>azimuth:</span
@@ -144,19 +144,6 @@
 	const firingVectorWithWind = computed(() =>
 		firingVector.value.addVector(wind.value.scale(-1))
 	);
-	const roundedFiringDistance = computed(() => {
-		const unitFrom = unitMap.value[props.unitIdFrom];
-		if (!unitFrom.distanceIncrement) return Math.round(firingVectorWithWind.value.distance);
-
-		return Math.round(firingVectorWithWind.value.distance / unitFrom.distanceIncrement) * unitFrom.distanceIncrement;
-	});
-	const firingDistanceLabel = computed(() => {
-		let output = `${roundedFiringDistance.value}m`;
-		if (Math.round(firingVectorWithWind.value.distance) != roundedFiringDistance.value) {
-			output += ` (${Math.round(firingVectorWithWind.value.distance)}m)`;
-		}
-		return output;
-	});
 
 	const unitScreenPositionFrom = computed(() =>
 		viewport.value.fromViewportVector(resolvedVectorFrom.value)
