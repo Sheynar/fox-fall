@@ -7,32 +7,43 @@
 		@contextmenu.prevent
 	>
 		<Backdrop />
-		<div class="App__units">
-			<UnitProvider
-				v-for="unitId in Object.keys(unitMap).filter(
-					(unitId) => unitMap[unitId]
-				)"
-				:key="unitId"
-				:unit="unitMap[unitId]"
-			>
-				<UnitComponent
-					@create-child="addUnit($event, undefined, undefined, unitId)"
-					@updated="updateUnit(unitId)"
-					@remove="removeUnit(unitId)"
-					@set-unit-source="setUnitSource(unitId, $event)"
-					@update-wind="editWind(unitId)"
+		<div
+			class="App__viewport"
+			:style="{
+				'--viewport-x': viewport.position.x,
+				'--viewport-y': viewport.position.y,
+
+				'--viewport-deg': viewport.rotation,
+				'--viewport-zoom': viewport.resolvedZoom,
+			}"
+		>
+			<div class="App__units">
+				<UnitProvider
+					v-for="unitId in Object.keys(unitMap).filter(
+						(unitId) => unitMap[unitId]
+					)"
+					:key="unitId"
+					:unit="unitMap[unitId]"
+				>
+					<UnitComponent
+						@create-child="addUnit($event, undefined, undefined, unitId)"
+						@updated="updateUnit(unitId)"
+						@remove="removeUnit(unitId)"
+						@set-unit-source="setUnitSource(unitId, $event)"
+						@update-wind="editWind(unitId)"
+					/>
+				</UnitProvider>
+			</div>
+			<div class="App__arrows">
+				<UnitLink
+					v-for="unitId in Object.keys(unitMap).filter(
+						(unitId) => unitMap[unitId].parentId != null
+					)"
+					:key="unitId"
+					:unit-id-from="unitMap[unitId].parentId!"
+					:unit-id-to="unitId"
 				/>
-			</UnitProvider>
-		</div>
-		<div class="App__arrows">
-			<UnitLink
-				v-for="unitId in Object.keys(unitMap).filter(
-					(unitId) => unitMap[unitId].parentId != null
-				)"
-				:key="unitId"
-				:unit-id-from="unitMap[unitId].parentId!"
-				:unit-id-to="unitId"
-			/>
+			</div>
 		</div>
 
 		<FiringArcs />
@@ -65,29 +76,29 @@
 		<svg>
 			<defs>
 				<filter id="outline">
-				<feMorphology
-					in="SourceGraphic"
-					result="DILATED"
-					operator="dilate"
-					radius="1"
-				/>
-				<feColorMatrix
-					in="DILATED"
-					result="OUTLINED"
-					type="matrix"
-					values="
+					<feMorphology
+						in="SourceGraphic"
+						result="DILATED"
+						operator="dilate"
+						radius="1"
+					/>
+					<feColorMatrix
+						in="DILATED"
+						result="OUTLINED"
+						type="matrix"
+						values="
 						-1 0  0  0 0
 						0  -1 0  0 0
 						0  0  -1 0 0
 						0  0  0  1 0
 					"
-				/>
+					/>
 
-				<feMerge>
-					<feMergeNode in="OUTLINED" />
-					<feMergeNode in="SourceGraphic" />
-				</feMerge>
-			</filter>
+					<feMerge>
+						<feMergeNode in="OUTLINED" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
 			</defs>
 		</svg>
 	</div>
@@ -212,7 +223,8 @@
 		viewport,
 		lockPosition: computed(() => {
 			if (!settings.value.automaticCameraTargeting) return null;
-			if (unitGroup.units.value.length === 0) return Vector.fromCartesianVector({ x: 0, y: 0 });
+			if (unitGroup.units.value.length === 0)
+				return Vector.fromCartesianVector({ x: 0, y: 0 });
 			return unitGroup.averageVector.value;
 		}),
 		lockZoom: computed(() => {

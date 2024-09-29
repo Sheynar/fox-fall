@@ -11,6 +11,7 @@
 			'--unit-x': screenPosition.x,
 			'--unit-y': screenPosition.y,
 			'--viewport-zoom': viewport.resolvedZoom,
+			'--unit-icon-scale': settings.unitIconScale,
 		}"
 		@mouseover="isHovered = true"
 		@mouseleave="isHovered = false"
@@ -57,7 +58,7 @@
 		top: calc(var(--unit-y) * 1px);
 		z-index: 1000;
 
-		transform: translate(-50%, -50%);
+		transform: translate(-50%, -50%) scale(var(--unit-icon-scale));
 		transform-origin: 50% 50%;
 
 		&:hover,
@@ -120,6 +121,7 @@
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { injectUnitSelector } from '@/contexts/unit-selector';
 	import { injectViewport } from '@/contexts/viewport';
+	import { settings } from '@/lib/settings';
 	import { getUnitLabel, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 

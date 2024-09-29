@@ -1,8 +1,12 @@
 <template>
 	<PrimeDialog
+		class="UnitSettings__dialog"
 		v-model:visible="visible"
 		:header="'Unit: ' + unitLabel"
-		:style="{ minWidth: '30rem' }"
+		:style="{
+			minWidth: '30rem',
+			'--ui-scale': settings.unitSettingsScale,
+		}"
 		position="bottomright"
 		@pointerdown.stop
 		@wheel.stop
@@ -190,6 +194,17 @@
 </template>
 
 <style lang="scss">
+	.UnitSettings__dialog {
+		font-size: calc(1em * var(--ui-scale));
+		.p-dialog-title {
+			font-size: 2em;
+		}
+		.p-button-icon-only.p-button-rounded {
+			height: 2em;
+			width: 2em;
+		}
+	}
+
 	.UnitSettings__container {
 		display: flex;
 		flex-direction: column;
@@ -284,6 +299,7 @@
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
+	import { settings } from '@/lib/settings';
 	import { getUnitLabel, UnitType, unitTypeOrder } from '@/lib/unit';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });

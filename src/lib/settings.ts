@@ -6,4 +6,18 @@ export const settings = ref({
 	useNatoAlphabet: true,
 	mainUnit: undefined as string | undefined,
 	pointsOfInterest: [] as string[],
+	unitIconScale: 1,
+	unitSettingsScale: 1,
 });
+
+export const saveSettings = () => {
+	localStorage.setItem('settings', JSON.stringify(settings.value));
+};
+
+export const loadSettings = () => {
+	const savedSettings = localStorage.getItem('settings');
+	if (savedSettings != null) {
+		Object.assign(settings.value, JSON.parse(savedSettings));
+	}
+};
+loadSettings();
