@@ -100,7 +100,7 @@
 			<div class="UnitSettings__actions">
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="emit('create-child', UnitType.Artillery)"
+					@click.stop="onUnitTypeClicked($event, UnitType.Artillery)"
 					severity="secondary"
 					title="Create artillery"
 				>
@@ -108,7 +108,7 @@
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="emit('create-child', UnitType.Spotter)"
+					@click.stop="onUnitTypeClicked($event, UnitType.Spotter)"
 					severity="secondary"
 					title="Create spotter"
 				>
@@ -116,7 +116,7 @@
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="emit('create-child', UnitType.Location)"
+					@click.stop="onUnitTypeClicked($event, UnitType.Location)"
 					severity="secondary"
 					title="Create location"
 				>
@@ -126,7 +126,7 @@
 			<div class="UnitSettings__actions">
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="emit('create-child', UnitType.Target)"
+					@click.stop="onUnitTypeClicked($event, UnitType.Target)"
 					severity="secondary"
 					title="Create target"
 				>
@@ -134,10 +134,7 @@
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="
-						emit('create-child', UnitType.LandingZone);
-						visible = false;
-					"
+					@click.stop="onUnitTypeClicked($event, UnitType.LandingZone)"
 					severity="secondary"
 					title="Create landing zone"
 				>
@@ -342,6 +339,15 @@
 			? 'Unknown'
 			: getUnitLabel(unitMap.value, parent.value.id)
 	);
+
+	const onUnitTypeClicked = (e: MouseEvent, type: UnitType) => {
+		if (e.ctrlKey) {
+			unit.value.type = type;
+			emit('updated');
+		} else {
+			emit('create-child', type)
+		}
+	};
 
 	const emit = defineEmits<{
 		(event: 'create-child', payload: UnitType): void;
