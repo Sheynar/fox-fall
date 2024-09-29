@@ -45,6 +45,7 @@
 		(event: 'show-help'): void;
 		(event: 'show-sync'): void;
 		(event: 'toggle-settings'): void;
+		(event: 'open-gunner-interface'): void;
 		(event: 'toggle-wind-settings'): void;
 	}>();
 
@@ -93,6 +94,12 @@
 			icon: 'pi pi-cog',
 			severity: 'secondary',
 			command: () => emit('toggle-settings'),
+		},
+		{
+			label: 'Gunner interface',
+			icon: 'pi pi-window-minimize',
+			severity: 'secondary',
+			command: () => emit('open-gunner-interface'),
 		},
 		{
 			label: 'Help',

@@ -58,9 +58,10 @@
 				readyToFire = $event;
 				updateReadyToFire();
 			"
+			@open-gunner-interface="() => openGunnerInterface()"
 			@show-add-unit="addUnit(UnitType.Artillery, undefined, undefined)"
 			@show-help="showHelp()"
-			@show-sync="showSync()"
+			@show-sync="promptSync()"
 			@toggle-settings="() => (settingsVisible = !settingsVisible)"
 			@toggle-wind-settings="() => (windSettingsVisible = !windSettingsVisible)"
 		/>
@@ -169,17 +170,16 @@
 	import UnitComponent from '@/components/Unit/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
+	import WindSettings from '@/components/WindSettings.vue';
+	import { promptSync } from '@/lib/prompts/sync';
 	import { settings } from '@/lib/settings';
 	import { Vector } from '@/lib/vector';
 	import { UnitType } from '@/lib/unit';
 	import { useArtillery } from '@/mixins/artillery';
 	import { useServerConnection } from '@/mixins/server-connection';
 	import { useSyncedRoom } from '@/mixins/synced-room';
+	import { useUnitGroup } from '@/mixins/unit-group';
 	import { useViewPortControl } from '@/mixins/viewport-control';
-	import WindSettings from './components/WindSettings.vue';
-	import { useUnitGroup } from './mixins/unit-group';
-
-	(<any>window).Vector = Vector;
 
 	const containerElement = ref<null | HTMLDivElement>(null);
 
@@ -248,15 +248,7 @@
 		);
 	};
 
-	const serverIp = ref<string | null>(null);
-	const serverCode = ref<string | null>(null);
-	const serverUrl = computed(() =>
-		serverIp.value && serverCode.value
-			? `ws://${serverIp.value}:81/?code=${encodeURIComponent(serverCode.value)}`
-			: null
-	);
-
-	const serverConnection = useServerConnection(serverUrl);
+	const serverConnection = useServerConnection();
 	const { updateReadyToFire, updateUnit, updateWind } = useSyncedRoom(
 		readyToFire,
 		unitMap,
@@ -264,36 +256,10 @@
 		serverConnection.webSocket
 	);
 
-	const showSync = () => {
-		const newServerIp = prompt(
-			'Enter server adress:',
-			new URL(window.location.href).searchParams.get('serverAddress') ||
-				window.location.hostname
-		);
-		if (!newServerIp) return;
-		const newServerCode = prompt(
-			'Enter sync code:',
-			new URL(window.location.href).searchParams.get('code') || undefined
-		);
-		if (!newServerCode) return;
-		const newSearch = `?serverAddress=${encodeURIComponent(newServerIp)}&code=${encodeURIComponent(newServerCode)}`;
-		if (newSearch === location.search) {
-			location.reload();
-		} else {
-			location.search = newSearch;
-		}
-	};
-
-	const loadSyncFromUrl = () => {
-		const url = new URL(window.location.href);
-		const newServerIp = url.searchParams.get('serverAddress') || url.hostname;
-		const newServerCode = url.searchParams.get('code');
-		if (!newServerIp || !newServerCode) return;
-		serverIp.value = newServerIp;
-		serverCode.value = newServerCode;
-	};
-	loadSyncFromUrl();
-
 	const settingsVisible = ref(false);
 	const windSettingsVisible = ref(false);
+
+	const openGunnerInterface = () => {
+		window.location.pathname = window.location.pathname + 'gunner/';
+	};
 </script>

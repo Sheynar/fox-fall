@@ -295,6 +295,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^22.7.4":
+  version: 22.7.4
+  resolution: "@types/node@npm:22.7.4"
+  dependencies:
+    undici-types: "npm:~6.19.2"
+  checksum: 10c0/c22bf54515c78ff3170142c1e718b90e2a0003419dc2d55f79c9c9362edd590a6ab1450deb09ff6e1b32d1b4698da407930b16285e8be3a009ea6cd2695cac01
+  languageName: node
+  linkType: hard
+
 "@types/web-bluetooth@npm:^0.0.20":
   version: 0.0.20
   resolution: "@types/web-bluetooth@npm:0.0.20"
@@ -804,6 +813,7 @@ __metadata:
     "@kaosdlanor/kanim": "npm:^1.0.1"
     "@kaosdlanor/vue-reactivity": "npm:^1.0.2"
     "@primevue/themes": "npm:4.0.0-rc.2"
+    "@types/node": "npm:^22.7.4"
     "@vitejs/plugin-vue": "npm:^4.4.0"
     "@vueuse/core": "npm:^10.5.0"
     prettier: "npm:^3.0.3"
@@ -1627,6 +1637,13 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10c0/db2ad2a16ca829f50427eeb1da155e7a45e598eec7b086d8b4e8ba44e5a235f758e606d681c66992230d3fc3b8995865e5fd0b22a2c95486d0b3200f83072ec9
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.19.2":
+  version: 6.19.8
+  resolution: "undici-types@npm:6.19.8"
+  checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
   languageName: node
   linkType: hard
 

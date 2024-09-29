@@ -32,7 +32,7 @@ type ArtilleryOptions = {
 export const useArtillery = ({
 	onUnitUpdated,
 	onWindUpdated,
-}: ArtilleryOptions) => {
+}: ArtilleryOptions = {}) => {
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const readyToFire = ref(false);
 	const wind = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
