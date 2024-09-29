@@ -39,6 +39,22 @@
 		/>
 	</div>
 
+	<div
+		v-if="unit.type === UnitType.Target && wind.distance > 0"
+		class="Unit__container Unit__firing-indicator"
+		:style="{
+			'--unit-x': firingPositionScreen.x,
+			'--unit-y': firingPositionScreen.y,
+			'--viewport-zoom': viewport.resolvedZoom,
+			'--unit-icon-scale': settings.unitIconScale,
+		}"
+	>
+		<div class="Unit__label" v-if="unitLabel">
+			{{ unitLabel }}
+		</div>
+		<TargetIcon class="Unit__icon" />
+	</div>
+
 	<UnitSettings
 		v-model:visible="open"
 		v-model:can-drag="canDrag"
@@ -84,6 +100,12 @@
 		}
 	}
 
+	.Unit__firing-indicator {
+		opacity: 0.4;
+		z-index: -1;
+		pointer-events: none;
+	}
+
 	.Unit__label {
 		position: absolute;
 		left: 50%;
@@ -121,6 +143,7 @@
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { injectUnitSelector } from '@/contexts/unit-selector';
 	import { injectViewport } from '@/contexts/viewport';
+	import { injectWind } from '@/contexts/wind';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
@@ -143,6 +166,7 @@
 	const unit = injectUnit();
 	const unitSelector = injectUnitSelector();
 	const viewport = injectViewport();
+	const wind = injectWind();
 	const pinnedUnits = injectPinnedUnits();
 	const highlightedUnits = injectHighlightedUnits();
 	const selectedUnits = injectSelectedUnits();
@@ -206,6 +230,11 @@
 
 	const screenPosition = computed(() =>
 		viewport.value.fromViewportVector(resolvedVector.value)
+	);
+
+	const firingPosition = computed(() => resolvedVector.value.addVector(wind.value));
+	const firingPositionScreen = computed(() =>
+		viewport.value.fromViewportVector(firingPosition.value)
 	);
 
 	type MovingData = {
