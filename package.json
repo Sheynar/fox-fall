@@ -17,8 +17,7 @@
     "primeicons": "^7.0.0",
     "primevue": "4.0.0-rc.2",
     "typescript-event-target": "^1.1.1",
-    "vue": "^3.3.7",
-    "vue-angle-input": "^1.0.3"
+    "vue": "^3.3.7"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.4.0",
