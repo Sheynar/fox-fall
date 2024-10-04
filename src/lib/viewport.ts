@@ -96,16 +96,31 @@ export class Viewport {
 	}
 
 	panToCentered(newPosition: Vector): void {
-		this.panTo(
-			newPosition.addVector(
-				this.toViewportOffset(
-					Vector.fromCartesianVector(viewportOffset.value).scale(-1)
-				)
+		this.panTo(this.fromCentered(newPosition));
+	}
+
+	toCentered(position: Vector): Vector {
+		return position.addVector(
+			this.toViewportOffset(
+				Vector.fromCartesianVector(viewportOffset.value)
 			)
 		);
 	}
 
-	zoomBy(zoomDelta: number, globalPinPosition: Vector = this.fromViewportVector(this.getFocusedPosition())): void {
+	fromCentered(position: Vector): Vector {
+		return position.addVector(
+			this.toViewportOffset(
+				Vector.fromCartesianVector(viewportOffset.value).scale(-1)
+			)
+		);
+	}
+
+	zoomBy(
+		zoomDelta: number,
+		globalPinPosition: Vector = this.fromViewportVector(
+			this.getFocusedPosition()
+		)
+	): void {
 		const viewportPinPosition = this.toViewportVector(globalPinPosition);
 
 		this.zoom = Math.max(0.1, this.zoom + zoomDelta);
