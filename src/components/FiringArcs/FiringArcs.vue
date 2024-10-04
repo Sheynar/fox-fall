@@ -42,37 +42,32 @@
 	const pinnedUnits = injectPinnedUnits();
 	const unitMap = injectUnitMap();
 
-	const getRootParent = (unitId: string): Unit => {
-		const unit = unitMap.value[unitId];
-		if (unit.parentId == null) return unit;
-		return getRootParent(unit.parentId);
-	};
-	const artilleryByRootParent = computed(() => {
-		const output: Record<string, string[]> = {};
+	const relevantUnitIds = computed(() =>
+		Array.from(
+			new Set([
+				...highlightedUnits.value,
+				...pinnedUnits.value,
+				...selectedUnits.value,
+			])
+		)
+	);
+
+	const artilleryUnits = computed(() => {
+		const output: Unit[] = [];
 		for (const unitId of Object.keys(unitMap.value)) {
 			const unit = unitMap.value[unitId];
-			const rootParent = getRootParent(unitId);
 			if (unit.type !== UnitType.Artillery) continue;
-
-			if (output[rootParent.id] == null) {
-				output[rootParent.id] = [];
-			}
-			output[rootParent.id].push(unitId);
+			output.push(unit);
 		}
 		return output;
 	});
 
-	const targetByRootParent = computed(() => {
-		const output: Record<string, string[]> = {};
+	const targetUnits = computed(() => {
+		const output: Unit[] = [];
 		for (const unitId of Object.keys(unitMap.value)) {
 			const unit = unitMap.value[unitId];
-			const rootParent = getRootParent(unitId);
 			if (unit.type !== UnitType.Target) continue;
-
-			if (output[rootParent.id] == null) {
-				output[rootParent.id] = [];
-			}
-			output[rootParent.id].push(unitId);
+			output.push(unit);
 		}
 		return output;
 	});
@@ -80,28 +75,14 @@
 	const firingArcList = computed(() => {
 		const output: { from: Unit; to: Unit }[] = [];
 
-		const unitIds = new Set([...highlightedUnits.value, ...pinnedUnits.value, ...selectedUnits.value]);
-
-		for (const unitId of unitIds) {
-			const unit = unitMap.value[unitId];
-			if (unit == null) continue;
-
-			if (unit.type === UnitType.Target) {
-				const rootParent = getRootParent(unitId);
-				const artilleryList = artilleryByRootParent.value[rootParent.id] ?? [];
-				for (const artilleryId of artilleryList) {
-					if (unitIds.has(artilleryId)) continue;
-					const artillery = unitMap.value[artilleryId];
-					output.push({ from: artillery, to: unit });
-				}
-			}
-			if (unit.type === UnitType.Artillery) {
-				const rootParent = getRootParent(unitId);
-				const targetList = targetByRootParent.value[rootParent.id] ?? [];
-				for (const targetId of targetList) {
-					const target = unitMap.value[targetId];
-					output.push({ from: unit, to: target });
-				}
+		for (const targetUnit of targetUnits.value) {
+			for (const artilleryUnit of artilleryUnits.value) {
+				if (
+					!relevantUnitIds.value.includes(artilleryUnit.id) &&
+					!relevantUnitIds.value.includes(targetUnit.id)
+				)
+					continue;
+				output.push({ from: artilleryUnit, to: targetUnit });
 			}
 		}
 
