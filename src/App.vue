@@ -59,7 +59,7 @@
 				updateReadyToFire();
 			"
 			@open-gunner-interface="() => openGunnerInterface()"
-			@show-add-unit="addUnit(UnitType.Artillery, undefined, undefined)"
+			@show-add-unit="addUnit(UnitType.Location, undefined, undefined)"
 			@show-help="showHelp()"
 			@show-sync="promptSync()"
 			@toggle-settings="() => (settingsVisible = !settingsVisible)"
