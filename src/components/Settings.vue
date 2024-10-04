@@ -8,6 +8,10 @@
 	>
 		<div class="Settings__content">
 			<div class="Settings__row">
+				<label>Show map</label>
+				<PrimeCheckBox binary v-model="settings.showMap" @update:model-value="saveSettings" />
+			</div>
+			<div class="Settings__row">
 				<label>Automatic camera targeting</label>
 				<PrimeCheckBox binary v-model="settings.automaticCameraTargeting" @update:model-value="saveSettings" />
 			</div>

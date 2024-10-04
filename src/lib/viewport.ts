@@ -92,7 +92,9 @@ export class Viewport {
 	}
 
 	getFocusedPosition(): Vector {
-		return this.toViewportVector(Vector.fromCartesianVector(viewportOffset.value));
+		return this.toViewportVector(
+			Vector.fromCartesianVector(viewportOffset.value)
+		);
 	}
 
 	panToCentered(newPosition: Vector): void {
@@ -123,7 +125,7 @@ export class Viewport {
 	): void {
 		const viewportPinPosition = this.toViewportVector(globalPinPosition);
 
-		this.zoom = Math.max(0.1, this.zoom + zoomDelta);
+		this.zoom = Math.max(0.001, this.zoom + zoomDelta);
 
 		const cursorDelta = this.fromViewportVector(viewportPinPosition).addVector(
 			globalPinPosition.scale(-1)

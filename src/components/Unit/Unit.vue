@@ -313,10 +313,12 @@
 		};
 
 		// Round values
-		unit.value.vector.angularVector = {
-			distance: Math.round(unit.value.vector.distance),
-			azimuth: Number(unit.value.vector.azimuth.toFixed(1)),
-		};
+		if (unit.value.parentId != null) {
+			unit.value.vector.angularVector = {
+				distance: Math.round(unit.value.vector.distance),
+				azimuth: Number(unit.value.vector.azimuth.toFixed(1)),
+			};
+		}
 
 		emit('updated');
 	};

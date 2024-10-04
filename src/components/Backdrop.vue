@@ -1,5 +1,7 @@
 <template>
+	<Map v-if="settings.showMap" />
 	<div
+		v-else
 		class="Backdrop__grid"
 		:style="{
 			'--background-x': backgroundOffset.x,
@@ -96,9 +98,11 @@
 	import { KAnim } from '@kaosdlanor/kanim';
 	import { computed } from 'vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
+	import Map from '@/components/Map/Map.vue';
 	import { injectCursor } from '@/contexts/cursor';
 	import { injectViewport } from '@/contexts/viewport';
 	import { toRadians, wrapDegrees } from '@/lib/angle';
+	import { settings } from '@/lib/settings';
 
 	const cursor = injectCursor();
 	const viewport = injectViewport();

@@ -8,6 +8,7 @@ export const settings = ref({
 	pointsOfInterest: [] as string[],
 	unitIconScale: 1,
 	unitSettingsScale: 1,
+	showMap: false,
 });
 
 export const saveSettings = () => {
