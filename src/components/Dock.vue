@@ -32,12 +32,10 @@
 	import { computed, defineModel} from 'vue';
 	import WindIndicator from '@/components/WindIndicator.vue';
 	import { injectServerConnection } from '@/contexts/server-connection';
-	import { injectUnitMap } from '@/contexts/unit';
 	import { ServerConnectionState } from '@/mixins/server-connection';
 
 	const readyToFire = defineModel('readyToFire', { type: Boolean, required: true });
 
-	const unitMap = injectUnitMap();
 	const serverConnection = injectServerConnection();
 
 	const emit = defineEmits<{
@@ -84,7 +82,6 @@
 			label: 'Add unit',
 			icon: 'pi pi-plus',
 			severity: 'secondary',
-			disabled: Object.keys(unitMap.value).length > 0,
 			command: () => emit('show-add-unit'),
 		},
 		readyToFireItem.value,

@@ -73,9 +73,19 @@ export const useArtillery = ({
 			vector = ref(
 				Vector.fromAngularVector({
 					azimuth: 180,
-					distance: parentUnitId == null ? 0 : 42,
+					distance: 42,
 				})
 			);
+			if (parentUnitId == null) {
+				vector.value = viewport.value.toCentered(
+					viewport.value.toViewportVector(
+						Vector.fromCartesianVector({
+							x: 0,
+							y: 0,
+						})
+					)
+				);
+			}
 		}
 
 		const parentUnit = parentUnitId ? unitMap.value[parentUnitId] : undefined;
@@ -141,7 +151,8 @@ export const useArtillery = ({
 				if (currentlyCheckingParent === unitId) {
 					setUnitSource(newParentId!, undefined);
 				}
-				currentlyCheckingParent = unitMap.value[currentlyCheckingParent]?.parentId;
+				currentlyCheckingParent =
+					unitMap.value[currentlyCheckingParent]?.parentId;
 			}
 
 			unit.vector = getUnitResolvedVector(unitMap.value, unitId);
