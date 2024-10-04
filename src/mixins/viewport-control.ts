@@ -125,7 +125,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 			(event.deltaY > 0 ? -0.1 : 0.1) * (event.ctrlKey ? 10 : 1);
 
 		options.viewport.value.zoomBy(
-			zoomDelta,
+			zoomDelta * options.viewport.value.zoom,
 			lockPosition.value == null
 				? Vector.fromCartesianVector({
 						x: event.clientX,
