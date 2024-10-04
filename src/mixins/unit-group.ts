@@ -2,6 +2,7 @@ import { computed, type Ref } from 'vue';
 import { getUnitResolvedVector, type UnitMap } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
 
+// TODO : abstract this into some helper methods which can then be called by the backdrop when resetting the viewport
 export const useUnitGroup = (unitMap: Ref<UnitMap>, unitIds: Ref<string[]>) => {
 	const units = computed(() => unitIds.value.map((id) => unitMap.value[id]));
 

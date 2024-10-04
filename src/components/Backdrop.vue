@@ -18,7 +18,7 @@
 			'--viewport-deg': viewport.rotation,
 		}"
 		alt="Reset rotation"
-		@pointerdown.stop="resetRotation()"
+		@pointerdown.stop="onCompassClicked()"
 	/>
 
 	<div class="Backdrop__debug-info">
@@ -95,17 +95,20 @@
 </style>
 
 <script setup lang="ts">
-	import { KAnim } from '@kaosdlanor/kanim';
 	import { computed } from 'vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import Map from '@/components/Map/Map.vue';
 	import { injectCursor } from '@/contexts/cursor';
+	import { injectUnitMap } from '@/contexts/unit';
 	import { injectViewport } from '@/contexts/viewport';
 	import { toRadians, wrapDegrees } from '@/lib/angle';
 	import { settings } from '@/lib/settings';
+	import { getUnitResolvedVector } from '@/lib/unit';
+	import { Vector } from '@/lib/vector';
 
 	const cursor = injectCursor();
 	const viewport = injectViewport();
+	const unitMap = injectUnitMap();
 
 	const resolvedCursor = computed(() => {
 		return viewport.value.toViewportVector(cursor.value);
@@ -123,23 +126,37 @@
 			viewport.value.position.x * Math.cos(toRadians(viewport.value.rotation)),
 	}));
 
-	const resetRotation = async () => {
-		const viewportProxy = {
-			get rotation() {
-				return viewport.value.rotation;
-			},
-			set rotation(value: number) {
-				viewport.value.rotateTo(value);
-			},
-		};
+	const onCompassClicked = async () => {
+		viewport.value.withSmoothing(async () => {
+			viewport.value.rotation = viewport.value.rotation > 270 ? 360 + 90 : 90;
 
-		await KAnim.animate({
-			element: viewportProxy,
-			property: 'rotation',
-			from: viewport.value.rotation,
-			to: viewport.value.rotation > 270 ? 360 + 90 : 90,
-			duration: 250,
-			easing: 'easeInOutQuad',
+			const unitVectors = Object.values(unitMap.value).map((unit) => {
+				return getUnitResolvedVector(unitMap.value, unit.id);
+			});
+
+			const center = unitVectors
+				.reduce(
+					(sum, vector) => {
+						return sum.addVector(vector);
+					},
+					Vector.fromCartesianVector({ x: 0, y: 0 })
+				)
+				.scale(1 / (unitVectors.length || 1));
+
+			if (unitVectors.length > 1) {
+				const maxOffset = Math.max(
+					0,
+					...unitVectors.map((vector) => {
+						return Math.abs(vector.addVector(center.scale(-1)).distance);
+					})
+				);
+
+				viewport.value.zoomTo(0.8 / (maxOffset / 100));
+			} else {
+				viewport.value.zoomTo(1);
+			}
+
+			viewport.value.panToCentered(center);
 		});
 	};
 </script>
