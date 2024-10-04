@@ -1,8 +1,8 @@
 import { ref } from 'vue';
 
 export const settings = ref({
-	automaticCameraTargeting: true,
-	automaticCameraZoom: true,
+	automaticCameraTargeting: false,
+	automaticCameraZoom: false,
 	useNatoAlphabet: true,
 	mainUnit: undefined as string | undefined,
 	pointsOfInterest: [] as string[],
