@@ -174,7 +174,7 @@
 	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
 
 	const isHovered = ref(false);
-	const canDrag = ref(false);
+	const canDrag = ref(settings.value.showMap && unit.value.parentId == null);
 	const open = computed({
 		get: () => selectedUnits.value.includes(unit.value.id),
 		set: (value) => {
