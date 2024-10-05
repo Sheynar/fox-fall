@@ -6,7 +6,7 @@
 		xmlns:xlink="http://www.w3.org/1999/xlink"
 		width="800px"
 		height="800px"
-		viewBox="0 0 49.978 49.978"
+		viewBox="0 0 51.75 49.5"
 		xml:space="preserve"
 	>
 		<g>
