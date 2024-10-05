@@ -8,7 +8,8 @@
 			'--viewport-zoom': viewport.resolvedZoom,
 		}"
 	>
-		<TileSet :lod="0" :x="0" :y="0" :size="1" />
+		<HexagonGrid class="Map__hexagons" />
+		<TileSet class="Map__tileset" :lod="0" :x="0" :y="0" :size="1" />
 	</div>
 </template>
 
@@ -28,6 +29,20 @@
 			scale(var(--viewport-zoom));
 
 		transform-origin: 0 0;
+
+		display: grid;
+		grid-template-columns: max-content;
+		grid-template-rows: max-content;
+	}
+
+	.Map__tileset,
+	.Map__hexagons {
+		grid-column: 1 / span 1;
+		grid-row: 1 / span 1;
+	}
+
+	.Map__hexagons {
+		z-index: 1000;
 	}
 </style>
 
@@ -36,6 +51,7 @@
 	import { injectViewport } from '@/contexts/viewport';
 	import { Vector } from '@/lib/vector';
 	import { MAP_SIZE } from './constants';
+	import HexagonGrid from './HexagonGrid.vue';
 	import TileSet from './TileSet.vue';
 
 	const viewport = injectViewport();
