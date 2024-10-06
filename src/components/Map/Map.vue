@@ -21,6 +21,7 @@
 		width: 100%;
 		height: 100%;
 
+		transform-origin: 0 0;
 		transform: translate(
 				calc(1px * var(--map-x)),
 				calc(1px * var(--map-y))
@@ -28,7 +29,7 @@
 			rotate(calc(var(--viewport-deg) * 1deg - 90deg))
 			scale(var(--viewport-zoom));
 
-		transform-origin: 0 0;
+		pointer-events: none;
 
 		display: grid;
 		grid-template-columns: max-content;
