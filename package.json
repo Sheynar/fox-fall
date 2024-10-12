@@ -2,31 +2,25 @@
   "name": "fox-fall",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "description": "Foxhole artillery calculator",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "rimraf dist && vite build",
-    "preview": "vite preview"
-  },
-  "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
-  "dependencies": {
-    "@kaosdlanor/kanim": "^1.0.1",
-    "@kaosdlanor/vue-reactivity": "^1.0.2",
-    "@primevue/themes": "4.0.0-rc.2",
-    "@vueuse/core": "^10.5.0",
-    "primeicons": "^7.0.0",
-    "primevue": "4.0.0-rc.2",
-    "typescript-event-target": "^1.1.1",
-    "vue": "^3.3.7"
+    "env:cmd": "dotenvx run -f .env.local --",
+    "build": "turbo run build --concurrency=1",
+    "build:nocache": "turbo run build:nocache --concurrency=1",
+    "build:full": "turbo run build --force --concurrency=1",
+    "dev": "turbo run dev",
+    "serve": "turbo run serve"
   },
   "devDependencies": {
-    "@types/node": "^22.7.4",
-    "@vitejs/plugin-vue": "^4.4.0",
-    "prettier": "^3.0.3",
-    "rimraf": "^5.0.7",
-    "sass": "^1.69.4",
-    "typescript": "^5.4.5",
-    "vite": "^4.5.0"
+    "@dotenvx/dotenvx": "^0.44.1",
+    "@yarnpkg/types": "^4.0.0",
+    "turbo": "^2.0.12"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   },
   "packageManager": "yarn@4.1.1"
 }
