@@ -2,6 +2,7 @@
 	<div
 		ref="containerElement"
 		class="App__container"
+		:class="{ App__transparent: isTransparent}"
 		@touchstart.prevent
 		@pointermove="onPointerMove"
 		@contextmenu.prevent
@@ -114,6 +115,12 @@
 		width: 100dvw;
 		height: 100dvh;
 		font-size: 2vmin;
+
+		color: var(--color-primary);
+
+		&:not(.App__transparent) {
+			background-color: var(--color-primary-contrast);
+		}
 	}
 
 	.App__units {
@@ -262,4 +269,6 @@
 	const openGunnerInterface = () => {
 		window.location.pathname = window.location.pathname + 'gunner/';
 	};
+
+	const isTransparent = new URL(location.href).searchParams.get('overlay') != null;
 </script>
