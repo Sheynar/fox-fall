@@ -122,7 +122,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		event.preventDefault();
 		if (lockZoom.value) return;
 		const zoomDelta =
-			(event.deltaY > 0 ? -0.1 : 0.1) * (event.ctrlKey ? 10 : 1);
+			(event.deltaY > 0 ? -0.1 : 0.1) * (event.ctrlKey ? 5 : 1) * (event.shiftKey ? .1 : 1);
 
 		options.viewport.value.zoomBy(
 			zoomDelta * options.viewport.value.zoom,
