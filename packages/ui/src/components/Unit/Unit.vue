@@ -328,7 +328,7 @@
 		// Round values
 		if (unit.value.parentId != null) {
 			unit.value.vector.angularVector = {
-				distance: Math.round(unit.value.vector.distance),
+				distance: Number(unit.value.vector.distance.toFixed(1)),
 				azimuth: Number(unit.value.vector.azimuth.toFixed(1)),
 			};
 		}

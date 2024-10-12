@@ -24,7 +24,7 @@
 		fractionDigits?: number;
 		min?: number;
 	}>(), {
-		fractionDigits: 0,
+		fractionDigits: 1,
 	});
 
 	const modelValue = defineModel({ type: Number, required: true });
