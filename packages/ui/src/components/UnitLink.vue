@@ -66,20 +66,13 @@
 		getUnitResolvedVector(unitMap.value, props.unitIdTo)
 	);
 
-	const lineRelativePosition = computed(() =>
-		unitPositionTo.value.addVector(unitPositionFrom.value.scale(-1))
-	);
 	const linePositionFrom = computed(() => unitPositionFrom.value);
 	const linePositionTo = computed(() => unitPositionTo.value);
 
 	const lineScreenPositionFrom = computed(() =>
-		viewport.value
-			.fromViewportVector(linePositionFrom.value)
-			.addVector(viewport.value.fromViewportOffset(lineRelativePosition.value).normalize().scale(25))
+		viewport.value.fromViewportVector(linePositionFrom.value)
 	);
 	const lineScreenPositionTo = computed(() =>
-		viewport.value
-			.fromViewportVector(linePositionTo.value)
-			.addVector(viewport.value.fromViewportOffset(lineRelativePosition.value).normalize().scale(-25))
+		viewport.value.fromViewportVector(linePositionTo.value)
 	);
 </script>

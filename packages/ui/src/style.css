@@ -15,7 +15,7 @@
 	--color-primary: #ededed;
 	--color-primary-contrast: #242424;
 
-	--color-selected: var(--color-primary);/* #646cff */
+	--color-selected: #646cff;
 }
 
 body {

@@ -15,7 +15,11 @@
 		}"
 		@mouseover="isHovered = true"
 		@mouseleave="isHovered = false"
+		@pointerdown="onPointerDown"
+		@pointermove="onPointerMove"
+		@pointerup="onPointerUp"
 	>
+		<div class="Unit__border"></div>
 		<div class="Unit__label" v-if="unitLabel">
 			{{ unitLabel }}
 		</div>
@@ -33,9 +37,6 @@
 			"
 			ref="iconElement"
 			class="Unit__icon"
-			@pointerdown="onPointerDown"
-			@pointermove="onPointerMove"
-			@pointerup="onPointerUp"
 		/>
 	</div>
 
@@ -49,6 +50,7 @@
 			'--unit-icon-scale': settings.unitIconScale,
 		}"
 	>
+		<div class="Unit__border"></div>
 		<div class="Unit__label" v-if="unitLabel">
 			{{ unitLabel }}
 		</div>
@@ -74,29 +76,25 @@
 		top: calc(var(--unit-y) * 1px);
 		z-index: 1000;
 
-		transform: translate(-50%, -50%) scale(var(--unit-icon-scale));
-		transform-origin: 50% 50%;
+		transform: translate(-50%, -100%) scale(var(--unit-icon-scale)) translateY(-20.710678118654757%);
+		transform-origin: 50% 100%;
 
 		&:hover,
 		&:focus-within,
 		&.Unit__moving,
 		&.Unit__highlighted {
-			.Unit__icon {
-				background: var(--color-primary-contrast);
-
-				outline: 0.1em solid var(--color-selected);
+			.Unit__border {
+				outline-color: var(--color-selected);
 			}
 		}
 
-		&:not(:focus-within):not(.Unit__moving) {
+		&:not(:focus-within):not(.Unit__moving):not(.Unit__highlighted) {
 			z-index: initial;
 		}
 
 		&:not(.Unit__readonly) {
-			.Unit__icon {
-				user-select: none;
-				cursor: pointer;
-			}
+			user-select: none;
+			cursor: pointer;
 		}
 	}
 
@@ -106,11 +104,25 @@
 		pointer-events: none;
 	}
 
+	.Unit__border {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: var(--color-primary-contrast);
+		outline: 0.2em solid var(--color-primary);
+		filter: url(#outline);
+
+		transform-origin: 50% 50%;
+		transform: rotate(45deg);
+		border-radius: 50%;
+		border-bottom-right-radius: 0;
+	}
+
 	.Unit__label {
 		position: absolute;
 		left: 50%;
-		top: 80%;
-		transform: translateX(-50%);
+		top: 0%;
+		transform: translate(-50%, -100%);
 
 		font-size: 200%;
 		pointer-events: none;
@@ -125,7 +137,6 @@
 		height: 5em;
 		border-radius: 50%;
 		padding: 0.5em;
-		filter: url(#outline);
 	}
 </style>
 
@@ -232,7 +243,9 @@
 		viewport.value.fromViewportVector(resolvedVector.value)
 	);
 
-	const firingPosition = computed(() => resolvedVector.value.addVector(wind.value));
+	const firingPosition = computed(() =>
+		resolvedVector.value.addVector(wind.value)
+	);
 	const firingPositionScreen = computed(() =>
 		viewport.value.fromViewportVector(firingPosition.value)
 	);
