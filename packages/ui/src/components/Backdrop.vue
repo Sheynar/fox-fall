@@ -72,7 +72,7 @@
 	.Backdrop__compass {
 		position: absolute;
 		top: 1em;
-		left: 1em;
+		right: 1em;
 
 		width: 10em;
 		height: 10em;
@@ -87,8 +87,8 @@
 
 	.Backdrop__debug-info {
 		position: absolute;
-		top: 1em;
-		right: 1em;
+		bottom: 1em;
+		left: 1em;
 
 		user-select: none;
 	}
