@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
-import WebSocket from 'ws';
+import { WebSocketServer, type WebSocket } from 'ws';
 
 const app = new Hono();
 app.use(
@@ -17,8 +17,10 @@ app.use(
 serve({
 	fetch: app.fetch,
 	port: 80,
+}, (info) => {
+	console.log(`Server running on ${info.address}:${info.port}`);
 });
-const wss = new WebSocket.Server({ port: 81 });
+const wss = new WebSocketServer({ port: 81 });
 
 enum UpdateType {
 	full = 'full',
@@ -156,7 +158,7 @@ const addSocketToRoom = (code: string, ws: WebSocket) => {
 	const room = getRoom(code);
 	room.sockets.add(ws);
 
-	ws.on('message', (message) => {
+	ws.addEventListener('message', (message) => {
 		const data = JSON.parse(message.toString());
 		if (!isRoomUpdate(data)) return;
 		if (data.type === UpdateType.full) {
@@ -175,10 +177,10 @@ const addSocketToRoom = (code: string, ws: WebSocket) => {
 		room.sendState(undefined, ws);
 	}, 30_000);
 
-	ws.once('close', () => {
+	ws.addEventListener('close', () => {
 		clearInterval(intervalId);
 		removeSocketFromRoom(code, ws);
-	});
+	}, { once: true });
 };
 
 const removeSocketFromRoom = (code: string, ws: WebSocket) => {
