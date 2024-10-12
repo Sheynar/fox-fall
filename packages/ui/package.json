@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-	"main": "./index.js",
+  "main": "./index.js",
   "scripts": {
     "serve": "vite --host 0.0.0.0 --port 8080",
     "build": "rimraf dist && vite build",
@@ -13,6 +13,7 @@
   "dependencies": {
     "@kaosdlanor/kanim": "^1.0.1",
     "@kaosdlanor/vue-reactivity": "^1.0.2",
+    "@packages/types": "workspace:*",
     "@primevue/themes": "4.0.0-rc.2",
     "@vueuse/core": "^10.5.0",
     "primeicons": "^7.0.0",
@@ -28,6 +29,5 @@
     "sass": "^1.69.4",
     "typescript": "^5.4.5",
     "vite": "^4.5.0"
-  },
-  "packageManager": "yarn@4.1.1"
+  }
 }

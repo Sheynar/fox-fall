@@ -390,6 +390,7 @@ __metadata:
   resolution: "@packages/server@workspace:packages/server"
   dependencies:
     "@hono/node-server": "npm:^1.11.1"
+    "@packages/types": "workspace:*"
     "@packages/ui": "workspace:*"
     "@types/node": "npm:^20.12.7"
     "@types/ws": "npm:^8.5.10"
@@ -401,12 +402,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@packages/types@workspace:*, @packages/types@workspace:packages/types":
+  version: 0.0.0-use.local
+  resolution: "@packages/types@workspace:packages/types"
+  dependencies:
+    prettier: "npm:^3.0.3"
+    rimraf: "npm:^6.0.1"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
 "@packages/ui@workspace:*, @packages/ui@workspace:packages/ui":
   version: 0.0.0-use.local
   resolution: "@packages/ui@workspace:packages/ui"
   dependencies:
     "@kaosdlanor/kanim": "npm:^1.0.1"
     "@kaosdlanor/vue-reactivity": "npm:^1.0.2"
+    "@packages/types": "workspace:*"
     "@primevue/themes": "npm:4.0.0-rc.2"
     "@types/node": "npm:^22.7.4"
     "@vitejs/plugin-vue": "npm:^4.4.0"

@@ -1,3 +1,4 @@
+import { type RoomUpdate, UpdateType } from '@packages/types';
 import { watch, type Ref } from 'vue';
 import { generateId } from '@/lib/id';
 import { UnitMap, Unit } from '@/lib/unit';
@@ -5,37 +6,7 @@ import { Vector } from '@/lib/vector';
 
 const myId = generateId();
 
-enum UpdateType {
-	full = 'full',
-	readyToFire = 'readyToFire',
-	unit = 'unit',
-	wind = 'wind',
-}
 
-type RoomUpdate =
-	| {
-			type: UpdateType.full;
-			eventFrom?: string;
-			readyToFire?: boolean;
-			units: Record<string, unknown>;
-			wind?: unknown;
-	  }
-	| {
-			type: UpdateType.readyToFire;
-			eventFrom?: string;
-			value: boolean;
-	  }
-	| {
-			type: UpdateType.unit;
-			eventFrom?: string;
-			unitId: string;
-			value: unknown;
-	  }
-	| {
-			type: UpdateType.wind;
-			eventFrom?: string;
-			value: unknown;
-	  };
 
 const isRoomUpdate = (value: unknown): value is RoomUpdate => {
 	return typeof value === 'object' && value !== null && 'type' in value;
