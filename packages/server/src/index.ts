@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
-import { type RoomUpdate, UpdateType } from '@packages/types';
+import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/types';
 import { Hono } from 'hono';
 import { WebSocketServer, type WebSocket } from 'ws';
 
@@ -22,10 +22,6 @@ serve({
 	console.log(`Server running on ${info.address}:${info.port}`);
 });
 const wss = new WebSocketServer({ port: 81 });
-
-const isRoomUpdate = (value: unknown): value is RoomUpdate => {
-	return typeof value === 'object' && value !== null && 'type' in value;
-};
 
 class Room {
 	sockets = new Set<WebSocket>();

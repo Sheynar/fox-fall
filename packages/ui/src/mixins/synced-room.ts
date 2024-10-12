@@ -1,16 +1,10 @@
-import { type RoomUpdate, UpdateType } from '@packages/types';
+import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/types';
 import { watch, type Ref } from 'vue';
 import { generateId } from '@/lib/id';
 import { UnitMap, Unit } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
 
 const myId = generateId();
-
-
-
-const isRoomUpdate = (value: unknown): value is RoomUpdate => {
-	return typeof value === 'object' && value !== null && 'type' in value;
-};
 
 const parseVector = (vector: any): Vector => {
 	return vector._angularVector != null

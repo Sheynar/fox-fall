@@ -1,8 +1,8 @@
 export enum UpdateType {
-	full = 'full',
-	readyToFire = 'readyToFire',
-	unit = 'unit',
-	wind = 'wind',
+	full = "full",
+	readyToFire = "readyToFire",
+	unit = "unit",
+	wind = "wind",
 }
 
 export type RoomUpdate =
@@ -29,3 +29,7 @@ export type RoomUpdate =
 			eventFrom?: string;
 			value: unknown;
 	  };
+
+export const isRoomUpdate = (value: unknown): value is RoomUpdate => {
+	return typeof value === "object" && value !== null && "type" in value && (<UpdateType>value.type) in UpdateType;
+};
