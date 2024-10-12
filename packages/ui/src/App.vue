@@ -62,10 +62,12 @@
 			@open-gunner-interface="() => openGunnerInterface()"
 			@show-add-unit="addUnit(UnitType.Location, undefined, undefined)"
 			@show-help="showHelp()"
-			@show-sync="promptSync()"
+			@show-sync="() => (syncSettingsVisible = !syncSettingsVisible)"
 			@toggle-settings="() => (settingsVisible = !settingsVisible)"
 			@toggle-wind-settings="() => (windSettingsVisible = !windSettingsVisible)"
 		/>
+
+		<SyncSettings v-model:visible="syncSettingsVisible" />
 
 		<Settings v-model:visible="settingsVisible" />
 
@@ -174,11 +176,11 @@
 	import Dock from '@/components/Dock.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
 	import Settings from '@/components/Settings.vue';
+	import SyncSettings from '@/components/SyncSettings.vue';
 	import UnitComponent from '@/components/Unit/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
 	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
 	import WindSettings from '@/components/WindSettings.vue';
-	import { promptSync } from '@/lib/prompts/sync';
 	import { settings } from '@/lib/settings';
 	import { Vector } from '@/lib/vector';
 	import { UnitType } from '@/lib/unit';
@@ -265,6 +267,7 @@
 
 	const settingsVisible = ref(false);
 	const windSettingsVisible = ref(false);
+	const syncSettingsVisible = ref(false);
 
 	const openGunnerInterface = () => {
 		window.location.pathname = window.location.pathname + 'gunner/';

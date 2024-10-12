@@ -65,6 +65,8 @@
 				</PrimeButton>
 			</template>
 		</PrimeDock>
+
+		<SyncSettings v-model:visible="syncSettingsVisible" />
 	</div>
 </template>
 
@@ -155,21 +157,21 @@
 	import PrimeDock from 'primevue/dock';
 	import vPrimeTooltip from 'primevue/tooltip';
 	import { computed, ref, watch } from 'vue';
-	import { promptSync } from '@/lib/prompts/sync';
+	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
+	import TargetIcon from '@/components/icons/TargetIcon.vue';
+	import SyncSettings from '@/components/SyncSettings.vue';
+	import {
+		getUnitLabel,
+		getUnitResolvedVector,
+		Unit,
+		UnitType,
+	} from '@/lib/unit';
 	import { useArtillery } from '@/mixins/artillery';
 	import {
 		ServerConnectionState,
 		useServerConnection,
 	} from '@/mixins/server-connection';
 	import { useSyncedRoom } from '@/mixins/synced-room';
-	import {
-		getUnitLabel,
-		getUnitResolvedVector,
-		Unit,
-		UnitType,
-	} from './lib/unit';
-	import ArtilleryIcon from './components/icons/ArtilleryIcon.vue';
-	import TargetIcon from './components/icons/TargetIcon.vue';
 
 	const { wind, readyToFire, unitMap } = useArtillery();
 
@@ -242,7 +244,7 @@
 		label: isConnected.value ? 'Connected' : 'Disconnected',
 		icon: 'pi pi-sync',
 		severity: isConnected.value ? 'success' : 'danger',
-		command: () => promptSync(),
+		command: () => syncSettingsVisible.value = !syncSettingsVisible.value,
 	}));
 	const dockControls = computed<Item[]>(() => [
 		connectedItem.value,
@@ -257,4 +259,6 @@
 	const openCalculator = () => {
 		window.location.pathname = window.location.pathname.replace('/gunner', '');
 	};
+
+	const syncSettingsVisible = ref(false);
 </script>
