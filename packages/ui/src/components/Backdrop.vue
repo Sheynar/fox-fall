@@ -46,17 +46,17 @@
 		background: linear-gradient(
 				180deg,
 				rgba(0, 0, 0, 0) 0%,
-				rgba(0, 0, 0, 0) calc(50% - 0.1em),
-				rgba(0, 0, 0, 1) calc(50%),
-				rgba(0, 0, 0, 0) calc(50% + 0.1em),
+				rgba(0, 0, 0, 0) calc(50% - 1px),
+				rgba(0, 0, 0, 0.8) calc(50%),
+				rgba(0, 0, 0, 0) calc(50% + 1px),
 				rgba(0, 0, 0, 0) 100%
 			),
 			linear-gradient(
 				90deg,
 				rgba(0, 0, 0, 0) 0%,
-				rgba(0, 0, 0, 0) calc(50% - 0.1em),
-				rgba(0, 0, 0, 1) calc(50%),
-				rgba(0, 0, 0, 0) calc(50% + 0.1em),
+				rgba(0, 0, 0, 0) calc(50% - 1px),
+				rgba(0, 0, 0, 0.8) calc(50%),
+				rgba(0, 0, 0, 0) calc(50% + 1px),
 				rgba(0, 0, 0, 0) 100%
 			);
 
@@ -83,6 +83,7 @@
 
 		cursor: pointer;
 		user-select: none;
+		filter: url(#outline);
 	}
 
 	.Backdrop__debug-info {
@@ -91,6 +92,7 @@
 		left: 1em;
 
 		user-select: none;
+		filter: url(#outline);
 	}
 </style>
 
