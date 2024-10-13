@@ -1,21 +1,6 @@
 import { app, BrowserWindow } from 'electron';
-import path from 'path';
-import { pathToFileURL } from 'url';
-
-const createWindow = () => {
-	const win = new BrowserWindow({
-		frame: false,
-		autoHideMenuBar: true,
-		transparent: true,
-		alwaysOnTop: true,
-		fullscreen: true,
-	});
-
-	const url = pathToFileURL(path.join(__dirname, '../www/index.html'));
-	url.searchParams.append('overlay', 'true');
-
-	win.loadURL(url.href);
-};
+import { initialise as initialiseMainWindow } from './windows/main';
+import { initialise as initialiseManagerWindow, showManager } from './windows/manager';
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
@@ -23,10 +8,12 @@ app.on('window-all-closed', () => {
 
 const initialise = async () => {
 	await app.whenReady();
-	createWindow();
+	initialiseMainWindow();
+	initialiseManagerWindow();
+	showManager();
 	app.on('activate', () => {
 		if (BrowserWindow.getAllWindows().length === 0) {
-			createWindow();
+			showManager();
 		}
 	});
 };
