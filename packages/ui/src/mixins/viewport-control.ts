@@ -121,11 +121,20 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		event.stopPropagation();
 		event.preventDefault();
 		if (lockZoom.value) return;
+		let zoomModifier = 1;
+		if (event.ctrlKey && event.shiftKey) {
+			zoomModifier = 0.01;
+		} else if (event.ctrlKey) {
+			zoomModifier = 5;
+		} else if (event.shiftKey) {
+			zoomModifier = 0.1;
+		}
+
 		const zoomDelta =
-			(event.deltaY > 0 ? -0.1 : 0.1) * (event.ctrlKey ? 5 : 1) * (event.shiftKey ? .1 : 1);
+			(event.deltaY > 0 ? -0.1 : 0.1) * zoomModifier * options.viewport.value.zoom;
 
 		options.viewport.value.zoomBy(
-			zoomDelta * options.viewport.value.zoom,
+			zoomDelta,
 			lockPosition.value == null
 				? Vector.fromCartesianVector({
 						x: event.clientX,
