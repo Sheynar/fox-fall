@@ -12,6 +12,8 @@ export const initialise = () => {
 		fullscreen: true,
 		// focusable: false,
 		closable: false,
+		movable: false,
+		resizable: false,
 		show: false,
 	});
 
@@ -23,6 +25,7 @@ export const initialise = () => {
 };
 
 export const showMain = () => {
+	if (mainWindow == null || mainWindow.isDestroyed()) return initialise();
 	mainWindow?.show();
 };
 
@@ -31,7 +34,7 @@ export const hideMain = () => {
 };
 
 export const toggleMain = () => {
-	if (mainWindow?.isVisible()) {
+	if (!mainWindow?.isDestroyed() && mainWindow?.isVisible()) {
 		hideMain();
 	} else {
 		showMain();
