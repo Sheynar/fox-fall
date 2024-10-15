@@ -4,11 +4,9 @@ export const settings = ref({
 	automaticCameraTargeting: false,
 	automaticCameraZoom: false,
 	useNatoAlphabet: true,
-	mainUnit: undefined as string | undefined,
-	pointsOfInterest: [] as string[],
 	unitIconScale: 1,
 	unitSettingsScale: 1,
-	showMap: false,
+	gridDashLength: 2,
 });
 
 export const saveSettings = () => {

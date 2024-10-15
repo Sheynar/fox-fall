@@ -172,7 +172,7 @@
 
 <script setup lang="ts">
 	import { computed, ref } from 'vue';
-	import Backdrop from '@/components/Backdrop.vue';
+	import Backdrop from '@/components/Backdrop/Backdrop.vue';
 	import Dock from '@/components/Dock.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
 	import Settings from '@/components/Settings.vue';
@@ -210,21 +210,7 @@
 		onWindUpdated: () => updateWind(),
 	});
 
-	const unitGroupIds = computed(() => {
-		const output = [...settings.value.pointsOfInterest];
-		if (
-			settings.value.mainUnit != null &&
-			!output.includes(settings.value.mainUnit)
-		) {
-			output.push(settings.value.mainUnit);
-		}
-
-		if (output.length === 0) {
-			return Object.keys(unitMap.value);
-		}
-
-		return output;
-	});
+	const unitGroupIds = computed(() => Object.keys(unitMap.value));
 	const unitGroup = useUnitGroup(unitMap, unitGroupIds);
 
 	useViewPortControl({

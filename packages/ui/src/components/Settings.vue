@@ -8,10 +8,6 @@
 	>
 		<div class="Settings__content">
 			<div class="Settings__row">
-				<label>Show map</label>
-				<PrimeCheckBox binary v-model="settings.showMap" @update:model-value="saveSettings" />
-			</div>
-			<div class="Settings__row">
 				<label>Automatic camera targeting</label>
 				<PrimeCheckBox binary v-model="settings.automaticCameraTargeting" @update:model-value="saveSettings" />
 			</div>
@@ -22,6 +18,20 @@
 			<div class="Settings__row">
 				<label>Use NATO alphabet</label>
 				<PrimeCheckBox binary v-model="settings.useNatoAlphabet" @update:model-value="saveSettings" />
+			</div>
+			<div class="Settings__row">
+				<label>Grid dash length</label>
+				<PrimeInputNumber
+					:model-value="settings.gridDashLength"
+					@input="settings.gridDashLength = Number($event.value); saveSettings()"
+					suffix="px"
+					locale="en-UK"
+					:allowEmpty="false"
+					highlightOnFocus
+					:minFractionDigits="0"
+					:maxFractionDigits="2"
+					:min="0"
+				/>
 			</div>
 			<div class="Settings__row">
 				<label>Unit icon scale</label>
