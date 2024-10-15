@@ -67,6 +67,10 @@ export class Vector {
 		return new Vector(undefined, cartesianVector);
 	}
 
+	public static zero(): Vector {
+		return Vector.fromCartesianVector({ x: 0, y: 0 });
+	}
+
 	public get angularVector(): AngularVector {
 		if (this._angularVector == null) {
 			this._angularVector = toAngularVector(this._cartesianVector!);
