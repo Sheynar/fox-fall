@@ -6,7 +6,9 @@ export const settings = ref({
 	useNatoAlphabet: true,
 	unitIconScale: 1,
 	unitSettingsScale: 1,
-	gridDashLength: 2,
+	gridDashLength: 3,
+	gridDashGap: 2,
+	gridLineWidth: 0.5,
 	sync: null as {
 		serverAddress: string,
 		code: string,

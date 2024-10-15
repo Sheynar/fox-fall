@@ -15,7 +15,8 @@
 			'--viewport-zoom': viewport.resolvedZoom,
 			'--grid-size': gridSize,
 		}"
-		:stroke-width="0.5 / viewport.resolvedZoom"
+		:stroke-width="settings.gridLineWidth / viewport.resolvedZoom"
+		:stroke-dasharray="`${settings.gridDashLength / viewport.resolvedZoom} ${settings.gridDashGap / viewport.resolvedZoom}`"
 	>
 		<g class="Grid__vertical__container">
 			<line
@@ -26,7 +27,6 @@
 				y1="0"
 				:y2="gridSize"
 				:stroke="(x - 1) % 3 === 0 ? '#000000' : '#333333'"
-				:stroke-dasharray="settings.gridDashLength / viewport.resolvedZoom"
 			/>
 		</g>
 		<g class="Grid__horizontal__container">
@@ -38,7 +38,6 @@
 				:y1="(y - 1) * SUBCELL_SIZE"
 				:y2="(y - 1) * SUBCELL_SIZE"
 				:stroke="(y - 1) % 3 === 0 ? '#000000' : '#333333'"
-				:stroke-dasharray="settings.gridDashLength / viewport.resolvedZoom"
 			/>
 		</g>
 	</svg>

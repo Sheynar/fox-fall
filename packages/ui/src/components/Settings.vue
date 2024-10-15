@@ -34,6 +34,34 @@
 				/>
 			</div>
 			<div class="Settings__row">
+				<label>Grid dash gap</label>
+				<PrimeInputNumber
+					:model-value="settings.gridDashGap"
+					@input="settings.gridDashGap = Number($event.value); saveSettings()"
+					suffix="px"
+					locale="en-UK"
+					:allowEmpty="false"
+					highlightOnFocus
+					:minFractionDigits="0"
+					:maxFractionDigits="2"
+					:min="0"
+				/>
+			</div>
+			<div class="Settings__row">
+				<label>Grid line width</label>
+				<PrimeInputNumber
+					:model-value="settings.gridLineWidth"
+					@input="settings.gridLineWidth = Number($event.value); saveSettings()"
+					suffix="px"
+					locale="en-UK"
+					:allowEmpty="false"
+					highlightOnFocus
+					:minFractionDigits="0"
+					:maxFractionDigits="2"
+					:min="0.25"
+				/>
+			</div>
+			<div class="Settings__row">
 				<label>Unit icon scale</label>
 				<PrimeInputNumber
 					:model-value="settings.unitIconScale"
