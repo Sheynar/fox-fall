@@ -1,5 +1,6 @@
+import { computed, onScopeDispose, ref, watch } from 'vue';
 import { provideServerConnection } from '@/contexts/server-connection';
-import { type Ref, computed, onScopeDispose, ref, watch } from 'vue';
+import { saveSettings, settings } from '@/lib/settings';
 
 const RECONNECT_INTERVAL = 10_000;
 
@@ -9,25 +10,40 @@ export enum ServerConnectionState {
 	connected = 'Connected',
 }
 
-export const useServerConnection = (url: Ref<string | null | undefined> = ref()) => {
-	const serverIp = ref<string | null>(null);
-	const serverCode = ref<string | null>(null);
+export const getConnectionDetailsFromUrl = () => {
+	const url = new URL(window.location.href);
+	let serverAddress = url.searchParams.get('serverAddress') || url.hostname;
+	let code = url.searchParams.get('code');
 
-	const loadParamsFromUrl = () => {
-		const url = new URL(window.location.href);
-		const newServerIp = url.searchParams.get('serverAddress') || url.hostname;
-		const newServerCode = url.searchParams.get('code');
-		if (!newServerIp || !newServerCode) return;
-		serverIp.value = newServerIp;
-		serverCode.value = newServerCode;
-	};
-	loadParamsFromUrl();
+	if (!serverAddress || !code) return null;
 
+	return { serverAddress, code };
+};
+
+export const getConnectionDetails = () => {
+	const connectionDetails = getConnectionDetailsFromUrl();
+	if (connectionDetails) {
+		settings.value.sync = { ...connectionDetails };
+		saveSettings();
+		return connectionDetails;
+	}
+
+	if (settings.value.sync) {
+		const newUrl = new URL(window.location.href);
+		newUrl.searchParams.set('serverAddress', settings.value.sync.serverAddress);
+		newUrl.searchParams.set('code', settings.value.sync.code);
+		location.search = newUrl.search;
+	}
+
+	return null;
+};
+
+export const useServerConnection = () => {
 	const serverUrl = computed(() => {
-		if (url.value) return url.value;
-		return serverIp.value && serverCode.value
-		? `ws://${serverIp.value}:81/?code=${encodeURIComponent(serverCode.value)}`
-		: null;
+		const connectionDetails = getConnectionDetails();
+		return connectionDetails
+			? `ws://${connectionDetails.serverAddress}:81/?code=${encodeURIComponent(connectionDetails.code)}`
+			: null;
 	});
 
 	const webSocket = ref<WebSocket>();

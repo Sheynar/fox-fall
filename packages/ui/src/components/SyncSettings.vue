@@ -9,11 +9,22 @@
 		<div class="Sync__settings">
 			<div class="Sync__settings__item">
 				<label>Server address:</label>
-				<TextInput v-model="serverIp" :allowEmpty="false" auto-focus highlightOnFocus @keydown.enter="connect" />
+				<TextInput
+					v-model="connectionDetails.serverAddress"
+					:allowEmpty="false"
+					auto-focus
+					highlightOnFocus
+					@keydown.enter="connect"
+				/>
 			</div>
 			<div class="Sync__settings__item">
 				<label>Sync code:</label>
-				<TextInput v-model="serverCode" :allowEmpty="false" highlightOnFocus @keydown.enter="connect" />
+				<TextInput
+					v-model="connectionDetails.code"
+					:allowEmpty="false"
+					highlightOnFocus
+					@keydown.enter="connect"
+				/>
 			</div>
 			<PrimeButton
 				class="Sync__settings__button"
@@ -53,21 +64,20 @@
 	import PrimeDialog from 'primevue/dialog';
 	import { ref } from 'vue';
 	import TextInput from '@/components/inputs/TextInput.vue';
+	import { getConnectionDetails } from '@/mixins/server-connection';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
 
-	const url = new URL(window.location.href);
-	const serverIp = ref(url.searchParams.get('serverAddress') ?? window.location.hostname);
-	const serverCode = ref(url.searchParams.get('code') ?? '');
+	const connectionDetails = ref(getConnectionDetails() ?? { code : '', serverAddress : '' });
 
 	const connect = () => {
-	const newUrl = new URL(window.location.href);
-	newUrl.searchParams.set('serverAddress', serverIp.value);
-	newUrl.searchParams.set('code', serverCode.value);
-	if (newUrl.search === location.search) {
-		location.reload();
-	} else {
-		location.search = newUrl.search;
-	}
+		const newUrl = new URL(window.location.href);
+		newUrl.searchParams.set('serverAddress', connectionDetails.value.serverAddress);
+		newUrl.searchParams.set('code', connectionDetails.value.code);
+		if (newUrl.search === location.search) {
+			location.reload();
+		} else {
+			location.search = newUrl.search;
+		}
 	};
 </script>

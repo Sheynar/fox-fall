@@ -7,6 +7,10 @@ export const settings = ref({
 	unitIconScale: 1,
 	unitSettingsScale: 1,
 	gridDashLength: 2,
+	sync: null as {
+		serverAddress: string,
+		code: string,
+	} | null,
 });
 
 export const saveSettings = () => {
