@@ -3,6 +3,7 @@ import { generateId } from '@/lib/id';
 import { natoAlphabet } from '@/lib/names';
 import { settings } from '@/lib/settings';
 import { Vector } from '@/lib/vector';
+import { AMMO_TYPE, type Platform } from './constants/data';
 
 export enum UnitType {
 	Artillery,
@@ -20,12 +21,14 @@ export const unitTypeOrder = [
 	UnitType.LandingZone,
 ];
 
-export type Unit = {
+export type Unit<AT extends AMMO_TYPE = AMMO_TYPE> = {
 	id: string;
 	label?: string;
 	type: UnitType;
 	vector: Vector;
 	parentId?: string;
+	ammunition?: AT;
+	platform?: Platform<AT>;
 };
 
 export type UnitMap = {
