@@ -21,14 +21,14 @@ export const unitTypeOrder = [
 	UnitType.LandingZone,
 ];
 
-export type Unit<AT extends AMMO_TYPE = AMMO_TYPE> = {
+export type Unit = {
 	id: string;
 	label?: string;
 	type: UnitType;
 	vector: Vector;
 	parentId?: string;
-	ammunition?: AT;
-	platform?: Platform<AT>;
+	ammunition?: AMMO_TYPE;
+	platform?: Platform<AMMO_TYPE>;
 };
 
 export type UnitMap = {

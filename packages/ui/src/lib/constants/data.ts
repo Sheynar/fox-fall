@@ -1,23 +1,23 @@
-import ICON__120mm_conqueror from '@/assets/images/artillery/platform/120mm/conqueror.webp';
-import ICON__120mm_koronides from '@/assets/images/artillery/platform/120mm/koronides.webp';
-import ICON__120mm_trident from '@/assets/images/artillery/platform/120mm/trident.webp';
-import ICON__150mm_sarissa from '@/assets/images/artillery/platform/150mm/sarissa.webp';
-import ICON__150mm_thunderbolt from '@/assets/images/artillery/platform/150mm/thunderbolt.webp';
-import ICON__300mm_storm_cannon from '@/assets/images/artillery/platform/300mm/storm-cannon.webp';
-import ICON__300mm_tempest from '@/assets/images/artillery/platform/300mm/tempest.webp';
-import ICON__fire_rocket_deioneus from '@/assets/images/artillery/platform/fire-rocket/deioneus.webp';
-import ICON__high_explosive_rocket_hades_net from '@/assets/images/artillery/platform/high-explosive-rocket/hades-net.webp';
-import ICON__high_explosive_rocket_retiarius from '@/assets/images/artillery/platform/high-explosive-rocket/retiarius.webp';
-import ICON__mortar_charon from '@/assets/images/artillery/platform/mortar/charon.webp';
-import ICON__mortar_cremari from '@/assets/images/artillery/platform/mortar/cremari.webp';
-import ICON__mortar_peltast from '@/assets/images/artillery/platform/mortar/peltast.webp';
-import ICON__titan from '@/assets/images/artillery/platform/titan.webp';
-import ICON__120mm from '@/assets/images/artillery/shell/120mm.webp';
-import ICON__150mm from '@/assets/images/artillery/shell/150mm.webp';
-import ICON__300mm from '@/assets/images/artillery/shell/300mm.webp';
-import ICON__fire_rocket from '@/assets/images/artillery/shell/fire-rocket.webp';
-import ICON__high_explosive_rocket from '@/assets/images/artillery/shell/high-explosive-rocket.webp';
-import ICON__mortar from '@/assets/images/artillery/shell/mortar.webp';
+import ICON__120mm_conqueror from '@/components/icons/artillery/platform/120mm/conqueror.vue';
+import ICON__120mm_koronides from '@/components/icons/artillery/platform/120mm/koronides.vue';
+import ICON__120mm_trident from '@/components/icons/artillery/platform/120mm/trident.vue';
+import ICON__150mm_sarissa from '@/components/icons/artillery/platform/150mm/sarissa.vue';
+import ICON__150mm_thunderbolt from '@/components/icons/artillery/platform/150mm/thunderbolt.vue';
+import ICON__300mm_storm_cannon from '@/components/icons/artillery/platform/300mm/storm-cannon.vue';
+import ICON__300mm_tempest from '@/components/icons/artillery/platform/300mm/tempest.vue';
+import ICON__fire_rocket_deioneus from '@/components/icons/artillery/platform/fire-rocket/deioneus.vue';
+import ICON__high_explosive_rocket_hades_net from '@/components/icons/artillery/platform/high-explosive-rocket/hades-net.vue';
+import ICON__high_explosive_rocket_retiarius from '@/components/icons/artillery/platform/high-explosive-rocket/retiarius.vue';
+import ICON__mortar_charon from '@/components/icons/artillery/platform/mortar/charon.vue';
+import ICON__mortar_cremari from '@/components/icons/artillery/platform/mortar/cremari.vue';
+import ICON__mortar_peltast from '@/components/icons/artillery/platform/mortar/peltast.vue';
+import ICON__titan from '@/components/icons/artillery/platform/titan.vue';
+import ICON__120mm from '@/components/icons/artillery/shell/120mm.vue';
+import ICON__150mm from '@/components/icons/artillery/shell/150mm.vue';
+import ICON__300mm from '@/components/icons/artillery/shell/300mm.vue';
+import ICON__fire_rocket from '@/components/icons/artillery/shell/fire-rocket.vue';
+import ICON__high_explosive_rocket from '@/components/icons/artillery/shell/high-explosive-rocket.vue';
+import ICON__mortar from '@/components/icons/artillery/shell/mortar.vue';
 
 export enum AMMO_TYPE {
 	MORTAR = 'mortar',
@@ -76,7 +76,7 @@ export type Platform<AT extends AMMO_TYPE> = AT extends AMMO_TYPE.MORTAR
 						: never;
 
 export type ArtillerySpecs = {
-	ICON: string;
+	ICON: any;
 	MIN_RANGE: number;
 	MAX_RANGE: number;
 	RANGE_INCREMENT: number;
@@ -113,7 +113,14 @@ export type ArtilleryPlatform = ArtillerySpecs &
 		  }
 	);
 
-export const ARTILLERY_BY_SHELL = {
+export const ARTILLERY_BY_SHELL: {
+	[AT in AMMO_TYPE]: {
+		ICON: any;
+		PLATFORM: {
+			[PF in Platform<AMMO_TYPE>]?: ArtilleryPlatform;
+		};
+	};
+} = {
 	[AMMO_TYPE.MORTAR]: {
 		ICON: ICON__mortar,
 		PLATFORM: {
@@ -314,11 +321,4 @@ export const ARTILLERY_BY_SHELL = {
 			},
 		},
 	},
-} satisfies {
-	[AT in AMMO_TYPE]: {
-		ICON: string;
-		PLATFORM: {
-			[PF in Platform<AT>]: ArtilleryPlatform;
-		};
-	};
 };

@@ -23,21 +23,7 @@
 		<div class="Unit__label" v-if="unitLabel">
 			{{ unitLabel }}
 		</div>
-		<Component
-			:is="
-				unit.type === UnitType.Artillery
-					? ArtilleryIcon
-					: unit.type === UnitType.Spotter
-						? SpotterIcon
-						: unit.type === UnitType.Location
-							? LocationIcon
-							: unit.type === UnitType.Target
-								? TargetIcon
-								: ExplosionIcon
-			"
-			ref="iconElement"
-			class="Unit__icon"
-		/>
+		<Component :is="unitIcon" ref="iconElement" class="Unit__icon" />
 	</div>
 
 	<div
@@ -76,7 +62,8 @@
 		top: calc(var(--unit-y) * 1px);
 		z-index: 1000;
 
-		transform: translate(-50%, -100%) scale(var(--unit-icon-scale)) translateY(-21%);
+		transform: translate(-50%, -100%) scale(var(--unit-icon-scale))
+			translateY(-21%);
 		transform-origin: 50% 100%;
 
 		&:hover,
@@ -155,6 +142,7 @@
 	import { injectUnitSelector } from '@/contexts/unit-selector';
 	import { injectViewport } from '@/contexts/viewport';
 	import { injectWind } from '@/contexts/wind';
+	import { ARTILLERY_BY_SHELL } from '@/lib/constants/data';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
@@ -182,7 +170,32 @@
 	const highlightedUnits = injectHighlightedUnits();
 	const selectedUnits = injectSelectedUnits();
 
+	const artillerySpecs = computed(() => {
+		if (
+			unit.value.ammunition != null &&
+			unit.value.platform != null &&
+			ARTILLERY_BY_SHELL[unit.value.ammunition]?.PLATFORM[
+				unit.value.platform
+			] != null
+		) {
+			return ARTILLERY_BY_SHELL[unit.value.ammunition].PLATFORM[
+				unit.value.platform
+			]!
+		}
+	});
 	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
+	const unitIcon = computed(() => {
+		if (unit.value.type === UnitType.Spotter) return SpotterIcon;
+		if (unit.value.type === UnitType.Location) return LocationIcon;
+		if (unit.value.type === UnitType.Target) return TargetIcon;
+		if (unit.value.type === UnitType.LandingZone) return ExplosionIcon;
+
+		if (artillerySpecs.value) {
+			return artillerySpecs.value.ICON;
+		}
+
+		return ArtilleryIcon;
+	});
 
 	const isHovered = ref(false);
 	const canDrag = ref(unit.value.parentId == null);

@@ -25,6 +25,33 @@
 						optionLabel="label"
 					/>
 				</div>
+				<div class="UnitSettings__row" v-if="unit.type === UnitType.Artillery">
+					<span>Ammo:</span>
+					<PrimeSelect
+						class="UnitSettings__select"
+						filter
+						showClear
+						v-model="selectedAmmoType"
+						:disabled="props.readonly"
+						:options="ammoOptions"
+						optionLabel="label"
+					/>
+				</div>
+				<div
+					class="UnitSettings__row"
+					v-if="unit.type === UnitType.Artillery && unit.ammunition != null"
+				>
+					<span>Platform:</span>
+					<PrimeSelect
+						class="UnitSettings__select"
+						filter
+						showClear
+						v-model="selectedPlatform"
+						:disabled="props.readonly"
+						:options="platformOptions"
+						optionLabel="label"
+					/>
+				</div>
 				<div class="UnitSettings__row">
 					<span>Positioned from:</span>
 					<SelectOneUnit
@@ -296,6 +323,11 @@
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
 	import { injectUnit, injectUnitMap } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
+	import {
+		AMMO_TYPE,
+		ARTILLERY_BY_SHELL,
+		Platform,
+	} from '@/lib/constants/data';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, UnitType, unitTypeOrder } from '@/lib/unit';
 
@@ -331,6 +363,50 @@
 		},
 	});
 
+	const ammoOptions = computed(() => {
+		return (Object.keys(ARTILLERY_BY_SHELL) as AMMO_TYPE[]).map((shell) => ({
+			label: shell,
+			value: shell,
+		}));
+	});
+	const selectedAmmoType = computed({
+		get: () =>
+			ammoOptions.value.find(
+				(option) => option.value === unit.value.ammunition
+			),
+		set: (option) => {
+			unit.value.ammunition = option?.value;
+			unit.value.platform = undefined;
+			emit('updated');
+		},
+	});
+
+	const platformOptions = computed(() => {
+		if (
+			unit.value.ammunition == null ||
+			ARTILLERY_BY_SHELL[unit.value.ammunition] == null
+		)
+			return [];
+		return (
+			Object.keys(
+				ARTILLERY_BY_SHELL[unit.value.ammunition].PLATFORM
+			) as Platform<AMMO_TYPE>[]
+		).map((platform) => ({
+			label: platform,
+			value: platform,
+		}));
+	});
+	const selectedPlatform = computed({
+		get: () =>
+		platformOptions.value.find(
+				(option) => option.value === unit.value.platform
+			),
+		set: (option) => {
+			unit.value.platform = option?.value;
+			emit('updated');
+		},
+	});
+
 	const parent = computed(() =>
 		unit.value.parentId != null ? unitMap.value[unit.value.parentId] : undefined
 	);
@@ -345,7 +421,7 @@
 			unit.value.type = type;
 			emit('updated');
 		} else {
-			emit('create-child', type)
+			emit('create-child', type);
 		}
 	};
 
