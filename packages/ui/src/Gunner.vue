@@ -5,49 +5,57 @@
 		@touchstart.prevent
 		@contextmenu.prevent
 	>
-		<div class="Gunner__unit-selector" :style="{ 'grid-area': 'artillery' }">
+		<template v-if="artilleryUnits.length && targetUnits.length">
+			<div class="Gunner__unit-selector" :style="{ 'grid-area': 'artillery' }">
+				<div
+					v-for="(unit, index) in artilleryUnits"
+					:key="unit.id"
+					class="Gunner__unit"
+					:class="{ Gunner__selected: selectedArtilleryIndex === index }"
+					@pointerdown.stop="selectedArtilleryIndex = index"
+				>
+					<ArtilleryIcon />
+					{{ getUnitLabel(unitMap, unit.id) }}
+				</div>
+			</div>
 			<div
-				v-for="(unit, index) in artilleryUnits"
-				:key="unit.id"
-				class="Gunner__unit"
-				:class="{ Gunner__selected: selectedArtilleryIndex === index }"
-				@pointerdown.stop="selectedArtilleryIndex = index"
+				class="Gunner__firing-info"
+				:class="{ 'Gunner__ready-to-fire': readyToFire }"
+				:style="{ 'grid-area': 'firing-info' }"
+				v-if="firingVector"
 			>
-				<ArtilleryIcon />
-				{{ getUnitLabel(unitMap, unit.id) }}
+				<div class="FiringArc__label-row">
+					<span class="FiringArc__span">
+						{{ getUnitLabel(unitMap, selectedArtillery!.id) }} ->
+						{{ getUnitLabel(unitMap, selectedTarget!.id) }}
+					</span>
+				</div>
+				<div class="FiringArc__label-row">
+					<span>distance:</span>
+					<span>{{ Math.round(firingVector.distance) }}m</span>
+				</div>
+				<div class="FiringArc__label-row">
+					<span>azimuth:</span
+					><span>{{ firingVector.azimuth.toFixed(1) }}°</span>
+				</div>
 			</div>
-		</div>
-		<div
-			class="Gunner__firing-info"
-			:class="{ 'Gunner__ready-to-fire': readyToFire }"
-			:style="{ 'grid-area': 'firing-info' }"
-			v-if="firingVector"
-		>
-			<div class="FiringArc__label-row">
-				<span class="FiringArc__span">
-					{{ getUnitLabel(unitMap, selectedArtillery!.id) }} ->
-					{{ getUnitLabel(unitMap, selectedTarget!.id) }}
-				</span>
+			<div class="Gunner__unit-selector" :style="{ 'grid-area': 'target' }">
+				<div
+					v-for="(unit, index) in targetUnits"
+					:key="unit.id"
+					class="Gunner__unit"
+					:class="{ Gunner__selected: selectedTargetIndex === index }"
+					@pointerdown.stop="selectedTargetIndex = index"
+				>
+					<TargetIcon />
+					{{ getUnitLabel(unitMap, unit.id) }}
+				</div>
 			</div>
-			<div class="FiringArc__label-row">
-				<span>distance:</span>
-				<span>{{ Math.round(firingVector.distance) }}m</span>
-			</div>
-			<div class="FiringArc__label-row">
-				<span>azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}°</span>
-			</div>
-		</div>
-		<div class="Gunner__unit-selector" :style="{ 'grid-area': 'target' }">
-			<div
-				v-for="(unit, index) in targetUnits"
-				:key="unit.id"
-				class="Gunner__unit"
-				:class="{ Gunner__selected: selectedTargetIndex === index }"
-				@pointerdown.stop="selectedTargetIndex = index"
-			>
-				<TargetIcon />
-				{{ getUnitLabel(unitMap, unit.id) }}
-			</div>
+		</template>
+
+		<div v-else class="Gunner__notification">
+			<div v-if="!artilleryUnits.length">No artillery units found</div>
+			<div v-if="!targetUnits.length">No target units found</div>
 		</div>
 
 		<PrimeDock :model="dockControls" @pointerdown.stop>
@@ -90,6 +98,16 @@
 		// grid-template-areas:
 		// 	'artillery firing-info target'
 		// 	'artillery controls    target';
+	}
+
+	.Gunner__notification {
+		grid-row: artillery / target;
+		grid-column: artillery / target;
+
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.Gunner__unit-selector {
@@ -244,7 +262,7 @@
 		label: isConnected.value ? 'Connected' : 'Disconnected',
 		icon: 'pi pi-sync',
 		severity: isConnected.value ? 'success' : 'danger',
-		command: () => syncSettingsVisible.value = !syncSettingsVisible.value,
+		command: () => (syncSettingsVisible.value = !syncSettingsVisible.value),
 	}));
 	const dockControls = computed<Item[]>(() => [
 		connectedItem.value,
