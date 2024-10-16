@@ -26,7 +26,7 @@
 					/>
 				</div>
 				<div class="UnitSettings__row" v-if="unit.type === UnitType.Artillery">
-					<span>Ammo:</span>
+					<span>Ammunition:</span>
 					<PrimeSelect
 						class="UnitSettings__select"
 						filter
@@ -364,10 +364,12 @@
 	});
 
 	const ammoOptions = computed(() => {
-		return (Object.keys(ARTILLERY_BY_SHELL) as AMMO_TYPE[]).map((shell) => ({
-			label: shell,
-			value: shell,
-		}));
+		return (Object.keys(ARTILLERY_BY_SHELL) as AMMO_TYPE[])
+			.sort()
+			.map((shell) => ({
+				label: shell,
+				value: shell,
+			}));
 	});
 	const selectedAmmoType = computed({
 		get: () =>
@@ -391,14 +393,16 @@
 			Object.keys(
 				ARTILLERY_BY_SHELL[unit.value.ammunition].PLATFORM
 			) as Platform<AMMO_TYPE>[]
-		).map((platform) => ({
-			label: platform,
-			value: platform,
-		}));
+		)
+			.sort()
+			.map((platform) => ({
+				label: platform,
+				value: platform,
+			}));
 	});
 	const selectedPlatform = computed({
 		get: () =>
-		platformOptions.value.find(
+			platformOptions.value.find(
 				(option) => option.value === unit.value.platform
 			),
 		set: (option) => {

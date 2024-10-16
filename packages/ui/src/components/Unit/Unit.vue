@@ -170,15 +170,15 @@
 	const highlightedUnits = injectHighlightedUnits();
 	const selectedUnits = injectSelectedUnits();
 
+	const ammoSpecs = computed(() => {
+		if (unit.value.ammunition != null) return ARTILLERY_BY_SHELL[unit.value.ammunition];
+	});
 	const artillerySpecs = computed(() => {
 		if (
-			unit.value.ammunition != null &&
 			unit.value.platform != null &&
-			ARTILLERY_BY_SHELL[unit.value.ammunition]?.PLATFORM[
-				unit.value.platform
-			] != null
+			ammoSpecs.value != null
 		) {
-			return ARTILLERY_BY_SHELL[unit.value.ammunition].PLATFORM[
+			return ammoSpecs.value.PLATFORM[
 				unit.value.platform
 			]!
 		}
@@ -190,11 +190,7 @@
 		if (unit.value.type === UnitType.Target) return TargetIcon;
 		if (unit.value.type === UnitType.LandingZone) return ExplosionIcon;
 
-		if (artillerySpecs.value) {
-			return artillerySpecs.value.ICON;
-		}
-
-		return ArtilleryIcon;
+		return artillerySpecs.value?.ICON ?? ammoSpecs.value?.ICON ?? ArtilleryIcon;
 	});
 
 	const isHovered = ref(false);
