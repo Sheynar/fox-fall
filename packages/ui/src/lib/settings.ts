@@ -1,6 +1,11 @@
 import { ref } from 'vue';
 
 export const settings = ref({
+	lockPan: false,
+	lockRotate: true,
+	lockZoom: false,
+
+
 	automaticCameraTargeting: false,
 	automaticCameraZoom: false,
 	useNatoAlphabet: true,

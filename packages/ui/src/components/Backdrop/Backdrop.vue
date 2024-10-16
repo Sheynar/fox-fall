@@ -1,6 +1,6 @@
 <template>
 	<!-- <Map v-if="settings.showMap" /> -->
-	<Grid :cells-x="5" :cells-y="5" />
+	<Grid />
 
 	<CompassIcon
 		class="Backdrop__compass"
@@ -10,6 +10,33 @@
 		alt="Reset rotation"
 		@pointerdown.stop="onCompassClicked()"
 	/>
+
+	<div class="Backdrop__viewport-controls">
+		<PrimeButton
+			class="Dock__button"
+			raised
+			:severity="settings.lockPan ? 'danger' : 'secondary'"
+			@pointerdown.stop="settings.lockPan = !settings.lockPan"
+		>
+			<DragIcon />
+		</PrimeButton>
+		<PrimeButton
+			class="Dock__button"
+			raised
+			:severity="settings.lockRotate ? 'danger' : 'secondary'"
+			@pointerdown.stop="settings.lockRotate = !settings.lockRotate"
+		>
+			<RotateIcon />
+		</PrimeButton>
+		<PrimeButton
+			class="Dock__button"
+			raised
+			:severity="settings.lockZoom ? 'danger' : 'secondary'"
+			@pointerdown.stop="settings.lockZoom = !settings.lockZoom"
+		>
+			<ZoomIcon />
+		</PrimeButton>
+	</div>
 
 	<div class="Backdrop__debug-info">
 		<div>
@@ -43,6 +70,17 @@
 		filter: url(#outline);
 	}
 
+	.Backdrop__viewport-controls {
+		position: absolute;
+		top: 1em;
+		right: 12em;
+
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+		filter: url(#outline);
+	}
+
 	.Backdrop__debug-info {
 		position: absolute;
 		bottom: 1em;
@@ -54,15 +92,19 @@
 </style>
 
 <script setup lang="ts">
+	import PrimeButton from 'primevue/button';
 	import { computed } from 'vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
+	import DragIcon from '@/components/icons/DragIcon.vue';
+	import RotateIcon from '@/components/icons/RotateIcon.vue';
+	import ZoomIcon from '@/components/icons/ZoomIcon.vue';
 	// import Map from './Map/Map.vue';
 	import Grid from './Grid.vue';
 	import { injectCursor } from '@/contexts/cursor';
 	import { injectUnitMap } from '@/contexts/unit';
 	import { injectViewport } from '@/contexts/viewport';
 	import { wrapDegrees } from '@/lib/angle';
-	// import { settings } from '@/lib/settings';
+	import { settings } from '@/lib/settings';
 	import { getUnitResolvedVector } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
@@ -78,7 +120,8 @@
 
 	const onCompassClicked = async () => {
 		viewport.value.withSmoothing(async () => {
-			viewport.value.rotation = viewport.value.rotation > 270 ? 360 + 90 : 90;
+			if (!settings.value.lockRotate)
+				viewport.value.rotation = viewport.value.rotation > 270 ? 360 + 90 : 90;
 
 			const unitVectors = Object.values(unitMap.value).map((unit) => {
 				return getUnitResolvedVector(unitMap.value, unit.id);
@@ -93,20 +136,22 @@
 				)
 				.scale(1 / (unitVectors.length || 1));
 
-			if (unitVectors.length > 1) {
-				const maxOffset = Math.max(
-					0,
-					...unitVectors.map((vector) => {
-						return Math.abs(vector.addVector(center.scale(-1)).distance);
-					})
-				);
+			if (!settings.value.lockZoom && !settings.value.lockPan) {
+				if (unitVectors.length > 1) {
+					const maxOffset = Math.max(
+						0,
+						...unitVectors.map((vector) => {
+							return Math.abs(vector.addVector(center.scale(-1)).distance);
+						})
+					);
 
-				viewport.value.zoomTo(0.8 / (maxOffset / 100));
-			} else {
-				viewport.value.zoomTo(1);
+					viewport.value.zoomTo(0.8 / (maxOffset / 100));
+				} else {
+					viewport.value.zoomTo(1);
+				}
 			}
 
-			viewport.value.panToCentered(center);
+			if (!settings.value.lockPan) viewport.value.panToCentered(center);
 		});
 	};
 </script>

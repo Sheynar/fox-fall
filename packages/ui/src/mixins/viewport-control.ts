@@ -1,7 +1,8 @@
-import { type Ref, ref, watch } from 'vue';
+import { type Ref, computed, ref, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import type { Viewport } from '@/lib/viewport';
 import { useMultiPointerDrag } from '@/mixins/multi-pointer';
+import { settings } from '@/lib/settings';
 import { Vector } from '@/lib/vector';
 
 export enum DragType {
@@ -13,16 +14,19 @@ export type ViewportLockOptions = {
 	containerElement: Ref<HTMLElement | null>;
 	viewport: Ref<Viewport>;
 	position?: Ref<Vector | null>;
+	rotation?: Ref<number | null>;
 	zoom?: Ref<number | null>;
 };
 export const useViewPortLock = (options: ViewportLockOptions) => {
 	const position = options.position ?? ref(null);
+	const rotation = options.rotation ?? ref(null);
 	const zoom = options.zoom ?? ref(null);
 
 	const updateViewport = () => {
-		if (position.value == null && zoom.value == null) return;
+		if (position.value == null && rotation.value == null && zoom.value == null) return;
 		options.viewport.value.withSmoothing(() => {
 			if (zoom.value != null) options.viewport.value.zoomTo(zoom.value);
+			if (rotation.value != null) options.viewport.value.rotateTo(rotation.value);
 			if (position.value != null)
 				options.viewport.value.panToCentered(position.value);
 		});
@@ -47,7 +51,8 @@ export const useViewPortLock = (options: ViewportLockOptions) => {
 export type ViewportControlOptions = {
 	containerElement: Ref<HTMLElement | null>;
 	viewport: Ref<Viewport>;
-	lockPosition?: Ref<Vector | null>;
+	lockPan?: Ref<Vector | null>;
+	lockRotate?: Ref<number | null>;
 	lockZoom?: Ref<number | null>;
 };
 export const useViewPortControl = (options: ViewportControlOptions) => {
@@ -55,13 +60,19 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		dragType: DragType;
 	}>(null);
 
-	const lockPosition = options.lockPosition ?? ref(null);
-	const lockZoom = options.lockZoom ?? ref(null);
+	const lockPanTo = options.lockPan ?? ref(null);
+	const lockRotateTo = options.lockRotate ?? ref(null);
+	const lockZoomTo = options.lockZoom ?? ref(null);
+
+	const canPan = computed(() => lockPanTo.value == null && !settings.value.lockPan);
+	const canRotate = computed(() => lockRotateTo.value == null && !settings.value.lockRotate);
+	const canZoom = computed(() => lockZoomTo.value == null && !settings.value.lockZoom);
 
 	useViewPortLock({
 		...options,
-		position: lockPosition,
-		zoom: lockZoom,
+		position: lockPanTo,
+		rotation: lockRotateTo,
+		zoom: lockZoomTo,
 	});
 
 	useMultiPointerDrag({
@@ -73,7 +84,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 			const newMove: typeof moving.value = {
 				// startViewport: viewport.value.clone(),
 				dragType:
-					event.shiftKey || event.button === 2 || lockPosition.value != null
+					event.shiftKey || event.button === 2 || !canPan.value
 						? DragType.Rotate
 						: DragType.Translate,
 			};
@@ -84,7 +95,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 			if (!moving.value) return;
 
 			if (moving.value.dragType === DragType.Rotate) {
-				if (Object.keys(dragStatus.pointers).length === 1) {
+				if (Object.keys(dragStatus.pointers).length === 1 && canRotate.value) {
 					const rotation =
 						dragStatus.rotationDelta +
 						(dragStatus.transformDelta.x * 720) /
@@ -93,23 +104,27 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 					options.viewport.value.rotateBy(rotation);
 				}
 			} else {
-				options.viewport.value.position.cartesianVector.x +=
-					dragStatus.transformDelta.x;
-				options.viewport.value.position.cartesianVector.y +=
-					dragStatus.transformDelta.y;
+				if (canPan.value) {
+					options.viewport.value.position.cartesianVector.x +=
+						dragStatus.transformDelta.x;
+					options.viewport.value.position.cartesianVector.y +=
+						dragStatus.transformDelta.y;
+				}
 			}
 
 			if (Object.keys(dragStatus.pointers).length > 1) {
-				if (!lockZoom.value) {
+				if (canZoom.value) {
 					options.viewport.value.zoomBy(
 						dragStatus.zoomDelta,
-						lockPosition.value == null ? dragStatus.currentPosition : undefined
+						canPan.value ? dragStatus.currentPosition : undefined
 					);
 				}
-				options.viewport.value.rotateBy(
-					dragStatus.rotationDelta,
-					lockPosition.value == null ? dragStatus.currentPosition : undefined
-				);
+				if (canRotate.value) {
+					options.viewport.value.rotateBy(
+						dragStatus.rotationDelta,
+						canPan.value ? dragStatus.currentPosition : undefined
+					);
+				}
 			}
 		},
 		onDragEnd: () => {
@@ -120,7 +135,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 	const onWheel = (event: WheelEvent) => {
 		event.stopPropagation();
 		event.preventDefault();
-		if (lockZoom.value) return;
+		if (!canZoom.value) return;
 		let zoomModifier = 1;
 		if (event.ctrlKey && event.shiftKey) {
 			zoomModifier = 0.01;
@@ -135,7 +150,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 
 		options.viewport.value.zoomBy(
 			zoomDelta,
-			lockPosition.value == null
+			lockPanTo.value == null
 				? Vector.fromCartesianVector({
 						x: event.clientX,
 						y: event.clientY,

@@ -216,7 +216,7 @@
 	useViewPortControl({
 		containerElement,
 		viewport,
-		lockPosition: computed(() => {
+		lockPan: computed(() => {
 			if (!settings.value.automaticCameraTargeting) return null;
 			if (unitGroup.units.value.length === 0)
 				return Vector.fromCartesianVector({ x: 0, y: 0 });
