@@ -178,9 +178,9 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 				if (canZoom.value) {
 					const zoomDelta =
 						(event.key === 'ArrowUp'
-							? -0.001
+							? 0.001
 							: event.key === 'ArrowDown'
-								? 0.001
+								? -0.001
 								: 0) * options.viewport.value.zoom;
 
 					options.viewport.value.zoomBy(zoomDelta);
@@ -190,11 +190,11 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 					const movement = Vector.fromCartesianVector({
 						x:
 							event.key === 'ArrowLeft'
-								? -1
+								? 1
 								: event.key === 'ArrowRight'
-									? 1
+									? -1
 									: 0,
-						y: event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0,
+						y: event.key === 'ArrowUp' ? 1 : event.key === 'ArrowDown' ? -1 : 0,
 					});
 					options.viewport.value.panBy(
 						options.viewport.value.toViewportOffset(movement)
