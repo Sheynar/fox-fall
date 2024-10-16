@@ -17,6 +17,7 @@
 			raised
 			:severity="settings.lockPan ? 'danger' : 'secondary'"
 			@pointerdown.stop="settings.lockPan = !settings.lockPan"
+			v-prime-tooltip.left="'Lock pan'"
 		>
 			<DragIcon />
 		</PrimeButton>
@@ -25,6 +26,7 @@
 			raised
 			:severity="settings.lockRotate ? 'danger' : 'secondary'"
 			@pointerdown.stop="settings.lockRotate = !settings.lockRotate"
+			v-prime-tooltip.left="'Lock rotation'"
 		>
 			<RotateIcon />
 		</PrimeButton>
@@ -33,6 +35,7 @@
 			raised
 			:severity="settings.lockZoom ? 'danger' : 'secondary'"
 			@pointerdown.stop="settings.lockZoom = !settings.lockZoom"
+			v-prime-tooltip.left="'Lock zoom'"
 		>
 			<ZoomIcon />
 		</PrimeButton>
@@ -93,6 +96,7 @@
 
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
+	import vPrimeTooltip from 'primevue/tooltip';
 	import { computed } from 'vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
