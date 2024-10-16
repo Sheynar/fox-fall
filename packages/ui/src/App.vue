@@ -256,7 +256,7 @@
 	const syncSettingsVisible = ref(false);
 
 	const openGunnerInterface = () => {
-		window.location.pathname = window.location.pathname + 'gunner/';
+		window.location.pathname = window.location.pathname.replace(/(index\.html)?$/, 'gunner/$1');
 	};
 
 	const isTransparent = new URL(location.href).searchParams.get('overlay') != null;
