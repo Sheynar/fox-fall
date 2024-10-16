@@ -27,30 +27,17 @@
 
 <script setup lang="ts">
 	import { computed, ref } from 'vue';
-	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
-	import { injectPinnedUnits } from '@/contexts/pinned-units';
-	import { injectSelectedUnits } from '@/contexts/selected-unit';
 	import { injectUnitMap } from '@/contexts/unit';
 	import { UnitType, type Unit } from '@/lib/unit';
+	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import FiringArc from './FiringArc.vue';
 
 	const firingLines = ref<HTMLElement | null>(null);
 	const firingLabels = ref<HTMLElement | null>(null);
 
-	const selectedUnits = injectSelectedUnits();
-	const highlightedUnits = injectHighlightedUnits();
-	const pinnedUnits = injectPinnedUnits();
 	const unitMap = injectUnitMap();
 
-	const relevantUnitIds = computed(() =>
-		Array.from(
-			new Set([
-				...highlightedUnits.value,
-				...pinnedUnits.value,
-				...selectedUnits.value,
-			])
-		)
-	);
+	const focusedUnitIds = useFocusedUnitIds();
 
 	const artilleryUnits = computed(() => {
 		const output: Unit[] = [];
@@ -78,8 +65,8 @@
 		for (const targetUnit of targetUnits.value) {
 			for (const artilleryUnit of artilleryUnits.value) {
 				if (
-					!relevantUnitIds.value.includes(artilleryUnit.id) &&
-					!relevantUnitIds.value.includes(targetUnit.id)
+					!focusedUnitIds.value.includes(artilleryUnit.id) &&
+					!focusedUnitIds.value.includes(targetUnit.id)
 				)
 					continue;
 				output.push({ from: artilleryUnit, to: targetUnit });

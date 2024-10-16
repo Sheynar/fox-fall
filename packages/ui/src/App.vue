@@ -49,6 +49,7 @@
 			</div>
 		</div>
 
+		<RangeFinders />
 		<FiringArcs />
 
 		<div class="App__banner" v-if="unitSelector != null">
@@ -178,12 +179,13 @@
 	import Backdrop from '@/components/Backdrop/Backdrop.vue';
 	import Dock from '@/components/Dock.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
+	import RangeFinders from '@/components/RangeFinders/RangeFinders.vue';
 	import Settings from '@/components/Settings.vue';
 	import SyncSettings from '@/components/SyncSettings.vue';
 	import UnitComponent from '@/components/Unit/Unit.vue';
 	import UnitLink from '@/components/UnitLink.vue';
-	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
 	import WindSettings from '@/components/WindSettings.vue';
+	import UnitProvider from '@/contexts/unit/UnitProvider.vue';
 	import { settings } from '@/lib/settings';
 	import { Vector } from '@/lib/vector';
 	import { UnitType } from '@/lib/unit';
