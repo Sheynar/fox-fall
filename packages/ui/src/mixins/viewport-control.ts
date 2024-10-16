@@ -171,7 +171,6 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 	useEventListener(options.containerElement, 'wheel', onWheel);
 
 	const onKeyPress = (event: KeyboardEvent) => {
-		console.log(event);
 		if (
 			['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
 		) {

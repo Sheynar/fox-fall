@@ -88,6 +88,4 @@
 
 		return output;
 	});
-
-	(<any>window).firingArcList = firingArcList;
 </script>
