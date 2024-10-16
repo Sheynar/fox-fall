@@ -76,7 +76,7 @@
 		top: calc(var(--unit-y) * 1px);
 		z-index: 1000;
 
-		transform: translate(-50%, -100%) scale(var(--unit-icon-scale)) translateY(-20.73%);
+		transform: translate(-50%, -100%) scale(var(--unit-icon-scale)) translateY(-21%);
 		transform-origin: 50% 100%;
 
 		&:hover,
