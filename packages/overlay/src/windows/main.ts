@@ -20,7 +20,7 @@ export const initialise = () => {
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
 	url.searchParams.append("overlay", "true");
 
-	mainWindow.setAlwaysOnTop(true, "dock", 9);
+	mainWindow.setAlwaysOnTop(true, "pop-up-menu");
 	mainWindow.loadURL(url.href);
 };
 
@@ -33,9 +33,14 @@ export const hideMain = () => {
 	mainWindow?.hide();
 };
 
+export const isMainVisible = () => {
+	return !mainWindow?.isDestroyed() && mainWindow?.isVisible();
+};
+
 export const toggleMain = () => {
-	if (!mainWindow?.isDestroyed() && mainWindow?.isVisible()) {
+	if (isMainVisible()) {
 		hideMain();
+		return false;
 	} else {
 		showMain();
 	}

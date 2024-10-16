@@ -1,7 +1,7 @@
 import { BrowserWindow, screen, ipcMain, app } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { toggleMain } from "../main";
+import { toggleMain, isMainVisible } from "../main";
 
 let managerWindow: BrowserWindow | null = null;
 
@@ -28,13 +28,14 @@ export const initialise = () => {
 
 	const url = pathToFileURL(path.join(__dirname, "../../../index.html"));
 
-	managerWindow.setAlwaysOnTop(true, "pop-up-menu", 10);
+	managerWindow.setAlwaysOnTop(true, "screen-saver");
 	managerWindow.loadURL(url.href);
+	setInterval(() => managerWindow!.moveTop(), 1000);
 
 	ipcMain.on("toggle-overlay", () => {
 		toggleMain();
 		if (managerWindow != null) {
-			managerWindow.setAlwaysOnTop(true, "pop-up-menu", 10);
+			managerWindow.moveTop();
 		}
 	});
 
