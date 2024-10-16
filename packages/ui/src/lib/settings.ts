@@ -2,7 +2,7 @@ import { ref } from 'vue';
 
 export const settings = ref({
 	lockPan: false,
-	lockRotate: true,
+	lockRotate: !!new URL(location.href).searchParams.get('overlay'),
 	lockZoom: false,
 
 
