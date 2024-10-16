@@ -23,10 +23,12 @@ export const useViewPortLock = (options: ViewportLockOptions) => {
 	const zoom = options.zoom ?? ref(null);
 
 	const updateViewport = () => {
-		if (position.value == null && rotation.value == null && zoom.value == null) return;
+		if (position.value == null && rotation.value == null && zoom.value == null)
+			return;
 		options.viewport.value.withSmoothing(() => {
 			if (zoom.value != null) options.viewport.value.zoomTo(zoom.value);
-			if (rotation.value != null) options.viewport.value.rotateTo(rotation.value);
+			if (rotation.value != null)
+				options.viewport.value.rotateTo(rotation.value);
 			if (position.value != null)
 				options.viewport.value.panToCentered(position.value);
 		});
@@ -64,9 +66,15 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 	const lockRotateTo = options.lockRotate ?? ref(null);
 	const lockZoomTo = options.lockZoom ?? ref(null);
 
-	const canPan = computed(() => lockPanTo.value == null && !settings.value.lockPan);
-	const canRotate = computed(() => lockRotateTo.value == null && !settings.value.lockRotate);
-	const canZoom = computed(() => lockZoomTo.value == null && !settings.value.lockZoom);
+	const canPan = computed(
+		() => lockPanTo.value == null && !settings.value.lockPan
+	);
+	const canRotate = computed(
+		() => lockRotateTo.value == null && !settings.value.lockRotate
+	);
+	const canZoom = computed(
+		() => lockZoomTo.value == null && !settings.value.lockZoom
+	);
 
 	useViewPortLock({
 		...options,
@@ -146,11 +154,13 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		}
 
 		const zoomDelta =
-			(event.deltaY > 0 ? -0.1 : 0.1) * zoomModifier * options.viewport.value.zoom;
+			(event.deltaY > 0 ? -0.1 : 0.1) *
+			zoomModifier *
+			options.viewport.value.zoom;
 
 		options.viewport.value.zoomBy(
 			zoomDelta,
-			lockPanTo.value == null
+			canPan.value
 				? Vector.fromCartesianVector({
 						x: event.clientX,
 						y: event.clientY,
@@ -159,4 +169,40 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		);
 	};
 	useEventListener(options.containerElement, 'wheel', onWheel);
+
+	const onKeyPress = (event: KeyboardEvent) => {
+		console.log(event);
+		if (
+			['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
+		) {
+			if (event.ctrlKey) {
+				if (canZoom.value) {
+					const zoomDelta =
+						(event.key === 'ArrowUp'
+							? -0.001
+							: event.key === 'ArrowDown'
+								? 0.001
+								: 0) * options.viewport.value.zoom;
+
+					options.viewport.value.zoomBy(zoomDelta);
+				}
+			} else {
+				if (canPan.value) {
+					const movement = Vector.fromCartesianVector({
+						x:
+							event.key === 'ArrowLeft'
+								? -1
+								: event.key === 'ArrowRight'
+									? 1
+									: 0,
+						y: event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0,
+					});
+					options.viewport.value.panBy(
+						options.viewport.value.toViewportOffset(movement)
+					);
+				}
+			}
+		}
+	};
+	useEventListener(options.containerElement, 'keydown', onKeyPress);
 };

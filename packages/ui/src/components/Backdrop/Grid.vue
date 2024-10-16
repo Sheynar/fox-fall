@@ -59,6 +59,8 @@
 			rotate(calc(var(--viewport-deg) * 1deg - 90deg))
 			scale(var(--viewport-zoom));
 		overflow: visible;
+
+		pointer-events: none;
 	}
 </style>
 

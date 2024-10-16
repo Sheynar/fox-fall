@@ -4,8 +4,10 @@
 		class="App__container"
 		:class="{ App__transparent: isTransparent}"
 		@touchstart.prevent
+		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
 		@pointermove="onPointerMove"
 		@contextmenu.prevent
+		tabindex="0"
 	>
 		<Backdrop />
 		<div
@@ -119,6 +121,7 @@
 		font-size: 2vmin;
 
 		color: var(--color-primary);
+		outline: none;
 
 		&:not(.App__transparent) {
 			background-color: var(--color-primary-contrast);
@@ -171,7 +174,7 @@
 </style>
 
 <script setup lang="ts">
-	import { computed, ref } from 'vue';
+	import { computed, onMounted, ref } from 'vue';
 	import Backdrop from '@/components/Backdrop/Backdrop.vue';
 	import Dock from '@/components/Dock.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
@@ -260,4 +263,8 @@
 	};
 
 	const isTransparent = new URL(location.href).searchParams.get('overlay') != null;
+
+	onMounted(() => {
+		containerElement.value?.focus();
+	});
 </script>
