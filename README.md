@@ -22,6 +22,7 @@ This is an artillery helper for the game Foxhole
 #### Keyboard
 - Arrow keys to move the map
 - `Ctrl` and up/down arrow keys to zoom in and out
+- `Ctrl` and left/right arrow keys to rotate
 
 ### Basic usage
 

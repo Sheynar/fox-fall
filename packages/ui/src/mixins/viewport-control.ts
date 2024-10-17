@@ -175,7 +175,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 			['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
 		) {
 			if (event.ctrlKey) {
-				if (canZoom.value) {
+				if (['ArrowUp', 'ArrowDown'].includes(event.key) && canZoom.value) {
 					const zoomDelta =
 						(event.key === 'ArrowUp'
 							? 0.001
@@ -184,6 +184,16 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 								: 0) * options.viewport.value.zoom;
 
 					options.viewport.value.zoomBy(zoomDelta);
+				}
+				if (['ArrowLeft', 'ArrowRight'].includes(event.key) && canRotate.value) {
+					const rotationDelta =
+						(event.key === 'ArrowLeft'
+							? -0.1
+							: event.key === 'ArrowRight'
+								? 0.1
+								: 0);
+
+					options.viewport.value.rotateBy(rotationDelta);
 				}
 			} else {
 				if (canPan.value) {
