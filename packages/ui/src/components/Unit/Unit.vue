@@ -267,9 +267,13 @@
 	const moving = ref<null | MovingData>(null);
 
 	const onPointerDown = (event: PointerEvent) => {
-		if (props.readonly || event.button !== 0) return;
+		if (props.readonly) return;
 		event.stopPropagation();
 		event.preventDefault();
+		if (event.button !== 0) {
+			open.value = !open.value;
+			return;
+		}
 
 		if (unitSelector.value != null) {
 			unitSelector.value.selectUnit(unit.value.id);
