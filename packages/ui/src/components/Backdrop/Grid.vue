@@ -26,7 +26,7 @@
 				:x2="(x - 1) * SUBCELL_SIZE"
 				y1="0"
 				:y2="gridSize"
-				:stroke="(x - 1) % 3 === 0 ? '#000000' : '#333333'"
+				:stroke="(x - 1) % 3 === 0 ? '#000000' : 'hsla(0deg, 0%, 50%, 80%)'"
 			/>
 		</g>
 		<g class="Grid__horizontal__container">
@@ -37,7 +37,7 @@
 				:x2="gridSize"
 				:y1="(y - 1) * SUBCELL_SIZE"
 				:y2="(y - 1) * SUBCELL_SIZE"
-				:stroke="(y - 1) % 3 === 0 ? '#000000' : '#333333'"
+				:stroke="(y - 1) % 3 === 0 ? '#000000' : 'hsla(0deg, 0%, 50%, 80%)'"
 			/>
 		</g>
 	</svg>
