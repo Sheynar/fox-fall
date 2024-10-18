@@ -10,6 +10,9 @@ const app = createApp(Gunner);
 app.use(PrimeVue, {
 	theme: {
 		preset: Aura,
+		options: {
+			darkModeSelector: ':root',
+		},
 	},
 });
 
