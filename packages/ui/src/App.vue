@@ -1,5 +1,6 @@
 <template>
 	<div
+		v-show="!calibrating"
 		ref="containerElement"
 		class="App__container"
 		:class="{ App__transparent: isTransparent }"
@@ -63,6 +64,7 @@
 				readyToFire = $event;
 				updateReadyToFire();
 			"
+			@calibrate-grid="() => calibrateGrid()"
 			@open-gunner-interface="() => openGunnerInterface()"
 			@show-add-unit="addUnit(UnitType.Location, undefined, undefined)"
 			@show-help="showHelp()"
@@ -219,7 +221,7 @@
 	const unitGroupIds = computed(() => Object.keys(unitMap.value));
 	const unitGroup = useUnitGroup(unitMap, unitGroupIds);
 
-	useViewPortControl({
+	const { calibrating, calibrateGrid } = useViewPortControl({
 		containerElement,
 		viewport,
 		lockPan: computed(() => {

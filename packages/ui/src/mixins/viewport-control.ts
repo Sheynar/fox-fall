@@ -185,13 +185,16 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 
 					options.viewport.value.zoomBy(zoomDelta);
 				}
-				if (['ArrowLeft', 'ArrowRight'].includes(event.key) && canRotate.value) {
+				if (
+					['ArrowLeft', 'ArrowRight'].includes(event.key) &&
+					canRotate.value
+				) {
 					const rotationDelta =
-						(event.key === 'ArrowLeft'
+						event.key === 'ArrowLeft'
 							? -0.1
 							: event.key === 'ArrowRight'
 								? 0.1
-								: 0);
+								: 0;
 
 					options.viewport.value.rotateBy(rotationDelta);
 				}
@@ -214,4 +217,133 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		}
 	};
 	useEventListener(options.containerElement, 'keydown', onKeyPress);
+
+	const _calibrateGrid = async () => {
+		const calibrationPane = document.createElement('div');
+		calibrationPane.style.setProperty('position', 'fixed');
+		calibrationPane.style.setProperty('inset', '0');
+		calibrationPane.style.setProperty('width', '100vw');
+		calibrationPane.style.setProperty('height', '100vh');
+		calibrationPane.style.setProperty('z-index', '1000000');
+		calibrationPane.style.setProperty('font-size', '4vmin');
+		calibrationPane.style.setProperty('display', 'flex');
+		calibrationPane.style.setProperty('align-items', 'center');
+		calibrationPane.style.setProperty('justify-content', 'center');
+		calibrationPane.style.setProperty('text-align', 'center');
+		calibrationPane.style.setProperty('filter', "url('#outline')");
+		calibrationPane.style.setProperty('opacity', '0.4');
+
+		calibrationPane.innerText = 'Calibrating grid. \n Drag from one corner of a cell to the other';
+
+		let resolve: () => void, reject: (e: unknown) => void;
+		const promise = new Promise<void>((res, rej) => {
+			resolve = res;
+			reject = rej;
+		});
+
+		let draggingData: {
+			startPosition: Vector;
+			endPosition: Vector;
+			indicator: HTMLDivElement;
+		} | null = null;
+		calibrationPane.addEventListener('pointerdown', (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+
+			draggingData = {
+				startPosition: Vector.fromCartesianVector({
+					x: event.clientX,
+					y: event.clientY,
+				}),
+				endPosition: Vector.fromCartesianVector({
+					x: event.clientX,
+					y: event.clientY,
+				}),
+				indicator: document.createElement('div'),
+			};
+
+			calibrationPane.setPointerCapture(event.pointerId);
+		});
+
+		calibrationPane.addEventListener('pointermove', (event) => {
+			if (draggingData == null) return;
+			event.preventDefault();
+			event.stopPropagation();
+
+			draggingData.endPosition = Vector.fromCartesianVector({
+				x: event.clientX,
+				y: event.clientY,
+			});
+		});
+
+		calibrationPane.addEventListener('pointerup', (event) => {
+			if (draggingData == null) return;
+			event.preventDefault();
+			event.stopPropagation();
+
+			const offset = options.viewport.value
+				.toViewportOffset(draggingData.endPosition)
+				.addVector(
+					options.viewport.value
+						.toViewportOffset(draggingData.startPosition)
+						.scale(-1)
+				);
+
+			options.viewport.value.withSmoothing(() => {
+				options.viewport.value.rotation =
+					options.viewport.value.rotation > 270 ? 360 + 90 : 90;
+				options.viewport.value.zoomTo(
+					(options.viewport.value.zoom *
+						(Math.abs(offset.x) + Math.abs(offset.y))) /
+						250
+				);
+
+				const midpoint = options.viewport.value
+					.toViewportVector(draggingData!.endPosition)
+					.addVector(
+						options.viewport.value.toViewportVector(draggingData!.startPosition)
+					)
+					.scale(0.5);
+
+				options.viewport.value.panBy(
+					Vector.fromCartesianVector({
+						x: Math.round(midpoint.x / 125) * 125 - midpoint.x,
+						y: Math.round(midpoint.y / 125) * 125 - midpoint.y,
+					})
+				);
+			});
+
+			draggingData.indicator.remove();
+			draggingData = null;
+
+			calibrationPane.releasePointerCapture(event.pointerId);
+			resolve();
+		});
+
+		document.body.appendChild(calibrationPane);
+
+		return promise.finally(() => {
+			calibrationPane.remove();
+		});
+	};
+
+	const calibrating = ref(false);
+	const calibrateGrid = async () => {
+		if (calibrating.value) return;
+		calibrating.value = true;
+		try {
+			await _calibrateGrid();
+		} finally {
+			calibrating.value = false;
+		}
+	}
+
+	return {
+		moving,
+		canPan,
+		canRotate,
+		canZoom,
+		calibrating,
+		calibrateGrid,
+	};
 };

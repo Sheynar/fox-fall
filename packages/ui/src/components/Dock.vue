@@ -30,6 +30,7 @@
 	import PrimeDock from 'primevue/dock';
 	import vPrimeTooltip from 'primevue/tooltip';
 	import { computed, defineModel} from 'vue';
+	import GridIcon from '@/components/icons/GridIcon.vue';
 	import WindIndicator from '@/components/WindIndicator.vue';
 	import { injectServerConnection } from '@/contexts/server-connection';
 	import { ServerConnectionState } from '@/mixins/server-connection';
@@ -39,6 +40,7 @@
 	const serverConnection = injectServerConnection();
 
 	const emit = defineEmits<{
+		(event: 'calibrate-grid'): void;
 		(event: 'show-add-unit'): void;
 		(event: 'show-help'): void;
 		(event: 'show-sync'): void;
@@ -72,6 +74,12 @@
 	}));
 
 	const items = computed<Item[]>(() => [
+		{
+			label: 'Calibrate grid',
+			iconComponent: GridIcon,
+			severity: 'secondary',
+			command: () => emit('calibrate-grid'),
+		},
 		{
 			label: 'Wind',
 			iconComponent: WindIndicator,
