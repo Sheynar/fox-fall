@@ -138,7 +138,7 @@ export class Viewport {
 		return this.zoomBy(newZoom - this.zoom, globalPinPosition);
 	}
 
-	async withSmoothing(callback: () => void): Promise<void> {
+	async withSmoothing(callback: () => void, duration = 250): Promise<void> {
 		const currentPosition = this.position.clone();
 		const currentZoom = this.zoom;
 		const currentRotation = this.rotation;
@@ -155,7 +155,7 @@ export class Viewport {
 				property: 'x',
 				from: currentPosition.x,
 				to: newPosition.x,
-				duration: 250,
+				duration,
 				easing: 'easeInOutQuad',
 			}),
 			KAnim.animate({
@@ -163,7 +163,7 @@ export class Viewport {
 				property: 'y',
 				from: currentPosition.y,
 				to: newPosition.y,
-				duration: 250,
+				duration,
 				easing: 'easeInOutQuad',
 			}),
 			KAnim.animate({
@@ -171,7 +171,7 @@ export class Viewport {
 				property: 'zoom',
 				from: currentZoom,
 				to: newZoom,
-				duration: 250,
+				duration,
 				easing: 'easeInOutQuad',
 			}),
 			KAnim.animate({
@@ -179,7 +179,7 @@ export class Viewport {
 				property: 'rotation',
 				from: currentRotation,
 				to: newRotation,
-				duration: 250,
+				duration,
 				easing: 'easeInOutQuad',
 			}),
 		]);

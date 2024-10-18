@@ -21,6 +21,7 @@ This is an artillery helper for the game Foxhole
 
 #### Keyboard
 - Arrow keys to move the map
+- `Shift` and arrow keys to move the map a single cell over
 - `Ctrl` and up/down arrow keys to zoom in and out
 - `Ctrl` and left/right arrow keys to rotate
 
@@ -29,9 +30,7 @@ This is an artillery helper for the game Foxhole
 1. Download the latest release from the [releases page](https://github.com/KaoSDlanor/fox-fall/releases)
 2. Run the app and launch the game
 3. Open the map in game and press the overlay button in the bottom right corner
-4. Line up the grid of the overlay with the grid of the in game map
-   1. Each cell of the overlay should match one of the smaller numbered cells that are visible in the game when you hover over them
-   2. You can line up a 3x3 section of the overlay grid with one of the larger in game cells that are always visible
+4. Line up the grid of the overlay with the grid of the in game map with the Calibrate grid button in the bottom dock
 5. Create your artillery
    1. Click the plus button in the bottom dock
    2. Use the unit type dropdown to convert from "location" to "artillery"

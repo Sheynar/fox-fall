@@ -200,18 +200,31 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 				}
 			} else {
 				if (canPan.value) {
+					const movementMagnitude = event.shiftKey
+						? (125 * options.viewport.value.resolvedZoom) / 3
+						: 1;
+
 					const movement = Vector.fromCartesianVector({
 						x:
-							event.key === 'ArrowLeft'
+							movementMagnitude *
+							(event.key === 'ArrowLeft'
 								? 1
 								: event.key === 'ArrowRight'
 									? -1
-									: 0,
-						y: event.key === 'ArrowUp' ? 1 : event.key === 'ArrowDown' ? -1 : 0,
+									: 0),
+						y:
+							movementMagnitude *
+							(event.key === 'ArrowUp'
+								? 1
+								: event.key === 'ArrowDown'
+									? -1
+									: 0),
 					});
-					options.viewport.value.panBy(
-						options.viewport.value.toViewportOffset(movement)
-					);
+					options.viewport.value.withSmoothing(() => {
+						options.viewport.value.panBy(
+							options.viewport.value.toViewportOffset(movement)
+						);
+					}, 100);
 				}
 			}
 		}
@@ -233,7 +246,8 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		calibrationPane.style.setProperty('filter', "url('#outline')");
 		calibrationPane.style.setProperty('opacity', '0.4');
 
-		calibrationPane.innerText = 'Calibrating grid. \n Drag from one corner of a cell to the other';
+		calibrationPane.innerText =
+			'Calibrating grid. \n Drag from one corner of a cell to the other';
 
 		let resolve: () => void, reject: (e: unknown) => void;
 		const promise = new Promise<void>((res, rej) => {
@@ -336,7 +350,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		} finally {
 			calibrating.value = false;
 		}
-	}
+	};
 
 	return {
 		moving,
