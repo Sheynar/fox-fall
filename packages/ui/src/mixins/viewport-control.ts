@@ -201,7 +201,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 			} else {
 				if (canPan.value) {
 					const movementMagnitude = event.shiftKey
-						? (125 * options.viewport.value.resolvedZoom) / 3
+						? (125 * options.viewport.value.resolvedZoom)
 						: 1;
 
 					const movement = Vector.fromCartesianVector({

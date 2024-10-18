@@ -178,7 +178,7 @@
 </style>
 
 <script setup lang="ts">
-	import { computed, onMounted, ref } from 'vue';
+	import { computed, nextTick, onMounted, ref, watch } from 'vue';
 	import Backdrop from '@/components/Backdrop/Backdrop.vue';
 	import Dock from '@/components/Dock.vue';
 	import FiringArcs from '@/components/FiringArcs/FiringArcs.vue';
@@ -284,4 +284,12 @@
 	onMounted(() => {
 		containerElement.value?.focus();
 	});
+	watch(
+		() => calibrating.value,
+		(calibrating) => {
+			if (!calibrating) {
+				nextTick(() => containerElement.value?.focus());
+			}
+		}
+	);
 </script>
