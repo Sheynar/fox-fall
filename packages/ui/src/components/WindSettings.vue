@@ -5,11 +5,12 @@
 		position="bottomleft"
 		@pointerdown.stop
 		@wheel.stop
+		:style="{ animation: 'none', transition: 'none' }"
 	>
 		<div class="Wind__information">
 			<div class="Wind__information__item">
 				<label>Wind direction:</label>
-				<DirectionInput v-model="wind.azimuth" @update:model-value="emit('update')" />
+				<DirectionInput v-model="wind.azimuth" @update:model-value="emit('update')" auto-focus />
 			</div>
 			<div class="Wind__information__item">
 				<label>Wind distance:</label>
@@ -51,7 +52,7 @@
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
-	import DirectionInput from '@/components/inputs/DirectionInput.vue';
+	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import { injectWind } from '@/contexts/wind';
 

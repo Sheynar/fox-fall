@@ -8,6 +8,7 @@
 			'--viewport-deg': viewport.rotation,
 		}"
 		alt="Reset rotation"
+		:model-value="-viewport.rotation + 90"
 		@pointerdown.stop="onCompassClicked()"
 	/>
 

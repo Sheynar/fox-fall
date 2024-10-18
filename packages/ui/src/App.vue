@@ -7,7 +7,7 @@
 		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
 		@pointermove="onPointerMove"
 		@contextmenu.prevent="onContextMenu"
-		tabindex="0"
+		tabindex="-1"
 	>
 		<Backdrop />
 		<RangeFinders />

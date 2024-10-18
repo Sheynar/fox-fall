@@ -6,6 +6,8 @@
 		:style="{
 			minWidth: '30rem',
 			'--ui-scale': settings.unitSettingsScale,
+			animation: 'none',
+			transition: 'none',
 		}"
 		position="bottomright"
 		@pointerdown.stop
@@ -317,7 +319,7 @@
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import WindIcon from '@/components/icons/WindIcon.vue';
-	import DirectionInput from '@/components/inputs/DirectionInput.vue';
+	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
 	import { injectPinnedUnits } from '@/contexts/pinned-units';
