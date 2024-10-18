@@ -10,6 +10,8 @@
 		tabindex="0"
 	>
 		<Backdrop />
+		<RangeFinders />
+
 		<div
 			class="App__viewport"
 			:style="{
@@ -49,7 +51,6 @@
 			</div>
 		</div>
 
-		<RangeFinders />
 		<FiringArcs />
 
 		<div class="App__banner" v-if="unitSelector != null">
