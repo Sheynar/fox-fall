@@ -3,6 +3,7 @@
 		<RangeFinder
 			v-for="rangeFinder in rangeFinders"
 			:key="rangeFinder.unit.id"
+			:unit="rangeFinder.unit"
 			:specs="rangeFinder.specs"
 			:position="rangeFinder.resolvedPosition"
 		/>
@@ -26,12 +27,12 @@
 <script setup lang="ts">
 	import { computed } from 'vue';
 	import { injectUnitMap } from '@/contexts/unit';
+	import { injectWind } from '@/contexts/wind';
 	import { ARTILLERY_BY_SHELL, ArtilleryPlatform } from '@/lib/constants/data';
 	import { getUnitResolvedVector, UnitType, type Unit } from '@/lib/unit';
 	import type { Vector } from '@/lib/vector';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import RangeFinder from './RangeFinder.vue';
-import { injectWind } from '@/contexts/wind';
 
 	const unitMap = injectUnitMap();
 	const wind = injectWind();
@@ -46,7 +47,7 @@ import { injectWind } from '@/contexts/wind';
 
 		for (const unitId of focusedUnitIds.value) {
 			const unit = unitMap.value[unitId];
-			if (unit.type !== UnitType.Artillery) continue;
+			if (unit.type !== UnitType.Artillery && unit.type !== UnitType.Target) continue;
 			const ammoDetails =
 				unit.ammunition != null
 					? ARTILLERY_BY_SHELL[unit.ammunition]
@@ -59,7 +60,7 @@ import { injectWind } from '@/contexts/wind';
 			output.push({
 				unit,
 				specs,
-				resolvedPosition: getUnitResolvedVector(unitMap.value, unit.id).addVector(wind.value.scale(-1)),
+				resolvedPosition: getUnitResolvedVector(unitMap.value, unit.id).addVector(wind.value.scale(unit.type === UnitType.Artillery ? -1 : 1)),
 			});
 		}
 

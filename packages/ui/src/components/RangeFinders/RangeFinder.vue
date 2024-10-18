@@ -1,6 +1,10 @@
 <template>
 	<svg
 		class="RangeFinder__container"
+		:class="{
+			RangeFinder__artillery: unit.type === UnitType.Artillery,
+			RangeFinder__target: unit.type === UnitType.Target,
+		}"
 		xmlns="http://www.w3.org/2000/svg"
 		preserve-aspect-ratio="none"
 	>
@@ -26,15 +30,20 @@
 		overflow: visible;
 
 		stroke: none;
-		fill: var(--p-rose-500);
+		fill: var(--p-red-500);
 		opacity: 0.15;
 		filter: url(#outline);
+
+		&.RangeFinder__target {
+			fill: var(--p-green-500);
+		}
 	}
 </style>
 
 <script setup lang="ts">
 	import { injectViewport } from '@/contexts/viewport';
 	import type { ArtilleryPlatform } from '@/lib/constants/data';
+	import { Unit, UnitType } from '@/lib/unit';
 	import type { Vector } from '@/lib/vector';
 	import { computed } from 'vue';
 
@@ -53,5 +62,6 @@
 	const props = defineProps<{
 		position: Vector;
 		specs: ArtilleryPlatform;
+		unit: Unit;
 	}>();
 </script>

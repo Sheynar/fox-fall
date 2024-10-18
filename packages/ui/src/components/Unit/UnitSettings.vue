@@ -25,7 +25,7 @@
 						optionLabel="label"
 					/>
 				</div>
-				<div class="UnitSettings__row" v-if="unit.type === UnitType.Artillery">
+				<div class="UnitSettings__row" v-if="unit.type === UnitType.Artillery || unit.type === UnitType.Target">
 					<span>Ammunition:</span>
 					<PrimeSelect
 						class="UnitSettings__select"
@@ -39,7 +39,7 @@
 				</div>
 				<div
 					class="UnitSettings__row"
-					v-if="unit.type === UnitType.Artillery && unit.ammunition != null"
+					v-if="(unit.type === UnitType.Artillery || unit.type === UnitType.Target) && unit.ammunition != null"
 				>
 					<span>Platform:</span>
 					<PrimeSelect
