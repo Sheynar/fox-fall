@@ -2,11 +2,11 @@
 	<div
 		ref="containerElement"
 		class="App__container"
-		:class="{ App__transparent: isTransparent}"
+		:class="{ App__transparent: isTransparent }"
 		@touchstart.prevent
 		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
 		@pointermove="onPointerMove"
-		@contextmenu.prevent
+		@contextmenu.prevent="onContextMenu"
 		tabindex="0"
 	>
 		<Backdrop />
@@ -243,6 +243,14 @@
 		};
 	};
 
+	const onContextMenu = (event: MouseEvent) => {
+		if (unitSelector.value != null) {
+			event.preventDefault();
+			event.stopPropagation();
+			unitSelector.value.selectUnit(null);
+		}
+	};
+
 	const showHelp = () => {
 		alert(
 			`Controls:\nLeft click: select unit\nLeft click drag: move unit / pan camera\nRight click drag / shift + left click drag: rotate camera\nScroll: zoom camera (hold CTRL to zoom 5x faster or shift to zoom 10x slower)\n\nClick unit's create buttons to insert a new child units\nCTRL + click unit's create buttons to change the unit type\n\nShow firing arcs by selecting an artillery unit or a target.\nAlternatively pin/hover an artillery unit and a target\n`
@@ -262,10 +270,14 @@
 	const syncSettingsVisible = ref(false);
 
 	const openGunnerInterface = () => {
-		window.location.pathname = window.location.pathname.replace(/(index\.html)?$/, 'gunner/$1');
+		window.location.pathname = window.location.pathname.replace(
+			/(index\.html)?$/,
+			'gunner/$1'
+		);
 	};
 
-	const isTransparent = new URL(location.href).searchParams.get('overlay') != null;
+	const isTransparent =
+		new URL(location.href).searchParams.get('overlay') != null;
 
 	onMounted(() => {
 		containerElement.value?.focus();

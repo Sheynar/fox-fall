@@ -187,7 +187,9 @@ export const useArtillery = ({
 					unitSelector.value = {
 						selectUnit: (unitId) => {
 							unitSelector.value = null;
-							if (unitMap.value[unitId].type !== UnitType.Target) {
+							if (unitId == null) {
+								reject(new Error('User declined to select a unit'));
+							} else if (unitMap.value[unitId].type !== UnitType.Target) {
 								reject(new Error('Selected unit is not a target'));
 							} else {
 								resolve(unitId);

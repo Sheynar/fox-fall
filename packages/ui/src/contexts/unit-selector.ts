@@ -2,7 +2,7 @@ import { inject, provide, type Ref } from 'vue';
 
 export const unitSelectorSymbol = Symbol('unitSelector');
 export type UnitSelector = {
-	selectUnit: (unitId: string) => unknown,
+	selectUnit: (unitId?: string | null) => unknown,
 	prompt?: string,
 } | null;
 

@@ -171,16 +171,12 @@
 	const selectedUnits = injectSelectedUnits();
 
 	const ammoSpecs = computed(() => {
-		if (unit.value.ammunition != null) return ARTILLERY_BY_SHELL[unit.value.ammunition];
+		if (unit.value.ammunition != null)
+			return ARTILLERY_BY_SHELL[unit.value.ammunition];
 	});
 	const artillerySpecs = computed(() => {
-		if (
-			unit.value.platform != null &&
-			ammoSpecs.value != null
-		) {
-			return ammoSpecs.value.PLATFORM[
-				unit.value.platform
-			]!
+		if (unit.value.platform != null && ammoSpecs.value != null) {
+			return ammoSpecs.value.PLATFORM[unit.value.platform]!;
 		}
 	});
 	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
@@ -271,6 +267,11 @@
 		event.stopPropagation();
 		event.preventDefault();
 		if (event.button !== 0) {
+			if (unitSelector.value != null) {
+				unitSelector.value.selectUnit(null);
+				return;
+			}
+
 			open.value = !open.value;
 			return;
 		}
