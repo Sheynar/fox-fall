@@ -1,5 +1,5 @@
-import { Vector } from "./vector";
-import { Viewport } from "./viewport";
+import { Vector } from './vector';
+import { Viewport } from './viewport';
 
 export const calibrateGrid = async (viewport: Viewport) => {
 	const calibrationPane = document.createElement('div');
@@ -14,7 +14,7 @@ export const calibrateGrid = async (viewport: Viewport) => {
 	calibrationPane.style.setProperty('justify-content', 'center');
 	calibrationPane.style.setProperty('text-align', 'center');
 	calibrationPane.style.setProperty('filter', "url('#outline')");
-	calibrationPane.style.setProperty('cursor', "crosshair");
+	calibrationPane.style.setProperty('cursor', 'crosshair');
 	calibrationPane.style.setProperty('opacity', '0.4');
 
 	calibrationPane.innerText =
@@ -35,6 +35,15 @@ export const calibrateGrid = async (viewport: Viewport) => {
 		event.preventDefault();
 		event.stopPropagation();
 
+		const indicator = document.createElement('div');
+		indicator.style.setProperty('position', 'absolute');
+		indicator.style.setProperty('left', `${event.clientX}px`);
+		indicator.style.setProperty('top', `${event.clientY}px`);
+		indicator.style.setProperty('border', `1px solid #fff`);
+		indicator.style.setProperty('filter', "url('#outline')");
+		indicator.style.setProperty('pointer-events', 'none');
+		calibrationPane.appendChild(indicator);
+
 		draggingData = {
 			startPosition: Vector.fromCartesianVector({
 				x: event.clientX,
@@ -44,13 +53,14 @@ export const calibrateGrid = async (viewport: Viewport) => {
 				x: event.clientX,
 				y: event.clientY,
 			}),
-			indicator: document.createElement('div'),
+			indicator,
 		};
 
 		calibrationPane.setPointerCapture(event.pointerId);
+		onPointerMove(event);
 	});
 
-	calibrationPane.addEventListener('pointermove', (event) => {
+	const onPointerMove = (event: PointerEvent) => {
 		if (draggingData == null) return;
 		event.preventDefault();
 		event.stopPropagation();
@@ -59,7 +69,18 @@ export const calibrateGrid = async (viewport: Viewport) => {
 			x: event.clientX,
 			y: event.clientY,
 		});
-	});
+
+		const startX = Math.min(draggingData.startPosition.x, draggingData.endPosition.x);
+		const endX = Math.max(draggingData.startPosition.x, draggingData.endPosition.x);
+		const startY = Math.min(draggingData.startPosition.y, draggingData.endPosition.y);
+		const endY = Math.max(draggingData.startPosition.y, draggingData.endPosition.y);
+
+		draggingData.indicator.style.setProperty('left', `${startX}px`);
+		draggingData.indicator.style.setProperty('width', `${endX - startX}px`);
+		draggingData.indicator.style.setProperty('top', `${startY}px`);
+		draggingData.indicator.style.setProperty('height', `${endY - startY}px`);
+	};
+	calibrationPane.addEventListener('pointermove', onPointerMove);
 
 	calibrationPane.addEventListener('pointerup', (event) => {
 		if (draggingData == null) return;
@@ -69,25 +90,18 @@ export const calibrateGrid = async (viewport: Viewport) => {
 		const offset = viewport
 			.toViewportOffset(draggingData.endPosition)
 			.addVector(
-				viewport
-					.toViewportOffset(draggingData.startPosition)
-					.scale(-1)
+				viewport.toViewportOffset(draggingData.startPosition).scale(-1)
 			);
 
 		viewport.withSmoothing(() => {
-			viewport.rotation =
-				viewport.rotation > 270 ? 360 + 90 : 90;
+			viewport.rotation = viewport.rotation > 270 ? 360 + 90 : 90;
 			viewport.zoomTo(
-				(viewport.zoom *
-					(Math.abs(offset.x) + Math.abs(offset.y))) /
-					250
+				(viewport.zoom * (Math.abs(offset.x) + Math.abs(offset.y))) / 250
 			);
 
 			const midpoint = viewport
 				.toViewportVector(draggingData!.endPosition)
-				.addVector(
-					viewport.toViewportVector(draggingData!.startPosition)
-				)
+				.addVector(viewport.toViewportVector(draggingData!.startPosition))
 				.scale(0.5);
 
 			viewport.panBy(
