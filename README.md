@@ -70,7 +70,12 @@ This is an artillery helper for the game Foxhole
 
 1. Clone the repository
 2. Run `yarn install` to install dependencies
-3. Run `yarn run serve --filter=./packages/app` to start the development server or `yarn run serve --filter=./packages/overlay` to test the overlay application
+
+### Running the app
+
+- Running the web interface: `yarn run serve --filter=./packages/app`
+- Running the sync server `yarn run serve --filter=./packages/server`
+- Running the overlay: `yarn run serve --filter=./packages/overlay`
 
 ### Build
 
