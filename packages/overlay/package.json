@@ -13,6 +13,9 @@
     "package": "electron-forge package",
     "make": "rimraf out && electron-builder --config build.config.js"
   },
+  "dependencies": {
+    "@packages/server": "workspace:*"
+  },
   "devDependencies": {
     "@electron/packager": "18.1.1",
     "@packages/ui": "workspace:*",

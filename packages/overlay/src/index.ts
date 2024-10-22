@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import { initialise as initialiseMainWindow } from './windows/main';
 import { initialise as initialiseManagerWindow, showManager } from './windows/manager';
+import '../server.js';
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
