@@ -12,4 +12,8 @@ module.exports = {
 	win: {
 		// icon: `${iconPath}.ico`,
 	},
+	linux: {
+		target: "tar.gz", // https://www.electron.build/linux#target
+		executableName: "foxfall-overlay",
+	}
 };
