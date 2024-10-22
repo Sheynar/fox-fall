@@ -41,8 +41,11 @@ export const getConnectionDetails = () => {
 export const useServerConnection = () => {
 	const serverUrl = computed(() => {
 		const connectionDetails = getConnectionDetails();
-		return connectionDetails
-			? `ws://${connectionDetails.serverAddress}:81/?code=${encodeURIComponent(connectionDetails.code)}`
+
+		const [address,port = '81'] = (connectionDetails?.serverAddress ?? '').split(':');
+
+		return address
+			? `ws://${address}:${port}/?code=${encodeURIComponent(connectionDetails?.code ?? '')}`
 			: null;
 	});
 
