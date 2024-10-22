@@ -3,7 +3,8 @@
   "version": "1.6.0",
   "main": "dist/index.js",
   "description": "Foxhole artillery overlay",
-  "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
+  "author": "Daniel Olivier <KaoSDlanor@gmail.com>",
+	"homepage": "https://github.com/KaoSDlanor/fox-fall#readme",
   "license": "MIT",
   "scripts": {
     "build": "rimraf dist && tsc && rimraf www && node build.js",
