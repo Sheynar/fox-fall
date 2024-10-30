@@ -6,7 +6,7 @@ import { globalScope } from '@/lib/globalScope';
 import { Vector } from '@/lib/vector';
 
 let distanceScale: ComputedRef<number>;
-let viewportOffset: ComputedRef<{ x: number; y: number }>;
+let viewportSize: ComputedRef<Vector>;
 
 globalScope.run(() => {
 	const { height, width } = useWindowSize();
@@ -14,11 +14,11 @@ globalScope.run(() => {
 		return Math.min(height.value, width.value) / 250;
 	});
 
-	viewportOffset = computed(() => {
-		return {
-			x: width.value / 2,
-			y: height.value / 2,
-		};
+	viewportSize = computed(() => {
+		return Vector.fromCartesianVector({
+			x: width.value,
+			y: height.value,
+		});
 	});
 });
 
@@ -29,11 +29,19 @@ export class Viewport {
 		public zoom: number
 	) {}
 
+	get distanceScale(): number {
+		return distanceScale.value;
+	}
+
+	get viewportSize(): Vector {
+		return viewportSize.value;
+	}
+
 	get resolvedZoom(): number {
-		return this.zoom * distanceScale.value;
+		return this.zoom * this.distanceScale;
 	}
 	set resolvedZoom(value: number) {
-		this.zoom = value / distanceScale.value;
+		this.zoom = value / this.distanceScale;
 	}
 
 	toWorldOffset(vector: Vector): Vector {
@@ -59,8 +67,8 @@ export class Viewport {
 	rotateBy(
 		rotationDelta: number,
 		center: Vector = Vector.fromCartesianVector({
-			x: viewportOffset.value.x,
-			y: viewportOffset.value.y,
+			x: this.viewportSize.x / 2,
+			y: this.viewportSize.y / 2,
 		})
 	): void {
 		this.rotation = wrapDegrees(this.rotation + rotationDelta);
@@ -93,7 +101,7 @@ export class Viewport {
 
 	getFocusedPosition(): Vector {
 		return this.toWorldPosition(
-			Vector.fromCartesianVector(viewportOffset.value)
+			Vector.fromCartesianVector(this.viewportSize.scale(0.5))
 		);
 	}
 
@@ -104,7 +112,7 @@ export class Viewport {
 	toCentered(position: Vector): Vector {
 		return position.addVector(
 			this.toWorldOffset(
-				Vector.fromCartesianVector(viewportOffset.value)
+				Vector.fromCartesianVector(this.viewportSize.scale(0.5))
 			)
 		);
 	}
@@ -112,7 +120,7 @@ export class Viewport {
 	fromCentered(position: Vector): Vector {
 		return position.addVector(
 			this.toWorldOffset(
-				Vector.fromCartesianVector(viewportOffset.value).scale(-1)
+				Vector.fromCartesianVector(this.viewportSize).scale(-0.5)
 			)
 		);
 	}
