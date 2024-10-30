@@ -88,9 +88,9 @@ export const calibrateGrid = async (viewport: Viewport) => {
 		event.stopPropagation();
 
 		const offset = viewport
-			.toViewportOffset(draggingData.endPosition)
+			.toWorldOffset(draggingData.endPosition)
 			.addVector(
-				viewport.toViewportOffset(draggingData.startPosition).scale(-1)
+				viewport.toWorldOffset(draggingData.startPosition).scale(-1)
 			);
 
 		viewport.withSmoothing(() => {
@@ -100,8 +100,8 @@ export const calibrateGrid = async (viewport: Viewport) => {
 			);
 
 			const midpoint = viewport
-				.toViewportVector(draggingData!.endPosition)
-				.addVector(viewport.toViewportVector(draggingData!.startPosition))
+				.toWorldPosition(draggingData!.endPosition)
+				.addVector(viewport.toWorldPosition(draggingData!.startPosition))
 				.scale(0.5);
 
 			viewport.panBy(

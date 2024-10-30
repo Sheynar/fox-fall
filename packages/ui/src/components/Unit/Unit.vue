@@ -245,14 +245,14 @@
 	);
 
 	const screenPosition = computed(() =>
-		viewport.value.fromViewportVector(resolvedVector.value)
+		viewport.value.toScreenPosition(resolvedVector.value)
 	);
 
 	const firingPosition = computed(() =>
 		resolvedVector.value.addVector(wind.value)
 	);
 	const firingPositionScreen = computed(() =>
-		viewport.value.fromViewportVector(firingPosition.value)
+		viewport.value.toScreenPosition(firingPosition.value)
 	);
 
 	type MovingData = {
@@ -288,7 +288,7 @@
 
 		moving.value = {
 			startEvent: event,
-			startCursorViewport: viewport.value.toViewportVector(
+			startCursorViewport: viewport.value.toWorldPosition(
 				Vector.fromCartesianVector({
 					x: event.clientX,
 					y: event.clientY,
@@ -321,7 +321,7 @@
 		if (!movingData) return;
 		event.stopPropagation();
 
-		const currentCursorViewport = viewport.value.toViewportVector(
+		const currentCursorViewport = viewport.value.toWorldPosition(
 			Vector.fromCartesianVector({
 				x: event.clientX,
 				y: event.clientY,

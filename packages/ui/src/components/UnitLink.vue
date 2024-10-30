@@ -70,9 +70,9 @@
 	const linePositionTo = computed(() => unitPositionTo.value);
 
 	const lineScreenPositionFrom = computed(() =>
-		viewport.value.fromViewportVector(linePositionFrom.value)
+		viewport.value.toScreenPosition(linePositionFrom.value)
 	);
 	const lineScreenPositionTo = computed(() =>
-		viewport.value.fromViewportVector(linePositionTo.value)
+		viewport.value.toScreenPosition(linePositionTo.value)
 	);
 </script>

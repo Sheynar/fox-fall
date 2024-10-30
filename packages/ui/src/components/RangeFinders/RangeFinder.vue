@@ -50,7 +50,7 @@
 	const viewport = injectViewport();
 
 	const screenPosition = computed(() =>
-		viewport.value.fromViewportVector(props.position)
+		viewport.value.toScreenPosition(props.position)
 	);
 	const innerRadius = computed(
 		() => props.specs.MIN_RANGE * viewport.value.resolvedZoom

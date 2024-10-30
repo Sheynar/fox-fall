@@ -78,7 +78,7 @@ export const useArtillery = ({
 			);
 			if (parentUnitId == null) {
 				vector.value = viewport.value.toCentered(
-					viewport.value.toViewportVector(
+					viewport.value.toWorldPosition(
 						Vector.fromCartesianVector({
 							x: 0,
 							y: 0,
@@ -92,7 +92,7 @@ export const useArtillery = ({
 		const newUnit = createUnit(type, vector, parentUnitId);
 
 		if (event) {
-			newUnit.value.vector = viewport.value.toViewportVector(
+			newUnit.value.vector = viewport.value.toWorldPosition(
 				Vector.fromCartesianVector({
 					x: event.clientX,
 					y: event.clientY,

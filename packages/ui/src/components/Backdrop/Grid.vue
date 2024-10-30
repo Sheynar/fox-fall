@@ -91,7 +91,7 @@
 	const gridSize = computed(() => cellCount.value * CELL_SIZE);
 
 	const screenPosition = computed(() => {
-		return viewport.value.fromViewportVector(
+		return viewport.value.toScreenPosition(
 			Vector.fromCartesianVector({
 				x: -gridSize.value / 2,
 				y: gridSize.value / 2,
@@ -103,7 +103,7 @@
 		const CELL_VIEWPORT_SIZE = CELL_SIZE;
 		const position = viewport.value.getFocusedPosition();
 
-		return viewport.value.fromViewportOffset(
+		return viewport.value.toScreenOffset(
 			Vector.fromCartesianVector({
 				x: Math.floor(position.x / CELL_VIEWPORT_SIZE) * CELL_VIEWPORT_SIZE,
 				y: Math.floor(position.y / CELL_VIEWPORT_SIZE) * CELL_VIEWPORT_SIZE,

@@ -118,7 +118,7 @@
 	const unitMap = injectUnitMap();
 
 	const resolvedCursor = computed(() => {
-		return viewport.value.toViewportVector(cursor.value);
+		return viewport.value.toWorldPosition(cursor.value);
 	});
 
 	const position = computed(() => viewport.value.getFocusedPosition());

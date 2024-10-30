@@ -36,24 +36,24 @@ export class Viewport {
 		this.zoom = value / distanceScale.value;
 	}
 
-	toViewportOffset(vector: Vector): Vector {
+	toWorldOffset(vector: Vector): Vector {
 		const transformed = vector.scale(1 / this.resolvedZoom);
 		transformed.azimuth -= this.rotation;
 		return transformed;
 	}
 
-	toViewportVector(vector: Vector): Vector {
-		return this.toViewportOffset(vector.addVector(this.position.scale(-1)));
+	toWorldPosition(vector: Vector): Vector {
+		return this.toWorldOffset(vector.addVector(this.position.scale(-1)));
 	}
 
-	fromViewportOffset(vector: Vector): Vector {
+	toScreenOffset(vector: Vector): Vector {
 		const transformed = vector.clone();
 		transformed.azimuth += this.rotation;
 		return transformed.scale(this.resolvedZoom);
 	}
 
-	fromViewportVector(vector: Vector): Vector {
-		return this.fromViewportOffset(vector).addVector(this.position);
+	toScreenPosition(vector: Vector): Vector {
+		return this.toScreenOffset(vector).addVector(this.position);
 	}
 
 	rotateBy(
@@ -83,16 +83,16 @@ export class Viewport {
 
 	panBy(panDelta: Vector): void {
 		this.position = this.position.addVector(
-			this.fromViewportOffset(panDelta).scale(-1)
+			this.toScreenOffset(panDelta).scale(-1)
 		);
 	}
 
 	panTo(newPosition: Vector): void {
-		this.position = this.fromViewportOffset(newPosition).scale(-1);
+		this.position = this.toScreenOffset(newPosition).scale(-1);
 	}
 
 	getFocusedPosition(): Vector {
-		return this.toViewportVector(
+		return this.toWorldPosition(
 			Vector.fromCartesianVector(viewportOffset.value)
 		);
 	}
@@ -103,7 +103,7 @@ export class Viewport {
 
 	toCentered(position: Vector): Vector {
 		return position.addVector(
-			this.toViewportOffset(
+			this.toWorldOffset(
 				Vector.fromCartesianVector(viewportOffset.value)
 			)
 		);
@@ -111,7 +111,7 @@ export class Viewport {
 
 	fromCentered(position: Vector): Vector {
 		return position.addVector(
-			this.toViewportOffset(
+			this.toWorldOffset(
 				Vector.fromCartesianVector(viewportOffset.value).scale(-1)
 			)
 		);
@@ -119,15 +119,15 @@ export class Viewport {
 
 	zoomBy(
 		zoomDelta: number,
-		globalPinPosition: Vector = this.fromViewportVector(
+		globalPinPosition: Vector = this.toScreenPosition(
 			this.getFocusedPosition()
 		)
 	): void {
-		const viewportPinPosition = this.toViewportVector(globalPinPosition);
+		const viewportPinPosition = this.toWorldPosition(globalPinPosition);
 
 		this.zoom = Math.max(0.001, this.zoom + zoomDelta);
 
-		const cursorDelta = this.fromViewportVector(viewportPinPosition).addVector(
+		const cursorDelta = this.toScreenPosition(viewportPinPosition).addVector(
 			globalPinPosition.scale(-1)
 		);
 

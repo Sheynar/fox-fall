@@ -146,10 +146,10 @@
 	);
 
 	const unitScreenPositionFrom = computed(() =>
-		viewport.value.fromViewportVector(resolvedVectorFrom.value)
+		viewport.value.toScreenPosition(resolvedVectorFrom.value)
 	);
 	const unitScreenPositionTo = computed(() =>
-		viewport.value.fromViewportVector(resolvedVectorTo.value)
+		viewport.value.toScreenPosition(resolvedVectorTo.value)
 	);
 	const midpointScreenPosition = computed(() =>
 		unitScreenPositionFrom.value

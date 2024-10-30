@@ -223,7 +223,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 					});
 					options.viewport.value.withSmoothing(() => {
 						options.viewport.value.panBy(
-							options.viewport.value.toViewportOffset(movement)
+							options.viewport.value.toWorldOffset(movement)
 						);
 					}, 100);
 				}

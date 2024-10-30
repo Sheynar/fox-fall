@@ -58,7 +58,7 @@
 	const viewport = injectViewport();
 
 	const screenPosition = computed(() => {
-		return viewport.value.fromViewportVector(
+		return viewport.value.toScreenPosition(
 			Vector.fromCartesianVector({ x: -MAP_SIZE / 2, y: MAP_SIZE / 2 })
 		);
 	});
