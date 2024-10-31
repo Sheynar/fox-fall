@@ -1,33 +1,32 @@
 <template>
-	<Teleport :to="props.lineContainer">
+	<PositionedElement
+		:layer="LAYER.FIRING_ARC_LINES"
+		:x="resolvedVectorFrom.x"
+		:y="resolvedVectorFrom.y"
+	>
 		<svg
 			class="FiringArc__svg"
 			xmlns="http://www.w3.org/2000/svg"
 			preserve-aspect-ratio="none"
 		>
 			<path
-				:d="`M ${unitScreenPositionFrom.x} ${
-					unitScreenPositionFrom.y
-				} C ${unitScreenPositionFrom.x} ${midpointScreenPosition.y + offset}, ${
-					unitScreenPositionTo.x
-				} ${midpointScreenPosition.y + offset}, ${unitScreenPositionTo.x} ${
-					unitScreenPositionTo.y
-				}`"
+				:d="`M ${0} ${0} C ${elevationOffset.x} ${elevationOffset.y}, ${
+					lineVector.x + elevationOffset.x
+				} ${lineVector.y + elevationOffset.y}, ${lineVector.x} ${lineVector.y}`"
 			/>
 		</svg>
-	</Teleport>
-	<Teleport :to="props.labelContainer">
-		<div
-			class="FiringArc__label"
-			:style="{
-				'--label-x': midpointScreenPosition.x,
-				'--label-y': midpointScreenPosition.y + offset * 0.75,
-			}"
-		>
+	</PositionedElement>
+	<PositionedElement
+		:layer="LAYER.FIRING_ARC_LABELS"
+		:x="labelPosition.x"
+		:y="labelPosition.y"
+		cancel-viewport-rotation
+	>
+		<div class="FiringArc__label">
 			<div class="FiringArc__label-row">
 				<span class="FiringArc__span">
-					{{ getUnitLabel(unitMap, unitIdFrom) }} ->
-					{{ getUnitLabel(unitMap, unitIdTo) }}
+					{{ getUnitLabel(artillery.unitMap.value, unitIdFrom) }} ->
+					{{ getUnitLabel(artillery.unitMap.value, unitIdTo) }}
 				</span>
 			</div>
 			<div class="FiringArc__label-row">
@@ -39,7 +38,7 @@
 				><span>{{ firingVectorWithWind.azimuth.toFixed(1) }}°</span>
 			</div>
 		</div>
-	</Teleport>
+	</PositionedElement>
 </template>
 
 <style lang="scss">
@@ -73,16 +72,15 @@
 		animation: FiringArc__dash 1s linear infinite;
 		fill: transparent;
 		filter: url(#outline);
+
+		pointer-events: none;
 	}
 
 	.FiringArc__label {
 		position: absolute;
 		left: 0;
 		top: 0;
-		transform: translate(
-			calc(var(--label-x) * 1px - 50%),
-			calc(var(--label-y) * 1px - 50%)
-		);
+		transform: translate(-50%, -50%);
 		transform-origin: 50% 50%;
 
 		padding: 0.5em;
@@ -114,53 +112,48 @@
 </style>
 
 <script setup lang="ts">
-	import { computed } from 'vue';
-	import { injectUnitMap } from '@/contexts/unit';
-	import { injectViewport } from '@/contexts/viewport';
-	import { injectWind } from '@/contexts/wind';
+	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
+	import { LAYER } from '@/lib/constants/ui';
+	import { artillery } from '@/lib/globals';
 	import { getUnitLabel, getUnitResolvedVector } from '@/lib/unit';
+	import { Vector } from '@/lib/vector';
+	import { computed } from 'vue';
 
 	const props = defineProps<{
-		lineContainer: HTMLElement;
-		labelContainer: HTMLElement;
-
 		unitIdFrom: string;
 		unitIdTo: string;
 	}>();
 
-	const unitMap = injectUnitMap();
-	const viewport = injectViewport();
-	const wind = injectWind();
-
 	const resolvedVectorFrom = computed(() =>
-		getUnitResolvedVector(unitMap.value, props.unitIdFrom)
+		getUnitResolvedVector(artillery.unitMap.value, props.unitIdFrom)
 	);
 	const resolvedVectorTo = computed(() =>
-		getUnitResolvedVector(unitMap.value, props.unitIdTo)
+		getUnitResolvedVector(artillery.unitMap.value, props.unitIdTo)
 	);
 	const firingVector = computed(() =>
-		resolvedVectorTo.value.getRelativeOffset(resolvedVectorFrom.value)
+		resolvedVectorFrom.value.getRelativeOffset(resolvedVectorTo.value)
 	);
 	const firingVectorWithWind = computed(() =>
-		firingVector.value.addVector(wind.value.scale(-1))
+		firingVector.value.addVector(artillery.wind.value.scale(-1))
 	);
 
-	const unitScreenPositionFrom = computed(() =>
-		viewport.value.toScreenPosition(resolvedVectorFrom.value)
+	const lineVector = computed(() =>
+		firingVector.value.scale(artillery.viewport.value.resolvedZoom)
 	);
-	const unitScreenPositionTo = computed(() =>
-		viewport.value.toScreenPosition(resolvedVectorTo.value)
+	const elevationOffset = computed(() =>
+		Vector.fromAngularVector({
+			azimuth: 180 - artillery.viewport.value.rotation,
+			distance: lineVector.value.distance / 2,
+		})
 	);
-	const midpointScreenPosition = computed(() =>
-		unitScreenPositionFrom.value
-			.addVector(unitScreenPositionTo.value)
+	const labelPosition = computed(() =>
+		resolvedVectorFrom.value
+			.addVector(resolvedVectorTo.value)
 			.scale(0.5)
-	);
-
-	const offset = computed(
-		() =>
-			unitScreenPositionTo.value
-				.addVector(unitScreenPositionFrom.value.scale(-1))
-				.scale(0.5).distance * -1
+			.addVector(
+				elevationOffset.value.scale(
+					0.75 / artillery.viewport.value.resolvedZoom
+				)
+			)
 	);
 </script>

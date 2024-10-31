@@ -27,7 +27,12 @@
 						optionLabel="label"
 					/>
 				</div>
-				<div class="UnitSettings__row" v-if="unit.type === UnitType.Artillery || unit.type === UnitType.Target">
+				<div
+					class="UnitSettings__row"
+					v-if="
+						unit.type === UnitType.Artillery || unit.type === UnitType.Target
+					"
+				>
 					<span>Ammunition:</span>
 					<PrimeSelect
 						class="UnitSettings__select"
@@ -41,7 +46,11 @@
 				</div>
 				<div
 					class="UnitSettings__row"
-					v-if="(unit.type === UnitType.Artillery || unit.type === UnitType.Target) && unit.ammunition != null"
+					v-if="
+						(unit.type === UnitType.Artillery ||
+							unit.type === UnitType.Target) &&
+						unit.ammunition != null
+					"
 				>
 					<span>Platform:</span>
 					<PrimeSelect
@@ -100,6 +109,30 @@
 							"
 						/>
 					</div>
+					<template v-if="settings.showXYOffsets">
+						<div class="UnitSettings__row">
+							<span>X:</span>
+							<DistanceInput
+								:model-value="unit.vector.x"
+								auto-focus
+								@update:model-value="
+									unit.vector.x = $event;
+									emit('updated');
+								"
+							/>
+						</div>
+						<div class="UnitSettings__row">
+							<span>Y:</span>
+							<DistanceInput
+								:model-value="unit.vector.y"
+								auto-focus
+								@update:model-value="
+									unit.vector.y = $event;
+									emit('updated');
+								"
+							/>
+						</div>
+					</template>
 					<span class="UnitSettings__span">
 						{{ unitLabel }} -> {{ parentLabel }}
 					</span>
@@ -124,6 +157,30 @@
 							"
 						/>
 					</div>
+					<template v-if="settings.showXYOffsets">
+						<div class="UnitSettings__row">
+							<span>X:</span>
+							<DistanceInput
+								:model-value="-unit.vector.x"
+								auto-focus
+								@update:model-value="
+									unit.vector.x = -$event;
+									emit('updated');
+								"
+							/>
+						</div>
+						<div class="UnitSettings__row">
+							<span>Y:</span>
+							<DistanceInput
+								:model-value="-unit.vector.y"
+								auto-focus
+								@update:model-value="
+									unit.vector.y = -$event;
+									emit('updated');
+								"
+							/>
+						</div>
+					</template>
 				</template>
 			</div>
 			<div class="UnitSettings__actions">
@@ -182,15 +239,15 @@
 				<PrimeButton
 					class="UnitSettings__action"
 					@click.stop="
-						pinnedUnits.has(unit.id)
-							? pinnedUnits.delete(unit.id)
-							: pinnedUnits.add(unit.id)
+						artillery.pinnedUnits.value.has(unit.id)
+							? artillery.pinnedUnits.value.delete(unit.id)
+							: artillery.pinnedUnits.value.add(unit.id)
 					"
 					severity="secondary"
 					title="Pin"
 				>
 					<Component
-						:is="pinnedUnits.has(unit.id) ? PinIcon : PinOutlineIcon"
+						:is="artillery.pinnedUnits.value.has(unit.id) ? PinIcon : PinOutlineIcon"
 					/>
 				</PrimeButton>
 				<PrimeButton
@@ -322,14 +379,14 @@
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
-	import { injectPinnedUnits } from '@/contexts/pinned-units';
-	import { injectUnit, injectUnitMap } from '@/contexts/unit';
+	import { injectUnit } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
 	import {
 		AMMO_TYPE,
 		ARTILLERY_BY_SHELL,
 		Platform,
 	} from '@/lib/constants/data';
+	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, UnitType, unitTypeOrder } from '@/lib/unit';
 
@@ -345,10 +402,10 @@
 	}>();
 
 	const unit = injectUnit();
-	const unitMap = injectUnitMap();
-	const pinnedUnits = injectPinnedUnits();
 
-	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
+	const unitLabel = computed(() =>
+		getUnitLabel(artillery.unitMap.value, unit.value.id)
+	);
 
 	const unitTypeOptions = computed(() => {
 		return unitTypeOrder.map((type) => ({
@@ -414,12 +471,12 @@
 	});
 
 	const parent = computed(() =>
-		unit.value.parentId != null ? unitMap.value[unit.value.parentId] : undefined
+		unit.value.parentId != null ? artillery.unitMap.value[unit.value.parentId] : undefined
 	);
 	const parentLabel = computed(() =>
 		parent.value == null
 			? 'Unknown'
-			: getUnitLabel(unitMap.value, parent.value.id)
+			: getUnitLabel(artillery.unitMap.value, parent.value.id)
 	);
 
 	const onUnitTypeClicked = (e: MouseEvent, type: UnitType) => {

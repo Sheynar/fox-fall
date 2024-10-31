@@ -1,11 +1,7 @@
 <template>
-	<div class="FiringArcs__container FiringArcs__lines" ref="firingLines" />
-	<div class="FiringArcs__container FiringArcs__labels" ref="firingLabels" />
 	<FiringArc
 		v-for="firingArc in firingArcList"
 		:key="firingArc.to.id"
-		:line-container="firingLines!"
-		:label-container="firingLabels!"
 		:unit-id-from="firingArc.from.id"
 		:unit-id-to="firingArc.to.id"
 	/>
@@ -26,23 +22,18 @@
 </style>
 
 <script setup lang="ts">
-	import { computed, ref } from 'vue';
-	import { injectUnitMap } from '@/contexts/unit';
+	import { artillery } from '@/lib/globals';
 	import { UnitType, type Unit } from '@/lib/unit';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
+	import { computed } from 'vue';
 	import FiringArc from './FiringArc.vue';
-
-	const firingLines = ref<HTMLElement | null>(null);
-	const firingLabels = ref<HTMLElement | null>(null);
-
-	const unitMap = injectUnitMap();
 
 	const focusedUnitIds = useFocusedUnitIds();
 
 	const artilleryUnits = computed(() => {
 		const output: Unit[] = [];
-		for (const unitId of Object.keys(unitMap.value)) {
-			const unit = unitMap.value[unitId];
+		for (const unitId of Object.keys(artillery.unitMap.value)) {
+			const unit = artillery.unitMap.value[unitId];
 			if (unit.type !== UnitType.Artillery) continue;
 			output.push(unit);
 		}
@@ -51,8 +42,8 @@
 
 	const targetUnits = computed(() => {
 		const output: Unit[] = [];
-		for (const unitId of Object.keys(unitMap.value)) {
-			const unit = unitMap.value[unitId];
+		for (const unitId of Object.keys(artillery.unitMap.value)) {
+			const unit = artillery.unitMap.value[unitId];
 			if (unit.type !== UnitType.Target) continue;
 			output.push(unit);
 		}

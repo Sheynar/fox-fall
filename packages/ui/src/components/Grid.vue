@@ -1,22 +1,24 @@
 <template>
 	<svg
 		class="Grid__container"
-		version="1.1"
-		xmlns="http://www.w3.org/2000/svg"
-		xmlns:xlink="http://www.w3.org/1999/xlink"
-		:viewBox="`0 0 ${gridSize} ${gridSize}`"
-		xml:space="preserve"
 		:style="{
 			'--viewport-x': screenPosition.x,
 			'--viewport-y': screenPosition.y,
 			'--offset-x': screenOffset.x,
 			'--offset-y': screenOffset.y,
-			'--viewport-deg': viewport.rotation,
-			'--viewport-zoom': viewport.resolvedZoom,
-			'--grid-size': gridSize,
+			'--viewport-deg': artillery.viewport.value.rotation,
+			'--viewport-zoom': artillery.viewport.value.resolvedZoom,
+			'--grid-size': gridSize * artillery.viewport.value.resolvedZoom,
 		}"
-		:stroke-width="settings.gridLineWidth / viewport.resolvedZoom"
-		:stroke-dasharray="`${settings.gridDashLength / viewport.resolvedZoom} ${settings.gridDashGap / viewport.resolvedZoom}`"
+		version="1.1"
+		xmlns="http://www.w3.org/2000/svg"
+		xmlns:xlink="http://www.w3.org/1999/xlink"
+		:viewBox="`0 0 ${gridSize} ${gridSize}`"
+		xml:space="preserve"
+		:stroke-width="
+			settings.gridLineWidth / artillery.viewport.value.resolvedZoom
+		"
+		:stroke-dasharray="`${settings.gridDashLength / artillery.viewport.value.resolvedZoom} ${settings.gridDashGap / artillery.viewport.value.resolvedZoom}`"
 	>
 		<g class="Grid__vertical__container">
 			<line
@@ -51,16 +53,15 @@
 		width: calc(var(--grid-size) * 1px);
 		height: calc(var(--grid-size) * 1px);
 
+		overflow: visible;
+		pointer-events: none;
+
 		transform-origin: 0 0;
 		transform: translate(
-				calc(1px * (var(--viewport-x) + var(--offset-x))),
-				calc(1px * (var(--viewport-y) + var(--offset-y)))
+				calc(1px * (var(--viewport-x) + var(--offset-x)) + 50vw),
+				calc(1px * (var(--viewport-y) + var(--offset-y)) + 50vh)
 			)
-			rotate(calc(var(--viewport-deg) * 1deg - 90deg))
-			scale(var(--viewport-zoom));
-		overflow: visible;
-
-		pointer-events: none;
+			rotate(calc(var(--viewport-deg) * 1deg));
 	}
 </style>
 
@@ -70,20 +71,19 @@
 </script>
 
 <script setup lang="ts">
-	import { useWindowSize } from '@vueuse/core';
 	import { computed } from 'vue';
-	import { injectViewport } from '@/contexts/viewport';
 	import { settings } from '@/lib/settings';
 	import { Vector } from '@/lib/vector';
-
-	const viewport = injectViewport();
-	const windowSize = useWindowSize();
+	import { artillery } from '@/lib/globals';
 
 	const cellCount = computed(() => {
-		const hypot = Math.sqrt(windowSize.width.value ** 2 + windowSize.height.value ** 2);
-		let minCells = Math.ceil(
-			hypot / (viewport.value.resolvedZoom * CELL_SIZE)
-		) + 2;
+		const hypot = Math.sqrt(
+			artillery.viewport.value.viewportSize.x ** 2 +
+				artillery.viewport.value.viewportSize.y ** 2
+		);
+		let minCells =
+			Math.ceil(hypot / (artillery.viewport.value.resolvedZoom * CELL_SIZE)) +
+			2;
 		if (minCells % 2 === 0) minCells += 1;
 		return minCells;
 	});
@@ -91,22 +91,30 @@
 	const gridSize = computed(() => cellCount.value * CELL_SIZE);
 
 	const screenPosition = computed(() => {
-		return viewport.value.toScreenPosition(
+		return artillery.viewport.value.toScreenPosition(
 			Vector.fromCartesianVector({
 				x: -gridSize.value / 2,
-				y: gridSize.value / 2,
+				y: -gridSize.value / 2,
 			})
 		);
 	});
 
 	const screenOffset = computed(() => {
+		const position = computed(() =>
+			artillery.viewport.value
+				.toWorldOffset(artillery.viewport.value.position)
+				.scale(-1)
+		);
 		const CELL_VIEWPORT_SIZE = CELL_SIZE;
-		const position = viewport.value.getFocusedPosition();
 
-		return viewport.value.toScreenOffset(
+		return artillery.viewport.value.toScreenOffset(
 			Vector.fromCartesianVector({
-				x: Math.floor(position.x / CELL_VIEWPORT_SIZE) * CELL_VIEWPORT_SIZE,
-				y: Math.floor(position.y / CELL_VIEWPORT_SIZE) * CELL_VIEWPORT_SIZE,
+				x:
+					Math.floor(position.value.x / CELL_VIEWPORT_SIZE) *
+					CELL_VIEWPORT_SIZE,
+				y:
+					Math.floor(position.value.y / CELL_VIEWPORT_SIZE) *
+					CELL_VIEWPORT_SIZE,
 			})
 		);
 	});

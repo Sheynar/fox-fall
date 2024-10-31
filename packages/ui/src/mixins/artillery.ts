@@ -1,20 +1,5 @@
 import { type Ref, ref, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
-import { provideCursor } from '@/contexts/cursor';
-import {
-	type HighlightedUnits,
-	provideHighlightedUnits,
-} from '@/contexts/highlighted-units';
-import { providePinnedUnits, type PinnedUnits } from '@/contexts/pinned-units';
-import { provideUnitMap } from '@/contexts/unit';
-import {
-	provideUnitSelector,
-	type UnitSelector,
-} from '@/contexts/unit-selector';
-import { provideReadyToFire } from '@/contexts/ready-to-fire';
-import { provideSelectedUnits } from '@/contexts/selected-unit';
-import { provideViewport } from '@/contexts/viewport';
-import { provideWind } from '@/contexts/wind';
 import {
 	type Unit,
 	type UnitMap,
@@ -35,33 +20,26 @@ export const useArtillery = ({
 }: ArtilleryOptions = {}) => {
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const readyToFire = ref(false);
-	const wind = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
+	const wind = ref(Vector.fromAngularVector({ azimuth: 0, distance: 0 }));
 	const unitMap = ref<UnitMap>({});
-	const unitSelector = ref<UnitSelector>(null);
+	const unitSelector = ref<{
+		selectUnit: (unitId?: string | null) => unknown,
+		prompt?: string,
+	} | null>(null);
 	const selectedUnits = ref<Unit['id'][]>([]);
-	const pinnedUnits = ref<PinnedUnits>(new Set());
-	const highlightedUnits = ref<HighlightedUnits>(new Set());
+	const pinnedUnits = ref<Set<Unit['id']>>(new Set());
+	const highlightedUnits = ref<Set<Unit['id']>>(new Set());
 	const viewport = ref(
 		new Viewport(
 			Vector.fromCartesianVector({
 				x: 0,
 				y: 0,
 			}),
-			90,
+			0,
 			1
 		)
 	);
-	viewport.value.panToCentered(Vector.fromCartesianVector({ x: 0, y: 0 }));
-
-	provideCursor(cursor);
-	provideWind(wind);
-	provideReadyToFire(readyToFire);
-	provideSelectedUnits(selectedUnits);
-	providePinnedUnits(pinnedUnits);
-	provideHighlightedUnits(highlightedUnits);
-	provideUnitSelector(unitSelector);
-	provideUnitMap(unitMap);
-	provideViewport(viewport);
+	viewport.value.panTo(Vector.fromCartesianVector({ x: 0, y: 0 }));
 
 	const addUnit = (
 		type: UnitType,
@@ -77,14 +55,7 @@ export const useArtillery = ({
 				})
 			);
 			if (parentUnitId == null) {
-				vector.value = viewport.value.toCentered(
-					viewport.value.toWorldPosition(
-						Vector.fromCartesianVector({
-							x: 0,
-							y: 0,
-						})
-					)
-				);
+				vector.value = viewport.value.toWorldPosition(Vector.zero());
 			}
 		}
 
@@ -214,7 +185,7 @@ export const useArtillery = ({
 	};
 
 	const resetWind = () => {
-		wind.value = Vector.fromCartesianVector({ x: 0, y: 0 });
+		wind.value = Vector.fromAngularVector({ azimuth: 0, distance: 0 });
 		onWindUpdated?.();
 	};
 

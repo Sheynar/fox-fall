@@ -20,6 +20,10 @@
 				<PrimeCheckBox binary v-model="settings.useNatoAlphabet" @update:model-value="saveSettings" />
 			</div>
 			<div class="Settings__row">
+				<label>Show X/Y offsets</label>
+				<PrimeCheckBox binary v-model="settings.showXYOffsets" @update:model-value="saveSettings" />
+			</div>
+			<div class="Settings__row">
 				<label>Grid dash length</label>
 				<PrimeInputNumber
 					:model-value="settings.gridDashLength"

@@ -94,7 +94,7 @@ export const calibrateGrid = async (viewport: Viewport) => {
 			);
 
 		viewport.withSmoothing(() => {
-			viewport.rotation = viewport.rotation > 270 ? 360 + 90 : 90;
+			viewport.rotation = viewport.rotation > 180 ? 360 : 0;
 			viewport.zoomTo(
 				(viewport.zoom * (Math.abs(offset.x) + Math.abs(offset.y))) / 250
 			);

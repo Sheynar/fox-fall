@@ -5,7 +5,6 @@ export const settings = ref({
 	lockRotate: !!new URL(location.href).searchParams.get('overlay'),
 	lockZoom: false,
 
-
 	automaticCameraTargeting: false,
 	automaticCameraZoom: false,
 	useNatoAlphabet: true,
@@ -14,6 +13,7 @@ export const settings = ref({
 	gridDashLength: 3,
 	gridDashGap: 2,
 	gridLineWidth: 0.5,
+	showXYOffsets: false,
 	sync: null as {
 		serverAddress: string,
 		code: string,

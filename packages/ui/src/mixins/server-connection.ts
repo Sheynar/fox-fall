@@ -1,5 +1,4 @@
 import { computed, onScopeDispose, ref, watch } from 'vue';
-import { provideServerConnection } from '@/contexts/server-connection';
 import { saveSettings, settings } from '@/lib/settings';
 
 const RECONNECT_INTERVAL = 10_000;
@@ -42,7 +41,9 @@ export const useServerConnection = () => {
 	const serverUrl = computed(() => {
 		const connectionDetails = getConnectionDetails();
 
-		const [address,port = '81'] = (connectionDetails?.serverAddress ?? '').split(':');
+		const [address, port = '81'] = (
+			connectionDetails?.serverAddress ?? ''
+		).split(':');
 
 		return address
 			? `ws://${address}:${port}/?code=${encodeURIComponent(connectionDetails?.code ?? '')}`
@@ -122,7 +123,7 @@ export const useServerConnection = () => {
 	watch(serverUrl, () => connect(), { immediate: true });
 	onScopeDispose(stop);
 
-	const output = {
+	return {
 		stop,
 		ready,
 		connectionState,
@@ -130,8 +131,4 @@ export const useServerConnection = () => {
 
 		webSocket,
 	};
-
-	provideServerConnection(output);
-
-	return output;
 };

@@ -177,7 +177,7 @@
 	import { computed, ref, watch } from 'vue';
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
-	import SyncSettings from '@/components/SyncSettings.vue';
+	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
 	import {
 		getUnitLabel,
 		getUnitResolvedVector,

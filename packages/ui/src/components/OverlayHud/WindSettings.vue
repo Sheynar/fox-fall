@@ -10,16 +10,16 @@
 		<div class="Wind__information">
 			<div class="Wind__information__item">
 				<label>Wind direction:</label>
-				<DirectionInput v-model="wind.azimuth" @update:model-value="emit('update')" auto-focus />
+				<DirectionInput v-model="artillery.wind.value.azimuth" @update:model-value="syncedRoom.updateWind()" auto-focus />
 			</div>
 			<div class="Wind__information__item">
 				<label>Wind distance:</label>
-				<DistanceInput v-model="wind.distance" @update:model-value="emit('update')" />
+				<DistanceInput v-model="artillery.wind.value.distance" @update:model-value="syncedRoom.updateWind()" />
 			</div>
 			<PrimeButton
 				class="Wind__information__button"
 				label="Reset"
-				@pointerdown.stop="emit('reset')"
+				@pointerdown.stop="artillery.resetWind()"
 			/>
 		</div>
 	</PrimeDialog>
@@ -54,14 +54,7 @@
 	import PrimeDialog from 'primevue/dialog';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
-	import { injectWind } from '@/contexts/wind';
+	import { artillery, syncedRoom } from '@/lib/globals';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
-
-	const wind = injectWind();
-
-	const emit = defineEmits<{
-		(event: 'reset'): void;
-		(event: 'update'): void;
-	}>();
 </script>

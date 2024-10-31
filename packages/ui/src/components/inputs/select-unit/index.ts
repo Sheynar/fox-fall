@@ -1,6 +1,6 @@
-import { computed } from 'vue';
-import { injectUnitMap } from '@/contexts/unit';
+import { artillery } from '@/lib/globals';
 import { type Unit, UnitType, unitTypeOrder, getUnitLabel } from '@/lib/unit';
+import { computed } from 'vue';
 
 export type Options = {
 	blackList?: {
@@ -13,8 +13,6 @@ export type Options = {
 	};
 };
 export const useSelectUnitOptions = (options: Options = {}) => {
-	const unitMap = injectUnitMap();
-
 	const selectUnitOptions = computed(() => {
 		const selectUnitOptions: {
 			label: string;
@@ -26,7 +24,7 @@ export const useSelectUnitOptions = (options: Options = {}) => {
 			if (options.blackList?.type != null && options.blackList.type.includes(unitType)) continue;
 
 			const units: Unit[] = [];
-			for (const unit of Object.values(unitMap.value)) {
+			for (const unit of Object.values(artillery.unitMap.value)) {
 				if (unit.type !== unitType) continue;
 				if (options.whiteList?.id != null && !options.whiteList.id.includes(unit.id)) continue;
 				if (options.blackList?.id != null && options.blackList.id.includes(unit.id)) continue;
@@ -38,7 +36,7 @@ export const useSelectUnitOptions = (options: Options = {}) => {
 					label: UnitType[unitType],
 					units: units.map((unit) => ({
 						id: unit.id,
-						label: getUnitLabel(unitMap.value, unit.id),
+						label: getUnitLabel(artillery.unitMap.value, unit.id),
 					})),
 				});
 			}

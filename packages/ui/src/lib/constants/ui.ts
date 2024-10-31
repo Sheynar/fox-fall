@@ -1,0 +1,9 @@
+export enum LAYER {
+	BACKDROP = 0,
+	RANGE_FINDERS = 1,
+	LINKS = 2,
+	UNITS = 3,
+	FIRING_ARC_LINES = 4,
+	FIRING_ARC_LABELS = 5,
+	FOCUSED = 100,
+}

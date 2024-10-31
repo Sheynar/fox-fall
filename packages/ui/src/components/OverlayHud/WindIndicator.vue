@@ -2,8 +2,8 @@
 	<WindIcon
 		class="Wind__indicator"
 		:style="{
-			'--wind-deg': wind.azimuth,
-			'--viewport-deg': viewport.rotation,
+			'--wind-deg': artillery.wind.value.azimuth,
+			'--viewport-deg': artillery.viewport.value.rotation,
 		}"
 	/>
 	<div
@@ -22,7 +22,7 @@
 		border-radius: 50%;
 
 		transform: rotate(
-			calc((var(--wind-deg) + var(--viewport-deg)) * 1deg + 180deg)
+			calc((var(--wind-deg) + var(--viewport-deg)) * 1deg - 90deg)
 		);
 		transform-origin: 50% 50%;
 	}
@@ -31,15 +31,7 @@
 <script setup lang="ts">
 	import { ref } from 'vue';
 	import WindIcon from '@/components/icons/WindIcon.vue';
-	import { injectViewport } from '@/contexts/viewport';
-	import { injectWind } from '@/contexts/wind';
-
-	const emit = defineEmits<{
-		(event: 'reset'): void;
-	}>();
-
-	const viewport = injectViewport();
-	const wind = injectWind();
+	import { artillery } from '@/lib/globals';
 
 	const open = ref(false);
 </script>

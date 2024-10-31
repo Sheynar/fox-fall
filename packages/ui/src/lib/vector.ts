@@ -14,8 +14,8 @@ export const toCartesianVector = (
 	angularVector: AngularVector
 ): CartesianVector => {
 	return {
-		x: angularVector.distance * Math.cos(toRadians(angularVector.azimuth)),
-		y: angularVector.distance * Math.sin(toRadians(angularVector.azimuth)),
+		x: angularVector.distance * Math.cos(toRadians(angularVector.azimuth + 90)),
+		y: angularVector.distance * Math.sin(toRadians(angularVector.azimuth + 90)),
 	};
 };
 
@@ -23,7 +23,7 @@ export const toAngularVector = (
 	cartesianVector: CartesianVector
 ): AngularVector => {
 	const azimuth = wrapDegrees(
-		toDegrees(Math.atan2(cartesianVector.y, cartesianVector.x))
+		toDegrees(Math.atan2(cartesianVector.y, cartesianVector.x)) - 90
 	);
 	const distance = Math.sqrt(
 		Math.pow(cartesianVector.x, 2) + Math.pow(cartesianVector.y, 2)

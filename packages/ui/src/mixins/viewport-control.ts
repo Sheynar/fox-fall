@@ -31,7 +31,7 @@ export const useViewPortLock = (options: ViewportLockOptions) => {
 			if (rotation.value != null)
 				options.viewport.value.rotateTo(rotation.value);
 			if (position.value != null)
-				options.viewport.value.panToCentered(position.value);
+				options.viewport.value.panTo(position.value);
 		});
 	};
 
@@ -114,9 +114,9 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 				}
 			} else {
 				if (canPan.value) {
-					options.viewport.value.position.cartesianVector.x +=
+					options.viewport.value.position.x +=
 						dragStatus.transformDelta.x;
-					options.viewport.value.position.cartesianVector.y +=
+					options.viewport.value.position.y +=
 						dragStatus.transformDelta.y;
 				}
 			}

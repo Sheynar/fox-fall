@@ -1,47 +1,55 @@
 <template>
-	<div
-		class="Unit__container"
-		:class="{
-			Unit__moving: !!moving,
-			Unit__readonly: props.readonly,
-			Unit__highlighted:
-				pinnedUnits.has(unit.id) || highlightedUnits.has(unit.id) || open,
-		}"
-		:style="{
-			'--unit-x': screenPosition.x,
-			'--unit-y': screenPosition.y,
-			'--viewport-zoom': viewport.resolvedZoom,
-			'--unit-icon-scale': settings.unitIconScale,
-		}"
-		@mouseover="isHovered = true"
-		@mouseleave="isHovered = false"
-		@pointerdown="onPointerDown"
-		@pointermove="onPointerMove"
-		@pointerup="onPointerUp"
+	<PositionedElement
+		:x="resolvedVector.x"
+		:y="resolvedVector.y"
+		:layer="LAYER.UNITS"
+		cancel-viewport-rotation
 	>
-		<div class="Unit__border"></div>
-		<div class="Unit__label" v-if="unitLabel">
-			{{ unitLabel }}
+		<div
+			class="Unit__container"
+			:class="{
+				Unit__moving: !!moving,
+				Unit__readonly: props.readonly,
+				Unit__highlighted:
+				artillery.pinnedUnits.value.has(unit.id) || artillery.highlightedUnits.value.has(unit.id) || open,
+			}"
+			:style="{
+				'--unit-icon-scale': settings.unitIconScale,
+			}"
+			@mouseover="isHovered = true"
+			@mouseleave="isHovered = false"
+			@pointerdown="onPointerDown"
+			@pointermove="onPointerMove"
+			@pointerup="onPointerUp"
+		>
+			<div class="Unit__border"></div>
+			<div class="Unit__label" v-if="unitLabel">
+				{{ unitLabel }}
+			</div>
+			<Component :is="unitIcon" ref="iconElement" class="Unit__icon" />
 		</div>
-		<Component :is="unitIcon" ref="iconElement" class="Unit__icon" />
-	</div>
+	</PositionedElement>
 
-	<div
-		v-if="unit.type === UnitType.Target && wind.distance > 0"
-		class="Unit__container Unit__firing-indicator"
-		:style="{
-			'--unit-x': firingPositionScreen.x,
-			'--unit-y': firingPositionScreen.y,
-			'--viewport-zoom': viewport.resolvedZoom,
-			'--unit-icon-scale': settings.unitIconScale,
-		}"
+	<PositionedElement
+		v-if="unit.type === UnitType.Target && artillery.wind.value.distance > 0"
+		:x="firingPosition.x"
+		:y="firingPosition.y"
+		:layer="LAYER.UNITS"
+		cancel-viewport-rotation
 	>
-		<div class="Unit__border"></div>
-		<div class="Unit__label" v-if="unitLabel">
-			{{ unitLabel }}
+		<div
+			class="Unit__container Unit__firing-indicator"
+			:style="{
+				'--unit-icon-scale': settings.unitIconScale,
+			}"
+		>
+			<div class="Unit__border"></div>
+			<div class="Unit__label" v-if="unitLabel">
+				{{ unitLabel }}
+			</div>
+			<TargetIcon class="Unit__icon" />
 		</div>
-		<TargetIcon class="Unit__icon" />
-	</div>
+	</PositionedElement>
 
 	<UnitSettings
 		v-model:visible="open"
@@ -58,12 +66,9 @@
 <style lang="scss">
 	.Unit__container {
 		position: absolute;
-		left: calc(var(--unit-x) * 1px);
-		top: calc(var(--unit-y) * 1px);
-		z-index: 1000;
 
 		transform: translate(-50%, -100%) scale(var(--unit-icon-scale))
-			translateY(-21%);
+			translateY(-25%);
 		transform-origin: 50% 100%;
 
 		&:hover,
@@ -134,15 +139,12 @@
 	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
-	import UnitSettings from '@/components/Unit/UnitSettings.vue';
-	import { injectHighlightedUnits } from '@/contexts/highlighted-units';
-	import { injectPinnedUnits } from '@/contexts/pinned-units';
-	import { injectSelectedUnits } from '@/contexts/selected-unit';
-	import { injectUnit, injectUnitMap } from '@/contexts/unit';
-	import { injectUnitSelector } from '@/contexts/unit-selector';
-	import { injectViewport } from '@/contexts/viewport';
-	import { injectWind } from '@/contexts/wind';
+	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
+	import UnitSettings from '@/components/Viewport/Units/UnitSettings.vue';
+	import { injectUnit } from '@/contexts/unit';
 	import { ARTILLERY_BY_SHELL } from '@/lib/constants/data';
+	import { LAYER } from '@/lib/constants/ui';
+	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
@@ -161,14 +163,7 @@
 		(event: 'update-wind'): void;
 	}>();
 
-	const unitMap = injectUnitMap();
 	const unit = injectUnit();
-	const unitSelector = injectUnitSelector();
-	const viewport = injectViewport();
-	const wind = injectWind();
-	const pinnedUnits = injectPinnedUnits();
-	const highlightedUnits = injectHighlightedUnits();
-	const selectedUnits = injectSelectedUnits();
 
 	const ammoSpecs = computed(() => {
 		if (unit.value.ammunition != null)
@@ -179,7 +174,7 @@
 			return ammoSpecs.value.PLATFORM[unit.value.platform]!;
 		}
 	});
-	const unitLabel = computed(() => getUnitLabel(unitMap.value, unit.value.id));
+	const unitLabel = computed(() => getUnitLabel(artillery.unitMap.value, unit.value.id));
 	const unitIcon = computed(() => {
 		if (unit.value.type === UnitType.Spotter) return SpotterIcon;
 		if (unit.value.type === UnitType.Location) return LocationIcon;
@@ -192,16 +187,16 @@
 	const isHovered = ref(false);
 	const canDrag = ref(unit.value.parentId == null);
 	const open = computed({
-		get: () => selectedUnits.value.includes(unit.value.id),
+		get: () => artillery.selectedUnits.value.includes(unit.value.id),
 		set: (value) => {
-			if (value === selectedUnits.value.includes(unit.value.id)) {
+			if (value === artillery.selectedUnits.value.includes(unit.value.id)) {
 				return;
 			}
 			if (value) {
-				selectedUnits.value.push(unit.value.id);
+				artillery.selectedUnits.value.push(unit.value.id);
 			} else {
-				selectedUnits.value.splice(
-					selectedUnits.value.indexOf(unit.value.id),
+				artillery.selectedUnits.value.splice(
+					artillery.selectedUnits.value.indexOf(unit.value.id),
 					1
 				);
 			}
@@ -212,12 +207,12 @@
 	watch(
 		() =>
 			!unitSettingsHasCustomPosition.value &&
-			selectedUnits.value.includes(unit.value.id) &&
-			selectedUnits.value.slice(-1)[0] !== unit.value.id,
+			artillery.selectedUnits.value.includes(unit.value.id) &&
+			artillery.selectedUnits.value.slice(-1)[0] !== unit.value.id,
 		(isSelectedErroneously) => {
 			if (isSelectedErroneously) {
-				const index = selectedUnits.value.indexOf(unit.value.id);
-				selectedUnits.value.splice(index, 1);
+				const index = artillery.selectedUnits.value.indexOf(unit.value.id);
+				artillery.selectedUnits.value.splice(index, 1);
 			}
 		}
 	);
@@ -226,33 +221,26 @@
 		() => isHovered.value,
 		(isHighlighted) => {
 			if (isHighlighted) {
-				highlightedUnits.value.add(unit.value.id);
+				artillery.highlightedUnits.value.add(unit.value.id);
 			} else {
-				highlightedUnits.value.delete(unit.value.id);
+				artillery.highlightedUnits.value.delete(unit.value.id);
 			}
 		}
 	);
 	onScopeDispose(() => {
-		highlightedUnits.value.delete(unit.value.id);
-		const selectedIndex = selectedUnits.value.indexOf(unit.value.id);
+		artillery.highlightedUnits.value.delete(unit.value.id);
+		const selectedIndex = artillery.selectedUnits.value.indexOf(unit.value.id);
 		if (selectedIndex > -1) {
-			selectedUnits.value.splice(selectedIndex, 1);
+			artillery.selectedUnits.value.splice(selectedIndex, 1);
 		}
 	});
 
 	const resolvedVector = computed(() =>
-		getUnitResolvedVector(unitMap.value, unit.value.id)
-	);
-
-	const screenPosition = computed(() =>
-		viewport.value.toScreenPosition(resolvedVector.value)
+		getUnitResolvedVector(artillery.unitMap.value, unit.value.id)
 	);
 
 	const firingPosition = computed(() =>
-		resolvedVector.value.addVector(wind.value)
-	);
-	const firingPositionScreen = computed(() =>
-		viewport.value.toScreenPosition(firingPosition.value)
+		resolvedVector.value.addVector(artillery.wind.value)
 	);
 
 	type MovingData = {
@@ -267,8 +255,8 @@
 		event.stopPropagation();
 		event.preventDefault();
 		if (event.button !== 0) {
-			if (unitSelector.value != null) {
-				unitSelector.value.selectUnit(null);
+			if (artillery.unitSelector.value != null) {
+				artillery.unitSelector.value.selectUnit(null);
 				return;
 			}
 
@@ -276,8 +264,8 @@
 			return;
 		}
 
-		if (unitSelector.value != null) {
-			unitSelector.value.selectUnit(unit.value.id);
+		if (artillery.unitSelector.value != null) {
+			artillery.unitSelector.value.selectUnit(unit.value.id);
 			return;
 		}
 
@@ -288,7 +276,7 @@
 
 		moving.value = {
 			startEvent: event,
-			startCursorViewport: viewport.value.toWorldPosition(
+			startCursorViewport: artillery.viewport.value.toWorldPosition(
 				Vector.fromCartesianVector({
 					x: event.clientX,
 					y: event.clientY,
@@ -321,7 +309,7 @@
 		if (!movingData) return;
 		event.stopPropagation();
 
-		const currentCursorViewport = viewport.value.toWorldPosition(
+		const currentCursorViewport = artillery.viewport.value.toWorldPosition(
 			Vector.fromCartesianVector({
 				x: event.clientX,
 				y: event.clientY,

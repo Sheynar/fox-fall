@@ -1,25 +1,24 @@
-import { ComputedRef, computed } from 'vue';
+import { computed } from 'vue';
 import KAnim from '@kaosdlanor/kanim';
 import { useWindowSize } from '@vueuse/core';
 import { toRadians, wrapDegrees } from '@/lib/angle';
-import { globalScope } from '@/lib/globalScope';
+import { runGlobal } from '@/lib/globalScope';
 import { Vector } from '@/lib/vector';
 
-let distanceScale: ComputedRef<number>;
-let viewportSize: ComputedRef<Vector>;
-
-globalScope.run(() => {
+const { distanceScale, viewportSize } = runGlobal(() => {
 	const { height, width } = useWindowSize();
-	distanceScale = computed(() => {
-		return Math.min(height.value, width.value) / 250;
-	});
 
-	viewportSize = computed(() => {
-		return Vector.fromCartesianVector({
-			x: width.value,
-			y: height.value,
-		});
-	});
+	return {
+		distanceScale: computed(() => {
+			return Math.min(height.value, width.value) / 250;
+		}),
+		viewportSize: computed(() => {
+			return Vector.fromCartesianVector({
+				x: width.value,
+				y: height.value,
+			});
+		}),
+	};
 });
 
 export class Viewport {
@@ -64,13 +63,7 @@ export class Viewport {
 		return this.toScreenOffset(vector).addVector(this.position);
 	}
 
-	rotateBy(
-		rotationDelta: number,
-		center: Vector = Vector.fromCartesianVector({
-			x: this.viewportSize.x / 2,
-			y: this.viewportSize.y / 2,
-		})
-	): void {
+	rotateBy(rotationDelta: number, center: Vector = Vector.zero()): void {
 		this.rotation = wrapDegrees(this.rotation + rotationDelta);
 
 		this.position.cartesianVector = {
@@ -99,38 +92,7 @@ export class Viewport {
 		this.position = this.toScreenOffset(newPosition).scale(-1);
 	}
 
-	getFocusedPosition(): Vector {
-		return this.toWorldPosition(
-			Vector.fromCartesianVector(this.viewportSize.scale(0.5))
-		);
-	}
-
-	panToCentered(newPosition: Vector): void {
-		this.panTo(this.fromCentered(newPosition));
-	}
-
-	toCentered(position: Vector): Vector {
-		return position.addVector(
-			this.toWorldOffset(
-				Vector.fromCartesianVector(this.viewportSize.scale(0.5))
-			)
-		);
-	}
-
-	fromCentered(position: Vector): Vector {
-		return position.addVector(
-			this.toWorldOffset(
-				Vector.fromCartesianVector(this.viewportSize).scale(-0.5)
-			)
-		);
-	}
-
-	zoomBy(
-		zoomDelta: number,
-		globalPinPosition: Vector = this.toScreenPosition(
-			this.getFocusedPosition()
-		)
-	): void {
+	zoomBy(zoomDelta: number, globalPinPosition: Vector = Vector.zero()): void {
 		const viewportPinPosition = this.toWorldPosition(globalPinPosition);
 
 		this.zoom = Math.max(0.001, this.zoom + zoomDelta);
