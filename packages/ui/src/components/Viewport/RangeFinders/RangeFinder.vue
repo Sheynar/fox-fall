@@ -35,10 +35,9 @@
 		inset: 0;
 		overflow: visible;
 
-		stroke: none;
+		stroke: black;
 		fill: var(--p-red-500);
 		opacity: 0.15;
-		filter: url(#outline);
 
 		&.RangeFinder__target {
 			fill: var(--p-green-500);
