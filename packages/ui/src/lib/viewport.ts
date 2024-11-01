@@ -82,6 +82,10 @@ export class Viewport {
 		return this.rotateBy(newRotation - this.rotation);
 	}
 
+	resetRotation(): void {
+		this.rotation = this.rotation > 180 ? 360 : 0;
+	}
+
 	panBy(panDelta: Vector): void {
 		this.position = this.position.addVector(
 			this.toScreenOffset(panDelta).scale(-1)

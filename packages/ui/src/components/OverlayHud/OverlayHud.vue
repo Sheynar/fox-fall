@@ -156,8 +156,7 @@
 	const onCompassClicked = async () => {
 		artillery.viewport.value.withSmoothing(async () => {
 			if (!settings.value.lockRotate)
-				artillery.viewport.value.rotation =
-					artillery.viewport.value.rotation > 180 ? 360 : 0;
+				artillery.viewport.value.resetRotation();
 
 			const unitVectors = Object.values(artillery.unitMap.value).map((unit) => {
 				return getUnitResolvedVector(artillery.unitMap.value, unit.id);
