@@ -100,8 +100,8 @@ export const calibrateGrid = async (viewport: Viewport) => {
 			);
 
 			const midpoint = viewport
-				.toWorldPosition(draggingData!.endPosition)
-				.addVector(viewport.toWorldPosition(draggingData!.startPosition))
+				.toWorldPosition(draggingData!.endPosition.addVector(viewport.viewportSize.scale(-0.5)))
+				.addVector(viewport.toWorldPosition(draggingData!.startPosition.addVector(viewport.viewportSize.scale(-0.5))))
 				.scale(0.5);
 
 			viewport.panBy(
