@@ -131,14 +131,14 @@
 		getUnitResolvedVector(artillery.unitMap.value, props.unitIdTo)
 	);
 	const firingVector = computed(() =>
-		resolvedVectorFrom.value.getRelativeOffset(resolvedVectorTo.value)
+	resolvedVectorTo.value.getRelativeOffset(resolvedVectorFrom.value)
 	);
 	const firingVectorWithWind = computed(() =>
 		firingVector.value.addVector(artillery.wind.value.scale(-1))
 	);
 
 	const lineVector = computed(() =>
-		firingVector.value.scale(artillery.viewport.value.resolvedZoom)
+		firingVector.value.scale(-artillery.viewport.value.resolvedZoom)
 	);
 	const elevationOffset = computed(() =>
 		Vector.fromAngularVector({
