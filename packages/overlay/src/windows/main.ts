@@ -27,9 +27,12 @@ export const initialise = () => {
 export const showMain = () => {
 	if (mainWindow == null || mainWindow.isDestroyed()) return initialise();
 	mainWindow?.show();
+	mainWindow?.setFullScreen(false);
+	mainWindow?.setFullScreen(true);
 };
 
 export const hideMain = () => {
+	mainWindow?.minimize();
 	mainWindow?.hide();
 };
 
