@@ -70,10 +70,22 @@ export const calibrateGrid = async (viewport: Viewport) => {
 			y: event.clientY,
 		});
 
-		const startX = Math.min(draggingData.startPosition.x, draggingData.endPosition.x);
-		const endX = Math.max(draggingData.startPosition.x, draggingData.endPosition.x);
-		const startY = Math.min(draggingData.startPosition.y, draggingData.endPosition.y);
-		const endY = Math.max(draggingData.startPosition.y, draggingData.endPosition.y);
+		const startX = Math.min(
+			draggingData.startPosition.x,
+			draggingData.endPosition.x
+		);
+		const endX = Math.max(
+			draggingData.startPosition.x,
+			draggingData.endPosition.x
+		);
+		const startY = Math.min(
+			draggingData.startPosition.y,
+			draggingData.endPosition.y
+		);
+		const endY = Math.max(
+			draggingData.startPosition.y,
+			draggingData.endPosition.y
+		);
 
 		draggingData.indicator.style.setProperty('left', `${startX}px`);
 		draggingData.indicator.style.setProperty('width', `${endX - startX}px`);
@@ -87,21 +99,29 @@ export const calibrateGrid = async (viewport: Viewport) => {
 		event.preventDefault();
 		event.stopPropagation();
 
-		const offset = viewport
-			.toWorldOffset(draggingData.endPosition)
-			.addVector(
-				viewport.toWorldOffset(draggingData.startPosition).scale(-1)
-			);
-
 		viewport.withSmoothing(() => {
 			viewport.resetRotation();
+
+			const offset = viewport
+				.toWorldOffset(draggingData!.endPosition)
+				.addVector(
+					viewport.toWorldOffset(draggingData!.startPosition).scale(-1)
+				);
 			viewport.zoomTo(
 				(viewport.zoom * (Math.abs(offset.x) + Math.abs(offset.y))) / 250
 			);
 
 			const midpoint = viewport
-				.toWorldPosition(draggingData!.endPosition.addVector(viewport.viewportSize.scale(-0.5)))
-				.addVector(viewport.toWorldPosition(draggingData!.startPosition.addVector(viewport.viewportSize.scale(-0.5))))
+				.toWorldPosition(
+					draggingData!.endPosition.addVector(viewport.viewportSize.scale(-0.5))
+				)
+				.addVector(
+					viewport.toWorldPosition(
+						draggingData!.startPosition.addVector(
+							viewport.viewportSize.scale(-0.5)
+						)
+					)
+				)
 				.scale(0.5);
 
 			viewport.panBy(
