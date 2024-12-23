@@ -110,7 +110,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 						(dragStatus.transformDelta.x * 720) /
 							window.document.body.clientWidth;
 
-					options.viewport.value.rotateBy(rotation);
+					options.viewport.value.rotateBy(rotation, dragStatus.startPosition.addVector(options.viewport.value.viewportSize.scale(-0.5)));
 				}
 			} else {
 				if (canPan.value) {
@@ -163,8 +163,8 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 			zoomDelta,
 			canPan.value
 				? Vector.fromCartesianVector({
-						x: event.clientX,
-						y: event.clientY,
+						x: event.clientX - options.viewport.value.viewportSize.x / 2,
+						y: event.clientY - options.viewport.value.viewportSize.y / 2,
 					})
 				: undefined
 		);
