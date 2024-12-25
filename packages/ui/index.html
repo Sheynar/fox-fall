@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, user-scalable=no">
-    <link rel="icon" type="image/webp" href="/300mm.webp" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FoxFall</title>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, user-scalable=no" />
+		<link rel="icon" type="image/webp" href="/300mm.webp" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>FoxFall</title>
 		<style>
 			body {
 				margin: 0;
@@ -16,10 +16,65 @@
 			:root {
 				font-size: calc((16px + 2vmin) / 2);
 			}
+
+			#toggle-button {
+				--size: 100vmin;
+
+				position: fixed;
+				bottom: 0;
+				right: 0;
+				width: var(--size);
+				height: var(--size);
+				padding: 0;
+				background: #1a1a1a;
+				border: none;
+				font-size: var(--size);
+			}
+
+			#toggle-image {
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+			}
 		</style>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="./src/main.ts"></script>
-  </body>
+	</head>
+	<body>
+		<div id="app"></div>
+
+		<button id="toggle-button">
+			<img id="toggle-image" src="/300mm.webp" draggable="false" />
+		</button>
+
+		<script type="module" src="./src/main.ts"></script>
+		<script>
+			const app = document.getElementById('app');
+			const toggleButton = document.getElementById('toggle-button');
+
+			toggleButton.addEventListener('mousedown', (event) => {
+				event.preventDefault();
+			});
+
+			if ('electronApi' in window) {
+				toggleButton.addEventListener('click', () => {
+					electronApi.toggleOverlay();
+				});
+
+				electronApi.onOverlayToggled((isOverlayVisible) => {
+					app.style.visibility = isOverlayVisible ? 'visible' : 'hidden';
+					app.style.pointerEvents = isOverlayVisible ? 'auto' : 'none';
+				});
+				app.style.visibility = 'hidden';
+				app.style.pointerEvents = 'none';
+
+				toggleButton.style.setProperty(
+					'--size',
+					new URL(location.href).searchParams.get('size') || '100vmin'
+				);
+			} else {
+				toggleButton.style.display = 'none';
+			}
+		</script>
+	</body>
 </html>

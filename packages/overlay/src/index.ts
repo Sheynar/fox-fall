@@ -1,7 +1,6 @@
 import { app, BrowserWindow } from 'electron';
-import { initialise as initialiseMainWindow } from './windows/main';
-import { initialise as initialiseManagerWindow, showManager } from './windows/manager';
 import '../server.js';
+import { initialise as initialiseWindow, showManager } from './window';
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
@@ -9,8 +8,7 @@ app.on('window-all-closed', () => {
 
 const initialise = async () => {
 	await app.whenReady();
-	initialiseMainWindow();
-	initialiseManagerWindow();
+	initialiseWindow();
 	showManager();
 	app.on('activate', () => {
 		if (BrowserWindow.getAllWindows().length === 0) {

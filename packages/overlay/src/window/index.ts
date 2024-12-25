@@ -1,23 +1,47 @@
 import { BrowserWindow, screen, ipcMain, app } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { toggleMain, isMainVisible } from "../main";
 
 let managerWindow: BrowserWindow | null = null;
 
 export const initialise = () => {
 	const display = screen.getPrimaryDisplay();
+
 	const lowerBound = Math.min(display.bounds.width, display.bounds.height);
-	const windowSize = Math.floor(lowerBound / 20);
+	const size = Math.floor(lowerBound / 20);
+	const position = {
+		x: display.bounds.width - size,
+		y: display.bounds.height - size,
+	};
+
+
+	const executeToggle = () => {
+		open = !open;
+		if (managerWindow != null) {
+			if (open) {
+				managerWindow.setFullScreen(true);
+				managerWindow.setSize(display.bounds.width, display.bounds.height);
+			} else {
+				managerWindow.setFullScreen(false);
+				managerWindow.blur();
+
+				managerWindow.setSize(size, size, false);
+				managerWindow.setPosition(position.x, position.y, false);
+			}
+
+			managerWindow.moveTop();
+			managerWindow.webContents.send("overlay-toggled", open);
+		}
+	};
 
 	managerWindow = new BrowserWindow({
 		frame: false,
 		autoHideMenuBar: true,
-		// transparent: true,
-		width: windowSize,
-		height: windowSize,
-		x: display.bounds.width - Math.ceil(windowSize * 1.1),
-		y: display.bounds.height - Math.ceil(windowSize * 1.1),
+		transparent: true,
+		width: 0,
+		height: 0,
+		x: 0,
+		y: 0,
 		movable: false,
 		resizable: false,
 		webPreferences: {
@@ -26,18 +50,20 @@ export const initialise = () => {
 		// focusable: false,
 	});
 
-	const url = pathToFileURL(path.join(__dirname, "../../../index.html"));
+	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
+	url.searchParams.append("overlay", "true");
+	url.searchParams.append("size", `${size}px`);
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
 	managerWindow.loadURL(url.href);
 	setInterval(() => managerWindow!.moveTop(), 1000);
 
-	ipcMain.on("toggle-overlay", () => {
-		toggleMain();
-		if (managerWindow != null) {
-			managerWindow.moveTop();
-		}
+	let open = true;
+
+	ipcMain.on("toggle-overlay", (event) => {
+		executeToggle();
 	});
+	executeToggle();
 
 	managerWindow.on("close", () => {
 		app.quit();

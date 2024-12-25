@@ -230,7 +230,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 			}
 		}
 	};
-	useEventListener(options.containerElement, 'keydown', onKeyPress);
+	useEventListener('keydown', onKeyPress);
 
 	const calibrating = ref(false);
 	const calibrateGrid = async () => {
