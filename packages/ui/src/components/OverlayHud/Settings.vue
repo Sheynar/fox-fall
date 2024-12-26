@@ -1,5 +1,6 @@
 <template>
 	<PrimeDialog
+		append-to="#app"
 		v-model:visible="visible"
 		:style="{ minWidth: '25vw' }"
 		header="Settings"
