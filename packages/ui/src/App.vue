@@ -75,7 +75,7 @@
 <script setup lang="ts">
 	import ContextMenu from 'primevue/contextmenu';
 	import type { MenuItem } from 'primevue/menuitem';
-	import { computed, nextTick, onMounted, ref, watch } from 'vue';
+	import { computed, ref } from 'vue';
 	import Grid from '@/components/Grid.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
