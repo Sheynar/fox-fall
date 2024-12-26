@@ -130,7 +130,7 @@
 	const contextMenuOptions = computed(() => {
 		const output: MenuItem[] = [
 			{
-				label: artillery.selectedUnits.value.length > 0 ? 'Add base unit' : 'Add unit',
+				label: artillery.selectedUnits.value.length > 0 ? 'Add standalone unit' : 'Add unit',
 				items: [
 					UnitType.Artillery,
 					UnitType.Spotter,
@@ -156,7 +156,7 @@
 
 		if (artillery.selectedUnits.value.length > 0) {
 			output.push({
-				label: 'Add relative unit',
+				label: 'Add linked unit',
 				items: [
 					UnitType.Artillery,
 					UnitType.Spotter,
