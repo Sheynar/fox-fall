@@ -61,12 +61,13 @@
 					electronApi.toggleOverlay();
 				});
 
-				electronApi.onOverlayToggled((isOverlayVisible) => {
+				const onOverlayToggled = (isOverlayVisible) => {
 					app.style.visibility = isOverlayVisible ? 'visible' : 'hidden';
 					app.style.pointerEvents = isOverlayVisible ? 'auto' : 'none';
-				});
-				app.style.visibility = 'hidden';
-				app.style.pointerEvents = 'none';
+				};
+
+				electronApi.onOverlayToggled(onOverlayToggled);
+				onOverlayToggled(false);
 
 				toggleButton.style.setProperty(
 					'--size',
