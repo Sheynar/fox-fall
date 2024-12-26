@@ -15,7 +15,7 @@ export const calibrateGrid = async (viewport: Viewport) => {
 	calibrationPane.style.setProperty('text-align', 'center');
 	calibrationPane.style.setProperty('filter', "url('#outline')");
 	calibrationPane.style.setProperty('cursor', 'crosshair');
-	calibrationPane.style.setProperty('opacity', '0.4');
+	calibrationPane.style.setProperty('opacity', '0.6');
 
 	calibrationPane.innerText =
 		'Calibrating grid. \n Drag from one corner of a cell to the other';
