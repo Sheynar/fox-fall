@@ -67,7 +67,7 @@
 </style>
 
 <script setup lang="ts">
-	import { computed, nextTick, onMounted, ref, watch } from 'vue';
+	import { computed, ref } from 'vue';
 	import Grid from '@/components/Grid.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
@@ -116,16 +116,4 @@
 
 	const isTransparent =
 		new URL(location.href).searchParams.get('overlay') != null;
-
-	onMounted(() => {
-		containerElement.value?.focus();
-	});
-	watch(
-		() => calibrating.value,
-		(calibrating) => {
-			if (!calibrating) {
-				nextTick(() => containerElement.value?.focus());
-			}
-		}
-	);
 </script>
