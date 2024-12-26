@@ -17,6 +17,11 @@
 				font-size: calc((16px + 2vmin) / 2);
 			}
 
+			#app {
+				position: fixed;
+				inset: 0;
+			}
+
 			#toggle-button {
 				--size: 100vmin;
 
@@ -29,6 +34,8 @@
 				background: #1a1a1a;
 				border: none;
 				font-size: var(--size);
+
+				z-index: 1;
 			}
 
 			#toggle-image {
