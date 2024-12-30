@@ -62,7 +62,7 @@
 			<div>zoom: {{ Math.round(artillery.viewport.value.zoom * 100) }}%</div>
 		</div>
 
-		<Dock @calibrate-grid="() => emit('calibrate-grid')" />
+		<Dock />
 	</div>
 </template>
 
@@ -138,10 +138,6 @@
 	import { settings } from '@/lib/settings';
 	import { getUnitResolvedVector } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
-
-	const emit = defineEmits<{
-		(event: 'calibrate-grid'): void;
-	}>();
 
 	const resolvedCursor = computed(() => {
 		return artillery.viewport.value.toWorldPosition(artillery.cursor.value);

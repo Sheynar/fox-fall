@@ -1,9 +1,11 @@
-import { useServerConnection } from '@/mixins/server-connection';
-import { runGlobal } from './globalScope';
-import { useSyncedRoom } from '@/mixins/synced-room';
+import { runGlobal } from '@/lib/globalScope';
 import { useArtillery } from '@/mixins/artillery';
+import { useServerConnection } from '@/mixins/server-connection';
+import { useSyncedRoom } from '@/mixins/synced-room';
+import { useViewportControl } from '@/mixins/viewport-control';
+import { ref } from 'vue';
 
-const { artillery, serverConnection, syncedRoom } = runGlobal(() => {
+const { artillery, containerElement, serverConnection, syncedRoom, viewportControl } = runGlobal(() => {
 	const artillery = useArtillery({
 		onUnitUpdated: (unitId: string) => syncedRoom.updateUnit(unitId),
 		onWindUpdated: () => syncedRoom.updateWind(),
@@ -17,11 +19,19 @@ const { artillery, serverConnection, syncedRoom } = runGlobal(() => {
 		serverConnection.webSocket
 	);
 
+	const containerElement = ref<HTMLElement | null>(null);
+	const viewportControl = useViewportControl({
+		containerElement,
+		viewport: artillery.viewport,
+	});
+
 	return {
 		artillery,
+		containerElement,
 		serverConnection,
 		syncedRoom,
+		viewportControl,
 	};
 });
 
-export { artillery, serverConnection, syncedRoom };
+export { artillery, containerElement, serverConnection, syncedRoom, viewportControl };

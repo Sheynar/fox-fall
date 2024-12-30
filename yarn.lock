@@ -673,6 +673,7 @@ __metadata:
     "@packages/types": "workspace:*"
     "@primevue/themes": "npm:^4.2.5"
     "@types/node": "npm:^22.7.4"
+    "@types/w3c-image-capture": "npm:^1.0.10"
     "@vitejs/plugin-vue": "npm:^4.4.0"
     "@vueuse/core": "npm:^12.2.0"
     prettier: "npm:^3.0.3"
@@ -1168,10 +1169,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/w3c-image-capture@npm:^1.0.10":
+  version: 1.0.10
+  resolution: "@types/w3c-image-capture@npm:1.0.10"
+  dependencies:
+    "@types/webrtc": "npm:*"
+  checksum: 10c0/2de45e7ac3ec893fc64884873961715fdd3b93dd8c3d90c744997e0bc12a4618525c54c4c06ddc6c4ca280bfa8205211cdbe5f37150b45cca1c3b54c67b45cea
+  languageName: node
+  linkType: hard
+
 "@types/web-bluetooth@npm:^0.0.20":
   version: 0.0.20
   resolution: "@types/web-bluetooth@npm:0.0.20"
   checksum: 10c0/3a49bd9396506af8f1b047db087aeeea9fe4301b7fad4fe06ae0f6e00d331138caae878fd09e6410658b70b4aaf10e4b191c41c1a5ff72211fe58da290c7d003
+  languageName: node
+  linkType: hard
+
+"@types/webrtc@npm:*":
+  version: 0.0.44
+  resolution: "@types/webrtc@npm:0.0.44"
+  checksum: 10c0/39a9e29b4a8bfd8661399232979c6cf9b2d34831c7275b449efe499c4a98e3b65725ab6a6313882c60e52a48e6974b26ae96e95465de408d1f59559cefb44d0f
   languageName: node
   linkType: hard
 

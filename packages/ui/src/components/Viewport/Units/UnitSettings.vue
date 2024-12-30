@@ -1,6 +1,6 @@
 <template>
 	<PrimeDialog
-		append-to="#app"
+		append-to=".App__container"
 		class="UnitSettings__dialog"
 		v-model:visible="visible"
 		:header="'Unit: ' + unitLabel"

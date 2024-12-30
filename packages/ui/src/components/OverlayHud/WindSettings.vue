@@ -1,6 +1,6 @@
 <template>
 	<PrimeDialog
-		append-to="#app"
+		append-to=".App__container"
 		v-model:visible="visible"
 		header="Wind"
 		position="bottomleft"

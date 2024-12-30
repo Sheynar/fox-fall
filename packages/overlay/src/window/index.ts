@@ -1,4 +1,4 @@
-import { BrowserWindow, screen, ipcMain, app } from "electron";
+import { app, BrowserWindow, desktopCapturer, ipcMain, screen } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -48,6 +48,15 @@ export const initialise = () => {
 			preload: path.join(__dirname, "./preload.js"),
 		},
 		// focusable: false,
+	});
+
+	managerWindow.webContents.session.setDisplayMediaRequestHandler((request, callback) => {
+		(async () => {
+			const sources = await desktopCapturer.getSources({ types: ["screen"] });
+			callback({
+				video: sources[0],
+			});
+		})();
 	});
 
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));

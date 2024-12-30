@@ -1,6 +1,18 @@
 <template>
+	<BitmapDisplay
+		v-show="
+			!viewportControl.calibrating.value &&
+			!viewportControl.screenShotting.value
+		"
+		class="App__screen-canvas"
+		:image="viewportControl.screenShot.value"
+	/>
+
 	<div
-		v-show="!calibrating"
+		v-show="
+			!viewportControl.calibrating.value &&
+			!viewportControl.screenShotting.value
+		"
 		ref="containerElement"
 		class="App__container"
 		:class="{ App__transparent: isTransparent }"
@@ -14,7 +26,7 @@
 
 		<Viewport />
 
-		<OverlayHud @calibrate-grid="() => calibrateGrid()" />
+		<OverlayHud />
 
 		<ContextMenu
 			ref="contextMenu"
@@ -63,12 +75,21 @@
 		height: 100dvh;
 		font-size: 2vmin;
 
+		cursor: initial;
 		color: var(--color-primary);
 		outline: none;
 
 		&:not(.App__transparent) {
 			background-color: var(--color-primary-contrast);
 		}
+	}
+	.App__screen-canvas {
+		contain: content;
+		position: fixed;
+		left: 0;
+		top: 0;
+		width: 100dvw;
+		height: 100dvh;
 	}
 </style>
 
@@ -78,36 +99,13 @@
 	import { computed, ref } from 'vue';
 	import Grid from '@/components/Grid.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
+	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
-	import { artillery } from '@/lib/globals';
-	import { settings } from '@/lib/settings';
+	import { artillery, containerElement, viewportControl } from '@/lib/globals';
 	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
-	import { useUnitGroup } from '@/mixins/unit-group';
-	import { useViewPortControl } from '@/mixins/viewport-control';
 
-	const containerElement = ref<null | HTMLDivElement>(null);
 	const contextMenu = ref<null | InstanceType<typeof ContextMenu>>(null);
-
-	const unitGroupIds = computed(() => Object.keys(artillery.unitMap.value));
-	const unitGroup = useUnitGroup(artillery.unitMap, unitGroupIds);
-
-	const { calibrating, calibrateGrid, canRotate } = useViewPortControl({
-		containerElement,
-		viewport: artillery.viewport,
-		lockPan: computed(() => {
-			if (!settings.value.automaticCameraTargeting) return null;
-			if (unitGroup.units.value.length === 0)
-				return Vector.fromCartesianVector({ x: 0, y: 0 });
-			return unitGroup.averageVector.value;
-		}),
-		lockZoom: computed(() => {
-			if (!settings.value.automaticCameraZoom) return null;
-			if (unitGroup.units.value.length <= 1 || unitGroup.maxOffset.value <= 0)
-				return 1;
-			return 0.8 / (unitGroup.maxOffset.value / 100);
-		}),
-	});
 
 	const onPointerMove = (event: PointerEvent) => {
 		artillery.cursor.value.cartesianVector = {
@@ -122,7 +120,7 @@
 			event.preventDefault();
 			event.stopPropagation();
 			artillery.unitSelector.value.selectUnit(null);
-		} else if (!canRotate.value) {
+		} else if (!viewportControl.canRotate.value) {
 			contextMenuPosition.value = artillery.cursor.value.clone();
 			contextMenu.value?.show(event);
 		}
@@ -130,7 +128,10 @@
 	const contextMenuOptions = computed(() => {
 		const output: MenuItem[] = [
 			{
-				label: artillery.selectedUnits.value.length > 0 ? 'Add standalone unit' : 'Add unit',
+				label:
+					artillery.selectedUnits.value.length > 0
+						? 'Add standalone unit'
+						: 'Add unit',
 				items: [
 					UnitType.Artillery,
 					UnitType.Spotter,

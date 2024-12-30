@@ -1,4 +1,4 @@
-import { type Ref, computed, ref, watch } from 'vue';
+import { type Ref, computed, nextTick, ref, shallowRef, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import type { Viewport } from '@/lib/viewport';
 import { useMultiPointerDrag } from '@/mixins/multi-pointer';
@@ -30,8 +30,7 @@ export const useViewPortLock = (options: ViewportLockOptions) => {
 			if (zoom.value != null) options.viewport.value.zoomTo(zoom.value);
 			if (rotation.value != null)
 				options.viewport.value.rotateTo(rotation.value);
-			if (position.value != null)
-				options.viewport.value.panTo(position.value);
+			if (position.value != null) options.viewport.value.panTo(position.value);
 		});
 	};
 
@@ -58,7 +57,7 @@ export type ViewportControlOptions = {
 	lockRotate?: Ref<number | null>;
 	lockZoom?: Ref<number | null>;
 };
-export const useViewPortControl = (options: ViewportControlOptions) => {
+export const useViewportControl = (options: ViewportControlOptions) => {
 	const moving = ref<null | {
 		dragType: DragType;
 	}>(null);
@@ -68,13 +67,13 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 	const lockZoomTo = options.lockZoom ?? ref(null);
 
 	const canPan = computed(
-		() => lockPanTo.value == null && !settings.value.lockPan
+		() => lockPanTo.value == null && !settings.value.lockPan && !screenShot.value
 	);
 	const canRotate = computed(
-		() => lockRotateTo.value == null && !settings.value.lockRotate
+		() => lockRotateTo.value == null && !settings.value.lockRotate && !screenShot.value
 	);
 	const canZoom = computed(
-		() => lockZoomTo.value == null && !settings.value.lockZoom
+		() => lockZoomTo.value == null && !settings.value.lockZoom && !screenShot.value
 	);
 
 	useViewPortLock({
@@ -110,14 +109,17 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 						(dragStatus.transformDelta.x * 720) /
 							window.document.body.clientWidth;
 
-					options.viewport.value.rotateBy(rotation, dragStatus.startPosition.addVector(options.viewport.value.viewportSize.scale(-0.5)));
+					options.viewport.value.rotateBy(
+						rotation,
+						dragStatus.startPosition.addVector(
+							options.viewport.value.viewportSize.scale(-0.5)
+						)
+					);
 				}
 			} else {
 				if (canPan.value) {
-					options.viewport.value.position.x +=
-						dragStatus.transformDelta.x;
-					options.viewport.value.position.y +=
-						dragStatus.transformDelta.y;
+					options.viewport.value.position.x += dragStatus.transformDelta.x;
+					options.viewport.value.position.y += dragStatus.transformDelta.y;
 				}
 			}
 
@@ -202,7 +204,7 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 			} else {
 				if (canPan.value) {
 					const movementMagnitude = event.shiftKey
-						? (125 * options.viewport.value.resolvedZoom)
+						? 125 * options.viewport.value.resolvedZoom
 						: 1;
 
 					const movement = Vector.fromCartesianVector({
@@ -243,6 +245,26 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		}
 	};
 
+	const screenShotting = ref(false);
+	const screenShot = shallowRef<ImageBitmap | null>(null);
+	const captureScreenShot = async () => {
+		if (screenShotting.value) return;
+		screenShotting.value = true;
+		try {
+			await nextTick();
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+			const mediaStream = await navigator.mediaDevices.getDisplayMedia({
+				video: true,
+			});
+			const videoStreamTrack = mediaStream.getVideoTracks()[0];
+			const imageCapture = new ImageCapture(videoStreamTrack);
+			screenShot.value = await imageCapture.grabFrame();
+			videoStreamTrack.stop();
+		} finally {
+			screenShotting.value = false;
+		}
+	};
+
 	return {
 		moving,
 		canPan,
@@ -250,5 +272,8 @@ export const useViewPortControl = (options: ViewportControlOptions) => {
 		canZoom,
 		calibrating,
 		calibrateGrid,
+		screenShotting,
+		screenShot,
+		captureScreenShot,
 	};
 };
