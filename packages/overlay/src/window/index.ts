@@ -56,7 +56,7 @@ export const initialise = () => {
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
 	managerWindow.loadURL(url.href);
-	setInterval(() => managerWindow!.moveTop(), 1000);
+	// setInterval(() => managerWindow!.moveTop(), 1000);
 
 	let open = true;
 
