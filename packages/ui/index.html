@@ -36,7 +36,7 @@
 				border: 1px solid var(--p-button-secondary-color);
 				font-size: var(--size);
 
-				z-index: 1;
+				z-index: 1000;
 			}
 
 			#toggle-image {
@@ -60,6 +60,7 @@
 			const app = document.getElementById('app');
 			const toggleButton = document.getElementById('toggle-button');
 
+			// Prevent the toggle button from pulling focus from the app
 			toggleButton.addEventListener('mousedown', (event) => {
 				event.preventDefault();
 			});
@@ -68,14 +69,6 @@
 				toggleButton.addEventListener('click', () => {
 					electronApi.toggleOverlay();
 				});
-
-				const onOverlayToggled = (isOverlayVisible) => {
-					app.style.visibility = isOverlayVisible ? 'visible' : 'hidden';
-					app.style.pointerEvents = isOverlayVisible ? 'auto' : 'none';
-				};
-
-				electronApi.onOverlayToggled(onOverlayToggled);
-				onOverlayToggled(false);
 
 				toggleButton.style.setProperty(
 					'--size',

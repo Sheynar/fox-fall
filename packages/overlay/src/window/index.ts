@@ -14,34 +14,34 @@ export const initialise = () => {
 		y: display.bounds.height - size,
 	};
 
-
 	const executeToggle = () => {
 		open = !open;
-		if (managerWindow != null) {
-			if (open) {
-				managerWindow.setFullScreen(true);
-				managerWindow.setSize(display.bounds.width, display.bounds.height);
-			} else {
-				managerWindow.setFullScreen(false);
-				managerWindow.blur();
+		if (managerWindow == null) return;
+		if (open) {
+			managerWindow.setShape([managerWindow.getBounds()]);
+		} else {
+			managerWindow.setShape([
+				{
+					x: position.x,
+					y: position.y,
+					width: size,
+					height: size,
+				},
+			]);
 
-				managerWindow.setSize(size, size, false);
-				managerWindow.setPosition(position.x, position.y, false);
-			}
-
-			managerWindow.moveTop();
-			managerWindow.webContents.send("overlay-toggled", open);
+			managerWindow.blur();
 		}
+
+		managerWindow.setAlwaysOnTop(true, "screen-saver");
+
+		managerWindow.webContents.send("overlay-toggled", open);
 	};
 
 	managerWindow = new BrowserWindow({
 		frame: false,
 		autoHideMenuBar: true,
 		transparent: true,
-		width: 0,
-		height: 0,
-		x: 0,
-		y: 0,
+		fullscreen: true,
 		movable: false,
 		resizable: false,
 		webPreferences: {
@@ -50,14 +50,16 @@ export const initialise = () => {
 		// focusable: false,
 	});
 
-	managerWindow.webContents.session.setDisplayMediaRequestHandler((request, callback) => {
-		(async () => {
-			const sources = await desktopCapturer.getSources({ types: ["screen"] });
-			callback({
-				video: sources[0],
-			});
-		})();
-	});
+	managerWindow.webContents.session.setDisplayMediaRequestHandler(
+		(request, callback) => {
+			(async () => {
+				const sources = await desktopCapturer.getSources({ types: ["screen"] });
+				callback({
+					video: sources[0],
+				});
+			})();
+		}
+	);
 
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
 	url.searchParams.append("overlay", "true");
@@ -72,6 +74,9 @@ export const initialise = () => {
 	ipcMain.on("toggle-overlay", (event) => {
 		executeToggle();
 	});
+	ipcMain.on("query-overlay", (event) => {
+		event.reply("query-overlay-reply", open);
+	});
 	executeToggle();
 
 	managerWindow.on("close", () => {
@@ -80,7 +85,7 @@ export const initialise = () => {
 };
 
 export const showManager = () => {
-	managerWindow?.show();
+	managerWindow?.showInactive();
 };
 
 export const hideManager = () => {
