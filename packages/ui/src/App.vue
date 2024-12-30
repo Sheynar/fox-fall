@@ -5,6 +5,9 @@
 			!viewportControl.screenShotting.value
 		"
 		class="App__screen-canvas"
+		:style="{
+			opacity: settings.screenshotOpacity,
+		}"
 		:image="viewportControl.screenShot.value"
 	/>
 
@@ -111,6 +114,7 @@
 	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
 	import { artillery, containerElement, viewportControl } from '@/lib/globals';
+	import { settings } from '@/lib/settings';
 	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 

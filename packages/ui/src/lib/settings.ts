@@ -11,6 +11,7 @@ export const settings = ref({
 	gridDashLength: 3,
 	gridDashGap: 2,
 	gridLineWidth: 0.5,
+	screenshotOpacity: 1,
 	showXYOffsets: false,
 	sync: null as {
 		serverAddress: string,

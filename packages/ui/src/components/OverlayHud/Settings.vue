@@ -59,6 +59,20 @@
 				/>
 			</div>
 			<div class="Settings__row">
+				<label>Screenshot opacity</label>
+				<PrimeInputNumber
+					:model-value="Math.floor(settings.screenshotOpacity * 100)"
+					@input="settings.screenshotOpacity = Math.floor(Number($event.value)) / 100; saveSettings()"
+					suffix="%"
+					locale="en-UK"
+					:allowEmpty="false"
+					highlightOnFocus
+					:minFractionDigits="0"
+					:maxFractionDigits="0"
+					:min="0.1"
+				/>
+			</div>
+			<div class="Settings__row">
 				<label>Unit icon scale</label>
 				<PrimeInputNumber
 					:model-value="settings.unitIconScale"
