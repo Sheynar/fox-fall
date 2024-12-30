@@ -9,30 +9,36 @@
 	/>
 
 	<div
-		v-show="
-			!viewportControl.calibrating.value &&
-			!viewportControl.screenShotting.value
-		"
 		ref="containerElement"
 		class="App__container"
-		:class="{ App__transparent: isTransparent }"
+		:class="{
+			App__transparent: isTransparent,
+			App__screenshot: viewportControl.screenShotting.value,
+		}"
 		@touchstart.prevent
 		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
 		@pointermove="onPointerMove"
 		@contextmenu.prevent="onContextMenu"
 		tabindex="-1"
 	>
-		<Grid @contextMenu="onContextMenu" />
+		<template
+			v-if="
+				!viewportControl.calibrating.value &&
+				!viewportControl.screenShotting.value
+			"
+		>
+			<Grid @contextMenu="onContextMenu" />
 
-		<Viewport />
+			<Viewport />
 
-		<OverlayHud />
+			<OverlayHud />
 
-		<ContextMenu
-			ref="contextMenu"
-			:model="contextMenuOptions"
-			@hide="() => (contextMenuPosition = null)"
-		/>
+			<ContextMenu
+				ref="contextMenu"
+				:model="contextMenuOptions"
+				@hide="() => (contextMenuPosition = null)"
+			/>
+		</template>
 
 		<svg>
 			<defs>
@@ -75,12 +81,15 @@
 		height: 100dvh;
 		font-size: 2vmin;
 
-		cursor: initial;
 		color: var(--color-primary);
 		outline: none;
 
 		&:not(.App__transparent) {
 			background-color: var(--color-primary-contrast);
+		}
+
+		&.App__screenshot {
+			cursor: none;
 		}
 	}
 	.App__screen-canvas {
