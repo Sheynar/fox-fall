@@ -69,6 +69,14 @@
 					electronApi.toggleOverlay();
 				});
 
+				const onOverlayToggled = (isOverlayVisible) => {
+					app.style.visibility = isOverlayVisible ? 'initial' : 'hidden';
+					app.style.pointerEvents = isOverlayVisible ? 'initial' : 'none';
+				};
+
+				electronApi.onOverlayToggled(onOverlayToggled);
+				electronApi.getOverlayOpen().then(onOverlayToggled);
+
 				toggleButton.style.setProperty(
 					'--size',
 					new URL(location.href).searchParams.get('size') || '100vmin'
