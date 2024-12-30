@@ -9,14 +9,6 @@
 	>
 		<div class="Settings__content">
 			<div class="Settings__row">
-				<label>Automatic camera targeting</label>
-				<PrimeCheckBox binary v-model="settings.automaticCameraTargeting" @update:model-value="saveSettings" />
-			</div>
-			<div class="Settings__row">
-				<label>Automatic camera zoom</label>
-				<PrimeCheckBox binary v-model="settings.automaticCameraZoom" @update:model-value="saveSettings" />
-			</div>
-			<div class="Settings__row">
 				<label>Use NATO alphabet</label>
 				<PrimeCheckBox binary v-model="settings.useNatoAlphabet" @update:model-value="saveSettings" />
 			</div>

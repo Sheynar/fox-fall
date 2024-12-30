@@ -5,8 +5,6 @@ export const settings = ref({
 	lockRotate: !!new URL(location.href).searchParams.get('overlay'),
 	lockZoom: false,
 
-	automaticCameraTargeting: false,
-	automaticCameraZoom: false,
 	useNatoAlphabet: true,
 	unitIconScale: 1,
 	unitSettingsScale: 1,
