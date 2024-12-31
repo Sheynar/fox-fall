@@ -2,6 +2,7 @@
 	<PrimeInputText
 		ref="primeInputText"
 		v-model="modelValue"
+		:autofocus="props.autofocus"
 		:allowEmpty="props.allowEmpty"
 		highlightOnFocus
 	/>
@@ -14,15 +15,15 @@
 	const primeInputText = ref<InstanceType<typeof PrimeInputText>>(null!);
 
 	const props = defineProps<{
-		autoFocus?: boolean;
+		autofocus?: boolean;
 		allowEmpty?: boolean;
 	}>();
 
 	const modelValue = defineModel({ type: String, required: true });
 	onMounted(() => {
-		const inputElement = primeInputText.value.$el as HTMLInputElement;
+		const inputElement = (primeInputText.value as any).$el as HTMLInputElement;
 
-		if (props.autoFocus) {
+		if (props.autofocus) {
 			nextTick(() => {
 				inputElement.select();
 			});

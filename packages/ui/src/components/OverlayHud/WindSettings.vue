@@ -11,7 +11,7 @@
 		<div class="Wind__information">
 			<div class="Wind__information__item">
 				<label>Wind direction:</label>
-				<DirectionInput v-model="artillery.wind.value.azimuth" @update:model-value="syncedRoom.updateWind()" auto-focus />
+				<DirectionInput v-model="artillery.wind.value.azimuth" @update:model-value="syncedRoom.updateWind()" autofocus />
 			</div>
 			<div class="Wind__information__item">
 				<label>Wind distance:</label>

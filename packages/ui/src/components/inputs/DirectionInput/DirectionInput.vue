@@ -3,9 +3,10 @@
 		class="DirectionInput__input"
 		ref="primeInputNumber"
 		v-model="modelValue"
-		@input="modelValue = $event.value"
+		@input="modelValue = Number($event.value)"
 		suffix="°"
 		locale="en-UK"
+		:autofocus="props.autofocus"
 		:allowEmpty="false"
 		highlightOnFocus
 		:minFractionDigits="0"
@@ -58,16 +59,16 @@
 		StyleValue,
 		computed,
 		defineModel,
+		nextTick,
 		onMounted,
 		ref,
 		watch,
 	} from 'vue';
 	import DirectionAlternateInput from './DirectionAlternateInput.vue';
-import { nextTick } from 'process';
 
 	const primeInputNumber = ref<InstanceType<typeof PrimeInputNumber>>(null!);
 	const inputElement = computed(
-		() => primeInputNumber.value?.$el.children[0] as HTMLInputElement
+		() => (primeInputNumber.value as any)?.$el.children[0] as HTMLInputElement
 	);
 	const { focused } = useFocus(inputElement);
 	const inputBounding = useElementBounding(inputElement);
@@ -114,16 +115,16 @@ import { nextTick } from 'process';
 	});
 
 	const props = defineProps<{
-		autoFocus?: boolean;
+		autofocus?: boolean;
 	}>();
 
 	const modelValue = defineModel({ type: Number, required: true });
 
 	onMounted(() => {
-		if (props.autoFocus) {
+		if (props.autofocus) {
 			nextTick(() => {
-				focused.value = true;
-			})
+				inputElement.value.select();
+			});
 		}
 	});
 </script>

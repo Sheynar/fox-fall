@@ -2,9 +2,10 @@
 	<PrimeInputNumber
 		ref="primeInputNumber"
 		v-model="modelValue"
-		@input="setValue($event.value)"
+		@input="setValue(Number($event.value))"
 		suffix="m"
 		locale="en-UK"
+		:autofocus="props.autofocus"
 		:allowEmpty="false"
 		highlightOnFocus
 		:minFractionDigits="0"
@@ -20,7 +21,7 @@
 	const primeInputNumber = ref<InstanceType<typeof PrimeInputNumber>>(null!);
 
 	const props = withDefaults(defineProps<{
-		autoFocus?: boolean;
+		autofocus?: boolean;
 		fractionDigits?: number;
 		min?: number;
 	}>(), {
@@ -35,9 +36,9 @@
 	};
 
 	onMounted(() => {
-		const inputElement = primeInputNumber.value.$el.children[0] as HTMLInputElement;
+		const inputElement = (primeInputNumber.value as any).$el.children[0] as HTMLInputElement;
 
-		if (props.autoFocus) {
+		if (props.autofocus) {
 			nextTick(() => {
 				inputElement.select();
 			});

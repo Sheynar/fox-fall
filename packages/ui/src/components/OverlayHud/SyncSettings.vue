@@ -13,7 +13,7 @@
 				<TextInput
 					v-model="connectionDetails.serverAddress"
 					:allowEmpty="false"
-					auto-focus
+					autofocus
 					highlightOnFocus
 					@keydown.enter="connect"
 				/>

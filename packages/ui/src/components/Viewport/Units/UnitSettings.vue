@@ -91,8 +91,8 @@
 					<div class="UnitSettings__row">
 						<span>Distance:</span>
 						<DistanceInput
+							autofocus
 							:model-value="unit.vector.distance"
-							auto-focus
 							@update:model-value="
 								unit.vector.distance = $event;
 								emit('updated');
@@ -115,7 +115,6 @@
 							<span>X:</span>
 							<DistanceInput
 								:model-value="unit.vector.x"
-								auto-focus
 								@update:model-value="
 									unit.vector.x = $event;
 									emit('updated');
@@ -126,7 +125,6 @@
 							<span>Y:</span>
 							<DistanceInput
 								:model-value="unit.vector.y"
-								auto-focus
 								@update:model-value="
 									unit.vector.y = $event;
 									emit('updated');
@@ -163,7 +161,6 @@
 							<span>X:</span>
 							<DistanceInput
 								:model-value="-unit.vector.x"
-								auto-focus
 								@update:model-value="
 									unit.vector.x = -$event;
 									emit('updated');
@@ -174,7 +171,6 @@
 							<span>Y:</span>
 							<DistanceInput
 								:model-value="-unit.vector.y"
-								auto-focus
 								@update:model-value="
 									unit.vector.y = -$event;
 									emit('updated');
