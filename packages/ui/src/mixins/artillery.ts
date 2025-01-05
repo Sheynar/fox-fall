@@ -9,6 +9,7 @@ import {
 } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
 import { Viewport } from '@/lib/viewport';
+import { useViewportControl } from './viewport-control';
 
 type ArtilleryOptions = {
 	onUnitUpdated?: (unitId: string) => unknown;
@@ -39,7 +40,12 @@ export const useArtillery = ({
 			1
 		)
 	);
+
 	viewport.value.panTo(Vector.fromCartesianVector({ x: 0, y: 0 }));
+
+	const viewportControl = useViewportControl({
+		viewport,
+	});
 
 	const addUnit = (
 		type: UnitType,
@@ -216,5 +222,6 @@ export const useArtillery = ({
 		pinnedUnits,
 		highlightedUnits,
 		viewport,
+		viewportControl,
 	};
 };

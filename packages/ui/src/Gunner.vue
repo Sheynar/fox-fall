@@ -61,6 +61,7 @@
 		<PrimeDock :model="dockControls" @pointerdown.stop>
 			<template #item="{ item }">
 				<PrimeButton
+					v-if="isItem(item)"
 					class="Gunner__control"
 					raised
 					:severity="item.severity"
@@ -254,6 +255,7 @@
 		disabled?: boolean;
 		command: () => void;
 	};
+	const isItem = (_item: any): _item is Item => true;
 	const isConnected = computed(
 		() =>
 			serverConnection.connectionState.value === ServerConnectionState.connected

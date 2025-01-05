@@ -5,7 +5,7 @@
   "main": "./index.js",
   "scripts": {
     "serve": "vite --host 0.0.0.0 --port 8080",
-    "build": "rimraf dist && vite build",
+    "build": "rimraf dist && vue-tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 8080"
   },
   "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
@@ -18,7 +18,8 @@
     "primeicons": "^7.0.0",
     "primevue": "^4.2.5",
     "typescript-event-target": "^1.1.1",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-tsc": "^2.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.7.4",

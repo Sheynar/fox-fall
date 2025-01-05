@@ -23,7 +23,7 @@
 	const modelValue = defineModel({ type: Number, required: true });
 
 	const compassIcon = ref<InstanceType<typeof CompassIcon>>(null!);
-	const compassEl = computed(() => compassIcon.value?.$el as HTMLElement);
+	const compassEl = computed(() => compassIcon.value?.$el as Element);
 
 	let dragging = false;
 
@@ -37,7 +37,7 @@
 		modelValue.value = toDegrees(Math.atan2(position.y, position.x)) + 90;
 	};
 
-	useEventListener(compassEl, 'pointerdown', (event) => {
+	useEventListener(compassEl, 'pointerdown', (event: PointerEvent) => {
 		event.stopPropagation();
 		event.preventDefault();
 
@@ -46,7 +46,7 @@
 		updateAngle(event);
 	});
 
-	useEventListener(compassEl, 'pointermove', (event) => {
+	useEventListener(compassEl, 'pointermove', (event: PointerEvent) => {
 		if (dragging) {
 			event.stopPropagation();
 			event.preventDefault();
@@ -54,7 +54,7 @@
 		}
 	});
 
-	useEventListener(compassEl, 'pointerup', (event) => {
+	useEventListener(compassEl, 'pointerup', (event: PointerEvent) => {
 		event.stopPropagation();
 		event.preventDefault();
 

@@ -20,10 +20,9 @@ export const calibrateGrid = async (viewport: Viewport) => {
 	calibrationPane.innerText =
 		'Calibrating grid. \n Drag from one corner of a cell to the other';
 
-	let resolve: () => void, reject: (e: unknown) => void;
-	const promise = new Promise<void>((res, rej) => {
+	let resolve: () => void;
+	const promise = new Promise<void>((res) => {
 		resolve = res;
-		reject = rej;
 	});
 
 	let draggingData: {

@@ -1,22 +1,22 @@
 <template>
 	<BitmapDisplay
 		v-show="
-			!viewportControl.calibrating.value &&
-			!viewportControl.screenShotting.value
+			!artillery.viewportControl.calibrating.value &&
+			!artillery.viewportControl.screenShotting.value
 		"
 		class="App__screen-canvas"
 		:style="{
 			opacity: settings.screenshotOpacity,
 		}"
-		:image="viewportControl.screenShot.value"
+		:image="artillery.viewportControl.screenShot.value"
 	/>
 
 	<div
-		ref="containerElement"
+		:ref="(el) => artillery.viewportControl.containerElement.value = (el as HTMLDivElement)"
 		class="App__container"
 		:class="{
 			App__transparent: isTransparent,
-			App__screenshot: viewportControl.screenShotting.value,
+			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
 		@touchstart.prevent
 		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
@@ -26,8 +26,8 @@
 	>
 		<template
 			v-if="
-				!viewportControl.calibrating.value &&
-				!viewportControl.screenShotting.value
+				!artillery.viewportControl.calibrating.value &&
+				!artillery.viewportControl.screenShotting.value
 			"
 		>
 			<Grid @contextMenu="onContextMenu" />
@@ -113,7 +113,7 @@
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
 	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
-	import { artillery, containerElement, viewportControl } from '@/lib/globals';
+	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
@@ -133,7 +133,7 @@
 			event.preventDefault();
 			event.stopPropagation();
 			artillery.unitSelector.value.selectUnit(null);
-		} else if (!viewportControl.canRotate.value) {
+		} else if (!artillery.viewportControl.canRotate.value) {
 			contextMenuPosition.value = artillery.cursor.value.clone();
 			contextMenu.value?.show(event);
 		}

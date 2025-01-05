@@ -53,7 +53,6 @@
 		artillery,
 		serverConnection,
 		syncedRoom,
-		viewportControl,
 	} from '@/lib/globals';
 	import { UnitType } from '@/lib/unit';
 	import { ServerConnectionState } from '@/mixins/server-connection';
@@ -96,7 +95,7 @@
 		disabled?: boolean;
 		command: () => void;
 	};
-	const isItem = (item: any): item is Item => true;
+	const isItem = (_item: any): _item is Item => true;
 
 	const readyToFireItem = computed<Item>(() => ({
 		label: 'Ready to fire',
@@ -109,16 +108,16 @@
 	}));
 
 	const screenshotItem = computed<Item>(() => {
-		const hasScreenshot = !!viewportControl.screenShot.value;
+		const hasScreenshot = !!artillery.viewportControl.screenShot.value;
 		return {
 			label: hasScreenshot ? 'Clear screenshot' : 'Take screenshot',
 			icons: hasScreenshot ? ['pi pi-camera', 'pi pi-times'] : ['pi pi-camera'],
 			severity: hasScreenshot ? 'danger' : 'secondary',
 			command: async () => {
-				if (viewportControl.screenShot.value) {
-					viewportControl.screenShot.value = null;
+				if (artillery.viewportControl.screenShot.value) {
+					artillery.viewportControl.screenShot.value = null;
 				} else {
-					await viewportControl.captureScreenShot();
+					await artillery.viewportControl.captureScreenShot();
 				}
 			},
 		};
@@ -140,7 +139,7 @@
 			label: 'Calibrate grid',
 			iconComponents: [GridIcon],
 			severity: 'secondary',
-			command: () => viewportControl.calibrateGrid(),
+			command: () => artillery.viewportControl.calibrateGrid(),
 		},
 		{
 			label: 'Wind',
