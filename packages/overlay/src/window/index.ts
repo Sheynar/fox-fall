@@ -30,7 +30,8 @@ export const toggleOverlay = () => {
 			},
 		]);
 
-		managerWindow.blur();
+		managerWindow.minimize();
+		managerWindow.showInactive();
 	}
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
