@@ -1,6 +1,5 @@
 import { app, BrowserWindow } from 'electron';
 import '../server.js';
-import { initialise as initialiseWindow, showManager } from './window';
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
@@ -8,8 +7,13 @@ app.on('window-all-closed', () => {
 
 const initialise = async () => {
 	await app.whenReady();
+	const { initialise: initialiseWindow, showManager } = await import('./window');
 	initialiseWindow();
 	showManager();
+
+	const { initialise: initialiseKeyboardShortcuts } = await import('./keyboard-shortcuts');
+	initialiseKeyboardShortcuts();
+
 	app.on('activate', () => {
 		if (BrowserWindow.getAllWindows().length === 0) {
 			showManager();
