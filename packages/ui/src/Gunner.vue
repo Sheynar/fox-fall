@@ -1,6 +1,5 @@
 <template>
 	<div
-		ref="containerElement"
 		class="Gunner__container"
 		@touchstart.prevent
 		@contextmenu.prevent
