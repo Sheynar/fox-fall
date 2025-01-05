@@ -11,7 +11,9 @@
 				Unit__moving: !!moving,
 				Unit__readonly: props.readonly,
 				Unit__highlighted:
-				artillery.pinnedUnits.value.has(unit.id) || artillery.highlightedUnits.value.has(unit.id) || open,
+					artillery.pinnedUnits.value.has(unit.id) ||
+					artillery.highlightedUnits.value.has(unit.id) ||
+					open,
 			}"
 			:style="{
 				'--unit-icon-scale': settings.unitIconScale,
@@ -174,7 +176,9 @@
 			return ammoSpecs.value.PLATFORM[unit.value.platform]!;
 		}
 	});
-	const unitLabel = computed(() => getUnitLabel(artillery.unitMap.value, unit.value.id));
+	const unitLabel = computed(() =>
+		getUnitLabel(artillery.unitMap.value, unit.value.id)
+	);
 	const unitIcon = computed(() => {
 		if (unit.value.type === UnitType.Spotter) return SpotterIcon;
 		if (unit.value.type === UnitType.Location) return LocationIcon;

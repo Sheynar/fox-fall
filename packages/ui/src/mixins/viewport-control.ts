@@ -12,7 +12,7 @@ export enum DragType {
 }
 
 export type ViewportControlOptions = {
-	containerElement?: Ref<HTMLElement | null>;
+	containerElement: Ref<HTMLElement | null>;
 	viewport: Ref<Viewport>;
 	lockPan?: Ref<Vector | null>;
 	lockRotate?: Ref<number | null>;
@@ -33,10 +33,8 @@ export const useViewportControl = (options: ViewportControlOptions) => {
 		() => !settings.value.lockZoom && !screenShot.value
 	);
 
-	const containerElement = options.containerElement ?? ref(null);
-
 	useMultiPointerDrag({
-		element: containerElement,
+		element: options.containerElement,
 		onBeforePointerDown: (event) => {
 			return event.button <= 2;
 		},
@@ -123,7 +121,7 @@ export const useViewportControl = (options: ViewportControlOptions) => {
 				: undefined
 		);
 	};
-	useEventListener(containerElement, 'wheel', onWheel);
+	useEventListener(options.containerElement, 'wheel', onWheel);
 
 	const onKeyPress = (event: KeyboardEvent) => {
 		if (
@@ -218,7 +216,6 @@ export const useViewportControl = (options: ViewportControlOptions) => {
 	};
 
 	return {
-		containerElement,
 		moving,
 		canPan,
 		canRotate,

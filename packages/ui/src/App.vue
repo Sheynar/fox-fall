@@ -12,7 +12,7 @@
 	/>
 
 	<div
-		:ref="(el) => artillery.viewportControl.containerElement.value = (el as HTMLDivElement)"
+		:ref="(el) => artillery.containerElement.value = (el as HTMLDivElement)"
 		class="App__container"
 		:class="{
 			App__transparent: isTransparent,

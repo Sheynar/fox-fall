@@ -1,5 +1,6 @@
 import { type Ref, ref, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
+import { useEventListener } from '@vueuse/core';
 import {
 	type Unit,
 	type UnitMap,
@@ -12,13 +13,11 @@ import { Viewport } from '@/lib/viewport';
 import { useViewportControl } from './viewport-control';
 
 type ArtilleryOptions = {
+	containerElement?: Ref<HTMLElement | null>;
 	onUnitUpdated?: (unitId: string) => unknown;
 	onWindUpdated?: () => unknown;
 };
-export const useArtillery = ({
-	onUnitUpdated,
-	onWindUpdated,
-}: ArtilleryOptions = {}) => {
+export const useArtillery = (options: ArtilleryOptions = {}) => {
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const readyToFire = ref(false);
 	const wind = ref(Vector.fromAngularVector({ azimuth: 0, distance: 0 }));
@@ -30,6 +29,8 @@ export const useArtillery = ({
 	const selectedUnit = ref<Unit['id'] | null>(null);
 	const pinnedUnits = ref<Set<Unit['id']>>(new Set());
 	const highlightedUnits = ref<Set<Unit['id']>>(new Set());
+
+	const containerElement = options.containerElement ?? ref(null);
 	const viewport = ref(
 		new Viewport(
 			Vector.fromCartesianVector({
@@ -44,6 +45,7 @@ export const useArtillery = ({
 	viewport.value.panTo(Vector.fromCartesianVector({ x: 0, y: 0 }));
 
 	const viewportControl = useViewportControl({
+		containerElement,
 		viewport,
 	});
 
@@ -84,7 +86,7 @@ export const useArtillery = ({
 
 		unitMap.value[newUnit.value.id] = newUnit.value;
 		selectedUnit.value = newUnit.value.id;
-		onUnitUpdated?.(newUnit.value.id);
+		options.onUnitUpdated?.(newUnit.value.id);
 
 		return newUnit;
 	};
@@ -115,7 +117,7 @@ export const useArtillery = ({
 			selectedUnit.value = null;
 		}
 		delete unitMap.value[unitId];
-		onUnitUpdated?.(unitId);
+		options.onUnitUpdated?.(unitId);
 	};
 
 	const setUnitSource = async (unitId: string, newParentId?: string) => {
@@ -139,7 +141,7 @@ export const useArtillery = ({
 				);
 			}
 			unit.parentId = newParentId;
-			onUnitUpdated?.(unitId);
+			options.onUnitUpdated?.(unitId);
 		} catch (e) {
 			alert(`Failed to set unit source: ${e}`);
 		}
@@ -182,7 +184,7 @@ export const useArtillery = ({
 				target
 			).addVector(getUnitResolvedVector(unitMap.value, unit.id).scale(-1));
 			wind.value = wind.value.addVector(windCorrection);
-			onWindUpdated?.();
+			options.onWindUpdated?.();
 
 			removeUnit(unitId);
 		} catch (e) {
@@ -192,7 +194,7 @@ export const useArtillery = ({
 
 	const resetWind = () => {
 		wind.value = Vector.fromAngularVector({ azimuth: 0, distance: 0 });
-		onWindUpdated?.();
+		options.onWindUpdated?.();
 	};
 
 	useScopePerKey(unitMap, (key) => {
@@ -204,6 +206,28 @@ export const useArtillery = ({
 				removeUnit(unit.id);
 			}
 		});
+	});
+
+	useEventListener('keydown', (event) => {
+		if (event.key === 'Tab' && event.ctrlKey) {
+			const unitIdList = Object.keys(unitMap.value);
+
+			if (selectedUnit.value == null) {
+				selectedUnit.value = unitIdList[event.shiftKey ? unitIdList.length - 1 : 0];
+				return;
+			}
+
+			const selectedUnitIndex = unitIdList.indexOf(selectedUnit.value);
+			if (selectedUnitIndex === -1) return;
+
+			if (event.shiftKey) {
+				selectedUnit.value = unitIdList[
+					(selectedUnitIndex - 1 + unitIdList.length) % unitIdList.length
+				];
+			} else {
+				selectedUnit.value = unitIdList[(selectedUnitIndex + 1) % unitIdList.length];
+			}
+		}
 	});
 
 	return {
@@ -221,6 +245,7 @@ export const useArtillery = ({
 		selectedUnit,
 		pinnedUnits,
 		highlightedUnits,
+		containerElement,
 		viewport,
 		viewportControl,
 	};
