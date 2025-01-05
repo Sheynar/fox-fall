@@ -1,4 +1,4 @@
-import { type Ref, computed, nextTick, ref, shallowRef, watch } from 'vue';
+import { type Ref, computed, nextTick, ref, shallowRef } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import type { Viewport } from '@/lib/viewport';
 import { useMultiPointerDrag } from '@/mixins/multi-pointer';
@@ -10,45 +10,6 @@ export enum DragType {
 	Translate,
 	Rotate,
 }
-
-export type ViewportLockOptions = {
-	containerElement: Ref<HTMLElement | null>;
-	viewport: Ref<Viewport>;
-	position?: Ref<Vector | null>;
-	rotation?: Ref<number | null>;
-	zoom?: Ref<number | null>;
-};
-export const useViewPortLock = (options: ViewportLockOptions) => {
-	const position = options.position ?? ref(null);
-	const rotation = options.rotation ?? ref(null);
-	const zoom = options.zoom ?? ref(null);
-
-	const updateViewport = () => {
-		if (position.value == null && rotation.value == null && zoom.value == null)
-			return;
-		options.viewport.value.withSmoothing(() => {
-			if (zoom.value != null) options.viewport.value.zoomTo(zoom.value);
-			if (rotation.value != null)
-				options.viewport.value.rotateTo(rotation.value);
-			if (position.value != null) options.viewport.value.panTo(position.value);
-		});
-	};
-
-	const stopWatcher = watch(
-		() => [position.value, zoom.value] as const,
-		updateViewport,
-		{ immediate: true }
-	);
-
-	const stopEventListener = useEventListener(window, 'resize', updateViewport);
-
-	return {
-		stop: () => {
-			stopWatcher();
-			stopEventListener();
-		},
-	};
-};
 
 export type ViewportControlOptions = {
 	containerElement: Ref<HTMLElement | null>;
@@ -62,26 +23,15 @@ export const useViewportControl = (options: ViewportControlOptions) => {
 		dragType: DragType;
 	}>(null);
 
-	const lockPanTo = options.lockPan ?? ref(null);
-	const lockRotateTo = options.lockRotate ?? ref(null);
-	const lockZoomTo = options.lockZoom ?? ref(null);
-
 	const canPan = computed(
-		() => lockPanTo.value == null && !settings.value.lockPan && !screenShot.value
+		() => !settings.value.lockPan && !screenShot.value
 	);
 	const canRotate = computed(
-		() => lockRotateTo.value == null && !settings.value.lockRotate && !screenShot.value
+		() => !settings.value.lockRotate && !screenShot.value
 	);
 	const canZoom = computed(
-		() => lockZoomTo.value == null && !settings.value.lockZoom && !screenShot.value
+		() => !settings.value.lockZoom && !screenShot.value
 	);
-
-	useViewPortLock({
-		...options,
-		position: lockPanTo,
-		rotation: lockRotateTo,
-		zoom: lockZoomTo,
-	});
 
 	useMultiPointerDrag({
 		element: options.containerElement,
