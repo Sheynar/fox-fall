@@ -93,14 +93,8 @@ export const useArtillery = ({
 		const unit = unitMap.value[unitId];
 		if (unit == null) return;
 
-		if (selectedUnit.value === unitId) {
-			if (
-				unit.parentId != null
-			) {
-				selectedUnit.value = unit.parentId;
-			} else {
-				selectedUnit.value = null;
-			}
+		if (selectedUnit.value === unitId && unit.parentId != null) {
+			selectedUnit.value = unit.parentId;
 		}
 		if (pinnedUnits.value.has(unitId)) {
 			pinnedUnits.value.delete(unitId);
@@ -111,8 +105,14 @@ export const useArtillery = ({
 
 		for (const otherUnit of Object.values(unitMap.value)) {
 			if (otherUnit.parentId === unitId) {
+				if (selectedUnit.value === unitId) {
+					selectedUnit.value = otherUnit.id;
+				}
 				setUnitSource(otherUnit.id, unit.parentId);
 			}
+		}
+		if (selectedUnit.value === unitId) {
+			selectedUnit.value = null;
 		}
 		delete unitMap.value[unitId];
 		onUnitUpdated?.(unitId);
