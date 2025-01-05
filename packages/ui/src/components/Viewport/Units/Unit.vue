@@ -187,35 +187,16 @@
 	const isHovered = ref(false);
 	const canDrag = ref(unit.value.parentId == null);
 	const open = computed({
-		get: () => artillery.selectedUnits.value.includes(unit.value.id),
+		get: () => artillery.selectedUnit.value === unit.value.id,
 		set: (value) => {
-			if (value === artillery.selectedUnits.value.includes(unit.value.id)) {
-				return;
-			}
 			if (value) {
-				artillery.selectedUnits.value.push(unit.value.id);
-			} else {
-				artillery.selectedUnits.value.splice(
-					artillery.selectedUnits.value.indexOf(unit.value.id),
-					1
-				);
+				artillery.selectedUnit.value = unit.value.id;
+			} else if (artillery.selectedUnit.value === unit.value.id) {
+				artillery.selectedUnit.value = null;
 			}
 		},
 	});
 	const unitSettingsHasCustomPosition = ref(false);
-
-	watch(
-		() =>
-			!unitSettingsHasCustomPosition.value &&
-			artillery.selectedUnits.value.includes(unit.value.id) &&
-			artillery.selectedUnits.value.slice(-1)[0] !== unit.value.id,
-		(isSelectedErroneously) => {
-			if (isSelectedErroneously) {
-				const index = artillery.selectedUnits.value.indexOf(unit.value.id);
-				artillery.selectedUnits.value.splice(index, 1);
-			}
-		}
-	);
 
 	watch(
 		() => isHovered.value,
@@ -229,10 +210,7 @@
 	);
 	onScopeDispose(() => {
 		artillery.highlightedUnits.value.delete(unit.value.id);
-		const selectedIndex = artillery.selectedUnits.value.indexOf(unit.value.id);
-		if (selectedIndex > -1) {
-			artillery.selectedUnits.value.splice(selectedIndex, 1);
-		}
+		open.value = false;
 	});
 
 	const resolvedVector = computed(() =>

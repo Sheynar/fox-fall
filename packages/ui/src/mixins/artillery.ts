@@ -26,7 +26,7 @@ export const useArtillery = ({
 		selectUnit: (unitId?: string | null) => unknown,
 		prompt?: string,
 	} | null>(null);
-	const selectedUnits = ref<Unit['id'][]>([]);
+	const selectedUnit = ref<Unit['id'] | null>(null);
 	const pinnedUnits = ref<Set<Unit['id']>>(new Set());
 	const highlightedUnits = ref<Set<Unit['id']>>(new Set());
 	const viewport = ref(
@@ -77,7 +77,7 @@ export const useArtillery = ({
 		}
 
 		unitMap.value[newUnit.value.id] = newUnit.value;
-		selectedUnits.value.push(newUnit.value.id);
+		selectedUnit.value = newUnit.value.id;
 		onUnitUpdated?.(newUnit.value.id);
 
 		return newUnit;
@@ -87,13 +87,13 @@ export const useArtillery = ({
 		const unit = unitMap.value[unitId];
 		if (unit == null) return;
 
-		if (selectedUnits.value.includes(unitId)) {
-			selectedUnits.value.splice(selectedUnits.value.indexOf(unitId), 1);
+		if (selectedUnit.value === unitId) {
 			if (
-				unit.parentId != null &&
-				!selectedUnits.value.includes(unit.parentId)
+				unit.parentId != null
 			) {
-				selectedUnits.value.push(unit.parentId);
+				selectedUnit.value = unit.parentId;
+			} else {
+				selectedUnit.value = null;
 			}
 		}
 		if (pinnedUnits.value.has(unitId)) {
@@ -212,7 +212,7 @@ export const useArtillery = ({
 		unitMap,
 		readyToFire,
 		unitSelector,
-		selectedUnits,
+		selectedUnit,
 		pinnedUnits,
 		highlightedUnits,
 		viewport,

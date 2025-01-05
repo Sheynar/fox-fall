@@ -2,14 +2,15 @@ import { artillery } from '@/lib/globals';
 import { computed } from 'vue';
 
 export const useFocusedUnitIds = () => {
+	return computed(() => {
+		const focusedUnitsSet = new Set([
+			...artillery.highlightedUnits.value,
+			...artillery.pinnedUnits.value,
+		]);
 
-	return computed(() =>
-		Array.from(
-			new Set([
-				...artillery.highlightedUnits.value,
-				...artillery.pinnedUnits.value,
-				...artillery.selectedUnits.value,
-			])
-		)
-	);
+		if (artillery.selectedUnit.value != null)
+			focusedUnitsSet.add(artillery.selectedUnit.value);
+
+		return Array.from(focusedUnitsSet);
+	});
 };

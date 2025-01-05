@@ -142,7 +142,7 @@
 		const output: MenuItem[] = [
 			{
 				label:
-					artillery.selectedUnits.value.length > 0
+					artillery.selectedUnit.value != null
 						? 'Add standalone unit'
 						: 'Add unit',
 				items: [
@@ -168,7 +168,7 @@
 			},
 		];
 
-		if (artillery.selectedUnits.value.length > 0) {
+		if (artillery.selectedUnit.value != null) {
 			output.push({
 				label: 'Add linked unit',
 				items: [
@@ -189,11 +189,11 @@
 									.addVector(
 										getUnitResolvedVector(
 											artillery.unitMap.value,
-											artillery.selectedUnits.value[0]
+											artillery.selectedUnit.value!
 										).scale(-1)
 									)
 							),
-							artillery.selectedUnits.value[0]
+							artillery.selectedUnit.value!
 						);
 					},
 				})),
