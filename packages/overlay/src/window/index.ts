@@ -20,6 +20,7 @@ export const toggleOverlay = () => {
 
 	if (overlayOpen) {
 		managerWindow.setShape([managerWindow.getBounds()]);
+		managerWindow.show();
 	} else {
 		managerWindow.setShape([
 			{
