@@ -9,6 +9,10 @@
 	>
 		<div class="Settings__content">
 			<div class="Settings__row">
+				<label>Show tooltip</label>
+				<PrimeCheckBox binary v-model="settings.showTooltip" @update:model-value="saveSettings" />
+			</div>
+			<div class="Settings__row">
 				<label>Use NATO alphabet</label>
 				<PrimeCheckBox binary v-model="settings.useNatoAlphabet" @update:model-value="saveSettings" />
 			</div>

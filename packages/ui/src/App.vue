@@ -116,7 +116,7 @@
 	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Grid from '@/components/Grid.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
-	import OverlayToggle from '@/components/OverlayToggle.vue';
+	import OverlayToggle from '@/components/OverlayToggle/OverlayToggle.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
 	import { isOverlay } from '@/lib/constants';
 	import { artillery } from '@/lib/globals';

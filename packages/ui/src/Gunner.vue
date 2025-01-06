@@ -181,7 +181,7 @@
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
-	import OverlayToggle from '@/components/OverlayToggle.vue';
+	import OverlayToggle from '@/components/OverlayToggle/OverlayToggle.vue';
 	import {
 		getUnitLabel,
 		getUnitResolvedVector,

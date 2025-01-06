@@ -7,6 +7,7 @@ export const settings = ref({
 	lockZoom: false,
 
 	useNatoAlphabet: true,
+	showTooltip: true,
 	toggleButtonScale: 1,
 	unitIconScale: 1,
 	unitSettingsScale: 1,
