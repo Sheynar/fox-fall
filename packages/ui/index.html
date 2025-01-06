@@ -21,69 +21,11 @@
 				position: fixed;
 				inset: 0;
 			}
-
-			#toggle-button {
-				--size: 100vmin;
-
-				position: fixed;
-				bottom: 0;
-				right: 0;
-				width: var(--size);
-				height: var(--size);
-				padding: 0;
-				background: var(--p-button-secondary-background);
-				border: 1px solid var(--p-button-secondary-color);
-				font-size: var(--size);
-
-				z-index: 1000;
-			}
-
-			#toggle-image {
-				position: absolute;
-				inset: 0;
-				width: 100%;
-				height: 100%;
-				object-fit: contain;
-			}
 		</style>
 	</head>
 	<body>
 		<div id="app"></div>
 
-		<button id="toggle-button">
-			<img id="toggle-image" src="/300mm.webp" draggable="false" />
-		</button>
-
 		<script type="module" src="./src/main.ts"></script>
-		<script>
-			const app = document.getElementById('app');
-			const toggleButton = document.getElementById('toggle-button');
-
-			// Prevent the toggle button from pulling focus from the app
-			toggleButton.addEventListener('mousedown', (event) => {
-				event.preventDefault();
-			});
-
-			if ('electronApi' in window) {
-				toggleButton.addEventListener('click', () => {
-					electronApi.toggleOverlay();
-				});
-
-				const onOverlayToggled = (isOverlayVisible) => {
-					app.style.visibility = isOverlayVisible ? 'initial' : 'hidden';
-					app.style.pointerEvents = isOverlayVisible ? 'initial' : 'none';
-				};
-
-				electronApi.onOverlayToggled(onOverlayToggled);
-				electronApi.getOverlayOpen().then(onOverlayToggled);
-
-				toggleButton.style.setProperty(
-					'--size',
-					new URL(location.href).searchParams.get('size') || '100vmin'
-				);
-			} else {
-				toggleButton.style.display = 'none';
-			}
-		</script>
 	</body>
 </html>

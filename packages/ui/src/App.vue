@@ -1,6 +1,7 @@
 <template>
 	<BitmapDisplay
 		v-show="
+			overlayOpen &&
 			!artillery.viewportControl.calibrating.value &&
 			!artillery.viewportControl.screenShotting.value
 		"
@@ -18,6 +19,7 @@
 			App__transparent: isTransparent,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
+		v-show="overlayOpen"
 		@touchstart.prevent
 		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
 		@pointermove="onPointerMove"
@@ -72,6 +74,8 @@
 			</defs>
 		</svg>
 	</div>
+
+	<OverlayToggle v-model:overlayOpen="overlayOpen" />
 </template>
 
 <style lang="scss">
@@ -109,15 +113,17 @@
 	import ContextMenu from 'primevue/contextmenu';
 	import type { MenuItem } from 'primevue/menuitem';
 	import { computed, ref } from 'vue';
+	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Grid from '@/components/Grid.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
-	import BitmapDisplay from '@/components/BitmapDisplay.vue';
+	import OverlayToggle from '@/components/OverlayToggle.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
+	const overlayOpen = ref(false);
 	const contextMenu = ref<null | InstanceType<typeof ContextMenu>>(null);
 
 	const onPointerMove = (event: PointerEvent) => {

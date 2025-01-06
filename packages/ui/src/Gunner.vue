@@ -1,6 +1,7 @@
 <template>
 	<div
 		class="Gunner__container"
+		v-show="overlayOpen"
 		@touchstart.prevent
 		@contextmenu.prevent
 	>
@@ -76,6 +77,8 @@
 
 		<SyncSettings v-model:visible="syncSettingsVisible" />
 	</div>
+
+	<OverlayToggle v-model:overlayOpen="overlayOpen" />
 </template>
 
 <style lang="scss">
@@ -178,6 +181,7 @@
 	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
+	import OverlayToggle from '@/components/OverlayToggle.vue';
 	import {
 		getUnitLabel,
 		getUnitResolvedVector,
@@ -207,6 +211,8 @@
 			.map((unitId) => unitMap.value[unitId])
 			.filter((unit) => unit != null && unit.type === UnitType.Target);
 	});
+
+	const overlayOpen = ref(false);
 
 	const selectedArtilleryIndex = ref(0);
 	const selectedArtillery = computed(
