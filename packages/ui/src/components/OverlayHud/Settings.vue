@@ -72,6 +72,20 @@
 					:min="0.1"
 				/>
 			</div>
+			<div class="Settings__row" v-if="isOverlay">
+				<label>Overlay button scale</label>
+				<PrimeInputNumber
+					:model-value="settings.toggleButtonScale"
+					@input="settings.toggleButtonScale = Number($event.value); saveSettings()"
+					suffix="x"
+					locale="en-UK"
+					:allowEmpty="false"
+					highlightOnFocus
+					:minFractionDigits="0"
+					:maxFractionDigits="2"
+					:min="0.25"
+				/>
+			</div>
 			<div class="Settings__row">
 				<label>Unit icon scale</label>
 				<PrimeInputNumber
@@ -123,6 +137,7 @@
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeCheckBox from 'primevue/checkbox';
 	import PrimeInputNumber from 'primevue/inputnumber';
+	import { isOverlay } from '@/lib/constants';
 	import { saveSettings, settings } from '@/lib/settings';
 
 	const visible = defineModel('visible', { default: false, type: Boolean });

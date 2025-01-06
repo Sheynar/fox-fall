@@ -16,7 +16,7 @@
 		:ref="(el) => artillery.containerElement.value = (el as HTMLDivElement)"
 		class="App__container"
 		:class="{
-			App__transparent: isTransparent,
+			App__transparent: isOverlay,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
 		v-show="overlayOpen"
@@ -118,6 +118,7 @@
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
 	import OverlayToggle from '@/components/OverlayToggle.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
+	import { isOverlay } from '@/lib/constants';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
@@ -208,7 +209,4 @@
 
 		return output;
 	});
-
-	const isTransparent =
-		new URL(location.href).searchParams.get('overlay') != null;
 </script>

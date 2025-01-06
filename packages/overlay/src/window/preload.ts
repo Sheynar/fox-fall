@@ -18,4 +18,8 @@ contextBridge.exposeInMainWorld("electronApi", {
 			callback(open);
 		});
 	},
+
+	sendToggleSize: (size: { x: number, y: number }) => {
+		ipcRenderer.send("toggle-size", size);
+	},
 });

@@ -1,11 +1,13 @@
 import { ref } from 'vue';
+import { isOverlay } from './constants';
 
 export const settings = ref({
 	lockPan: false,
-	lockRotate: !!new URL(location.href).searchParams.get('overlay'),
+	lockRotate: isOverlay,
 	lockZoom: false,
 
 	useNatoAlphabet: true,
+	toggleButtonScale: 1,
 	unitIconScale: 1,
 	unitSettingsScale: 1,
 	gridDashLength: 3,

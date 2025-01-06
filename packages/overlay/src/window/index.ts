@@ -4,18 +4,15 @@ import { pathToFileURL } from "node:url";
 
 const display = screen.getPrimaryDisplay();
 
-const lowerBound = Math.min(display.bounds.width, display.bounds.height);
-const size = Math.floor(lowerBound / 20);
-const position = {
-	x: display.bounds.width - size,
-	y: display.bounds.height - size,
+let size = {
+	x: 0,
+	y: 0,
 };
 
 let managerWindow: BrowserWindow | null = null;
 
 let overlayOpen = true;
-export const toggleOverlay = () => {
-	overlayOpen = !overlayOpen;
+export const updateShape = () => {
 	if (managerWindow == null) return;
 
 	if (overlayOpen) {
@@ -24,10 +21,10 @@ export const toggleOverlay = () => {
 	} else {
 		managerWindow.setShape([
 			{
-				x: position.x,
-				y: position.y,
-				width: size,
-				height: size,
+				x: display.bounds.width - size.x,
+				y: display.bounds.height - size.y,
+				width: size.x,
+				height: size.y,
 			},
 		]);
 
@@ -36,7 +33,12 @@ export const toggleOverlay = () => {
 	}
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
+};
+export const toggleOverlay = () => {
+	overlayOpen = !overlayOpen;
+	updateShape();
 
+	if (managerWindow == null) return;
 	managerWindow.webContents.send("overlay-toggled", overlayOpen);
 };
 
@@ -71,11 +73,15 @@ export const initialise = () => {
 	ipcMain.on("query-overlay", (event) => {
 		event.reply("query-overlay-reply", overlayOpen);
 	});
+	ipcMain.on("toggle-size", (event, newSize: { x: number; y: number }) => {
+		size = newSize;
+		if (!overlayOpen) {
+			updateShape();
+		}
+	});
 	toggleOverlay();
 
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
-	url.searchParams.append("overlay", "true");
-	url.searchParams.append("size", `${size}px`);
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
 	managerWindow.loadURL(url.href);
