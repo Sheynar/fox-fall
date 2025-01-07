@@ -12,6 +12,7 @@ This is an artillery helper for the game Foxhole
   - Pans the map
   - Hold `Shift` to rotate the map
 - Drag `Right mouse` on the map to rotate the map
+- If rotation is locked right click to create a unit where the mouse cursor is located
 - Scroll the mouse wheel to zoom in and out
   - Hold `Control` to zoom faster
   - Hold `Shift` to zoom slower
@@ -20,10 +21,12 @@ This is an artillery helper for the game Foxhole
 - Click the compass to reset the viewport such that all units are visible and the camera faces north
 
 #### Keyboard
+
 - Arrow keys to move the map
-- `Shift` and arrow keys to move the map a single cell over
-- `Ctrl` and up/down arrow keys to zoom in and out
-- `Ctrl` and left/right arrow keys to rotate
+  - `Shift` and arrow keys to move the map a single cell over
+  - `Ctrl` and up/down arrow keys to zoom in and out
+  - `Ctrl` and left/right arrow keys to rotate
+- `Ctrl`+`Tab` / `Ctrl`+`Shift`+`Tab` to cycle the selected unit
 
 ### Basic usage
 
@@ -31,17 +34,17 @@ This is an artillery helper for the game Foxhole
 2. Run the app and launch the game
 3. Open the map in game and press the overlay button in the bottom right corner
 4. Line up the grid of the overlay with the grid of the in game map with the Calibrate grid button in the bottom dock
-5. Create your artillery
-   1. Click the plus button in the bottom dock
-   2. Use the unit type dropdown to convert from "location" to "artillery"
-   3. Drag the unit to where your artillery is on your map
-   4. Optionally select the ammunition and platform for more tools
-6. Set the wind direction and shell offset using the wind button in the bottom dock
-7. Create the target you want to fire at using the same steps as 5. except with the target unit type
-8. Fire the artillery with the given azimuth and distance
-9.  Create a landing zone using the same steps as 5. except with the landing zone unit type and place it on the map where your shell landed
-10. Click the adjust wind button to update the wind direction and shell offset
-11. Use the updated azimuth and distance to obliterate some wardens
+5. (Optional) click the screenshot button to lock in your map/grid
+6. Create your artillery
+   1. Right click on the overlay where your artillery is located and select `Create unit`->`Artillery`
+   2. (Optional) Drag the unit into precise position if it isn't quite where you wanted
+   3. (Optional) select the ammunition and platform for more tools
+7. Set the wind direction and shell offset using the wind button in the bottom dock
+8. Create the target you want to fire at using the same steps as 5. except with the target unit type
+9. Fire the artillery with the given azimuth and distance
+10. Create a landing zone using the same steps as 5. except with the landing zone unit type and place it on the map where your shell landed
+11. Click the adjust wind button to update the wind direction and shell offset
+12. Use the updated azimuth and distance to obliterate some wardens
 
 ### Advanced usage
 
