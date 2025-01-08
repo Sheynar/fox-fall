@@ -49,7 +49,7 @@
 			<div class="Unit__label" v-if="unitLabel">
 				{{ unitLabel }}
 			</div>
-			<TargetIcon class="Unit__icon" />
+			<Component :is="unitIcon" class="Unit__icon" />
 		</div>
 	</PositionedElement>
 
