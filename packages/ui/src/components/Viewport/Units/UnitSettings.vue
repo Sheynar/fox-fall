@@ -20,7 +20,7 @@
 			<div class="UnitSettings__table">
 				<div class="UnitSettings__row">
 					<span>Type:</span>
-					<PrimeSelect
+					<IconSelect
 						class="UnitSettings__select"
 						v-model="selectedUnitType"
 						:disabled="props.readonly"
@@ -35,11 +35,12 @@
 					"
 				>
 					<span>Ammunition:</span>
-					<PrimeSelect
+					<IconSelect
 						class="UnitSettings__select"
 						filter
 						showClear
 						v-model="selectedAmmoType"
+						placeholder="Select ammo type"
 						:disabled="props.readonly"
 						:options="ammoOptions"
 						optionLabel="label"
@@ -54,11 +55,12 @@
 					"
 				>
 					<span>Platform:</span>
-					<PrimeSelect
+					<IconSelect
 						class="UnitSettings__select"
 						filter
 						showClear
 						v-model="selectedPlatform"
+						placeholder="Select artillery platform"
 						:disabled="props.readonly"
 						:options="platformOptions"
 						optionLabel="label"
@@ -66,16 +68,15 @@
 				</div>
 				<div
 					class="UnitSettings__row"
-					v-if="
-						unit.type === UnitType.Spotter || unit.type === UnitType.Target
-					"
+					v-if="unit.type === UnitType.Spotter || unit.type === UnitType.Target"
 				>
 					<span>Spotting type:</span>
-					<PrimeSelect
+					<IconSelect
 						class="UnitSettings__select"
 						filter
 						showClear
 						v-model="selectedSpottingType"
+						placeholder="Select spotter type"
 						:disabled="props.readonly"
 						:options="spottingTypeOptions"
 						optionLabel="label"
@@ -204,7 +205,7 @@
 					severity="secondary"
 					title="Create artillery"
 				>
-					<ArtilleryIcon />
+					<Component :is="UNIT_ICON_BY_TYPE[UnitType.Artillery]" />
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
@@ -212,7 +213,7 @@
 					severity="secondary"
 					title="Create spotter"
 				>
-					<SpotterIcon />
+					<Component :is="UNIT_ICON_BY_TYPE[UnitType.Spotter]" />
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
@@ -220,7 +221,7 @@
 					severity="secondary"
 					title="Create location"
 				>
-					<LocationIcon />
+					<Component :is="UNIT_ICON_BY_TYPE[UnitType.Location]" />
 				</PrimeButton>
 			</div>
 			<div class="UnitSettings__actions">
@@ -230,7 +231,7 @@
 					severity="secondary"
 					title="Create target"
 				>
-					<TargetIcon />
+					<Component :is="UNIT_ICON_BY_TYPE[UnitType.Target]" />
 				</PrimeButton>
 				<PrimeButton
 					class="UnitSettings__action"
@@ -238,7 +239,7 @@
 					severity="secondary"
 					title="Create landing zone"
 				>
-					<ExplosionIcon />
+					<Component :is="UNIT_ICON_BY_TYPE[UnitType.LandingZone]" />
 				</PrimeButton>
 			</div>
 			<div class="UnitSettings__actions">
@@ -261,7 +262,11 @@
 					title="Pin"
 				>
 					<Component
-						:is="artillery.pinnedUnits.value.has(unit.id) ? PinIcon : PinOutlineIcon"
+						:is="
+							artillery.pinnedUnits.value.has(unit.id)
+								? PinIcon
+								: PinOutlineIcon
+						"
 					/>
 				</PrimeButton>
 				<PrimeButton
@@ -378,18 +383,13 @@
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeInputText from 'primevue/inputtext';
-	import PrimeSelect from 'primevue/select';
 	import { computed } from 'vue';
-	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
-	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
-	import LocationIcon from '@/components/icons/LocationIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
-	import TargetIcon from '@/components/icons/TargetIcon.vue';
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
-	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
 	import WindIcon from '@/components/icons/WindIcon.vue';
+	import IconSelect from '@/components/inputs/IconSelect.vue';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
@@ -402,6 +402,7 @@
 		SPOTTING_BY_TYPE,
 		SPOTTING_TYPE,
 	} from '@/lib/constants/data';
+	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, UnitType, unitTypeOrder } from '@/lib/unit';
@@ -426,6 +427,7 @@
 	const unitTypeOptions = computed(() => {
 		return unitTypeOrder.map((type) => ({
 			label: UnitType[type],
+			icon: UNIT_ICON_BY_TYPE[type],
 			value: type,
 		}));
 	});
@@ -443,6 +445,7 @@
 			.sort()
 			.map((shell) => ({
 				label: shell,
+				icon: ARTILLERY_BY_SHELL[shell].ICON,
 				value: shell,
 			}));
 	});
@@ -472,6 +475,8 @@
 			.sort()
 			.map((platform) => ({
 				label: platform,
+				icon: ARTILLERY_BY_SHELL[unit.value.ammunition!].PLATFORM[platform]
+					?.ICON,
 				value: platform,
 			}));
 	});
@@ -489,6 +494,7 @@
 	const spottingTypeOptions = computed(() => {
 		return (Object.keys(SPOTTING_BY_TYPE) as SPOTTING_TYPE[]).map((type) => ({
 			label: type,
+			icon: SPOTTING_BY_TYPE[type].ICON,
 			value: type,
 		}));
 	});
@@ -504,7 +510,9 @@
 	});
 
 	const parent = computed(() =>
-		unit.value.parentId != null ? artillery.unitMap.value[unit.value.parentId] : undefined
+		unit.value.parentId != null
+			? artillery.unitMap.value[unit.value.parentId]
+			: undefined
 	);
 	const parentLabel = computed(() =>
 		parent.value == null

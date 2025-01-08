@@ -136,16 +136,13 @@
 
 <script setup lang="ts">
 	import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
-	import ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
-	import LocationIcon from '@/components/icons/LocationIcon.vue';
-	import SpotterIcon from '@/components/icons/SpotterIcon.vue';
-	import TargetIcon from '@/components/icons/TargetIcon.vue';
-	import ExplosionIcon from '@/components/icons/ExplosionIcon.vue';
+	import type ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
 	import UnitSettings from '@/components/Viewport/Units/UnitSettings.vue';
 	import { injectUnit } from '@/contexts/unit';
 	import { ARTILLERY_BY_SHELL, SPOTTING_BY_TYPE } from '@/lib/constants/data';
 	import { LAYER } from '@/lib/constants/ui';
+	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, getUnitResolvedVector, UnitType } from '@/lib/unit';
@@ -186,16 +183,17 @@
 	);
 	const unitIcon = computed(() => {
 		if (unit.value.type === UnitType.Spotter) {
-			return spottingSpecs.value?.ICON ?? SpotterIcon;
+			return spottingSpecs.value?.ICON ?? UNIT_ICON_BY_TYPE[unit.value.type];
 		}
-		if (unit.value.type === UnitType.Location) return LocationIcon;
-		if (unit.value.type === UnitType.Target) return TargetIcon;
-		if (unit.value.type === UnitType.LandingZone) return ExplosionIcon;
 		if (unit.value.type === UnitType.Artillery) {
-			return artillerySpecs.value?.ICON ?? ammoSpecs.value?.ICON ?? ArtilleryIcon;
+			return (
+				artillerySpecs.value?.ICON ??
+				ammoSpecs.value?.ICON ??
+				UNIT_ICON_BY_TYPE[unit.value.type]
+			);
 		}
 
-		return artillerySpecs.value?.ICON ?? ammoSpecs.value?.ICON ?? ArtilleryIcon;
+		return UNIT_ICON_BY_TYPE[unit.value.type];
 	});
 
 	const isHovered = ref(false);

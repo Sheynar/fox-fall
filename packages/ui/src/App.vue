@@ -13,7 +13,7 @@
 	/>
 
 	<div
-		:ref="(el) => artillery.containerElement.value = (el as HTMLDivElement)"
+		:ref="(el) => (artillery.containerElement.value = el as HTMLDivElement)"
 		class="App__container"
 		:class="{
 			App__transparent: isOverlay,
@@ -42,7 +42,19 @@
 				ref="contextMenu"
 				:model="contextMenuOptions"
 				@hide="() => (contextMenuPosition = null)"
-			/>
+			>
+				<template #item="{ item, props }">
+					<a
+						class="p-contextmenu-item-link"
+						tabindex="-1"
+						v-bind="props.action"
+					>
+						<Component v-if="item.icon" :is="item.icon" />
+						<span class="p-contextmenu-item-label">{{ item.label }}</span>
+						<i v-if="item.items" class="pi pi-angle-right p-icon p-contextmenu-submenu-icon"></i>
+					</a>
+				</template>
+			</ContextMenu>
 		</template>
 
 		<svg>
@@ -119,6 +131,7 @@
 	import OverlayToggle from '@/components/OverlayToggle/OverlayToggle.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
 	import { isOverlay } from '@/lib/constants';
+	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
@@ -160,6 +173,7 @@
 					UnitType.LandingZone,
 				].map((unitType) => ({
 					label: `${UnitType[unitType]}`,
+					icon: UNIT_ICON_BY_TYPE[unitType],
 					command: () => {
 						artillery.addUnit(
 							unitType,
