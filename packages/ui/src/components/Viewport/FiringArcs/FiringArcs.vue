@@ -1,10 +1,12 @@
 <template>
-	<FiringArc
-		v-for="firingArc in firingArcList"
-		:key="firingArc.to.id"
-		:unit-id-from="firingArc.from.id"
-		:unit-id-to="firingArc.to.id"
-	/>
+	<div class="FiringArcs__container" :style="{ opacity: settings.firingArcOpacity }">
+		<FiringArc
+			v-for="firingArc in firingArcList"
+			:key="firingArc.to.id"
+			:unit-id-from="firingArc.from.id"
+			:unit-id-to="firingArc.to.id"
+		/>
+	</div>
 </template>
 
 <style lang="scss">
@@ -27,6 +29,7 @@
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import { computed } from 'vue';
 	import FiringArc from './FiringArc.vue';
+import { settings } from '@/lib/settings';
 
 	const focusedUnitIds = useFocusedUnitIds();
 

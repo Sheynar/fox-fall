@@ -63,6 +63,20 @@
 				/>
 			</div>
 			<div class="Settings__row">
+				<label>Firing arc opacity</label>
+				<PrimeInputNumber
+					:model-value="Math.floor(settings.firingArcOpacity * 100)"
+					@input="settings.firingArcOpacity = Math.floor(Number($event.value)) / 100; saveSettings()"
+					suffix="%"
+					locale="en-UK"
+					:allowEmpty="false"
+					highlightOnFocus
+					:minFractionDigits="0"
+					:maxFractionDigits="0"
+					:min="0.1"
+				/>
+			</div>
+			<div class="Settings__row">
 				<label>Screenshot opacity</label>
 				<PrimeInputNumber
 					:model-value="Math.floor(settings.screenshotOpacity * 100)"
