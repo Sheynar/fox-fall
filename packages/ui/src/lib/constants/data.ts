@@ -18,6 +18,31 @@ import ICON__300mm from '@/components/icons/artillery/shell/300mm.vue';
 import ICON__fire_rocket from '@/components/icons/artillery/shell/fire-rocket.vue';
 import ICON__high_explosive_rocket from '@/components/icons/artillery/shell/high-explosive-rocket.vue';
 import ICON__mortar from '@/components/icons/artillery/shell/mortar.vue';
+import ICON__observation_bunker from '@/components/icons/ObservationBunkerIcon.vue';
+import ICON__binoculars from '@/components/icons/BinocularsIcon.vue';
+
+export enum SPOTTING_TYPE {
+	BINOCULARS = 'Binoculars',
+	OBSERVATION_BUNKER = 'Observation bunker',
+}
+
+export type SpottingSpecs = {
+	ICON: any;
+	MAX_RANGE: number;
+};
+
+export const SPOTTING_BY_TYPE: {
+	[ST in SPOTTING_TYPE]: SpottingSpecs;
+} = {
+	[SPOTTING_TYPE.BINOCULARS]: {
+		ICON: ICON__binoculars,
+		MAX_RANGE: 125,
+	},
+	[SPOTTING_TYPE.OBSERVATION_BUNKER]: {
+		ICON: ICON__observation_bunker,
+		MAX_RANGE: 230,
+	},
+};
 
 export enum AMMO_TYPE {
 	MORTAR = 'mortar',
@@ -133,7 +158,7 @@ export const ARTILLERY_BY_SHELL: {
 				RANGE_INCREMENT: 0,
 				MIN_SPREAD: 2.5,
 				MAX_SPREAD: 9.45,
-				WIND_OFFSET: 0,
+				WIND_OFFSET: 7.5, // NOT VERIFIED
 			},
 			[MORTAR_PLATFORM.CREMARI]: {
 				ICON: ICON__mortar_cremari,
@@ -144,7 +169,7 @@ export const ARTILLERY_BY_SHELL: {
 				RANGE_INCREMENT: 0,
 				MIN_SPREAD: 5.5,
 				MAX_SPREAD: 12,
-				WIND_OFFSET: 0,
+				WIND_OFFSET: 7.5, // NOT VERIFIED
 			},
 			[MORTAR_PLATFORM.PELTAST]: {
 				ICON: ICON__mortar_peltast,
@@ -155,7 +180,7 @@ export const ARTILLERY_BY_SHELL: {
 				RANGE_INCREMENT: 0,
 				MIN_SPREAD: 2.5,
 				MAX_SPREAD: 9.45,
-				WIND_OFFSET: 0,
+				WIND_OFFSET: 7.5, // NOT VERIFIED
 			},
 		},
 	},

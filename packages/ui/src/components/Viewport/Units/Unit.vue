@@ -144,7 +144,7 @@
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
 	import UnitSettings from '@/components/Viewport/Units/UnitSettings.vue';
 	import { injectUnit } from '@/contexts/unit';
-	import { ARTILLERY_BY_SHELL } from '@/lib/constants/data';
+	import { ARTILLERY_BY_SHELL, SPOTTING_BY_TYPE } from '@/lib/constants/data';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
@@ -176,14 +176,24 @@
 			return ammoSpecs.value.PLATFORM[unit.value.platform]!;
 		}
 	});
+	const spottingSpecs = computed(() => {
+		if (unit.value.spottingType != null) {
+			return SPOTTING_BY_TYPE[unit.value.spottingType];
+		}
+	});
 	const unitLabel = computed(() =>
 		getUnitLabel(artillery.unitMap.value, unit.value.id)
 	);
 	const unitIcon = computed(() => {
-		if (unit.value.type === UnitType.Spotter) return SpotterIcon;
+		if (unit.value.type === UnitType.Spotter) {
+			return spottingSpecs.value?.ICON ?? SpotterIcon;
+		}
 		if (unit.value.type === UnitType.Location) return LocationIcon;
 		if (unit.value.type === UnitType.Target) return TargetIcon;
 		if (unit.value.type === UnitType.LandingZone) return ExplosionIcon;
+		if (unit.value.type === UnitType.Artillery) {
+			return artillerySpecs.value?.ICON ?? ammoSpecs.value?.ICON ?? ArtilleryIcon;
+		}
 
 		return artillerySpecs.value?.ICON ?? ammoSpecs.value?.ICON ?? ArtilleryIcon;
 	});

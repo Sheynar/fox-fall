@@ -64,6 +64,23 @@
 						optionLabel="label"
 					/>
 				</div>
+				<div
+					class="UnitSettings__row"
+					v-if="
+						unit.type === UnitType.Spotter || unit.type === UnitType.Target
+					"
+				>
+					<span>Spotting type:</span>
+					<PrimeSelect
+						class="UnitSettings__select"
+						filter
+						showClear
+						v-model="selectedSpottingType"
+						:disabled="props.readonly"
+						:options="spottingTypeOptions"
+						optionLabel="label"
+					/>
+				</div>
 				<div class="UnitSettings__row">
 					<span>Positioned from:</span>
 					<SelectOneUnit
@@ -382,6 +399,8 @@
 		AMMO_TYPE,
 		ARTILLERY_BY_SHELL,
 		Platform,
+		SPOTTING_BY_TYPE,
+		SPOTTING_TYPE,
 	} from '@/lib/constants/data';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
@@ -463,6 +482,23 @@
 			),
 		set: (option) => {
 			unit.value.platform = option?.value;
+			emit('updated');
+		},
+	});
+
+	const spottingTypeOptions = computed(() => {
+		return (Object.keys(SPOTTING_BY_TYPE) as SPOTTING_TYPE[]).map((type) => ({
+			label: type,
+			value: type,
+		}));
+	});
+	const selectedSpottingType = computed({
+		get: () =>
+			spottingTypeOptions.value.find(
+				(option) => option.value === unit.value.spottingType
+			),
+		set: (option) => {
+			unit.value.spottingType = option?.value;
 			emit('updated');
 		},
 	});

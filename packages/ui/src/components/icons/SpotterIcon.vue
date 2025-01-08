@@ -1,7 +1,7 @@
 <template>
-	<img class="icon" :src="Binoculars" alt="spotter" :draggable="false" />
+	<img class="icon" :src="ReconCamo" alt="spotter" :draggable="false" />
 </template>
 
 <script setup lang="ts">
-	import Binoculars from '@/assets/images/Binoculars.webp';
+	import ReconCamo from '@/assets/images/ReconCamo.webp';
 </script>

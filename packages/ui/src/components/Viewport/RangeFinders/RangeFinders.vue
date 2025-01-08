@@ -1,12 +1,51 @@
 <template>
 	<div class="RangeFinders__container">
-		<RangeFinder
+		<PositionedElement
 			v-for="rangeFinder in rangeFinders"
 			:key="rangeFinder.unit.id"
-			:unit="rangeFinder.unit"
-			:specs="rangeFinder.specs"
-			:position="rangeFinder.resolvedPosition"
-		/>
+			:x="rangeFinder.resolvedPosition.x"
+			:y="rangeFinder.resolvedPosition.y"
+			:layer="LAYER.RANGE_FINDERS"
+		>
+			<svg
+				class="RangeFinders__indicator"
+				:class="{
+					RangeFinders__artillery: rangeFinder.unit.type === UnitType.Artillery,
+					RangeFinders__target: rangeFinder.unit.type === UnitType.Target,
+				}"
+				xmlns="http://www.w3.org/2000/svg"
+				preserve-aspect-ratio="none"
+			>
+				<Disk
+					:outerRadius="
+						rangeFinder.specs.MAX_RANGE * artillery.viewport.value.resolvedZoom
+					"
+					:innerRadius="
+						rangeFinder.specs.MIN_RANGE * artillery.viewport.value.resolvedZoom
+					"
+				/>
+			</svg>
+		</PositionedElement>
+		<PositionedElement
+			v-for="spotter in spotters"
+			:key="spotter.unit.id"
+			:x="spotter.resolvedPosition.x"
+			:y="spotter.resolvedPosition.y"
+			:layer="LAYER.RANGE_FINDERS"
+		>
+			<svg
+				class="RangeFinders__indicator RangeFinders__spotter"
+				xmlns="http://www.w3.org/2000/svg"
+				preserve-aspect-ratio="none"
+			>
+				<Disk
+					:outerRadius="
+						spotter.specs.MAX_RANGE * artillery.viewport.value.resolvedZoom
+					"
+					:innerRadius="0"
+				/>
+			</svg>
+		</PositionedElement>
 	</div>
 </template>
 
@@ -22,15 +61,41 @@
 
 		pointer-events: none;
 	}
+
+	.RangeFinders__indicator {
+		position: absolute;
+		inset: 0;
+		overflow: visible;
+
+		stroke: black;
+		opacity: 0.15;
+
+		&.RangeFinders__artillery {
+			fill: var(--p-red-500);
+		}
+		&.RangeFinders__target {
+			fill: var(--p-green-500);
+		}
+		&.RangeFinders__spotter {
+			fill: var(--p-blue-500);
+		}
+	}
 </style>
 
 <script setup lang="ts">
-	import { ARTILLERY_BY_SHELL, ArtilleryPlatform } from '@/lib/constants/data';
+	import Disk from '@/components/svg/Disk.vue';
+	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
+	import {
+		ARTILLERY_BY_SHELL,
+		ArtilleryPlatform,
+		SPOTTING_BY_TYPE,
+		SpottingSpecs,
+	} from '@/lib/constants/data';
+	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
 	import { getUnitResolvedVector, UnitType, type Unit } from '@/lib/unit';
 	import type { Vector } from '@/lib/vector';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
-	import RangeFinder from './RangeFinder.vue';
 	import { computed } from 'vue';
 
 	const focusedUnitIds = useFocusedUnitIds();
@@ -63,6 +128,30 @@
 					unit.id
 				).addVector(
 					artillery.wind.value.scale(unit.type === UnitType.Artillery ? -1 : 1)
+				),
+			});
+		}
+
+		return output;
+	});
+
+	const spotters = computed(() => {
+		const output: {
+			unit: Unit;
+			specs: SpottingSpecs;
+			resolvedPosition: Vector;
+		}[] = [];
+
+		for (const unitId of focusedUnitIds.value) {
+			const unit = artillery.unitMap.value[unitId];
+			if ((unit.type !== UnitType.Spotter && unit.type !== UnitType.Target) || unit.spottingType == null) continue;
+
+			output.push({
+				unit,
+				specs: SPOTTING_BY_TYPE[unit.spottingType],
+				resolvedPosition: getUnitResolvedVector(
+					artillery.unitMap.value,
+					unit.id
 				),
 			});
 		}

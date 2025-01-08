@@ -3,7 +3,7 @@ import { generateId } from '@/lib/id';
 import { natoAlphabet } from '@/lib/names';
 import { settings } from '@/lib/settings';
 import { Vector } from '@/lib/vector';
-import { AMMO_TYPE, type Platform } from './constants/data';
+import { AMMO_TYPE, SPOTTING_TYPE, type Platform } from './constants/data';
 
 export enum UnitType {
 	Artillery,
@@ -29,6 +29,7 @@ export type Unit = {
 	parentId?: string;
 	ammunition?: AMMO_TYPE;
 	platform?: Platform<AMMO_TYPE>;
+	spottingType?: SPOTTING_TYPE;
 };
 
 export type UnitMap = {
