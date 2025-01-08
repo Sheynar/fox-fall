@@ -1,5 +1,5 @@
 import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/types';
-import { watch, type Ref } from 'vue';
+import { ref, watch, type Ref } from 'vue';
 import { generateId } from '@/lib/id';
 import { UnitMap, Unit } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
@@ -25,6 +25,8 @@ export const useSyncedRoom = (
 	wind: Ref<Vector>,
 	webSocket: Ref<WebSocket | null | undefined>
 ) => {
+	const isReady = ref(false);
+
 	const onMessage = (event: MessageEvent<any>) => {
 		const roomUpdate = JSON.parse(event.data);
 		if (!isRoomUpdate(roomUpdate) || roomUpdate.eventFrom === myId) return;
@@ -41,6 +43,10 @@ export const useSyncedRoom = (
 
 			if (roomUpdate.readyToFire != null) {
 				readyToFire.value = roomUpdate.readyToFire;
+			}
+
+			if (!isReady.value) {
+				isReady.value = true;
 			}
 		} else if (roomUpdate.type === UpdateType.readyToFire) {
 			readyToFire.value = roomUpdate.value;
@@ -116,6 +122,8 @@ export const useSyncedRoom = (
 	};
 
 	return {
+		isReady,
+
 		fullSync,
 		updateReadyToFire,
 		updateUnit,

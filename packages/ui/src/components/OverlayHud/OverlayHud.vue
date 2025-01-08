@@ -136,8 +136,6 @@
 	import { wrapDegrees } from '@/lib/angle';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
-	import { getUnitResolvedVector } from '@/lib/unit';
-	import { Vector } from '@/lib/vector';
 
 	const resolvedCursor = computed(() => {
 		return artillery.viewport.value.toWorldPosition(artillery.cursor.value);
@@ -150,39 +148,8 @@
 	);
 
 	const onCompassClicked = async () => {
-		artillery.viewport.value.withSmoothing(async () => {
-			if (!settings.value.lockRotate)
-				artillery.viewport.value.resetRotation();
-
-			const unitVectors = Object.values(artillery.unitMap.value).map((unit) => {
-				return getUnitResolvedVector(artillery.unitMap.value, unit.id);
-			});
-
-			const center = unitVectors
-				.reduce(
-					(sum, vector) => {
-						return sum.addVector(vector);
-					},
-					Vector.fromCartesianVector({ x: 0, y: 0 })
-				)
-				.scale(1 / (unitVectors.length || 1));
-
-			if (!settings.value.lockZoom && !settings.value.lockPan) {
-				if (unitVectors.length > 1) {
-					const maxOffset = Math.max(
-						0,
-						...unitVectors.map((vector) => {
-							return Math.abs(vector.addVector(center.scale(-1)).distance);
-						})
-					);
-
-					artillery.viewport.value.zoomTo(0.8 / (maxOffset / 100));
-				} else {
-					artillery.viewport.value.zoomTo(1);
-				}
-			}
-
-			if (!settings.value.lockPan) artillery.viewport.value.panTo(center);
+		await artillery.viewport.value.withSmoothing(async () => {
+			artillery.resetViewport();
 		});
 	};
 </script>

@@ -1,6 +1,7 @@
 import { type Ref, ref, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 import { useEventListener } from '@vueuse/core';
+import { settings } from '@/lib/settings';
 import {
 	type Unit,
 	type UnitMap,
@@ -197,6 +198,41 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		options.onWindUpdated?.();
 	};
 
+	const resetViewport = () => {
+		if (!settings.value.lockRotate)
+			viewport.value.resetRotation();
+
+		const unitVectors = Object.values(unitMap.value).map((unit) => {
+			return getUnitResolvedVector(unitMap.value, unit.id);
+		});
+
+		const center = unitVectors
+			.reduce(
+				(sum, vector) => {
+					return sum.addVector(vector);
+				},
+				Vector.fromCartesianVector({ x: 0, y: 0 })
+			)
+			.scale(1 / (unitVectors.length || 1));
+
+		if (!settings.value.lockZoom && !settings.value.lockPan) {
+			if (unitVectors.length > 1) {
+				const maxOffset = Math.max(
+					0,
+					...unitVectors.map((vector) => {
+						return Math.abs(vector.addVector(center.scale(-1)).distance);
+					})
+				);
+
+				viewport.value.zoomTo(0.8 / (maxOffset / 100));
+			} else {
+				viewport.value.zoomTo(1);
+			}
+		}
+
+		if (!settings.value.lockPan) viewport.value.panTo(center);
+	};
+
 	useScopePerKey(unitMap, (key) => {
 		watchEffect(() => {
 			const unit = unitMap.value[key];
@@ -236,6 +272,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		setUnitSource,
 		editWind,
 		resetWind,
+		resetViewport,
 
 		cursor,
 		wind,
