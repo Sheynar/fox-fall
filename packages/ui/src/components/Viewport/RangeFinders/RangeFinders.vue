@@ -46,6 +46,38 @@
 				/>
 			</svg>
 		</PositionedElement>
+		<PositionedElement
+			v-for="spread in spreads"
+			:key="spread.unit.id"
+			:x="spread.resolvedPosition.x"
+			:y="spread.resolvedPosition.y"
+			:layer="LAYER.RANGE_FINDERS"
+		>
+			<svg
+				class="RangeFinders__indicator RangeFinders__spread"
+				xmlns="http://www.w3.org/2000/svg"
+				preserve-aspect-ratio="none"
+			>
+				<Disk
+					:outerRadius="
+						spread.specs.MIN_RANGE * artillery.viewport.value.resolvedZoom
+					"
+					:innerRadius="0"
+				/>
+			</svg>
+			<svg
+				class="RangeFinders__indicator RangeFinders__spread"
+				xmlns="http://www.w3.org/2000/svg"
+				preserve-aspect-ratio="none"
+			>
+				<Disk
+					:outerRadius="
+						spread.specs.MAX_RANGE * artillery.viewport.value.resolvedZoom
+					"
+					:innerRadius="0"
+				/>
+			</svg>
+		</PositionedElement>
 	</div>
 </template>
 
@@ -78,6 +110,9 @@
 		}
 		&.RangeFinders__spotter {
 			fill: var(--p-blue-500);
+		}
+		&.RangeFinders__spread {
+			fill: var(--p-orange-500);
 		}
 	}
 </style>
@@ -144,11 +179,50 @@
 
 		for (const unitId of focusedUnitIds.value) {
 			const unit = artillery.unitMap.value[unitId];
-			if ((unit.type !== UnitType.Spotter && unit.type !== UnitType.Target) || unit.spottingType == null) continue;
+			if (
+				(unit.type !== UnitType.Spotter && unit.type !== UnitType.Target) ||
+				unit.spottingType == null
+			)
+				continue;
 
 			output.push({
 				unit,
 				specs: SPOTTING_BY_TYPE[unit.spottingType],
+				resolvedPosition: getUnitResolvedVector(
+					artillery.unitMap.value,
+					unit.id
+				),
+			});
+		}
+
+		return output;
+	});
+
+	const spreads = computed(() => {
+		const output: {
+			unit: Unit;
+			specs: { MAX_RANGE: number; MIN_RANGE: number };
+			resolvedPosition: Vector;
+		}[] = [];
+
+		for (const unitId of Object.keys(artillery.unitMap.value)) {
+			const unit = artillery.unitMap.value[unitId];
+			if (
+				unit.type !== UnitType.Target ||
+				unit.ammunition == null ||
+				unit.platform == null
+			)
+				continue;
+			const platform =
+				ARTILLERY_BY_SHELL[unit.ammunition].PLATFORM[unit.platform];
+			if (platform == null) continue;
+
+			output.push({
+				unit,
+				specs: {
+					MIN_RANGE: platform.MIN_SPREAD,
+					MAX_RANGE: platform.MAX_SPREAD,
+				},
 				resolvedPosition: getUnitResolvedVector(
 					artillery.unitMap.value,
 					unit.id
