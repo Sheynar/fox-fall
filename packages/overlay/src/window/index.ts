@@ -29,7 +29,7 @@ export const updateShape = () => {
 		]);
 
 		managerWindow.minimize();
-		managerWindow.showInactive();
+		setTimeout(() => managerWindow!.showInactive(), 100)
 	}
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
