@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
-	import { toDegrees } from '@/lib/angle';
+	import { toDegrees, wrapDegrees } from '@/lib/angle';
 	import { useEventListener } from '@vueuse/core';
 	import { computed, defineModel, ref } from 'vue';
 
@@ -34,7 +34,7 @@
 			y: event.clientY - bounds.top - bounds.height / 2,
 		};
 
-		modelValue.value = toDegrees(Math.atan2(position.y, position.x)) + 90;
+		modelValue.value = wrapDegrees(toDegrees(Math.atan2(position.y, position.x)) + 90);
 	};
 
 	useEventListener(compassEl, 'pointerdown', (event: PointerEvent) => {
