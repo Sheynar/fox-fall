@@ -1,8 +1,8 @@
 <template>
 	<PositionedElement
 		:layer="LAYER.FIRING_ARC_LINES"
-		:x="resolvedVectorFrom.x"
-		:y="resolvedVectorFrom.y"
+		:x="resolvedVectorTo.x"
+		:y="resolvedVectorTo.y"
 	>
 		<svg
 			class="FiringArc__svg"
@@ -131,7 +131,7 @@
 		getUnitResolvedVector(artillery.unitMap.value, props.unitIdTo)
 	);
 	const firingVector = computed(() =>
-	resolvedVectorTo.value.getRelativeOffset(resolvedVectorFrom.value)
+		resolvedVectorFrom.value.getRelativeOffset(resolvedVectorTo.value)
 	);
 	const firingVectorWithWind = computed(() =>
 		firingVector.value.addVector(artillery.wind.value.scale(-1))
@@ -142,7 +142,7 @@
 	);
 	const elevationOffset = computed(() =>
 		Vector.fromAngularVector({
-			azimuth: 180 - artillery.viewport.value.rotation,
+			azimuth: artillery.viewport.value.rotation,
 			distance: lineVector.value.distance / 2,
 		})
 	);

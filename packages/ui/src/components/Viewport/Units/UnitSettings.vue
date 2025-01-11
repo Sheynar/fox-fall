@@ -121,9 +121,9 @@
 					<div class="UnitSettings__row">
 						<span>Azimuth:</span>
 						<DirectionInput
-							:model-value="wrapDegrees(unit.vector.azimuth + 180)"
+							:model-value="wrapDegrees(unit.vector.azimuth)"
 							@update:model-value="
-								unit.vector.azimuth = wrapDegrees($event - 180);
+								unit.vector.azimuth = wrapDegrees($event);
 								emit('updated');
 							"
 						/>
@@ -167,9 +167,9 @@
 					<div class="UnitSettings__row">
 						<span>Azimuth:</span>
 						<DirectionInput
-							:model-value="wrapDegrees(unit.vector.azimuth)"
+							:model-value="wrapDegrees(unit.vector.azimuth + 180)"
 							@update:model-value="
-								unit.vector.azimuth = wrapDegrees($event);
+								unit.vector.azimuth = wrapDegrees($event - 180);
 								emit('updated');
 							"
 						/>

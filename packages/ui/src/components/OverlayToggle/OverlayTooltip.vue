@@ -72,7 +72,7 @@
 			artillery.unitMap.value,
 			targetUnits.value[0].id
 		);
-		const firingVector = resolvedTarget.getRelativeOffset(resolvedArtillery);
+		const firingVector = resolvedArtillery.getRelativeOffset(resolvedTarget);
 		return firingVector.addVector(artillery.wind.value.scale(-1));
 	});
 </script>

@@ -59,7 +59,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		if (vector == null) {
 			vector = ref(
 				Vector.fromAngularVector({
-					azimuth: 180,
+					azimuth: 0,
 					distance: 42,
 				})
 			);
