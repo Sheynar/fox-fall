@@ -49,7 +49,6 @@ This is an artillery helper for the game Foxhole
 ### Advanced usage
 
 - Use the sync button in the bottom dock to link your overlay to other users. This negates the need to communicate firing solutions with gunners
-  - Gunners should use the alternative gunner interface available via the dock at the bottom to simplify the process of getting firing solutions
   - Use the "Ready to fire" button in the bottom dock to communicate whether you are busy adjusting the firing solutions, it will synchronize the firing readiness state with other users
 - If the target position is not clear on your map or if you want to rapidly change targets
   - Run into the field with some binoculars

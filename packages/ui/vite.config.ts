@@ -18,7 +18,6 @@ export default defineConfig({
 		rollupOptions: {
 			input: {
 				main: resolve(__dirname, './index.html'),
-				gunner: resolve(__dirname, './gunner/index.html'),
 			},
 		},
 	},
