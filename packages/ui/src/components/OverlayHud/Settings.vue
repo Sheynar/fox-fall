@@ -63,6 +63,20 @@
 				/>
 			</div>
 			<div class="Settings__row">
+				<label>Compass opacity</label>
+				<PrimeInputNumber
+					:model-value="Math.floor(settings.compassOpacity * 100)"
+					@input="settings.compassOpacity = Math.floor(Number($event.value)) / 100; saveSettings()"
+					suffix="%"
+					locale="en-UK"
+					:allowEmpty="false"
+					highlightOnFocus
+					:minFractionDigits="0"
+					:maxFractionDigits="0"
+					:min="0"
+				/>
+			</div>
+			<div class="Settings__row">
 				<label>Firing arc opacity</label>
 				<PrimeInputNumber
 					:model-value="Math.floor(settings.firingArcOpacity * 100)"
@@ -73,7 +87,7 @@
 					highlightOnFocus
 					:minFractionDigits="0"
 					:maxFractionDigits="0"
-					:min="0.1"
+					:min="0"
 				/>
 			</div>
 			<div class="Settings__row">

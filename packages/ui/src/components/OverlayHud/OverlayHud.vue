@@ -10,6 +10,8 @@
 			class="Hud__compass"
 			:style="{
 				'--viewport-deg': artillery.viewport.value.rotation,
+				opacity: settings.compassOpacity,
+				'pointer-events': settings.compassOpacity > 0 ? 'auto' : 'none',
 			}"
 			alt="Reset rotation"
 			:model-value="-artillery.viewport.value.rotation"
