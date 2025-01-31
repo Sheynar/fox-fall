@@ -297,7 +297,7 @@
 
 <style lang="scss">
 	.UnitSettings__dialog {
-		font-size: calc(1em * var(--ui-scale));
+		font-size: calc(1em * var(--ui-scale) * 0.4);
 		.p-dialog-title {
 			font-size: 2em;
 		}

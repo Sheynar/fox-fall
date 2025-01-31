@@ -69,7 +69,7 @@
 	.Unit__container {
 		position: absolute;
 
-		transform: translate(-50%, -100%) scale(var(--unit-icon-scale))
+		transform: translate(-50%, -100%) scale(calc(var(--unit-icon-scale) * 0.4))
 			translateY(-25%);
 		transform-origin: 50% 100%;
 
