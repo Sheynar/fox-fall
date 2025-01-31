@@ -134,6 +134,7 @@
 			severity: 'secondary',
 			command: () => artillery.viewportControl.calibrateGrid(),
 		},
+		screenshotItem.value,
 		{
 			label: 'Wind',
 			iconComponents: [WindIndicator],
@@ -147,14 +148,13 @@
 			command: () => artillery.addUnit(UnitType.Location, undefined, undefined),
 		},
 		readyToFireItem.value,
-		screenshotItem.value,
-		connectedItem.value,
 		{
 			label: 'Settings',
 			icons: ['pi pi-cog'],
 			severity: 'secondary',
 			command: () => (settingsVisible.value = !settingsVisible.value),
 		},
+		connectedItem.value,
 		{
 			label: 'Help',
 			icons: ['pi pi-question-circle'],
