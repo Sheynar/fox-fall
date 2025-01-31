@@ -6,7 +6,7 @@
 		:style="{ '--_scale': settings.toggleButtonScale }"
 		@pointerdown.prevent="electronApi.toggleOverlay()"
 	>
-		<OverlayTooltip v-if="settings.showTooltip && !overlayOpen" />
+		<OverlayTooltip v-if="settings.showTooltip" />
 		<button class="OverlayToggle__button">
 			<ShellIcon class="OverlayToggle__icon" />
 		</button>
@@ -55,6 +55,7 @@
 	import ShellIcon from '@/components/icons/artillery/shell/300mm.vue';
 	import { isOverlay } from '@/lib/constants';
 	import { settings } from '@/lib/settings';
+	import { useToggleButtonStore } from '@/stores/toggle-button';
 	import { useElementBounding } from '@vueuse/core';
 	import { shallowRef, watchEffect } from 'vue';
 	import OverlayTooltip from './OverlayTooltip.vue';
@@ -64,6 +65,8 @@
 		type: Boolean,
 		required: true,
 	});
+
+	const toggleButtonStore = useToggleButtonStore();
 
 	// TODO : Move the overlay package's API type definitions to the shared package
 	const electronApi = (<any>window).electronApi;
@@ -87,5 +90,7 @@
 			x: bounding.width.value,
 			y: bounding.height.value,
 		});
+
+		toggleButtonStore.setSize(bounding.width.value, bounding.height.value);
 	});
 </script>

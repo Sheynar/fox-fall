@@ -7,6 +7,7 @@
 		:style="{
 			minWidth: '30rem',
 			'--ui-scale': settings.unitSettingsScale,
+			'--toggle-button-size': toggleButtonStore.sizeY + 'px',
 			animation: 'none',
 			transition: 'none',
 		}"
@@ -298,6 +299,9 @@
 <style lang="scss">
 	.UnitSettings__dialog {
 		font-size: calc(1em * var(--ui-scale) * 0.4);
+		margin-bottom: calc(0.75rem + var(--toggle-button-size)) !important;
+		margin-right: 0.75rem !important;
+
 		.p-dialog-title {
 			font-size: 2em;
 		}
@@ -406,6 +410,7 @@
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, UnitType, unitTypeOrder } from '@/lib/unit';
+	import { useToggleButtonStore } from '@/stores/toggle-button';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
 	const customPosition = defineModel('customPosition', {
@@ -418,6 +423,7 @@
 		readonly?: boolean;
 	}>();
 
+	const toggleButtonStore = useToggleButtonStore();
 	const unit = injectUnit();
 
 	const unitLabel = computed(() =>
