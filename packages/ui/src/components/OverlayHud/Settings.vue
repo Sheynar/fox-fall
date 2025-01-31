@@ -9,9 +9,9 @@
 	>
 		<Tabs value="features">
 			<TabList>
-				<Tab value="features">Feature selection</Tab>
-				<Tab value="grid">Grid tweaks</Tab>
-				<Tab value="interface">Interface tweaks</Tab>
+				<Tab as="div" value="features">Feature selection</Tab>
+				<Tab as="div" value="grid">Grid tweaks</Tab>
+				<Tab as="div" value="interface">Interface tweaks</Tab>
 			</TabList>
 			<TabPanels>
 				<TabPanel value="features">
