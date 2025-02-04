@@ -1,7 +1,11 @@
+import { ElectronApiCommand } from "@packages/types/dist/electron-api.js";
+import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
 import { app, BrowserWindow, desktopCapturer, ipcMain, screen } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { getKeyboardShortcut, pauseKeyboardShortcuts, resumeKeyboardShortcuts, updateKeyboardShortcut } from "../keyboard-shortcuts.mjs";
 
+const __dirname = import.meta.dirname;
 const display = screen.getPrimaryDisplay();
 
 let size = {
@@ -29,7 +33,7 @@ export const updateShape = () => {
 		]);
 
 		managerWindow.minimize();
-		setTimeout(() => managerWindow!.showInactive(), 100)
+		setTimeout(() => managerWindow!.showInactive(), 100);
 	}
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
@@ -51,7 +55,8 @@ export const initialise = () => {
 		movable: false,
 		resizable: false,
 		webPreferences: {
-			preload: path.join(__dirname, "./preload.js"),
+			preload: path.join(__dirname, "./preload.mjs"),
+			nodeIntegration: true,
 		},
 		// focusable: false,
 	});
@@ -67,17 +72,32 @@ export const initialise = () => {
 		}
 	);
 
-	ipcMain.on("toggle-overlay", (event) => {
+	ipcMain.on(ElectronApiCommand.ToggleOverlay, (event) => {
 		toggleOverlay();
 	});
-	ipcMain.on("query-overlay", (event) => {
-		event.reply("query-overlay-reply", overlayOpen);
+	ipcMain.on(ElectronApiCommand.GetOverlayOpen, (event) => {
+		event.reply(ElectronApiCommand.OverlayOpenReply, overlayOpen);
 	});
-	ipcMain.on("toggle-size", (event, newSize: { x: number; y: number }) => {
-		size = newSize;
-		if (!overlayOpen) {
-			updateShape();
+	ipcMain.on(
+		ElectronApiCommand.SendToggleSize,
+		(event, newSize: { x: number; y: number }) => {
+			size = newSize;
+			if (!overlayOpen) {
+				updateShape();
+			}
 		}
+	);
+	ipcMain.on(ElectronApiCommand.PauseKeyboardShortcuts, (event) => {
+		pauseKeyboardShortcuts();
+	});
+	ipcMain.on(ElectronApiCommand.ResumeKeyboardShortcuts, (event) => {
+		resumeKeyboardShortcuts();
+	});
+	ipcMain.on(ElectronApiCommand.UpdateKeyboardShortcut, (event, command: KeyboardCommand, accelerator?: string) => {
+		updateKeyboardShortcut(command, accelerator);
+	});
+	ipcMain.on(ElectronApiCommand.GetKeyboardShortcut, (event, command: KeyboardCommand) => {
+		event.reply(ElectronApiCommand.KeyboardShortcutReply, getKeyboardShortcut(command));
 	});
 	toggleOverlay();
 

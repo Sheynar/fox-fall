@@ -15,7 +15,8 @@
     "make": "rimraf out && electron-builder --config build.config.js"
   },
   "dependencies": {
-    "@packages/server": "workspace:*"
+    "@packages/server": "workspace:*",
+    "@packages/types": "workspace:*"
   },
   "devDependencies": {
     "@electron/packager": "18.1.1",

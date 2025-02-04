@@ -7,11 +7,11 @@ app.on('window-all-closed', () => {
 
 const initialise = async () => {
 	await app.whenReady();
-	const { initialise: initialiseWindow, showManager } = await import('./window');
+	const { initialise: initialiseWindow, showManager } = await import('./window/index.mjs');
 	initialiseWindow();
 	showManager();
 
-	const { initialise: initialiseKeyboardShortcuts } = await import('./keyboard-shortcuts');
+	const { initialise: initialiseKeyboardShortcuts } = await import('./keyboard-shortcuts.mjs');
 	initialiseKeyboardShortcuts();
 
 	app.on('activate', () => {

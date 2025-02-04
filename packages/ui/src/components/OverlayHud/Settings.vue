@@ -12,6 +12,7 @@
 				<Tab as="div" value="features">Feature selection</Tab>
 				<Tab as="div" value="grid">Grid tweaks</Tab>
 				<Tab as="div" value="interface">Interface tweaks</Tab>
+				<Tab as="div" value="keyboard-shortcuts">Keyboard shortcuts</Tab>
 			</TabList>
 			<TabPanels>
 				<TabPanel value="features">
@@ -206,6 +207,14 @@
 						</div>
 					</div>
 				</TabPanel>
+				<TabPanel value="keyboard-shortcuts">
+					<div class="Settings__content">
+						<div class="Settings__row">
+							<label>Toggle overlay</label>
+							<KeyboardShortcut :command="KeyboardCommand.ToggleOverlay" />
+						</div>
+					</div>
+				</TabPanel>
 			</TabPanels>
 		</Tabs>
 	</PrimeDialog>
@@ -227,6 +236,7 @@
 </style>
 
 <script setup lang="ts">
+	import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeCheckBox from 'primevue/checkbox';
 	import PrimeInputNumber from 'primevue/inputnumber';
@@ -235,6 +245,7 @@
 	import TabList from 'primevue/tablist';
 	import TabPanel from 'primevue/tabpanel';
 	import TabPanels from 'primevue/tabpanels';
+	import KeyboardShortcut from '@/components/inputs/KeyboardShortcut.vue';
 	import { isOverlay } from '@/lib/constants';
 	import { saveSettings, settings } from '@/lib/settings';
 

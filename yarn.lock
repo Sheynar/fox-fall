@@ -624,6 +624,7 @@ __metadata:
   dependencies:
     "@electron/packager": "npm:18.1.1"
     "@packages/server": "workspace:*"
+    "@packages/types": "workspace:*"
     "@packages/ui": "workspace:*"
     "@types/node": "npm:^20.12.7"
     babel-plugin-transform-async-to-generator: "npm:^6.24.1"

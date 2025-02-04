@@ -245,6 +245,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	});
 
 	useEventListener('keydown', (event) => {
+		console.log(event.key, event);
 		if (event.key === 'Tab' && event.ctrlKey) {
 			const unitIdList = Object.keys(unitMap.value);
 

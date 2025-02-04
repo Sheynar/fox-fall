@@ -4,7 +4,7 @@
 		ref="containerElement"
 		class="OverlayToggle__container"
 		:style="{ '--_scale': settings.toggleButtonScale }"
-		@pointerdown.prevent="electronApi.toggleOverlay()"
+		@pointerdown.prevent="executeToggle"
 	>
 		<OverlayTooltip v-if="settings.showTooltip" />
 		<button class="OverlayToggle__button">
@@ -68,17 +68,18 @@
 
 	const toggleButtonStore = useToggleButtonStore();
 
-	// TODO : Move the overlay package's API type definitions to the shared package
-	const electronApi = (<any>window).electronApi;
 	const overlayActive = isOverlay;
 
 	const onOverlayToggled = (isOverlayVisible: boolean) => {
 		overlayOpen.value = isOverlayVisible;
 	};
+	const executeToggle = () => {
+		window.electronApi?.toggleOverlay();
+	};
 
 	if (overlayActive) {
-		electronApi.onOverlayToggled(onOverlayToggled);
-		electronApi.getOverlayOpen().then(onOverlayToggled);
+		window.electronApi?.onOverlayToggled(onOverlayToggled);
+		window.electronApi?.getOverlayOpen().then(onOverlayToggled);
 	} else {
 		overlayOpen.value = true;
 	}
@@ -86,7 +87,7 @@
 	const bounding = useElementBounding(containerElement);
 	watchEffect(() => {
 		if (!overlayActive) return;
-		electronApi.sendToggleSize({
+		window.electronApi?.sendToggleSize({
 			x: bounding.width.value,
 			y: bounding.height.value,
 		});

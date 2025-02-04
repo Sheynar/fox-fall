@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "es5",
-		"module": "CommonJS",
+		"module": "NodeNext",
 		"outDir": "./dist",
 		"lib": ["esnext"],
 		"composite": false,
@@ -12,7 +12,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"inlineSources": false,
 		"isolatedModules": true,
-		"moduleResolution": "node",
+		"moduleResolution": "nodenext",
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"preserveWatchOutput": true,
@@ -20,6 +20,6 @@
 		"sourceMap": true,
 		"strictNullChecks": true
 	},
-	"include": ["src/**/*.ts", "src/**/*.d.ts"],
+	"include": ["src/**/*.ts", "src/**/*.mts", "src/**/*.d.ts"],
 	"exclude": ["node_modules"]
 }
