@@ -230,7 +230,7 @@
 	);
 
 	const firingPosition = computed(() =>
-		resolvedVector.value.addVector(artillery.wind.value)
+		resolvedVector.value.addVector(artillery.wind.value.scale(-1))
 	);
 
 	type MovingData = {
