@@ -44,10 +44,10 @@
 <style lang="scss">
 	@keyframes FiringArc__dash {
 		from {
-			stroke-dashoffset: var(--_line-segment-size);
+			stroke-dashoffset: 0;
 		}
 		to {
-			stroke-dashoffset: 0;
+			stroke-dashoffset: var(--_line-segment-size);
 		}
 	}
 
