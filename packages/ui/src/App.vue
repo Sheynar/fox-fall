@@ -32,7 +32,7 @@
 				!artillery.viewportControl.screenShotting.value
 			"
 		>
-			<Grid @contextMenu="onContextMenu" />
+			<Grid v-if="settings.backdropMode === BackdropMode.Overlay" @contextMenu="onContextMenu" />
 
 			<Viewport />
 
@@ -51,7 +51,10 @@
 					>
 						<Component v-if="item.icon" :is="item.icon" />
 						<span class="p-contextmenu-item-label">{{ item.label }}</span>
-						<i v-if="item.items" class="pi pi-angle-right p-icon p-contextmenu-submenu-icon"></i>
+						<i
+							v-if="item.items"
+							class="pi pi-angle-right p-icon p-contextmenu-submenu-icon"
+						></i>
 					</a>
 				</template>
 			</ContextMenu>
@@ -81,6 +84,18 @@
 					<feMerge>
 						<feMergeNode in="OUTLINED" />
 						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+				<filter id="outline-inset">
+					<feFlood flood-color="black" result="inside-color" />
+					<feComposite in2="SourceAlpha" operator="in" result="inside-stroke" />
+					<!--fill-area-->
+					<feMorphology in="SourceAlpha" operator="erode" radius="1" />
+					<feComposite in="SourceGraphic" operator="in" result="fill-area" />
+
+					<feMerge>
+						<feMergeNode in="inside-stroke" />
+						<feMergeNode in="fill-area" />
 					</feMerge>
 				</filter>
 			</defs>
@@ -133,8 +148,8 @@
 	import { isOverlay } from '@/lib/constants';
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
-	import { settings } from '@/lib/settings';
-	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
+	import { BackdropMode, settings, UserMode } from '@/lib/settings';
+	import { getAvailableUnitTypes, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
 	const overlayOpen = ref(false);
@@ -159,19 +174,17 @@
 		}
 	};
 	const contextMenuOptions = computed(() => {
+		const standaloneOnly = settings.value.userMode === UserMode.Basic || artillery.selectedUnit.value == null;
+
+		const availableUnitTypes = getAvailableUnitTypes();
+
 		const output: MenuItem[] = [
 			{
 				label:
-					artillery.selectedUnit.value != null
+					!standaloneOnly
 						? 'Add standalone unit'
 						: 'Add unit',
-				items: [
-					UnitType.Artillery,
-					UnitType.Spotter,
-					UnitType.Location,
-					UnitType.Target,
-					UnitType.LandingZone,
-				].map((unitType) => ({
+				items: availableUnitTypes.map((unitType) => ({
 					label: `${UnitType[unitType]}`,
 					icon: UNIT_ICON_BY_TYPE[unitType],
 					command: () => {
@@ -189,7 +202,7 @@
 			},
 		];
 
-		if (artillery.selectedUnit.value != null) {
+		if (!standaloneOnly) {
 			output.push({
 				label: 'Add linked unit',
 				items: [

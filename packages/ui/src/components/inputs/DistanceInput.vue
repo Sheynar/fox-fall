@@ -3,7 +3,7 @@
 		ref="primeInputNumber"
 		v-model="modelValue"
 		@input="setValue(Number($event.value))"
-		suffix="m"
+		:suffix="props.suffix"
 		locale="en-UK"
 		:autofocus="props.autofocus"
 		:allowEmpty="false"
@@ -24,8 +24,10 @@
 		autofocus?: boolean;
 		fractionDigits?: number;
 		min?: number;
+		suffix?: string;
 	}>(), {
 		fractionDigits: 1,
+		suffix: 'm',
 	});
 
 	const modelValue = defineModel({ type: Number, required: true });

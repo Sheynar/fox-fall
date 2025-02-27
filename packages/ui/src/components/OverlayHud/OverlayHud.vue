@@ -1,5 +1,5 @@
 <template>
-	<div class="Hud__container">
+	<div class="Hud__container" :style="{ 'z-index': LAYER.HUD }">
 		<div class="Hud__banner" v-if="artillery.unitSelector.value != null">
 			{{
 				artillery.unitSelector.value.prompt ?? 'Click on a unit to select it'
@@ -89,7 +89,7 @@
 	}
 
 	.Hud__compass {
-		position: absolute;
+		position: fixed;
 		top: 1em;
 		right: 1em;
 
@@ -106,7 +106,7 @@
 	}
 
 	.Hud__viewport-controls {
-		position: absolute;
+		position: fixed;
 		top: 1em;
 		right: 12em;
 
@@ -117,7 +117,7 @@
 	}
 
 	.Hud__debug-info {
-		position: absolute;
+		position: fixed;
 		bottom: 1em;
 		left: 1em;
 
@@ -136,6 +136,7 @@
 	import RotateIcon from '@/components/icons/RotateIcon.vue';
 	import ZoomIcon from '@/components/icons/ZoomIcon.vue';
 	import { wrapDegrees } from '@/lib/angle';
+	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 

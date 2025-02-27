@@ -29,70 +29,74 @@
 						optionLabel="label"
 					/>
 				</div>
-				<div
-					class="UnitSettings__row"
-					v-if="
-						unit.type === UnitType.Artillery || unit.type === UnitType.Target
-					"
-				>
-					<span>Ammunition:</span>
-					<IconSelect
-						class="UnitSettings__select"
-						filter
-						showClear
-						v-model="selectedAmmoType"
-						placeholder="Select ammo type"
-						:disabled="props.readonly"
-						:options="ammoOptions"
-						optionLabel="label"
-					/>
-				</div>
-				<div
-					class="UnitSettings__row"
-					v-if="
-						(unit.type === UnitType.Artillery ||
-							unit.type === UnitType.Target) &&
-						unit.ammunition != null
-					"
-				>
-					<span>Platform:</span>
-					<IconSelect
-						class="UnitSettings__select"
-						filter
-						showClear
-						v-model="selectedPlatform"
-						placeholder="Select artillery platform"
-						:disabled="props.readonly"
-						:options="platformOptions"
-						optionLabel="label"
-					/>
-				</div>
-				<div
-					class="UnitSettings__row"
-					v-if="unit.type === UnitType.Spotter || unit.type === UnitType.Target"
-				>
-					<span>Spotting type:</span>
-					<IconSelect
-						class="UnitSettings__select"
-						filter
-						showClear
-						v-model="selectedSpottingType"
-						placeholder="Select spotter type"
-						:disabled="props.readonly"
-						:options="spottingTypeOptions"
-						optionLabel="label"
-					/>
-				</div>
-				<div class="UnitSettings__row">
-					<span>Positioned from:</span>
-					<SelectOneUnit
-						class="UnitSettings__select"
-						:black-list="{ id: [unit.id] }"
-						:model-value="unit.parentId"
-						:disabled="props.readonly"
-						@update:model-value="emit('set-unit-source', $event)"
-					/>
-				</div>
+				<template v-if="settings.userMode === UserMode.Advanced">
+					<div
+						class="UnitSettings__row"
+						v-if="
+							unit.type === UnitType.Artillery || unit.type === UnitType.Target
+						"
+					>
+						<span>Ammunition:</span>
+						<AmmoSelect
+							class="UnitSettings__select"
+							:model-value="unit.ammunition"
+							@update:model-value="
+								unit.ammunition = $event;
+								unit.platform = undefined;
+								emit('updated');
+							"
+							:disabled="props.readonly"
+						/>
+					</div>
+					<div
+						class="UnitSettings__row"
+						v-if="
+							(unit.type === UnitType.Artillery ||
+								unit.type === UnitType.Target) &&
+							unit.ammunition != null
+						"
+					>
+						<span>Platform:</span>
+						<PlatformSelect
+							class="UnitSettings__select"
+							:ammo-type="unit.ammunition"
+							:model-value="unit.platform"
+							@update:model-value="
+								unit.platform = $event;
+								emit('updated');
+							"
+							:disabled="props.readonly"
+						/>
+					</div>
+					<div
+						class="UnitSettings__row"
+						v-if="
+							unit.type === UnitType.Spotter || unit.type === UnitType.Target
+						"
+					>
+						<span>Spotting type:</span>
+						<IconSelect
+							class="UnitSettings__select"
+							filter
+							showClear
+							v-model="selectedSpottingType"
+							placeholder="Select spotter type"
+							:disabled="props.readonly"
+							:options="spottingTypeOptions"
+							optionLabel="label"
+						/>
+					</div>
+					<div class="UnitSettings__row">
+						<span>Positioned from:</span>
+						<SelectOneUnit
+							class="UnitSettings__select"
+							:black-list="{ id: [unit.id] }"
+							:model-value="unit.parentId"
+							:disabled="props.readonly"
+							@update:model-value="emit('set-unit-source', $event)"
+						/>
+					</div>
+				</template>
 				<div class="UnitSettings__row">
 					<label>Name:</label>
 					<PrimeInputText
@@ -199,50 +203,52 @@
 					</template>
 				</template>
 			</div>
-			<div class="UnitSettings__actions">
-				<PrimeButton
-					class="UnitSettings__action"
-					@click.stop="onUnitTypeClicked($event, UnitType.Artillery)"
-					severity="secondary"
-					title="Create artillery"
-				>
-					<Component :is="UNIT_ICON_BY_TYPE[UnitType.Artillery]" />
-				</PrimeButton>
-				<PrimeButton
-					class="UnitSettings__action"
-					@click.stop="onUnitTypeClicked($event, UnitType.Spotter)"
-					severity="secondary"
-					title="Create spotter"
-				>
-					<Component :is="UNIT_ICON_BY_TYPE[UnitType.Spotter]" />
-				</PrimeButton>
-				<PrimeButton
-					class="UnitSettings__action"
-					@click.stop="onUnitTypeClicked($event, UnitType.Location)"
-					severity="secondary"
-					title="Create location"
-				>
-					<Component :is="UNIT_ICON_BY_TYPE[UnitType.Location]" />
-				</PrimeButton>
-			</div>
-			<div class="UnitSettings__actions">
-				<PrimeButton
-					class="UnitSettings__action"
-					@click.stop="onUnitTypeClicked($event, UnitType.Target)"
-					severity="secondary"
-					title="Create target"
-				>
-					<Component :is="UNIT_ICON_BY_TYPE[UnitType.Target]" />
-				</PrimeButton>
-				<PrimeButton
-					class="UnitSettings__action"
-					@click.stop="onUnitTypeClicked($event, UnitType.LandingZone)"
-					severity="secondary"
-					title="Create landing zone"
-				>
-					<Component :is="UNIT_ICON_BY_TYPE[UnitType.LandingZone]" />
-				</PrimeButton>
-			</div>
+			<template v-if="settings.userMode === UserMode.Advanced">
+				<div class="UnitSettings__actions">
+					<PrimeButton
+						class="UnitSettings__action"
+						@click.stop="onUnitTypeClicked($event, UnitType.Artillery)"
+						severity="secondary"
+						title="Create artillery"
+					>
+						<Component :is="UNIT_ICON_BY_TYPE[UnitType.Artillery]" />
+					</PrimeButton>
+					<PrimeButton
+						class="UnitSettings__action"
+						@click.stop="onUnitTypeClicked($event, UnitType.Spotter)"
+						severity="secondary"
+						title="Create spotter"
+					>
+						<Component :is="UNIT_ICON_BY_TYPE[UnitType.Spotter]" />
+					</PrimeButton>
+					<PrimeButton
+						class="UnitSettings__action"
+						@click.stop="onUnitTypeClicked($event, UnitType.Location)"
+						severity="secondary"
+						title="Create location"
+					>
+						<Component :is="UNIT_ICON_BY_TYPE[UnitType.Location]" />
+					</PrimeButton>
+				</div>
+				<div class="UnitSettings__actions">
+					<PrimeButton
+						class="UnitSettings__action"
+						@click.stop="onUnitTypeClicked($event, UnitType.Target)"
+						severity="secondary"
+						title="Create target"
+					>
+						<Component :is="UNIT_ICON_BY_TYPE[UnitType.Target]" />
+					</PrimeButton>
+					<PrimeButton
+						class="UnitSettings__action"
+						@click.stop="onUnitTypeClicked($event, UnitType.LandingZone)"
+						severity="secondary"
+						title="Create landing zone"
+					>
+						<Component :is="UNIT_ICON_BY_TYPE[UnitType.LandingZone]" />
+					</PrimeButton>
+				</div>
+			</template>
 			<div class="UnitSettings__actions">
 				<PrimeButton
 					class="UnitSettings__action"
@@ -393,23 +399,19 @@
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
 	import WindIcon from '@/components/icons/WindIcon.vue';
+	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
 	import IconSelect from '@/components/inputs/IconSelect.vue';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
+	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
 	import { injectUnit } from '@/contexts/unit';
 	import { wrapDegrees } from '@/lib/angle';
-	import {
-		AMMO_TYPE,
-		ARTILLERY_BY_SHELL,
-		Platform,
-		SPOTTING_BY_TYPE,
-		SPOTTING_TYPE,
-	} from '@/lib/constants/data';
+	import { SPOTTING_BY_TYPE, SPOTTING_TYPE } from '@/lib/constants/data';
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
-	import { settings } from '@/lib/settings';
-	import { getUnitLabel, UnitType, unitTypeOrder } from '@/lib/unit';
+	import { settings, UserMode } from '@/lib/settings';
+	import { getAvailableUnitTypes, getUnitLabel, UnitType } from '@/lib/unit';
 	import { useToggleButtonStore } from '@/stores/toggle-button';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
@@ -431,7 +433,7 @@
 	);
 
 	const unitTypeOptions = computed(() => {
-		return unitTypeOrder.map((type) => ({
+		return getAvailableUnitTypes().map((type) => ({
 			label: UnitType[type],
 			icon: UNIT_ICON_BY_TYPE[type],
 			value: type,
@@ -442,57 +444,6 @@
 			unitTypeOptions.value.find((option) => option.value === unit.value.type),
 		set: (option) => {
 			unit.value.type = option?.value ?? UnitType.Artillery;
-			emit('updated');
-		},
-	});
-
-	const ammoOptions = computed(() => {
-		return (Object.keys(ARTILLERY_BY_SHELL) as AMMO_TYPE[])
-			.sort()
-			.map((shell) => ({
-				label: shell,
-				icon: ARTILLERY_BY_SHELL[shell].ICON,
-				value: shell,
-			}));
-	});
-	const selectedAmmoType = computed({
-		get: () =>
-			ammoOptions.value.find(
-				(option) => option.value === unit.value.ammunition
-			),
-		set: (option) => {
-			unit.value.ammunition = option?.value;
-			unit.value.platform = undefined;
-			emit('updated');
-		},
-	});
-
-	const platformOptions = computed(() => {
-		if (
-			unit.value.ammunition == null ||
-			ARTILLERY_BY_SHELL[unit.value.ammunition] == null
-		)
-			return [];
-		return (
-			Object.keys(
-				ARTILLERY_BY_SHELL[unit.value.ammunition].PLATFORM
-			) as Platform<AMMO_TYPE>[]
-		)
-			.sort()
-			.map((platform) => ({
-				label: platform,
-				icon: ARTILLERY_BY_SHELL[unit.value.ammunition!].PLATFORM[platform]
-					?.ICON,
-				value: platform,
-			}));
-	});
-	const selectedPlatform = computed({
-		get: () =>
-			platformOptions.value.find(
-				(option) => option.value === unit.value.platform
-			),
-		set: (option) => {
-			unit.value.platform = option?.value;
 			emit('updated');
 		},
 	});
