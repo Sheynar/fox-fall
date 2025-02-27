@@ -9,6 +9,7 @@
 			'--viewport-deg': artillery.viewport.value.rotation,
 			'--viewport-zoom': artillery.viewport.value.resolvedZoom,
 			'--grid-size': gridSize * artillery.viewport.value.resolvedZoom,
+			'z-index': LAYER.BACKDROP,
 		}"
 		version="1.1"
 		xmlns="http://www.w3.org/2000/svg"
@@ -72,9 +73,10 @@
 
 <script setup lang="ts">
 	import { computed } from 'vue';
+	import { LAYER } from '@/lib/constants/ui';
+	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { Vector } from '@/lib/vector';
-	import { artillery } from '@/lib/globals';
 
 	const cellCount = computed(() => {
 		const hypot = Math.sqrt(

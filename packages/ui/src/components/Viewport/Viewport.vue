@@ -9,6 +9,8 @@
 			'--viewport-zoom': artillery.viewport.value.resolvedZoom,
 		}"
 	>
+		<HexMap />
+
 		<RangeFinders />
 
 		<Units />
@@ -38,6 +40,7 @@
 
 <script setup lang="ts">
 	import FiringArcs from '@/components/Viewport/FiringArcs/FiringArcs.vue';
+	import HexMap from '@/components/Viewport/HexMap/HexMap.vue';
 	import RangeFinders from '@/components/Viewport/RangeFinders/RangeFinders.vue';
 	import Units from '@/components/Viewport/Units/Units.vue';
 	import { artillery } from '@/lib/globals';

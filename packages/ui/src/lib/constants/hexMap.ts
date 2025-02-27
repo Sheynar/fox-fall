@@ -1,51 +1,51 @@
-import BasinSionnach from '@/assets/hexMap/BasinSionnach.png';
-import SpeakingWoods from '@/assets/hexMap/SpeakingWoods.png';
-import HowlCountry from '@/assets/hexMap/HowlCountry.png';
-import CallumsCape from '@/assets/hexMap/CallumsCape.png';
-import ReachingTrail from '@/assets/hexMap/ReachingTrail.png';
-import ClansheadValley from '@/assets/hexMap/ClansheadValley.png';
-import NevishLine from '@/assets/hexMap/NevishLine.png';
-import TheMoors from '@/assets/hexMap/TheMoors.png';
-import ViperPit from '@/assets/hexMap/ViperPit.png';
-import MorgensCrossing from '@/assets/hexMap/MorgensCrossing.png';
-import TheOarbreakerIsles from '@/assets/hexMap/TheOarbreakerIsles.png';
-import Stonecradle from '@/assets/hexMap/Stonecradle.png';
-import CallahansPassage from '@/assets/hexMap/CallahansPassage.png';
-import WeatheredExpanse from '@/assets/hexMap/WeatheredExpanse.png';
-import Godcrofts from '@/assets/hexMap/Godcrofts.png';
-import FarranacCoast from '@/assets/hexMap/FarranacCoast.png';
-import TheLinnOfMercy from '@/assets/hexMap/TheLinnOfMercy.png';
-import MarbanHollow from '@/assets/hexMap/MarbanHollow.png';
-import StlicanShelf from '@/assets/hexMap/StlicanShelf.png';
-import FishermansRow from '@/assets/hexMap/FishermansRow.png';
-import KingsCage from '@/assets/hexMap/KingsCage.png';
-import Deadlands from '@/assets/hexMap/Deadlands.png';
-import TheClahstra from '@/assets/hexMap/TheClahstra.png';
-import TempestIsland from '@/assets/hexMap/TempestIsland.png';
-import Westgate from '@/assets/hexMap/Westgate.png';
-import LochMor from '@/assets/hexMap/LochMor.png';
-import TheDrownedVale from '@/assets/hexMap/TheDrownedVale.png';
-import EndlessShore from '@/assets/hexMap/EndlessShore.png';
-import StemaLanding from '@/assets/hexMap/StemaLanding.png';
-import Sableport from '@/assets/hexMap/Sableport.png';
-import UmbralWildwood from '@/assets/hexMap/UmbralWildwood.png';
-import AllodsBight from '@/assets/hexMap/AllodsBight.png';
-import TheFingers from '@/assets/hexMap/TheFingers.png';
-import Origin from '@/assets/hexMap/Origin.png';
-import TheHeartlands from '@/assets/hexMap/TheHeartlands.png';
-import ShackledChasm from '@/assets/hexMap/ShackledChasm.png';
-import ReaversPass from '@/assets/hexMap/ReaversPass.png';
-import AshFields from '@/assets/hexMap/AshFields.png';
-import GreatMarch from '@/assets/hexMap/GreatMarch.png';
-import Terminus from '@/assets/hexMap/Terminus.png';
-import RedRiver from '@/assets/hexMap/RedRiver.png';
-import Acrithia from '@/assets/hexMap/Acrithia.png';
-import Kalokai from '@/assets/hexMap/Kalokai.png';
+import BasinSionnachMap from '@/assets/images/hex-maps/MapBasinSionnachHex.png';
+import SpeakingWoodsMap from '@/assets/images/hex-maps/MapSpeakingWoodsHex.png';
+import HowlCountyMap from '@/assets/images/hex-maps/MapHowlCountyHex.png';
+import CallumsCapeMap from '@/assets/images/hex-maps/MapCallumsCapeHex.png';
+import ReachingTrailMap from '@/assets/images/hex-maps/MapReachingTrailHex.png';
+import ClansheadValleyMap from '@/assets/images/hex-maps/MapClansheadValleyHex.png';
+import NevishLineMap from '@/assets/images/hex-maps/MapNevishLineHex.png';
+import TheMoorsMap from '@/assets/images/hex-maps/MapMooringCountyHex.png';
+import ViperPitMap from '@/assets/images/hex-maps/MapViperPitHex.png';
+import MorgensCrossingMap from '@/assets/images/hex-maps/MapMorgensCrossingHex.png';
+import TheOarbreakerIslesMap from '@/assets/images/hex-maps/MapOarbreakerHex.png';
+import StonecradleMap from '@/assets/images/hex-maps/MapStonecradleHex.png';
+import CallahansPassageMap from '@/assets/images/hex-maps/MapCallahansPassageHex.png';
+import WeatheredExpanseMap from '@/assets/images/hex-maps/MapWeatheredExpanseHex.png';
+import GodcroftsMap from '@/assets/images/hex-maps/MapGodcroftsHex.png';
+import FarranacCoastMap from '@/assets/images/hex-maps/MapFarranacCoastHex.png';
+import TheLinnOfMercyMap from '@/assets/images/hex-maps/MapLinnMercyHex.png';
+import MarbanHollowMap from '@/assets/images/hex-maps/MapMarbanHollow.png';
+import StlicanShelfMap from '@/assets/images/hex-maps/MapStlicanShelfHex.png';
+import FishermansRowMap from '@/assets/images/hex-maps/MapFishermansRowHex.png';
+import KingsCageMap from '@/assets/images/hex-maps/MapKingsCageHex.png';
+import DeadlandsMap from '@/assets/images/hex-maps/MapDeadlandsHex.png';
+import TheClahstraMap from '@/assets/images/hex-maps/MapClahstraHexMap.png';
+import TempestIslandMap from '@/assets/images/hex-maps/MapTempestIslandHex.png';
+import WestgateMap from '@/assets/images/hex-maps/MapWestgateHex.png';
+import LochMorMap from '@/assets/images/hex-maps/MapLochMorHex.png';
+import TheDrownedValeMap from '@/assets/images/hex-maps/MapDrownedValeHex.png';
+import EndlessShoreMap from '@/assets/images/hex-maps/MapEndlessShoreHex.png';
+import StemaLandingMap from '@/assets/images/hex-maps/MapStemaLandingHex.png';
+import SableportMap from '@/assets/images/hex-maps/MapSableportHex.png';
+import UmbralWildwoodMap from '@/assets/images/hex-maps/MapUmbralWildwoodHex.png';
+import AllodsBightMap from '@/assets/images/hex-maps/MapAllodsBightHex.png';
+import TheFingersMap from '@/assets/images/hex-maps/MapTheFingersHex.png';
+import OriginMap from '@/assets/images/hex-maps/MapOriginHex.png';
+import TheHeartlandsMap from '@/assets/images/hex-maps/MapHeartlandsHex.png';
+import ShackledChasmMap from '@/assets/images/hex-maps/MapShackledChasmHex.png';
+import ReaversPassMap from '@/assets/images/hex-maps/MapReaversPassHex.png';
+import AshFieldsMap from '@/assets/images/hex-maps/MapAshFieldsHex.png';
+import GreatMarchMap from '@/assets/images/hex-maps/MapGreatMarchHex.png';
+import TerminusMap from '@/assets/images/hex-maps/MapTerminusHex.png';
+import RedRiverMap from '@/assets/images/hex-maps/MapRedRiverHex.png';
+import AcrithiaMap from '@/assets/images/hex-maps/MapAcrithiaHex.png';
+import KalokaiMap from '@/assets/images/hex-maps/MapKalokaiHex.png';
 
 export enum Hex {
 	BasinSionnach = 'Basin Sionnach',
 	SpeakingWoods = 'Speaking Woods',
-	HowlCountry = 'Howl Country',
+	HowlCounty = 'Howl County',
 	CallumsCape = 'Callum\'s Cape',
 	ReachingTrail = 'Reaching Trail',
 	ClansheadValley = 'Clanshead Valley',
@@ -90,7 +90,7 @@ export enum Hex {
 
 export const HEX_POSITIONS = [
 	[undefined,              undefined,              Hex.BasinSionnach,      undefined,              undefined,              ],
-	[            undefined,              Hex.SpeakingWoods,      Hex.HowlCountry,        undefined                           ],
+	[            undefined,              Hex.SpeakingWoods,      Hex.HowlCounty,         undefined                           ],
 	[undefined,              Hex.CallumsCape,        Hex.ReachingTrail,      Hex.ClansheadValley,    undefined               ],
 	[            Hex.NevishLine,         Hex.TheMoors,           Hex.ViperPit,           Hex.MorgensCrossing                 ],
 	[Hex.TheOarbreakerIsles, Hex.Stonecradle,        Hex.CallahansPassage,   Hex.WeatheredExpanse,   Hex.Godcrofts           ],
@@ -105,47 +105,47 @@ export const HEX_POSITIONS = [
 ];
 
 export const HEX_ASSETS: Record<Hex, string> = {
-	[Hex.BasinSionnach]: BasinSionnach,
-	[Hex.SpeakingWoods]: SpeakingWoods,
-	[Hex.HowlCountry]: HowlCountry,
-	[Hex.CallumsCape]: CallumsCape,
-	[Hex.ReachingTrail]: ReachingTrail,
-	[Hex.ClansheadValley]: ClansheadValley,
-	[Hex.NevishLine]: NevishLine,
-	[Hex.TheMoors]: TheMoors,
-	[Hex.ViperPit]: ViperPit,
-	[Hex.MorgensCrossing]: MorgensCrossing,
-	[Hex.TheOarbreakerIsles]: TheOarbreakerIsles,
-	[Hex.Stonecradle]: Stonecradle,
-	[Hex.CallahansPassage]: CallahansPassage,
-	[Hex.WeatheredExpanse]: WeatheredExpanse,
-	[Hex.Godcrofts]: Godcrofts,
-	[Hex.FarranacCoast]: FarranacCoast,
-	[Hex.TheLinnOfMercy]: TheLinnOfMercy,
-	[Hex.MarbanHollow]: MarbanHollow,
-	[Hex.StlicanShelf]: StlicanShelf,
-	[Hex.FishermansRow]: FishermansRow,
-	[Hex.KingsCage]: KingsCage,
-	[Hex.Deadlands]: Deadlands,
-	[Hex.TheClahstra]: TheClahstra,
-	[Hex.TempestIsland]: TempestIsland,
-	[Hex.Westgate]: Westgate,
-	[Hex.LochMor]: LochMor,
-	[Hex.TheDrownedVale]: TheDrownedVale,
-	[Hex.EndlessShore]: EndlessShore,
-	[Hex.StemaLanding]: StemaLanding,
-	[Hex.Sableport]: Sableport,
-	[Hex.UmbralWildwood]: UmbralWildwood,
-	[Hex.AllodsBight]: AllodsBight,
-	[Hex.TheFingers]: TheFingers,
-	[Hex.Origin]: Origin,
-	[Hex.TheHeartlands]: TheHeartlands,
-	[Hex.ShackledChasm]: ShackledChasm,
-	[Hex.ReaversPass]: ReaversPass,
-	[Hex.AshFields]: AshFields,
-	[Hex.GreatMarch]: GreatMarch,
-	[Hex.Terminus]: Terminus,
-	[Hex.RedRiver]: RedRiver,
-	[Hex.Acrithia]: Acrithia,
-	[Hex.Kalokai]: Kalokai,
+	[Hex.BasinSionnach]: BasinSionnachMap,
+	[Hex.SpeakingWoods]: SpeakingWoodsMap,
+	[Hex.HowlCounty]: HowlCountyMap,
+	[Hex.CallumsCape]: CallumsCapeMap,
+	[Hex.ReachingTrail]: ReachingTrailMap,
+	[Hex.ClansheadValley]: ClansheadValleyMap,
+	[Hex.NevishLine]: NevishLineMap,
+	[Hex.TheMoors]: TheMoorsMap,
+	[Hex.ViperPit]: ViperPitMap,
+	[Hex.MorgensCrossing]: MorgensCrossingMap,
+	[Hex.TheOarbreakerIsles]: TheOarbreakerIslesMap,
+	[Hex.Stonecradle]: StonecradleMap,
+	[Hex.CallahansPassage]: CallahansPassageMap,
+	[Hex.WeatheredExpanse]: WeatheredExpanseMap,
+	[Hex.Godcrofts]: GodcroftsMap,
+	[Hex.FarranacCoast]: FarranacCoastMap,
+	[Hex.TheLinnOfMercy]: TheLinnOfMercyMap,
+	[Hex.MarbanHollow]: MarbanHollowMap,
+	[Hex.StlicanShelf]: StlicanShelfMap,
+	[Hex.FishermansRow]: FishermansRowMap,
+	[Hex.KingsCage]: KingsCageMap,
+	[Hex.Deadlands]: DeadlandsMap,
+	[Hex.TheClahstra]: TheClahstraMap,
+	[Hex.TempestIsland]: TempestIslandMap,
+	[Hex.Westgate]: WestgateMap,
+	[Hex.LochMor]: LochMorMap,
+	[Hex.TheDrownedVale]: TheDrownedValeMap,
+	[Hex.EndlessShore]: EndlessShoreMap,
+	[Hex.StemaLanding]: StemaLandingMap,
+	[Hex.Sableport]: SableportMap,
+	[Hex.UmbralWildwood]: UmbralWildwoodMap,
+	[Hex.AllodsBight]: AllodsBightMap,
+	[Hex.TheFingers]: TheFingersMap,
+	[Hex.Origin]: OriginMap,
+	[Hex.TheHeartlands]: TheHeartlandsMap,
+	[Hex.ShackledChasm]: ShackledChasmMap,
+	[Hex.ReaversPass]: ReaversPassMap,
+	[Hex.AshFields]: AshFieldsMap,
+	[Hex.GreatMarch]: GreatMarchMap,
+	[Hex.Terminus]: TerminusMap,
+	[Hex.RedRiver]: RedRiverMap,
+	[Hex.Acrithia]: AcrithiaMap,
+	[Hex.Kalokai]: KalokaiMap,
 };

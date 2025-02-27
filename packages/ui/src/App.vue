@@ -51,7 +51,10 @@
 					>
 						<Component v-if="item.icon" :is="item.icon" />
 						<span class="p-contextmenu-item-label">{{ item.label }}</span>
-						<i v-if="item.items" class="pi pi-angle-right p-icon p-contextmenu-submenu-icon"></i>
+						<i
+							v-if="item.items"
+							class="pi pi-angle-right p-icon p-contextmenu-submenu-icon"
+						></i>
 					</a>
 				</template>
 			</ContextMenu>
@@ -81,6 +84,18 @@
 					<feMerge>
 						<feMergeNode in="OUTLINED" />
 						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+				<filter id="outline-inset">
+					<feFlood flood-color="black" result="inside-color" />
+					<feComposite in2="SourceAlpha" operator="in" result="inside-stroke" />
+					<!--fill-area-->
+					<feMorphology in="SourceAlpha" operator="erode" radius="1" />
+					<feComposite in="SourceGraphic" operator="in" result="fill-area" />
+
+					<feMerge>
+						<feMergeNode in="inside-stroke" />
+						<feMergeNode in="fill-area" />
 					</feMerge>
 				</filter>
 			</defs>
