@@ -23,15 +23,11 @@ export const useViewportControl = (options: ViewportControlOptions) => {
 		dragType: DragType;
 	}>(null);
 
-	const canPan = computed(
-		() => !settings.value.lockPan && !screenShot.value
-	);
+	const canPan = computed(() => !settings.value.lockPan && !screenShot.value);
 	const canRotate = computed(
 		() => !settings.value.lockRotate && !screenShot.value
 	);
-	const canZoom = computed(
-		() => !settings.value.lockZoom && !screenShot.value
-	);
+	const canZoom = computed(() => !settings.value.lockZoom && !screenShot.value);
 
 	useMultiPointerDrag({
 		element: options.containerElement,
@@ -61,9 +57,11 @@ export const useViewportControl = (options: ViewportControlOptions) => {
 
 					options.viewport.value.rotateBy(
 						rotation,
-						dragStatus.startPosition.addVector(
-							options.viewport.value.viewportSize.scale(-0.5)
-						)
+						canPan.value
+							? dragStatus.startPosition.addVector(
+									options.viewport.value.viewportSize.scale(-0.5)
+								)
+							: undefined
 					);
 				}
 			} else {
@@ -74,16 +72,20 @@ export const useViewportControl = (options: ViewportControlOptions) => {
 			}
 
 			if (Object.keys(dragStatus.pointers).length > 1) {
+				const centerPoint = dragStatus.currentPosition.addVector(
+					options.viewport.value.viewportSize.scale(-0.5)
+				);
+
 				if (canZoom.value) {
 					options.viewport.value.zoomBy(
 						dragStatus.zoomDelta,
-						canPan.value ? dragStatus.currentPosition : undefined
+						canPan.value ? centerPoint : undefined
 					);
 				}
 				if (canRotate.value) {
 					options.viewport.value.rotateBy(
 						dragStatus.rotationDelta,
-						canPan.value ? dragStatus.currentPosition : undefined
+						canPan.value ? centerPoint : undefined
 					);
 				}
 			}
