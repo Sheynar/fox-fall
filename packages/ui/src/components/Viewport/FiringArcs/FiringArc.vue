@@ -142,7 +142,7 @@
 	);
 	const elevationOffset = computed(() =>
 		Vector.fromAngularVector({
-			azimuth: artillery.viewport.value.rotation,
+			azimuth: -artillery.viewport.value.rotation,
 			distance: lineVector.value.distance / 2,
 		})
 	);
