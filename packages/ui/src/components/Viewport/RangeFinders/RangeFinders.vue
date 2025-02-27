@@ -162,7 +162,7 @@
 					artillery.unitMap.value,
 					unit.id
 				).addVector(
-					artillery.wind.value.scale(unit.type === UnitType.Artillery ? -1 : 1)
+					artillery.wind.value.scale(unit.type === UnitType.Artillery ? 1 : -1)
 				),
 			});
 		}
