@@ -183,7 +183,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			const windCorrection = getUnitResolvedVector(
 				unitMap.value,
 				target
-			).addVector(getUnitResolvedVector(unitMap.value, unit.id).scale(-1));
+			).scale(-1).addVector(getUnitResolvedVector(unitMap.value, unit.id));
 			wind.value = wind.value.addVector(windCorrection);
 			options.onWindUpdated?.();
 
