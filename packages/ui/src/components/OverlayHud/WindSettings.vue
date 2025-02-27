@@ -13,6 +13,10 @@
 				<label>Wind direction:</label>
 				<DirectionInput v-model="artillery.wind.value.azimuth" @update:model-value="syncedRoom.updateWind()" autofocus />
 			</div>
+			<div class="Wind__information__item" v-if="windMultiplier != null">
+				<label>Wind tier:</label>
+				<DistanceInput :model-value="artillery.wind.value.distance / windMultiplier" @update:model-value="artillery.wind.value.distance = $event * windMultiplier; syncedRoom.updateWind()" :suffix="''" />
+			</div>
 			<div class="Wind__information__item">
 				<label>Wind distance:</label>
 				<DistanceInput v-model="artillery.wind.value.distance" @update:model-value="syncedRoom.updateWind()" />
@@ -55,7 +59,19 @@
 	import PrimeDialog from 'primevue/dialog';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
+	import { ARTILLERY_BY_SHELL } from '@/lib/constants/data';
 	import { artillery, syncedRoom } from '@/lib/globals';
+	import { settings } from '@/lib/settings';
+	import { getUnitSpecs } from '@/lib/unit';
+	import { computed } from 'vue';
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
+
+	const windMultiplier = computed(() => {
+		const windOffsets = Object.keys(artillery.unitMap.value).map((unitId) => getUnitSpecs(artillery.unitMap.value, unitId)?.WIND_OFFSET).filter((windOffset) => windOffset != null);
+		if (windOffsets.length > 0) return windOffsets.reduce((a, b) => a + b, 0) / windOffsets.length;
+
+		if (settings.value.globalAmmo == null || settings.value.globalPlatform == null) return null;
+		return ARTILLERY_BY_SHELL[settings.value.globalAmmo]?.PLATFORM[settings.value.globalPlatform]?.WIND_OFFSET ?? null;
+	});
 </script>

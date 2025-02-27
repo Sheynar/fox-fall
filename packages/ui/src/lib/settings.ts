@@ -1,10 +1,27 @@
 import { ref } from 'vue';
 import { isOverlay } from './constants';
+import { AMMO_TYPE, Platform } from './constants/data';
+
+export enum UserMode {
+	Basic = 'basic',
+	Advanced = 'advanced',
+}
+
+export enum BackdropMode {
+	None = 'none',
+	Map = 'map',
+	Overlay = 'overlay',
+}
 
 export const settings = ref({
 	lockPan: false,
 	lockRotate: isOverlay,
 	lockZoom: false,
+
+	backdropMode: BackdropMode.None,
+	userMode: UserMode.Basic,
+	globalAmmo: undefined as AMMO_TYPE | undefined,
+	globalPlatform: undefined as Platform<AMMO_TYPE> | undefined,
 
 	useNatoAlphabet: true,
 	showTooltip: true,
@@ -33,5 +50,6 @@ export const loadSettings = () => {
 	if (savedSettings != null) {
 		Object.assign(settings.value, JSON.parse(savedSettings));
 	}
+	console.log(JSON.parse(JSON.stringify(settings.value)));
 };
 loadSettings();

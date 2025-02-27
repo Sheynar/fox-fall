@@ -12,12 +12,19 @@
 				@pointerleave="tooltip = null"
 			>
 				<i v-for="icon in item.icons" :class="icon" />
-				<Component v-for="iconComponent in item.iconComponents" :is="iconComponent" />
+				<Component
+					v-for="iconComponent in item.iconComponents"
+					:is="iconComponent"
+				/>
 			</PrimeButton>
 		</template>
 	</PrimeDock>
 
-	<PrimePopover ref="primePopover" :dismissable="false" append-to=".App__container">
+	<PrimePopover
+		ref="primePopover"
+		:dismissable="false"
+		append-to=".App__container"
+	>
 		{{ tooltip?.label }}
 	</PrimePopover>
 
@@ -49,11 +56,8 @@
 	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
 	import WindIndicator from '@/components/OverlayHud/WindIndicator.vue';
 	import WindSettings from '@/components/OverlayHud/WindSettings.vue';
-	import {
-		artillery,
-		serverConnection,
-		syncedRoom,
-	} from '@/lib/globals';
+	import { artillery, serverConnection, syncedRoom } from '@/lib/globals';
+	import { BackdropMode, settings } from '@/lib/settings';
 	import { UnitType } from '@/lib/unit';
 	import { ServerConnectionState } from '@/mixins/server-connection';
 	import PrimeButton from 'primevue/button';
@@ -62,13 +66,16 @@
 	import { computed, ref, shallowRef, watch } from 'vue';
 
 	const primePopover = ref<InstanceType<typeof PrimePopover> | null>(null);
-	const tooltip = shallowRef<{ label: string, event: MouseEvent } | null>(null);
-	watch(() => tooltip.value, () => {
-		primePopover.value?.hide();
-		if (tooltip.value) {
-			primePopover.value?.show(tooltip.value.event);
+	const tooltip = shallowRef<{ label: string; event: MouseEvent } | null>(null);
+	watch(
+		() => tooltip.value,
+		() => {
+			primePopover.value?.hide();
+			if (tooltip.value) {
+				primePopover.value?.show(tooltip.value.event);
+			}
 		}
-	})
+	);
 
 	const settingsVisible = ref(false);
 	const windSettingsVisible = ref(false);
@@ -90,9 +97,18 @@
 	};
 	const isItem = (_item: any): _item is Item => true;
 
+	const calibrateGridItem = computed<Item>(() => ({
+		label: 'Calibrate grid',
+		iconComponents: [GridIcon],
+		severity: 'secondary',
+		command: () => artillery.viewportControl.calibrateGrid(),
+	}));
+
 	const readyToFireItem = computed<Item>(() => ({
 		label: 'Ready to fire',
-		icons: [`pi ${artillery.readyToFire.value ? 'pi-play-circle' : 'pi-pause-circle'}`],
+		icons: [
+			`pi ${artillery.readyToFire.value ? 'pi-play-circle' : 'pi-pause-circle'}`,
+		],
 		severity: artillery.readyToFire.value ? 'success' : 'danger',
 		command: () => {
 			artillery.readyToFire.value = !artillery.readyToFire.value;
@@ -127,39 +143,41 @@
 		command: () => (syncSettingsVisible.value = !syncSettingsVisible.value),
 	}));
 
-	const items = computed<Item[]>(() => [
-		{
-			label: 'Calibrate grid',
-			iconComponents: [GridIcon],
-			severity: 'secondary',
-			command: () => artillery.viewportControl.calibrateGrid(),
-		},
-		screenshotItem.value,
-		{
-			label: 'Wind',
-			iconComponents: [WindIndicator],
-			severity: 'secondary',
-			command: () => (windSettingsVisible.value = !windSettingsVisible.value),
-		},
-		{
-			label: 'Add unit',
-			icons: ['pi pi-plus'],
-			severity: 'secondary',
-			command: () => artillery.addUnit(UnitType.Location, undefined, undefined),
-		},
-		readyToFireItem.value,
-		{
-			label: 'Settings',
-			icons: ['pi pi-cog'],
-			severity: 'secondary',
-			command: () => (settingsVisible.value = !settingsVisible.value),
-		},
-		connectedItem.value,
-		{
-			label: 'Help',
-			icons: ['pi pi-question-circle'],
-			severity: 'secondary',
-			command: showHelp,
-		},
-	]);
+	const items = computed<Item[]>(() => {
+		const output = [
+			{
+				label: 'Wind',
+				iconComponents: [WindIndicator],
+				severity: 'secondary',
+				command: () => (windSettingsVisible.value = !windSettingsVisible.value),
+			},
+			{
+				label: 'Add unit',
+				icons: ['pi pi-plus'],
+				severity: 'secondary',
+				command: () =>
+					artillery.addUnit(UnitType.Location, undefined, undefined),
+			},
+			readyToFireItem.value,
+			{
+				label: 'Settings',
+				icons: ['pi pi-cog'],
+				severity: 'secondary',
+				command: () => (settingsVisible.value = !settingsVisible.value),
+			},
+			connectedItem.value,
+			{
+				label: 'Help',
+				icons: ['pi pi-question-circle'],
+				severity: 'secondary',
+				command: showHelp,
+			},
+		];
+
+		if (settings.value.backdropMode === BackdropMode.Overlay) {
+			output.unshift(calibrateGridItem.value, screenshotItem.value);
+		}
+
+		return output;
+	});
 </script>

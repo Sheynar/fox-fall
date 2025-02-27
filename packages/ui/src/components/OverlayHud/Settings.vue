@@ -18,6 +18,51 @@
 				<TabPanel value="features">
 					<div class="Settings__content">
 						<div class="Settings__row">
+							<label>Backdrop mode</label>
+							<PrimeSelect
+								:options="
+									Object.keys(BackdropMode).map((backdropMode) => ({
+										id: BackdropMode[backdropMode as keyof typeof BackdropMode],
+										label: backdropMode,
+									}))
+								"
+								optionLabel="label"
+								optionValue="id"
+								v-model="settings.backdropMode"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row">
+							<label>User mode</label>
+							<PrimeSelect
+								:options="
+									Object.keys(UserMode).map((userMode) => ({
+										id: UserMode[userMode as keyof typeof UserMode],
+										label: userMode,
+									}))
+								"
+								optionLabel="label"
+								optionValue="id"
+								v-model="settings.userMode"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row">
+							<label>{{ settings.userMode === UserMode.Basic ? 'Global ammo' : 'Default Ammo' }}</label>
+							<AmmoSelect
+								v-model="settings.globalAmmo"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row" v-if="settings.globalAmmo != null">
+							<label>{{ settings.userMode === UserMode.Basic ? 'Global platform' : 'Default platform' }}</label>
+							<PlatformSelect
+								:ammo-type="settings.globalAmmo"
+								v-model="settings.globalPlatform"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row">
 							<label>Show tooltip</label>
 							<PrimeCheckBox
 								binary
@@ -240,14 +285,17 @@
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeCheckBox from 'primevue/checkbox';
 	import PrimeInputNumber from 'primevue/inputnumber';
+	import PrimeSelect from 'primevue/select';
 	import Tab from 'primevue/tab';
 	import Tabs from 'primevue/tabs';
 	import TabList from 'primevue/tablist';
 	import TabPanel from 'primevue/tabpanel';
 	import TabPanels from 'primevue/tabpanels';
+	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
 	import KeyboardShortcut from '@/components/inputs/KeyboardShortcut.vue';
+	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import { isOverlay } from '@/lib/constants';
-	import { saveSettings, settings } from '@/lib/settings';
+	import { BackdropMode, saveSettings, settings, UserMode } from '@/lib/settings';
 
 	const visible = defineModel('visible', { default: false, type: Boolean });
 </script>

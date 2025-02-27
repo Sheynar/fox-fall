@@ -32,7 +32,7 @@
 				!artillery.viewportControl.screenShotting.value
 			"
 		>
-			<Grid @contextMenu="onContextMenu" />
+			<Grid v-if="settings.backdropMode === BackdropMode.Overlay" @contextMenu="onContextMenu" />
 
 			<Viewport />
 
@@ -148,8 +148,8 @@
 	import { isOverlay } from '@/lib/constants';
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
-	import { settings } from '@/lib/settings';
-	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
+	import { BackdropMode, settings, UserMode } from '@/lib/settings';
+	import { getAvailableUnitTypes, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
 	const overlayOpen = ref(false);
@@ -174,19 +174,17 @@
 		}
 	};
 	const contextMenuOptions = computed(() => {
+		const standaloneOnly = settings.value.userMode === UserMode.Basic || artillery.selectedUnit.value == null;
+
+		const availableUnitTypes = getAvailableUnitTypes();
+
 		const output: MenuItem[] = [
 			{
 				label:
-					artillery.selectedUnit.value != null
+					!standaloneOnly
 						? 'Add standalone unit'
 						: 'Add unit',
-				items: [
-					UnitType.Artillery,
-					UnitType.Spotter,
-					UnitType.Location,
-					UnitType.Target,
-					UnitType.LandingZone,
-				].map((unitType) => ({
+				items: availableUnitTypes.map((unitType) => ({
 					label: `${UnitType[unitType]}`,
 					icon: UNIT_ICON_BY_TYPE[unitType],
 					command: () => {
@@ -204,7 +202,7 @@
 			},
 		];
 
-		if (artillery.selectedUnit.value != null) {
+		if (!standaloneOnly) {
 			output.push({
 				label: 'Add linked unit',
 				items: [

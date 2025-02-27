@@ -1,5 +1,5 @@
 import { artillery } from '@/lib/globals';
-import { type Unit, UnitType, unitTypeOrder, getUnitLabel } from '@/lib/unit';
+import { type Unit, UnitType, getUnitLabel, getAvailableUnitTypes } from '@/lib/unit';
 import { computed } from 'vue';
 
 export type Options = {
@@ -19,7 +19,7 @@ export const useSelectUnitOptions = (options: Options = {}) => {
 			units: { id: string; label: string }[];
 		}[] = [];
 
-		for (const unitType of unitTypeOrder) {
+		for (const unitType of getAvailableUnitTypes()) {
 			if (options.whiteList?.type != null && !options.whiteList.type.includes(unitType)) continue;
 			if (options.blackList?.type != null && options.blackList.type.includes(unitType)) continue;
 

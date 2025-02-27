@@ -9,7 +9,7 @@
 			'--viewport-zoom': artillery.viewport.value.resolvedZoom,
 		}"
 	>
-		<HexMap />
+		<HexMap v-if="settings.backdropMode === BackdropMode.Map" />
 
 		<RangeFinders />
 
@@ -44,4 +44,5 @@
 	import RangeFinders from '@/components/Viewport/RangeFinders/RangeFinders.vue';
 	import Units from '@/components/Viewport/Units/Units.vue';
 	import { artillery } from '@/lib/globals';
+	import { BackdropMode, settings } from '@/lib/settings';
 </script>

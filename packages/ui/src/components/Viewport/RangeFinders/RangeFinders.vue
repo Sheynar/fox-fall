@@ -121,14 +121,13 @@
 	import Disk from '@/components/svg/Disk.vue';
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
 	import {
-		ARTILLERY_BY_SHELL,
 		ArtilleryPlatform,
 		SPOTTING_BY_TYPE,
 		SpottingSpecs,
 	} from '@/lib/constants/data';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
-	import { getUnitResolvedVector, UnitType, type Unit } from '@/lib/unit';
+	import { getUnitResolvedVector, getUnitSpecs, UnitType, type Unit } from '@/lib/unit';
 	import type { Vector } from '@/lib/vector';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import { computed } from 'vue';
@@ -146,13 +145,8 @@
 			const unit = artillery.unitMap.value[unitId];
 			if (unit.type !== UnitType.Artillery && unit.type !== UnitType.Target)
 				continue;
-			const ammoDetails =
-				unit.ammunition != null
-					? ARTILLERY_BY_SHELL[unit.ammunition]
-					: undefined;
-			if (ammoDetails == null) continue;
-			const specs =
-				unit.platform != null ? ammoDetails.PLATFORM[unit.platform] : undefined;
+
+			const specs = getUnitSpecs(artillery.unitMap.value, unitId);
 			if (specs == null) continue;
 
 			output.push({
@@ -208,20 +202,18 @@
 		for (const unitId of Object.keys(artillery.unitMap.value)) {
 			const unit = artillery.unitMap.value[unitId];
 			if (
-				unit.type !== UnitType.Target ||
-				unit.ammunition == null ||
-				unit.platform == null
+				unit.type !== UnitType.Target
 			)
 				continue;
-			const platform =
-				ARTILLERY_BY_SHELL[unit.ammunition].PLATFORM[unit.platform];
-			if (platform == null) continue;
+
+			const specs = getUnitSpecs(artillery.unitMap.value, unitId);
+			if (specs == null) continue;
 
 			output.push({
 				unit,
 				specs: {
-					MIN_RANGE: platform.MIN_SPREAD,
-					MAX_RANGE: platform.MAX_SPREAD,
+					MIN_RANGE: specs.MIN_SPREAD,
+					MAX_RANGE: specs.MAX_SPREAD,
 				},
 				resolvedPosition: getUnitResolvedVector(
 					artillery.unitMap.value,

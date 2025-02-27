@@ -140,12 +140,12 @@
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
 	import UnitSettings from '@/components/Viewport/Units/UnitSettings.vue';
 	import { injectUnit } from '@/contexts/unit';
-	import { ARTILLERY_BY_SHELL, SPOTTING_BY_TYPE } from '@/lib/constants/data';
+	import { SPOTTING_BY_TYPE } from '@/lib/constants/data';
 	import { LAYER } from '@/lib/constants/ui';
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
-	import { getUnitLabel, getUnitResolvedVector, UnitType } from '@/lib/unit';
+	import { getUnitLabel, getUnitResolvedVector, getUnitSpecs, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
@@ -164,15 +164,6 @@
 
 	const unit = injectUnit();
 
-	const ammoSpecs = computed(() => {
-		if (unit.value.ammunition != null)
-			return ARTILLERY_BY_SHELL[unit.value.ammunition];
-	});
-	const artillerySpecs = computed(() => {
-		if (unit.value.platform != null && ammoSpecs.value != null) {
-			return ammoSpecs.value.PLATFORM[unit.value.platform]!;
-		}
-	});
 	const spottingSpecs = computed(() => {
 		if (unit.value.spottingType != null) {
 			return SPOTTING_BY_TYPE[unit.value.spottingType];
@@ -186,11 +177,7 @@
 			return spottingSpecs.value?.ICON ?? UNIT_ICON_BY_TYPE[unit.value.type];
 		}
 		if (unit.value.type === UnitType.Artillery) {
-			return (
-				artillerySpecs.value?.ICON ??
-				ammoSpecs.value?.ICON ??
-				UNIT_ICON_BY_TYPE[unit.value.type]
-			);
+			return getUnitSpecs(artillery.unitMap.value, unit.value.id)?.ICON ?? UNIT_ICON_BY_TYPE[unit.value.type];
 		}
 
 		return UNIT_ICON_BY_TYPE[unit.value.type];
