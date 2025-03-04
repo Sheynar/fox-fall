@@ -17,9 +17,9 @@
 		class="App__container"
 		:class="{
 			App__transparent: isOverlay,
+			App__hidden: !overlayOpen,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
-		v-show="overlayOpen"
 		@touchstart.prevent
 		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
 		@pointermove="onPointerMove"
@@ -120,6 +120,11 @@
 
 		&:not(.App__transparent) {
 			background-color: var(--color-primary-contrast);
+		}
+
+		&.App__hidden {
+			opacity: 0.01;
+			pointer-events: none;
 		}
 
 		&.App__screenshot {
