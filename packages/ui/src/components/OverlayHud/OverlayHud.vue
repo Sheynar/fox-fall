@@ -64,6 +64,8 @@
 			<div>zoom: {{ Math.round(artillery.viewport.value.zoom * 100) }}%</div>
 		</div>
 
+		<PlatformInfo @pointerdown.stop />
+
 		<Dock />
 	</div>
 </template>
@@ -131,6 +133,7 @@
 	import vPrimeTooltip from 'primevue/tooltip';
 	import { computed } from 'vue';
 	import Dock from '@/components/OverlayHud/Dock.vue';
+	import PlatformInfo from '@/components/OverlayHud/PlatformInfo.vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import RotateIcon from '@/components/icons/RotateIcon.vue';
