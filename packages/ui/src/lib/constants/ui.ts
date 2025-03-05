@@ -5,6 +5,7 @@ export enum LAYER {
 	UNITS = 4,
 	FIRING_ARC_LINES = 5,
 	FIRING_ARC_LABELS = 6,
+	UNITS_DRAGGING = 7,
 	FOCUSED = 100,
 	HUD = 1000,
 }

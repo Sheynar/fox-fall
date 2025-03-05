@@ -30,6 +30,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	const selectedUnit = ref<Unit['id'] | null>(null);
 	const pinnedUnits = ref<Set<Unit['id']>>(new Set());
 	const highlightedUnits = ref<Set<Unit['id']>>(new Set());
+	const draggingUnits = ref<Set<Unit['id']>>(new Set());
 
 	const containerElement = options.containerElement ?? ref(null);
 	const viewport = ref(
@@ -104,6 +105,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		}
 		if (highlightedUnits.value.has(unitId)) {
 			highlightedUnits.value.delete(unitId);
+		}
+		if (draggingUnits.value.has(unitId)) {
+			draggingUnits.value.delete(unitId);
 		}
 
 		for (const otherUnit of Object.values(unitMap.value)) {
@@ -283,6 +287,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		selectedUnit,
 		pinnedUnits,
 		highlightedUnits,
+		draggingUnits,
 		containerElement,
 		viewport,
 		viewportControl,

@@ -2,7 +2,7 @@
 	<PositionedElement
 		:x="resolvedVector.x"
 		:y="resolvedVector.y"
-		:layer="LAYER.UNITS"
+		:layer="moving ? LAYER.UNITS_DRAGGING : LAYER.UNITS"
 		cancel-viewport-rotation
 	>
 		<div
@@ -145,7 +145,12 @@
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
-	import { getUnitLabel, getUnitResolvedVector, getUnitSpecs, UnitType } from '@/lib/unit';
+	import {
+		getUnitLabel,
+		getUnitResolvedVector,
+		getUnitSpecs,
+		UnitType,
+	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
@@ -177,7 +182,10 @@
 			return spottingSpecs.value?.ICON ?? UNIT_ICON_BY_TYPE[unit.value.type];
 		}
 		if (unit.value.type === UnitType.Artillery) {
-			return getUnitSpecs(artillery.unitMap.value, unit.value.id)?.ICON ?? UNIT_ICON_BY_TYPE[unit.value.type];
+			return (
+				getUnitSpecs(artillery.unitMap.value, unit.value.id)?.ICON ??
+				UNIT_ICON_BY_TYPE[unit.value.type]
+			);
 		}
 
 		return UNIT_ICON_BY_TYPE[unit.value.type];
@@ -196,29 +204,6 @@
 		},
 	});
 	const unitSettingsHasCustomPosition = ref(false);
-
-	watch(
-		() => isHovered.value,
-		(isHighlighted) => {
-			if (isHighlighted) {
-				artillery.highlightedUnits.value.add(unit.value.id);
-			} else {
-				artillery.highlightedUnits.value.delete(unit.value.id);
-			}
-		}
-	);
-	onScopeDispose(() => {
-		artillery.highlightedUnits.value.delete(unit.value.id);
-		open.value = false;
-	});
-
-	const resolvedVector = computed(() =>
-		getUnitResolvedVector(artillery.unitMap.value, unit.value.id)
-	);
-
-	const firingPosition = computed(() =>
-		resolvedVector.value.addVector(artillery.wind.value.scale(-1))
-	);
 
 	type MovingData = {
 		startEvent: PointerEvent;
@@ -314,4 +299,39 @@
 
 		emit('updated');
 	};
+
+	watch(
+		() => isHovered.value,
+		(isHighlighted) => {
+			if (isHighlighted) {
+				artillery.highlightedUnits.value.add(unit.value.id);
+			} else {
+				artillery.highlightedUnits.value.delete(unit.value.id);
+			}
+		}
+	);
+	watch(
+		() => moving.value != null,
+		(isMoving) => {
+			if (isMoving) {
+				artillery.draggingUnits.value.add(unit.value.id);
+			} else {
+				artillery.draggingUnits.value.delete(unit.value.id);
+			}
+		}
+	);
+
+	onScopeDispose(() => {
+		artillery.highlightedUnits.value.delete(unit.value.id);
+		artillery.draggingUnits.value.delete(unit.value.id);
+		open.value = false;
+	});
+
+	const resolvedVector = computed(() =>
+		getUnitResolvedVector(artillery.unitMap.value, unit.value.id)
+	);
+
+	const firingPosition = computed(() =>
+		resolvedVector.value.addVector(artillery.wind.value.scale(-1))
+	);
 </script>

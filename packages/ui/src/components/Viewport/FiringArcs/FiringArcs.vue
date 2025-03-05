@@ -25,11 +25,11 @@
 
 <script setup lang="ts">
 	import { artillery } from '@/lib/globals';
+	import { settings } from '@/lib/settings';
 	import { UnitType, type Unit } from '@/lib/unit';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import { computed } from 'vue';
 	import FiringArc from './FiringArc.vue';
-import { settings } from '@/lib/settings';
 
 	const focusedUnitIds = useFocusedUnitIds();
 
@@ -38,6 +38,7 @@ import { settings } from '@/lib/settings';
 		for (const unitId of Object.keys(artillery.unitMap.value)) {
 			const unit = artillery.unitMap.value[unitId];
 			if (unit.type !== UnitType.Artillery) continue;
+			if (artillery.draggingUnits.value.has(unitId)) continue;
 			output.push(unit);
 		}
 		return output;
@@ -48,6 +49,7 @@ import { settings } from '@/lib/settings';
 		for (const unitId of Object.keys(artillery.unitMap.value)) {
 			const unit = artillery.unitMap.value[unitId];
 			if (unit.type !== UnitType.Target) continue;
+			if (artillery.draggingUnits.value.has(unitId)) continue;
 			output.push(unit);
 		}
 		return output;
