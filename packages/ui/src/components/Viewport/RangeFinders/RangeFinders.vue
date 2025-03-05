@@ -127,7 +127,13 @@
 	} from '@/lib/constants/data';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
-	import { getUnitResolvedVector, getUnitSpecs, UnitType, type Unit } from '@/lib/unit';
+	import { settings, UserMode } from '@/lib/settings';
+	import {
+		getUnitResolvedVector,
+		getUnitSpecs,
+		UnitType,
+		type Unit,
+	} from '@/lib/unit';
 	import type { Vector } from '@/lib/vector';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import { computed } from 'vue';
@@ -143,8 +149,13 @@
 
 		for (const unitId of focusedUnitIds.value) {
 			const unit = artillery.unitMap.value[unitId];
-			if (unit.type !== UnitType.Artillery && unit.type !== UnitType.Target)
-				continue;
+
+			const typeMatch =
+				unit.type === UnitType.Artillery ||
+				(settings.value.userMode !== UserMode.Basic &&
+					unit.type === UnitType.Target);
+
+			if (!typeMatch) continue;
 
 			const specs = getUnitSpecs(artillery.unitMap.value, unitId);
 			if (specs == null) continue;
@@ -201,10 +212,7 @@
 
 		for (const unitId of Object.keys(artillery.unitMap.value)) {
 			const unit = artillery.unitMap.value[unitId];
-			if (
-				unit.type !== UnitType.Target
-			)
-				continue;
+			if (unit.type !== UnitType.Target) continue;
 
 			const specs = getUnitSpecs(artillery.unitMap.value, unitId);
 			if (specs == null) continue;
