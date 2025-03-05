@@ -18,6 +18,14 @@
 				<TabPanel value="features">
 					<div class="Settings__content">
 						<div class="Settings__row">
+							<label>Transparent background</label>
+							<PrimeCheckBox
+								binary
+								v-model="settings.transparentOverlay"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row">
 							<label>Backdrop mode</label>
 							<PrimeSelect
 								:options="

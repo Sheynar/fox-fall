@@ -16,7 +16,7 @@
 		:ref="(el) => (artillery.containerElement.value = el as HTMLDivElement)"
 		class="App__container"
 		:class="{
-			App__transparent: isOverlay,
+			App__transparent: isOverlay && settings.transparentOverlay,
 			App__hidden: !overlayOpen,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
@@ -32,7 +32,7 @@
 				!artillery.viewportControl.screenShotting.value
 			"
 		>
-			<Grid v-if="settings.backdropMode === BackdropMode.Overlay" @contextMenu="onContextMenu" />
+			<Grid v-if="settings.backdropMode === BackdropMode.Grid" @contextMenu="onContextMenu" />
 
 			<Viewport />
 

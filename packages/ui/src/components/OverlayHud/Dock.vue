@@ -174,7 +174,7 @@
 			},
 		];
 
-		if (settings.value.backdropMode === BackdropMode.Overlay) {
+		if (settings.value.backdropMode === BackdropMode.Grid && settings.value.transparentOverlay) {
 			output.unshift(calibrateGridItem.value, screenshotItem.value);
 		}
 

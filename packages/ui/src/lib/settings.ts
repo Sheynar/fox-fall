@@ -10,7 +10,7 @@ export enum UserMode {
 export enum BackdropMode {
 	None = 'none',
 	Map = 'map',
-	Overlay = 'overlay',
+	Grid = 'overlay',
 }
 
 export const settings = ref({
@@ -18,6 +18,7 @@ export const settings = ref({
 	lockRotate: isOverlay,
 	lockZoom: false,
 
+	transparentOverlay: true,
 	backdropMode: BackdropMode.None,
 	userMode: UserMode.Basic,
 	globalAmmo: undefined as AMMO_TYPE | undefined,
