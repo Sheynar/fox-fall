@@ -35,6 +35,7 @@ export const settings = ref({
 	compassOpacity: 1,
 	firingArcOpacity: 1,
 	screenshotOpacity: 1,
+	showMinMaxSpread: true,
 	showXYOffsets: false,
 	sync: null as {
 		serverAddress: string,

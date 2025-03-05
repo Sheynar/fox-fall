@@ -17,6 +17,7 @@
 		</svg>
 	</PositionedElement>
 	<PositionedElement
+		v-if="!props.hideLabel"
 		:layer="LAYER.FIRING_ARC_LABELS"
 		:x="labelPosition.x"
 		:y="labelPosition.y"
@@ -39,6 +40,26 @@
 			</div>
 		</div>
 	</PositionedElement>
+	<template v-if="specs">
+		<RangeFinder
+			v-if="settings.showMinMaxSpread"
+			:position="resolvedVectorTo"
+			:outer-radius="specs.MIN_SPREAD"
+			:style="RangeFinderStyle.Transparent"
+		/>
+		<RangeFinder
+			v-if="currentSpread != null"
+			:position="resolvedVectorTo"
+			:outer-radius="currentSpread"
+			:style="RangeFinderStyle.Spread"
+		/>
+		<RangeFinder
+			v-if="settings.showMinMaxSpread"
+			:position="resolvedVectorTo"
+			:outer-radius="specs.MAX_SPREAD"
+			:style="RangeFinderStyle.Transparent"
+		/>
+	</template>
 </template>
 
 <style lang="scss">
@@ -113,15 +134,23 @@
 
 <script setup lang="ts">
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
+	import { RangeFinderStyle } from '@/components/Viewport/RangeFinders/enums';
+	import RangeFinder from '@/components/Viewport/RangeFinders/RangeFinder.vue';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
-	import { getUnitLabel, getUnitResolvedVector } from '@/lib/unit';
+import { settings } from '@/lib/settings';
+	import {
+		getUnitLabel,
+		getUnitResolvedVector,
+		getUnitSpecs,
+	} from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 	import { computed } from 'vue';
 
 	const props = defineProps<{
 		unitIdFrom: string;
 		unitIdTo: string;
+		hideLabel?: boolean;
 	}>();
 
 	const resolvedVectorFrom = computed(() =>
@@ -156,4 +185,16 @@
 				)
 			)
 	);
+
+	const specs = computed(() =>
+		getUnitSpecs(artillery.unitMap.value, props.unitIdFrom)
+	);
+
+	const currentSpread = computed(() => {
+		if (specs.value == null || specs.value.MAX_RANGE === 0) return null;
+		const clampedFiringDistance = Math.min(specs.value.MAX_RANGE, Math.max(specs.value.MIN_RANGE, firingVectorWithWind.value.distance));
+		const spreadPercent = (clampedFiringDistance - specs.value.MIN_RANGE) / (specs.value.MAX_RANGE - specs.value.MIN_RANGE);
+
+		return specs.value.MIN_SPREAD + (specs.value.MAX_SPREAD - specs.value.MIN_SPREAD) * spreadPercent;
+	});
 </script>

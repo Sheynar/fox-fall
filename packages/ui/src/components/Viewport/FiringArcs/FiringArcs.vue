@@ -1,10 +1,14 @@
 <template>
-	<div class="FiringArcs__container" :style="{ opacity: settings.firingArcOpacity }">
+	<div
+		class="FiringArcs__container"
+		:style="{ opacity: settings.firingArcOpacity }"
+	>
 		<FiringArc
 			v-for="firingArc in firingArcList"
 			:key="firingArc.to.id"
 			:unit-id-from="firingArc.from.id"
 			:unit-id-to="firingArc.to.id"
+			:hide-label="firingArc.hideLabel"
 		/>
 	</div>
 </template>
@@ -38,7 +42,6 @@
 		for (const unitId of Object.keys(artillery.unitMap.value)) {
 			const unit = artillery.unitMap.value[unitId];
 			if (unit.type !== UnitType.Artillery) continue;
-			if (artillery.draggingUnits.value.has(unitId)) continue;
 			output.push(unit);
 		}
 		return output;
@@ -49,14 +52,13 @@
 		for (const unitId of Object.keys(artillery.unitMap.value)) {
 			const unit = artillery.unitMap.value[unitId];
 			if (unit.type !== UnitType.Target) continue;
-			if (artillery.draggingUnits.value.has(unitId)) continue;
 			output.push(unit);
 		}
 		return output;
 	});
 
 	const firingArcList = computed(() => {
-		const output: { from: Unit; to: Unit }[] = [];
+		const output: { from: Unit; to: Unit; hideLabel: boolean }[] = [];
 
 		for (const targetUnit of targetUnits.value) {
 			for (const artilleryUnit of artilleryUnits.value) {
@@ -65,7 +67,13 @@
 					!focusedUnitIds.value.includes(targetUnit.id)
 				)
 					continue;
-				output.push({ from: artilleryUnit, to: targetUnit });
+				output.push({
+					from: artilleryUnit,
+					to: targetUnit,
+					hideLabel:
+						artillery.draggingUnits.value.has(artilleryUnit.id) ||
+						artillery.draggingUnits.value.has(targetUnit.id),
+				});
 			}
 		}
 

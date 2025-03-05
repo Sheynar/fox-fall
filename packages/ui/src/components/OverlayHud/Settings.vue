@@ -87,6 +87,14 @@
 							/>
 						</div>
 						<div class="Settings__row">
+							<label>Show min/max spread</label>
+							<PrimeCheckBox
+								binary
+								v-model="settings.showMinMaxSpread"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row">
 							<label>Show X/Y offsets</label>
 							<PrimeCheckBox
 								binary
