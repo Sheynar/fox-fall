@@ -21,7 +21,7 @@ export const updateShape = () => {
 
 	if (overlayOpen) {
 		managerWindow.setShape([managerWindow.getBounds()]);
-		managerWindow.show();
+		managerWindow.focus();
 	} else {
 		managerWindow.setShape([
 			{

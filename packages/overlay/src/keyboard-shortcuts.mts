@@ -5,6 +5,7 @@ import {
 import { app, globalShortcut } from "electron";
 import fs from "node:fs";
 import path from "node:path";
+import { toggleOverlay } from "./window/index.mjs";
 
 const userDataFolder = app.getPath("userData");
 
@@ -55,7 +56,6 @@ export const runCommand = async (command: KeyboardCommand) => {
 	if (paused) return;
 	switch (command) {
 		case KeyboardCommand.ToggleOverlay:
-			const { toggleOverlay } = await import("./window/index.mjs");
 			toggleOverlay();
 			break;
 	}

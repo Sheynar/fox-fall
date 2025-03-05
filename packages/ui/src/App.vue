@@ -118,6 +118,9 @@
 		color: var(--color-primary);
 		outline: none;
 
+		will-change: transform;
+		transform: translateZ(0);
+
 		&:not(.App__transparent) {
 			background-color: var(--color-primary-contrast);
 		}
