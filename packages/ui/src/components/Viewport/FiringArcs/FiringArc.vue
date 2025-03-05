@@ -23,7 +23,10 @@
 		:y="labelPosition.y"
 		cancel-viewport-rotation
 	>
-		<div class="FiringArc__label">
+		<div
+			class="FiringArc__label"
+			:style="{ opacity: settings.firingArcOpacity }"
+		>
 			<div class="FiringArc__label-row">
 				<span class="FiringArc__span">
 					{{ getUnitLabel(artillery.unitMap.value, unitIdFrom) }} ->
@@ -138,7 +141,7 @@
 	import RangeFinder from '@/components/Viewport/RangeFinders/RangeFinder.vue';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
-import { settings } from '@/lib/settings';
+	import { settings } from '@/lib/settings';
 	import {
 		getUnitLabel,
 		getUnitResolvedVector,
@@ -192,9 +195,17 @@ import { settings } from '@/lib/settings';
 
 	const currentSpread = computed(() => {
 		if (specs.value == null || specs.value.MAX_RANGE === 0) return null;
-		const clampedFiringDistance = Math.min(specs.value.MAX_RANGE, Math.max(specs.value.MIN_RANGE, firingVectorWithWind.value.distance));
-		const spreadPercent = (clampedFiringDistance - specs.value.MIN_RANGE) / (specs.value.MAX_RANGE - specs.value.MIN_RANGE);
+		const clampedFiringDistance = Math.min(
+			specs.value.MAX_RANGE,
+			Math.max(specs.value.MIN_RANGE, firingVectorWithWind.value.distance)
+		);
+		const spreadPercent =
+			(clampedFiringDistance - specs.value.MIN_RANGE) /
+			(specs.value.MAX_RANGE - specs.value.MIN_RANGE);
 
-		return specs.value.MIN_SPREAD + (specs.value.MAX_SPREAD - specs.value.MIN_SPREAD) * spreadPercent;
+		return (
+			specs.value.MIN_SPREAD +
+			(specs.value.MAX_SPREAD - specs.value.MIN_SPREAD) * spreadPercent
+		);
 	});
 </script>

@@ -1,8 +1,5 @@
 <template>
-	<div
-		class="FiringArcs__container"
-		:style="{ opacity: settings.firingArcOpacity }"
-	>
+	<div class="FiringArcs__container">
 		<FiringArc
 			v-for="firingArc in firingArcList"
 			:key="firingArc.to.id"
@@ -29,7 +26,6 @@
 
 <script setup lang="ts">
 	import { artillery } from '@/lib/globals';
-	import { settings } from '@/lib/settings';
 	import { UnitType, type Unit } from '@/lib/unit';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import { computed } from 'vue';

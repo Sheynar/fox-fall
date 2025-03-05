@@ -180,7 +180,7 @@
 							/>
 						</div>
 						<div class="Settings__row">
-							<label>Firing arc opacity</label>
+							<label>Firing arc label opacity</label>
 							<PrimeInputNumber
 								:model-value="Math.floor(settings.firingArcOpacity * 100)"
 								@input="
