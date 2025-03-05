@@ -35,7 +35,8 @@
 
 		fill: none;
 		stroke: black;
-		opacity: 0.15;
+		stroke-width: 2px;
+		opacity: 0.25;
 
 		&.RangeFinder__artillery {
 			fill: var(--p-red-500);
