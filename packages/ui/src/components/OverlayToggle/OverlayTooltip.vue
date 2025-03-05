@@ -47,6 +47,7 @@
 <script setup lang="ts">
 	import { artillery } from '@/lib/globals';
 	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
+	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import { computed } from 'vue';
 
 	const artilleryUnits = computed(() => {
@@ -61,16 +62,38 @@
 		);
 	});
 
+	const focusedUnitIds = useFocusedUnitIds();
+
+	const selectedArtilleryUnit = computed(() => {
+		if (artilleryUnits.value.length === 0) return null;
+		if (artilleryUnits.value.length === 1) return artilleryUnits.value[0];
+		const highlightedArtilleryUnit = artilleryUnits.value.find((unit) =>
+			focusedUnitIds.value.includes(unit.id)
+		);
+		if (highlightedArtilleryUnit != null) return highlightedArtilleryUnit;
+		return artilleryUnits.value[0];
+	});
+
+	const selectedTargetUnit = computed(() => {
+		if (targetUnits.value.length === 0) return null;
+		if (targetUnits.value.length === 1) return targetUnits.value[0];
+		const highlightedTargetUnit = targetUnits.value.find((unit) =>
+			focusedUnitIds.value.includes(unit.id)
+		);
+		if (highlightedTargetUnit != null) return highlightedTargetUnit;
+		return targetUnits.value[0];
+	});
+
 	const firingVector = computed(() => {
-		if (artilleryUnits.value[0] == null || targetUnits.value[0] == null)
+		if (selectedArtilleryUnit.value == null || selectedTargetUnit.value == null)
 			return undefined;
 		const resolvedArtillery = getUnitResolvedVector(
 			artillery.unitMap.value,
-			artilleryUnits.value[0].id
+			selectedArtilleryUnit.value.id
 		);
 		const resolvedTarget = getUnitResolvedVector(
 			artillery.unitMap.value,
-			targetUnits.value[0].id
+			selectedTargetUnit.value.id
 		);
 		const firingVector = resolvedArtillery.getRelativeOffset(resolvedTarget);
 		return firingVector.addVector(artillery.wind.value.scale(-1));
