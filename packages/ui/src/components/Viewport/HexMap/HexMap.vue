@@ -4,6 +4,7 @@
 			class="HexMap__outer"
 			:style="{
 				'--hex-size': `${artillery.viewport.value.resolvedZoom * 2197}px`,
+				'--viewport-rotation': `${artillery.viewport.value.rotation}deg`,
 			}"
 		>
 			<div class="HexMap__container">
@@ -87,7 +88,8 @@
 		position: absolute;
 		top: 50%;
 		left: 50%;
-		transform: translate(-50%, -50%);
+		transform-origin: 50% 50%;
+		transform: translate(-50%, -50%) rotate(calc(var(--viewport-rotation) * -1));
 		text-align: center;
 		font-size: 12px;
 		font-weight: bold;
