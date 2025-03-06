@@ -15,11 +15,11 @@ export enum BackdropMode {
 
 export const settings = ref({
 	lockPan: false,
-	lockRotate: isOverlay,
+	lockRotate: true,
 	lockZoom: false,
 
-	transparentOverlay: true,
-	backdropMode: BackdropMode.None,
+	transparentOverlay: isOverlay,
+	backdropMode: isOverlay ? BackdropMode.Grid : BackdropMode.Map,
 	userMode: UserMode.Basic,
 	globalAmmo: undefined as AMMO_TYPE | undefined,
 	globalPlatform: undefined as Platform<AMMO_TYPE> | undefined,
@@ -33,7 +33,7 @@ export const settings = ref({
 	gridDashGap: 2,
 	gridLineWidth: 0.5,
 	compassOpacity: 1,
-	firingArcOpacity: 1,
+	firingArcOpacity: 0,
 	screenshotOpacity: 1,
 	showMinMaxSpread: true,
 	showXYOffsets: false,
