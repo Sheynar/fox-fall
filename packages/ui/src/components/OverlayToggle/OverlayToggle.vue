@@ -1,13 +1,12 @@
 <template>
 	<div
-		v-if="overlayActive"
 		ref="containerElement"
 		class="OverlayToggle__container"
 		:style="{ '--_scale': settings.toggleButtonScale }"
 		@pointerdown.prevent="executeToggle"
 	>
 		<OverlayTooltip v-if="settings.showTooltip" />
-		<button class="OverlayToggle__button">
+		<button v-if="overlayActive" class="OverlayToggle__button">
 			<ShellIcon class="OverlayToggle__icon" />
 		</button>
 	</div>
