@@ -85,7 +85,6 @@
 
 	const bounding = useElementBounding(containerElement);
 	watchEffect(() => {
-		if (!overlayActive) return;
 		window.electronApi?.sendToggleSize({
 			x: bounding.width.value,
 			y: bounding.height.value,
