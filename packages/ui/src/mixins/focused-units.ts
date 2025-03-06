@@ -1,4 +1,5 @@
 import { artillery } from '@/lib/globals';
+import { UnitType } from '@/lib/unit';
 import { computed } from 'vue';
 
 export const useFocusedUnitIds = () => {
@@ -10,6 +11,11 @@ export const useFocusedUnitIds = () => {
 
 		if (artillery.selectedUnit.value != null)
 			focusedUnitsSet.add(artillery.selectedUnit.value);
+
+		const artilleryUnitIds = Object.keys(artillery.unitMap.value).filter((unitId) => artillery.unitMap.value[unitId].type === UnitType.Artillery);
+		if (artilleryUnitIds.length === 1 && !focusedUnitsSet.has(artilleryUnitIds[0])) {
+			focusedUnitsSet.add(artilleryUnitIds[0]);
+		}
 
 		return Array.from(focusedUnitsSet);
 	});
