@@ -268,6 +268,8 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			} else {
 				selectedUnit.value = unitIdList[(selectedUnitIndex + 1) % unitIdList.length];
 			}
+		} else if (event.key === 'Delete' && event.ctrlKey && selectedUnit.value) {
+			removeUnit(selectedUnit.value);
 		}
 	});
 
