@@ -158,7 +158,7 @@ export const ARTILLERY_BY_SHELL: {
 				RANGE_INCREMENT: 0,
 				MIN_SPREAD: 2.5,
 				MAX_SPREAD: 9.45,
-				WIND_OFFSET: 7.5, // NOT VERIFIED
+				WIND_OFFSET: 10, // NOT VERIFIED
 			},
 			[MORTAR_PLATFORM.CREMARI]: {
 				ICON: ICON__mortar_cremari,
@@ -169,7 +169,7 @@ export const ARTILLERY_BY_SHELL: {
 				RANGE_INCREMENT: 0,
 				MIN_SPREAD: 5.5,
 				MAX_SPREAD: 12,
-				WIND_OFFSET: 7.5, // NOT VERIFIED
+				WIND_OFFSET: 10, // NOT VERIFIED
 			},
 			[MORTAR_PLATFORM.PELTAST]: {
 				ICON: ICON__mortar_peltast,
@@ -180,7 +180,7 @@ export const ARTILLERY_BY_SHELL: {
 				RANGE_INCREMENT: 0,
 				MIN_SPREAD: 2.5,
 				MAX_SPREAD: 9.45,
-				WIND_OFFSET: 7.5, // NOT VERIFIED
+				WIND_OFFSET: 10, // NOT VERIFIED
 			},
 		},
 	},
