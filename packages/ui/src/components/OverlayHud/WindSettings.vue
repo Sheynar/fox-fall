@@ -13,13 +13,13 @@
 				<label>Wind direction:</label>
 				<DirectionInput v-model="artillery.wind.value.azimuth" @update:model-value="syncedRoom.updateWind()" autofocus />
 			</div>
-			<div class="Wind__information__item" v-if="windMultiplier != null">
-				<label>Wind tier:</label>
-				<DistanceInput :model-value="artillery.wind.value.distance / windMultiplier" @update:model-value="artillery.wind.value.distance = $event * windMultiplier; syncedRoom.updateWind()" :suffix="''" />
-			</div>
 			<div class="Wind__information__item">
+				<label>Wind tier:</label>
+				<DistanceInput :model-value="artillery.wind.value.distance" @update:model-value="artillery.wind.value.distance = $event; syncedRoom.updateWind()" :suffix="''" />
+			</div>
+			<div class="Wind__information__item" v-if="windMultiplier">
 				<label>Wind distance:</label>
-				<DistanceInput v-model="artillery.wind.value.distance" @update:model-value="syncedRoom.updateWind()" />
+				<DistanceInput :model-value="artillery.wind.value.distance * windMultiplier" @update:model-value="artillery.wind.value.distance = $event / windMultiplier; syncedRoom.updateWind()" />
 			</div>
 			<PrimeButton
 				class="Wind__information__button"

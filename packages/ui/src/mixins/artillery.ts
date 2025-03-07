@@ -8,6 +8,7 @@ import {
 	createUnit,
 	UnitType,
 	getUnitResolvedVector,
+	getUnitSpecs,
 } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
 import { Viewport } from '@/lib/viewport';
@@ -184,11 +185,37 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				});
 			}
 
+			let windMultiplier = 0;
+			const windMultipliers = Array.from(new Set(Object.keys(unitMap.value).map((unitId) => getUnitSpecs(unitMap.value, unitId)?.WIND_OFFSET).filter((windOffset) => windOffset)));
+			if (windMultipliers.length === 1) {
+				windMultiplier = windMultipliers[0]!;
+			} else {
+				windMultiplier = await new Promise<number>((resolve, reject) => {
+					unitSelector.value = {
+						selectUnit: (unitId) => {
+							unitSelector.value = null;
+							if (unitId == null) {
+								return reject(new Error('User declined to select a unit'));
+							}
+							if (unitMap.value[unitId].type !== UnitType.Artillery) {
+								return reject(new Error('Selected unit is not an artillery'));
+							}
+							const specs = getUnitSpecs(unitMap.value, unitId);
+							if (!specs) {
+								return reject(new Error('Selected unit does not have specifications'));
+							}
+							resolve(specs.WIND_OFFSET);
+						},
+						prompt: 'Select artillery',
+					};
+				});
+			}
+
 			const windCorrection = getUnitResolvedVector(
 				unitMap.value,
 				target
 			).scale(-1).addVector(getUnitResolvedVector(unitMap.value, unit.id));
-			wind.value = wind.value.addVector(windCorrection);
+			wind.value = wind.value.addVector(windCorrection.scale(1 / windMultiplier));
 			options.onWindUpdated?.();
 
 			removeUnit(unitId);

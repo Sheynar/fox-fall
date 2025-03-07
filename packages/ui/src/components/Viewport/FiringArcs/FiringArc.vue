@@ -165,9 +165,16 @@
 	const firingVector = computed(() =>
 		resolvedVectorFrom.value.getRelativeOffset(resolvedVectorTo.value)
 	);
-	const firingVectorWithWind = computed(() =>
-		firingVector.value.addVector(artillery.wind.value.scale(-1))
-	);
+	const firingVectorWithWind = computed(() => {
+		let firingVectorWithWind = firingVector.value.clone();
+		const specs = getUnitSpecs(artillery.unitMap.value, props.unitIdFrom);
+		if (specs) {
+			firingVectorWithWind = firingVectorWithWind.addVector(
+				artillery.wind.value.scale(-specs.WIND_OFFSET)
+			);
+		}
+		return firingVectorWithWind;
+	});
 
 	const lineVector = computed(() =>
 		firingVector.value.scale(-artillery.viewport.value.resolvedZoom)

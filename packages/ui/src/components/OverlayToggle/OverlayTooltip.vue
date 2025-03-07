@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 	import { artillery } from '@/lib/globals';
-	import { getUnitResolvedVector, UnitType } from '@/lib/unit';
+	import { getUnitResolvedVector, getUnitSpecs, UnitType } from '@/lib/unit';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import { computed } from 'vue';
 
@@ -96,6 +96,11 @@
 			selectedTargetUnit.value.id
 		);
 		const firingVector = resolvedArtillery.getRelativeOffset(resolvedTarget);
-		return firingVector.addVector(artillery.wind.value.scale(-1));
+		let firingVectorWithWind = firingVector.clone();
+		const specs = getUnitSpecs(artillery.unitMap.value, selectedArtilleryUnit.value.id);
+		if (specs) {
+			firingVectorWithWind = firingVectorWithWind.addVector(artillery.wind.value.scale(-specs.WIND_OFFSET));
+		}
+		return firingVectorWithWind;
 	});
 </script>

@@ -331,7 +331,12 @@
 		getUnitResolvedVector(artillery.unitMap.value, unit.value.id)
 	);
 
-	const firingPosition = computed(() =>
-		resolvedVector.value.addVector(artillery.wind.value.scale(-1))
-	);
+	const firingPosition = computed(() => {
+		let firingVectorWithWind = resolvedVector.value.clone();
+		const specs = getUnitSpecs(artillery.unitMap.value, unit.value.id);
+		if (specs) {
+			firingVectorWithWind = firingVectorWithWind.addVector(artillery.wind.value.scale(-specs.WIND_OFFSET));
+		}
+		return firingVectorWithWind;
+	});
 </script>
