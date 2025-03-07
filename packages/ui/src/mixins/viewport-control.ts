@@ -2,6 +2,7 @@ import { type Ref, computed, nextTick, ref, shallowRef } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import type { Viewport } from '@/lib/viewport';
 import { useMultiPointerDrag } from '@/mixins/multi-pointer';
+import { artillery } from '@/lib/globals';
 import { calibrateGrid as _calibrateGrid } from '@/lib/grid-calibration';
 import { settings } from '@/lib/settings';
 import { Vector } from '@/lib/vector';
@@ -126,6 +127,7 @@ export const useViewportControl = (options: ViewportControlOptions) => {
 	useEventListener(options.containerElement, 'wheel', onWheel);
 
 	const onKeyPress = (event: KeyboardEvent) => {
+		if (artillery.selectedUnit.value) return;
 		if (
 			['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
 		) {
