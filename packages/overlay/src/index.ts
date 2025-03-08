@@ -7,6 +7,10 @@ app.on('window-all-closed', () => {
 
 const initialise = async () => {
 	await app.whenReady();
+
+	const { AppUpdater } = await import('./updates.mjs');
+	new AppUpdater();
+
 	const { initialise: initialiseWindow, showManager } = await import('./window/index.mjs');
 	initialiseWindow();
 	showManager();

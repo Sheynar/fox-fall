@@ -11,6 +11,7 @@ module.exports = {
 	},
 	win: {
 		// icon: `${iconPath}.ico`,
+		publish: ['github'],
 	},
 	linux: {
 		target: "tar.gz", // https://www.electron.build/linux#target

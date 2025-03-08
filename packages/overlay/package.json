@@ -6,6 +6,10 @@
   "author": "Daniel Olivier <KaoSDlanor@gmail.com>",
   "homepage": "https://github.com/KaoSDlanor/fox-fall#readme",
   "license": "MIT",
+	"repository": {
+  	"type": "git",
+  	"url": "https://github.com/KaoSDlanor/fox-fall.git"
+	},
   "scripts": {
     "build": "rimraf dist && tsc && rimraf www && node build.js",
     "start": "electron .",
@@ -16,7 +20,9 @@
   },
   "dependencies": {
     "@packages/server": "workspace:*",
-    "@packages/types": "workspace:*"
+    "@packages/types": "workspace:*",
+    "electron-log": "^5.3.2",
+    "electron-updater": "6.3.9"
   },
   "devDependencies": {
     "@electron/packager": "18.1.1",
