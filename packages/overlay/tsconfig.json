@@ -3,6 +3,7 @@
 		"target": "es5",
 		"module": "NodeNext",
 		"outDir": "./dist",
+		"rootDir": "./src",
 		"lib": ["esnext"],
 		"composite": false,
 		"declaration": true,
@@ -16,6 +17,7 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"preserveWatchOutput": true,
+		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strictNullChecks": true

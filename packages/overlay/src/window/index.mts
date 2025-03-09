@@ -4,6 +4,7 @@ import { app, BrowserWindow, desktopCapturer, ipcMain, screen } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { getKeyboardShortcut, pauseKeyboardShortcuts, resumeKeyboardShortcuts, updateKeyboardShortcut } from "../keyboard-shortcuts.mjs";
+import packageJson from '../../package.json' with { type: "json" };
 
 const __dirname = import.meta.dirname;
 const display = screen.getPrimaryDisplay();
@@ -72,6 +73,9 @@ export const initialise = () => {
 		}
 	);
 
+	ipcMain.on(ElectronApiCommand.GetRunningVersion, (event) => {
+		event.reply(ElectronApiCommand.RunningVersionReply, packageJson.version);
+	});
 	ipcMain.on(ElectronApiCommand.ToggleOverlay, (event) => {
 		toggleOverlay();
 	});
