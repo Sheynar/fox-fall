@@ -122,7 +122,17 @@ export const KEY_CODE_TO_ELECTRON = {
 	Escape: 'Escape',
 } as const;
 
-export const mapKeyboardEventToAccelerator = (event: KeyboardEvent) => {
+export type KeyCombo = Pick<KeyboardEvent, 'code' | 'ctrlKey' | 'shiftKey' | 'altKey' | 'metaKey'>;
+
+export const extractKeyCombo = (event: KeyboardEvent) => ({
+	code: event.code,
+	ctrlKey: event.ctrlKey,
+	shiftKey: event.shiftKey,
+	altKey: event.altKey,
+	metaKey: event.metaKey,
+});
+
+export const mapKeyboardEventToAccelerator = (event: KeyCombo) => {
 	if (event.code === 'Escape') return undefined;
 	if (!(event.code in KEY_CODE_TO_ELECTRON)) return undefined;
 	const valueSegments: string[] = [];
