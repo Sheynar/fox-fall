@@ -187,6 +187,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 
 			let windMultiplier = 0;
 			const windMultipliers = Array.from(new Set(Object.keys(unitMap.value).map((unitId) => getUnitSpecs(unitMap.value, unitId)?.WIND_OFFSET).filter((windOffset) => windOffset)));
+			console.log(windMultipliers);
 			if (windMultipliers.length === 1) {
 				windMultiplier = windMultipliers[0]!;
 			} else {

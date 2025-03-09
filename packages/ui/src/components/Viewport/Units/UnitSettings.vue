@@ -32,9 +32,7 @@
 				<template v-if="settings.userMode === UserMode.Advanced">
 					<div
 						class="UnitSettings__row"
-						v-if="
-							unit.type === UnitType.Artillery || unit.type === UnitType.Target
-						"
+						v-if="unit.type === UnitType.Artillery"
 					>
 						<span>Ammunition:</span>
 						<AmmoSelect
@@ -50,11 +48,7 @@
 					</div>
 					<div
 						class="UnitSettings__row"
-						v-if="
-							(unit.type === UnitType.Artillery ||
-								unit.type === UnitType.Target) &&
-							unit.ammunition != null
-						"
+						v-if="unit.type === UnitType.Artillery && unit.ammunition != null"
 					>
 						<span>Platform:</span>
 						<PlatformSelect
@@ -68,12 +62,7 @@
 							:disabled="props.readonly"
 						/>
 					</div>
-					<div
-						class="UnitSettings__row"
-						v-if="
-							unit.type === UnitType.Spotter || unit.type === UnitType.Target
-						"
-					>
+					<div class="UnitSettings__row" v-if="unit.type === UnitType.Spotter">
 						<span>Spotting type:</span>
 						<IconSelect
 							class="UnitSettings__select"

@@ -142,7 +142,7 @@ const _getGlobalSpecs = (): ArtilleryPlatform | null => {
 export const getUnitSpecs = (unitMap: UnitMap, unitId: string): ArtilleryPlatform | null => {
 	const unit = unitMap[unitId];
 
-	if (unit.type !== UnitType.Artillery && unit.type !== UnitType.Target) {
+	if (unit.type !== UnitType.Artillery) {
 		return null;
 	}
 

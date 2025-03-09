@@ -10,7 +10,6 @@
 				RangeFinder__spread: props.style === RangeFinderStyle.Spread,
 				RangeFinder__spotter: props.style === RangeFinderStyle.Spotting,
 				RangeFinder__artillery: props.style === RangeFinderStyle.Artillery,
-				RangeFinder__target: props.style === RangeFinderStyle.Target,
 			}"
 			xmlns="http://www.w3.org/2000/svg"
 			preserve-aspect-ratio="none"
@@ -40,9 +39,6 @@
 
 		&.RangeFinder__artillery {
 			fill: var(--p-red-500);
-		}
-		&.RangeFinder__target {
-			fill: var(--p-green-500);
 		}
 		&.RangeFinder__spotter {
 			fill: var(--p-blue-500);

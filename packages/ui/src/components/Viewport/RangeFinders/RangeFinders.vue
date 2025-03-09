@@ -6,7 +6,7 @@
 			:position="rangeFinder.resolvedPosition"
 			:outer-radius="rangeFinder.specs.MAX_RANGE"
 			:inner-radius="rangeFinder.specs.MIN_RANGE"
-			:style="rangeFinder.unit.type === UnitType.Artillery ? RangeFinderStyle.Artillery : RangeFinderStyle.Target"
+			:style="RangeFinderStyle.Artillery"
 		/>
 		<RangeFinder
 			v-for="spotter in spotters"
@@ -39,7 +39,6 @@
 		SpottingSpecs,
 	} from '@/lib/constants/data';
 	import { artillery } from '@/lib/globals';
-	import { settings, UserMode } from '@/lib/settings';
 	import {
 		getUnitResolvedVector,
 		getUnitSpecs,
@@ -64,12 +63,7 @@
 		for (const unitId of focusedUnitIds.value) {
 			const unit = artillery.unitMap.value[unitId];
 
-			const typeMatch =
-				unit.type === UnitType.Artillery ||
-				(settings.value.userMode !== UserMode.Basic &&
-					unit.type === UnitType.Target);
-
-			if (!typeMatch) continue;
+			if (unit.type !== UnitType.Artillery) continue;
 
 			const specs = getUnitSpecs(artillery.unitMap.value, unitId);
 			if (specs == null) continue;
@@ -99,7 +93,7 @@
 		for (const unitId of focusedUnitIds.value) {
 			const unit = artillery.unitMap.value[unitId];
 			if (
-				(unit.type !== UnitType.Spotter && unit.type !== UnitType.Target) ||
+				unit.type !== UnitType.Spotter ||
 				unit.spottingType == null
 			)
 				continue;
