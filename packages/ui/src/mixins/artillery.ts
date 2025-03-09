@@ -25,8 +25,8 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	const wind = ref(Vector.fromAngularVector({ azimuth: 0, distance: 0 }));
 	const unitMap = ref<UnitMap>({});
 	const unitSelector = ref<{
-		selectUnit: (unitId?: string | null) => unknown,
-		prompt?: string,
+		selectUnit: (unitId?: string | null) => unknown;
+		prompt?: string;
 	} | null>(null);
 	const selectedUnit = ref<Unit['id'] | null>(null);
 	const pinnedUnits = ref<Set<Unit['id']>>(new Set());
@@ -186,7 +186,13 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			}
 
 			let windMultiplier = 0;
-			const windMultipliers = Array.from(new Set(Object.keys(unitMap.value).map((unitId) => getUnitSpecs(unitMap.value, unitId)?.WIND_OFFSET).filter((windOffset) => windOffset)));
+			const windMultipliers = Array.from(
+				new Set(
+					Object.keys(unitMap.value)
+						.map((unitId) => getUnitSpecs(unitMap.value, unitId)?.WIND_OFFSET)
+						.filter((windOffset) => windOffset)
+				)
+			);
 			if (windMultipliers.length === 1) {
 				windMultiplier = windMultipliers[0]!;
 			} else {
@@ -202,7 +208,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 							}
 							const specs = getUnitSpecs(unitMap.value, unitId);
 							if (!specs) {
-								return reject(new Error('Selected unit does not have specifications'));
+								return reject(
+									new Error('Selected unit does not have specifications')
+								);
 							}
 							resolve(specs.WIND_OFFSET);
 						},
@@ -211,11 +219,12 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				});
 			}
 
-			const windCorrection = getUnitResolvedVector(
-				unitMap.value,
-				target
-			).scale(-1).addVector(getUnitResolvedVector(unitMap.value, unit.id));
-			wind.value = wind.value.addVector(windCorrection.scale(1 / windMultiplier));
+			const windCorrection = getUnitResolvedVector(unitMap.value, target)
+				.scale(-1)
+				.addVector(getUnitResolvedVector(unitMap.value, unit.id));
+			wind.value = wind.value.addVector(
+				windCorrection.scale(1 / windMultiplier)
+			);
 			options.onWindUpdated?.();
 
 			removeUnit(unitId);
@@ -230,8 +239,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const resetViewport = () => {
-		if (!settings.value.lockRotate)
-			viewport.value.resetRotation();
+		if (!settings.value.lockRotate) viewport.value.resetRotation();
 
 		const unitVectors = Object.values(unitMap.value).map((unit) => {
 			return getUnitResolvedVector(unitMap.value, unit.id);
@@ -281,7 +289,8 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			const unitIdList = Object.keys(unitMap.value);
 
 			if (selectedUnit.value == null) {
-				selectedUnit.value = unitIdList[event.shiftKey ? unitIdList.length - 1 : 0];
+				selectedUnit.value =
+					unitIdList[event.shiftKey ? unitIdList.length - 1 : 0];
 				return;
 			}
 
@@ -289,11 +298,13 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			if (selectedUnitIndex === -1) return;
 
 			if (event.shiftKey) {
-				selectedUnit.value = unitIdList[
-					(selectedUnitIndex - 1 + unitIdList.length) % unitIdList.length
-				];
+				selectedUnit.value =
+					unitIdList[
+						(selectedUnitIndex - 1 + unitIdList.length) % unitIdList.length
+					];
 			} else {
-				selectedUnit.value = unitIdList[(selectedUnitIndex + 1) % unitIdList.length];
+				selectedUnit.value =
+					unitIdList[(selectedUnitIndex + 1) % unitIdList.length];
 			}
 		} else if (event.key === 'Delete' && event.ctrlKey && selectedUnit.value) {
 			removeUnit(selectedUnit.value);
