@@ -69,7 +69,7 @@ export const updateKeyboardShortcut = (
 		globalShortcut.unregister(keyboardConfig[command]);
 	}
 	keyboardConfig[command] = accelerator;
-	if (accelerator != null) {
+	if (accelerator) {
 		globalShortcut.register(accelerator, async () => {
 			await runCommand(command);
 		});
