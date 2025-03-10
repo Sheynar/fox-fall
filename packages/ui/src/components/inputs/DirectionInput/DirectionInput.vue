@@ -62,7 +62,7 @@
 	import DirectionAlternateInput from './DirectionAlternateInput.vue';
 
 	const numberInput = ref<InstanceType<typeof NumberInput>>(null!);
-	const inputElement = computed(() => numberInput.value.textInput.inputElement);
+	const inputElement = computed(() => numberInput.value?.textInput?.inputElement);
 	const { focused } = useFocus(inputElement);
 	const inputBounding = useElementBounding(inputElement);
 	const windowSize = useWindowSize();
