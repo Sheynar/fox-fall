@@ -122,6 +122,7 @@
 									settings.gridDashLength = $event;
 									saveSettings();
 								"
+								:autofocus="true"
 								suffix="px"
 								:fraction-digits="2"
 								:min="0"
@@ -165,6 +166,7 @@
 									settings.compassOpacity = Math.floor($event) / 100;
 									saveSettings();
 								"
+								:autofocus="true"
 								suffix="%"
 								:fraction-digits="0"
 								:min="0"
