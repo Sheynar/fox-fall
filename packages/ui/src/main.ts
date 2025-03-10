@@ -1,4 +1,4 @@
-import Aura from '@primevue/themes/aura';
+import Aura from '@primeuix/themes/aura';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import 'primeicons/primeicons.css';

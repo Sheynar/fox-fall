@@ -674,6 +674,7 @@ __metadata:
     "@kaosdlanor/kanim": "npm:^1.0.1"
     "@kaosdlanor/vue-reactivity": "npm:^1.0.2"
     "@packages/types": "workspace:*"
+    "@primeuix/themes": "npm:^1.0.0"
     "@primevue/themes": "npm:^4.2.5"
     "@types/node": "npm:^22.7.4"
     "@types/w3c-image-capture": "npm:^1.0.10"
@@ -843,10 +844,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@primeuix/styled@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@primeuix/styled@npm:0.5.0"
+  dependencies:
+    "@primeuix/utils": "npm:^0.5.0"
+  checksum: 10c0/488a327c80f9dff6c1e971a815a357d54d1bb1dda2d52d2d221f3296f1d782c03ea6876dc674e3e5e2dab43a9e7bbd5ad00caba2e782407a1044064b6e9dd18f
+  languageName: node
+  linkType: hard
+
+"@primeuix/themes@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@primeuix/themes@npm:1.0.0"
+  dependencies:
+    "@primeuix/styled": "npm:^0.5.0"
+  checksum: 10c0/9f503b282bcc14a612094efb6792714d5719fa301a1f1bc9e44efd7a43e89761c97846852d676781610f3c26f90b7efe00ab7c48d8cb5ff1a957919b7c45f059
+  languageName: node
+  linkType: hard
+
 "@primeuix/utils@npm:^0.3.2":
   version: 0.3.2
   resolution: "@primeuix/utils@npm:0.3.2"
   checksum: 10c0/3ada284a982519c4e3cae9ed83e17dbae9d6e505a16b699fa37d69ca14e46350076389f70ef3a5b1a359ba6a0891299a20ec4f9a6ed330ab3bbda7d227e9b84f
+  languageName: node
+  linkType: hard
+
+"@primeuix/utils@npm:^0.5.0":
+  version: 0.5.1
+  resolution: "@primeuix/utils@npm:0.5.1"
+  checksum: 10c0/a0ba43410cad8a31d1570133716bb2a52efee0a8536ec5c6a2716e806b0507ffc4e129049bd3982d51767cb265c958db41980c8ba0a4e12dfe81d94011d956c3
   languageName: node
   linkType: hard
 

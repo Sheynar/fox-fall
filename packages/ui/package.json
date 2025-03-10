@@ -13,11 +13,11 @@
     "@kaosdlanor/kanim": "^1.0.1",
     "@kaosdlanor/vue-reactivity": "^1.0.2",
     "@packages/types": "workspace:*",
-    "@primevue/themes": "^4.2.5",
+    "@primeuix/themes": "^1.0.0",
     "@vueuse/core": "^12.2.0",
     "pinia": "^2.3.1",
     "primeicons": "^7.0.0",
-    "primevue": "^4.2.5",
+    "primevue": "^4.3.1",
     "typescript-event-target": "^1.1.1",
     "vue": "^3.5.13",
     "vue-tsc": "^2.2.0"
