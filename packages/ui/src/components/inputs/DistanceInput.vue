@@ -1,24 +1,19 @@
 <template>
-	<PrimeInputNumber
-		ref="primeInputNumber"
+	<NumberInput
+		ref="numberInput"
 		v-model="modelValue"
-		@input="setValue(Number($event.value))"
 		:suffix="props.suffix"
-		locale="en-UK"
 		:autofocus="props.autofocus"
-		:allowEmpty="false"
-		highlightOnFocus
-		:minFractionDigits="0"
-		:maxFractionDigits="props.fractionDigits"
+		:fractionDigits="props.fractionDigits"
 		:min="props.min"
 	/>
 </template>
 
 <script setup lang="ts">
-	import PrimeInputNumber from 'primevue/inputnumber';
-	import { defineModel, nextTick, onMounted, ref } from 'vue';
+	import { defineModel, ref } from 'vue';
+	import NumberInput from './NumberInput.vue';
 
-	const primeInputNumber = ref<InstanceType<typeof PrimeInputNumber>>(null!);
+	const numberInput = ref<InstanceType<typeof NumberInput>>(null!);
 
 	const props = withDefaults(defineProps<{
 		autofocus?: boolean;
@@ -31,19 +26,4 @@
 	});
 
 	const modelValue = defineModel({ type: Number, required: true });
-
-	const setValue = (newValue: number) => {
-		if (props.min != null) newValue = Math.max(newValue, props.min);
-		modelValue.value = newValue;
-	};
-
-	onMounted(() => {
-		const inputElement = (primeInputNumber.value as any).$el.children[0] as HTMLInputElement;
-
-		if (props.autofocus) {
-			nextTick(() => {
-				inputElement.select();
-			});
-		}
-	});
 </script>

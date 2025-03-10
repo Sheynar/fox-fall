@@ -10,9 +10,12 @@
 
 <script setup lang="ts">
 	import PrimeInputText from 'primevue/inputtext';
-	import { defineModel, nextTick, onMounted, ref } from 'vue';
+	import { computed, defineModel, nextTick, onMounted, ref } from 'vue';
 
 	const primeInputText = ref<InstanceType<typeof PrimeInputText>>(null!);
+	const inputElement = computed(
+		() => (primeInputText.value as any).$el as HTMLInputElement
+	);
 
 	const props = defineProps<{
 		autofocus?: boolean;
@@ -21,12 +24,15 @@
 
 	const modelValue = defineModel({ type: String, required: true });
 	onMounted(() => {
-		const inputElement = (primeInputText.value as any).$el as HTMLInputElement;
-
 		if (props.autofocus) {
 			nextTick(() => {
-				inputElement.select();
+				inputElement.value.select();
 			});
 		}
+	});
+
+	defineExpose({
+		primeInputText,
+		inputElement,
 	});
 </script>

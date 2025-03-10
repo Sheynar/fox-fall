@@ -1,16 +1,11 @@
 <template>
-	<PrimeInputNumber
+	<NumberInput
 		class="DirectionInput__input"
-		ref="primeInputNumber"
+		ref="numberInput"
 		v-model="modelValue"
-		@input="modelValue = Number($event.value)"
 		suffix="°"
-		locale="en-UK"
 		:autofocus="props.autofocus"
-		:allowEmpty="false"
-		highlightOnFocus
-		:minFractionDigits="0"
-		:maxFractionDigits="1"
+		:fractionDigits="1"
 	/>
 	<Teleport to="body">
 		<div
@@ -54,7 +49,7 @@
 
 <script setup lang="ts">
 	import { useElementBounding, useFocus, useWindowSize } from '@vueuse/core';
-	import PrimeInputNumber from 'primevue/inputnumber';
+	import NumberInput from '../NumberInput.vue';
 	import {
 		StyleValue,
 		computed,
@@ -66,10 +61,8 @@
 	} from 'vue';
 	import DirectionAlternateInput from './DirectionAlternateInput.vue';
 
-	const primeInputNumber = ref<InstanceType<typeof PrimeInputNumber>>(null!);
-	const inputElement = computed(
-		() => (primeInputNumber.value as any)?.$el.children[0] as HTMLInputElement
-	);
+	const numberInput = ref<InstanceType<typeof NumberInput>>(null!);
+	const inputElement = computed(() => numberInput.value.textInput.inputElement);
 	const { focused } = useFocus(inputElement);
 	const inputBounding = useElementBounding(inputElement);
 	const windowSize = useWindowSize();
