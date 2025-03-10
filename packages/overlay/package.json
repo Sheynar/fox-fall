@@ -6,10 +6,10 @@
   "author": "Daniel Olivier <KaoSDlanor@gmail.com>",
   "homepage": "https://github.com/KaoSDlanor/fox-fall#readme",
   "license": "MIT",
-	"repository": {
-  	"type": "git",
-  	"url": "https://github.com/KaoSDlanor/fox-fall.git"
-	},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KaoSDlanor/fox-fall.git"
+  },
   "scripts": {
     "build": "rimraf dist && tsc && rimraf www && node build.js",
     "start": "electron .",
