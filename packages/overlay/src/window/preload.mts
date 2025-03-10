@@ -3,6 +3,15 @@ import { ElectronApiCommand, type ElectronApi } from "@packages/types/dist/elect
 import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
 
 const electronApi: ElectronApi = {
+	getRunningVersion: async () => {
+		const output = new Promise<string>((resolve, reject) => {
+			ipcRenderer.once(ElectronApiCommand.RunningVersionReply, (_event, version: string) => resolve(version));
+			setTimeout(() => reject(new Error("Timeout")), 1000);
+		})
+		ipcRenderer.send(ElectronApiCommand.GetRunningVersion);
+		return output;
+	},
+
 	toggleOverlay: async () => {
 		ipcRenderer.send(ElectronApiCommand.ToggleOverlay);
 	},

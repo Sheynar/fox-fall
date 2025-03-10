@@ -1,6 +1,8 @@
 import type { KeyboardCommand } from "./keyboard-config";
 
 export enum ElectronApiCommand {
+	GetRunningVersion = "get-running-version",
+	RunningVersionReply = "running-version-reply",
 	ToggleOverlay = "toggle-overlay",
 	GetOverlayOpen = "get-overlay-open",
 	OverlayOpenReply = "overlay-open-reply",
@@ -14,6 +16,8 @@ export enum ElectronApiCommand {
 }
 
 export type ElectronApi = {
+	/** Fetches the semver version string of the running overlay application */
+	getRunningVersion: () => Promise<string>;
 	/** Toggles the display between a full overlay covering the entire screen and a single button in the bottom right */
 	toggleOverlay: () => Promise<void>;
 	/** Returns whether the overlay is currently open */
