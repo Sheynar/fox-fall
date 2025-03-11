@@ -2,7 +2,7 @@
 	<PrimeDialog
 		append-to=".App__container"
 		v-model:visible="visible"
-		:style="{ minWidth: '25vw' }"
+		:style="{ minWidth: '25vw', minHeight: '80vh' }"
 		header="Settings"
 		@pointerdown.stop
 		@wheel.stop
