@@ -2,7 +2,7 @@
 	"name": "@packages/keyboard-shortcuts",
 	"version": "0.0.0",
 	"main": "dist/index.js",
-  "type": "module",
+	"type": "module",
 	"description": "Keyboard shortcut creation / monitoring",
 	"author": "Daniel Olivier <KaoSDlanor@gmail.com>",
 	"homepage": "https://github.com/KaoSDlanor/fox-fall#readme",
