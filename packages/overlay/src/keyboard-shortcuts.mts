@@ -2,7 +2,8 @@ import {
 	KeyboardCommand,
 	type KeyboardConfig,
 } from "@packages/types/dist/keyboard-config.js";
-import { app, globalShortcut } from "electron";
+import { initialise as initKeyboardShortcutsModule, keystrokes } from "@packages/keyboard-shortcuts/dist/index.js";
+import { app } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { toggleOverlay } from "./window/index.mjs";
@@ -14,16 +15,17 @@ let paused = false;
 const defaultConfig: KeyboardConfig = {};
 
 let keyboardConfig: KeyboardConfig = { ...defaultConfig };
+const keyboardRunCommands: Partial<Record<KeyboardCommand, () => unknown>> = {};
 
 const loadConfig = () => {
 	try {
-		if (!fs.existsSync(path.join(userDataFolder, "keyboard-shortcuts.json"))) {
+		if (!fs.existsSync(path.join(userDataFolder, "keyboard-shortcuts-uio.json"))) {
 			keyboardConfig = { ...defaultConfig };
 			return;
 		}
 		const config = JSON.parse(
 			fs.readFileSync(
-				path.join(userDataFolder, "keyboard-shortcuts.json"),
+				path.join(userDataFolder, "keyboard-shortcuts-uio.json"),
 				"utf8"
 			)
 		);
@@ -35,7 +37,7 @@ const loadConfig = () => {
 };
 const saveConfig = () => {
 	fs.writeFileSync(
-		path.join(userDataFolder, "keyboard-shortcuts.json"),
+		path.join(userDataFolder, "keyboard-shortcuts-uio.json"),
 		JSON.stringify(keyboardConfig)
 	);
 };
@@ -63,27 +65,32 @@ export const runCommand = async (command: KeyboardCommand) => {
 
 export const updateKeyboardShortcut = (
 	command: KeyboardCommand,
-	accelerator?: string
+	accelerator?: string[],
+	skipSaving = false
 ) => {
-	if (keyboardConfig[command]) {
-		globalShortcut.unregister(keyboardConfig[command]);
-	}
-	keyboardConfig[command] = accelerator;
-	if (accelerator) {
-		globalShortcut.register(accelerator, async () => {
-			await runCommand(command);
-		});
+	if (keyboardConfig[command] && keyboardRunCommands[command]) {
+		keystrokes.unbindKeyCombo(keyboardConfig[command].join(' > '), keyboardRunCommands[command]);
 	}
 
-	saveConfig();
+	keyboardConfig[command] = accelerator;
+
+	if (accelerator) {
+		if (keyboardRunCommands[command] == null) {
+			keyboardRunCommands[command] = async () => {
+				await new Promise<void>((resolve) => setTimeout(resolve, 10));
+				await runCommand(command);
+			}
+		}
+		keystrokes.bindKeyCombo(accelerator.join(' > '), keyboardRunCommands[command]);
+	}
+
+	if (!skipSaving) saveConfig();
 };
 
 export const initialise = () => {
+	initKeyboardShortcutsModule();
 	loadConfig();
 	for (const [command, accelerator] of Object.entries(keyboardConfig)) {
-		if (!accelerator) continue;
-		globalShortcut.register(accelerator, async () => {
-			await runCommand(command as KeyboardCommand);
-		});
+		updateKeyboardShortcut(command as KeyboardCommand, accelerator, true)
 	}
 };

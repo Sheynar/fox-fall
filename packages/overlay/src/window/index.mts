@@ -3,8 +3,13 @@ import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
 import { app, BrowserWindow, desktopCapturer, ipcMain, screen } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { getKeyboardShortcut, pauseKeyboardShortcuts, resumeKeyboardShortcuts, updateKeyboardShortcut } from "../keyboard-shortcuts.mjs";
-import packageJson from '../../package.json' with { type: "json" };
+import {
+	getKeyboardShortcut,
+	pauseKeyboardShortcuts,
+	resumeKeyboardShortcuts,
+	updateKeyboardShortcut,
+} from "../keyboard-shortcuts.mjs";
+import packageJson from "../../package.json" with { type: "json" };
 
 const __dirname = import.meta.dirname;
 const display = screen.getPrimaryDisplay();
@@ -22,7 +27,8 @@ export const updateShape = () => {
 
 	if (overlayOpen) {
 		managerWindow.setShape([managerWindow.getBounds()]);
-		managerWindow.focus();
+		managerWindow.minimize();
+		managerWindow.restore();
 	} else {
 		managerWindow.setShape([
 			{
@@ -97,12 +103,21 @@ export const initialise = () => {
 	ipcMain.on(ElectronApiCommand.ResumeKeyboardShortcuts, (event) => {
 		resumeKeyboardShortcuts();
 	});
-	ipcMain.on(ElectronApiCommand.UpdateKeyboardShortcut, (event, command: KeyboardCommand, accelerator?: string) => {
-		updateKeyboardShortcut(command, accelerator);
-	});
-	ipcMain.on(ElectronApiCommand.GetKeyboardShortcut, (event, command: KeyboardCommand) => {
-		event.reply(ElectronApiCommand.KeyboardShortcutReply, getKeyboardShortcut(command));
-	});
+	ipcMain.on(
+		ElectronApiCommand.UpdateKeyboardShortcut,
+		(event, command: KeyboardCommand, accelerator?: string[]) => {
+			updateKeyboardShortcut(command, accelerator);
+		}
+	);
+	ipcMain.on(
+		ElectronApiCommand.GetKeyboardShortcut,
+		(event, command: KeyboardCommand) => {
+			event.reply(
+				ElectronApiCommand.KeyboardShortcutReply,
+				getKeyboardShortcut(command)
+			);
+		}
+	);
 	toggleOverlay();
 
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
@@ -114,20 +129,4 @@ export const initialise = () => {
 	managerWindow.on("close", () => {
 		app.quit();
 	});
-};
-
-export const showManager = () => {
-	managerWindow?.showInactive();
-};
-
-export const hideManager = () => {
-	managerWindow?.hide();
-};
-
-export const toggleManager = () => {
-	if (managerWindow?.isVisible()) {
-		hideManager();
-	} else {
-		showManager();
-	}
 };

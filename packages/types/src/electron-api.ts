@@ -32,8 +32,11 @@ export type ElectronApi = {
 	/** Resumes the keyboard shortcuts so they can be activated */
 	resumeKeyboardShortcuts: () => Promise<void>;
 	/** Sends a message to the parent Electron process to update the keyboard shortcut for a command */
-	updateKeyboardShortcut: (command: KeyboardCommand, accelerator?: string) => Promise<void>;
+	updateKeyboardShortcut: (
+		command: KeyboardCommand,
+		accelerator?: string[]
+	) => Promise<void>;
 
 	/** Gets the current keyboard shortcut for a command */
-	getKeyboardShortcut: (command: KeyboardCommand) => Promise<string>;
+	getKeyboardShortcut: (command: KeyboardCommand) => Promise<string[]>;
 };

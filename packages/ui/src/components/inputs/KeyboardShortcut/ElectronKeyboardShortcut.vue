@@ -16,14 +16,14 @@
 		command: KeyboardCommand;
 	}>();
 
-	const accelerator = ref('');
+	const accelerator = ref([] as string[]);
 	window.electronApi
 		?.getKeyboardShortcut(props.command)
 		.then(
-			(currentAccelerator) => (accelerator.value = currentAccelerator ?? '')
+			(currentAccelerator) => (accelerator.value = currentAccelerator ?? [])
 		);
 
-	const onUpdate = async (newAccelerator: string) => {
+	const onUpdate = async (newAccelerator: string[]) => {
 		await window.electronApi?.updateKeyboardShortcut(
 			props.command,
 			newAccelerator
