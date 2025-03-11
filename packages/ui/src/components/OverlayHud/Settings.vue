@@ -2,7 +2,7 @@
 	<PrimeDialog
 		append-to=".App__container"
 		v-model:visible="visible"
-		:style="{ minWidth: '25vw' }"
+		:style="{ minWidth: '25vw', minHeight: '80vh' }"
 		header="Settings"
 		@pointerdown.stop
 		@wheel.stop
@@ -56,14 +56,22 @@
 							/>
 						</div>
 						<div class="Settings__row">
-							<label>{{ settings.userMode === UserMode.Basic ? 'Global ammo' : 'Default Ammo' }}</label>
+							<label>{{
+								settings.userMode === UserMode.Basic
+									? 'Global ammo'
+									: 'Default Ammo'
+							}}</label>
 							<AmmoSelect
 								v-model="settings.globalAmmo"
 								@update:model-value="saveSettings"
 							/>
 						</div>
 						<div class="Settings__row" v-if="settings.globalAmmo != null">
-							<label>{{ settings.userMode === UserMode.Basic ? 'Global platform' : 'Default platform' }}</label>
+							<label>{{
+								settings.userMode === UserMode.Basic
+									? 'Global platform'
+									: 'Default platform'
+							}}</label>
 							<PlatformSelect
 								:ammo-type="settings.globalAmmo"
 								v-model="settings.globalPlatform"
@@ -108,52 +116,41 @@
 					<div class="Settings__content">
 						<div class="Settings__row">
 							<label>Grid dash length</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="settings.gridDashLength"
-								@input="
-									settings.gridDashLength = Number($event.value);
+								@update:model-value="
+									settings.gridDashLength = $event;
 									saveSettings();
 								"
+								:autofocus="true"
 								suffix="px"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="2"
+								:fraction-digits="2"
 								:min="0"
 							/>
 						</div>
 						<div class="Settings__row">
 							<label>Grid dash gap</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="settings.gridDashGap"
-								@input="
-									settings.gridDashGap = Number($event.value);
+								@update:model-value="
+									settings.gridDashGap = $event;
 									saveSettings();
 								"
 								suffix="px"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="2"
+								:fraction-digits="2"
 								:min="0"
 							/>
 						</div>
 						<div class="Settings__row">
 							<label>Grid line width</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="settings.gridLineWidth"
-								@input="
-									settings.gridLineWidth = Number($event.value);
+								@update:model-value="
+									settings.gridLineWidth = $event;
 									saveSettings();
 								"
 								suffix="px"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="2"
+								:fraction-digits="2"
 								:min="0.25"
 							/>
 						</div>
@@ -163,106 +160,80 @@
 					<div class="Settings__content">
 						<div class="Settings__row">
 							<label>Compass opacity</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="Math.floor(settings.compassOpacity * 100)"
-								@input="
-									settings.compassOpacity =
-										Math.floor(Number($event.value)) / 100;
+								@update:model-value="
+									settings.compassOpacity = Math.floor($event) / 100;
 									saveSettings();
 								"
+								:autofocus="true"
 								suffix="%"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="0"
+								:fraction-digits="0"
 								:min="0"
 							/>
 						</div>
 						<div class="Settings__row">
 							<label>Firing arc label opacity</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="Math.floor(settings.firingArcOpacity * 100)"
-								@input="
-									settings.firingArcOpacity =
-										Math.floor(Number($event.value)) / 100;
+								@update:model-value="
+									settings.firingArcOpacity = Math.floor($event) / 100;
 									saveSettings();
 								"
 								suffix="%"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="0"
+								:fraction-digits="0"
 								:min="0"
 							/>
 						</div>
 						<div class="Settings__row">
 							<label>Screenshot opacity</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="Math.floor(settings.screenshotOpacity * 100)"
-								@input="
-									settings.screenshotOpacity =
-										Math.floor(Number($event.value)) / 100;
+								@update:model-value="
+									settings.screenshotOpacity = Math.floor($event) / 100;
 									saveSettings();
 								"
 								suffix="%"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="0"
+								:fraction-digits="0"
 								:min="0.1"
 							/>
 						</div>
 						<div class="Settings__row" v-if="isOverlay">
 							<label>Overlay button scale</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="settings.toggleButtonScale"
-								@input="
-									settings.toggleButtonScale = Number($event.value);
+								@update:model-value="
+									settings.toggleButtonScale = $event;
 									saveSettings();
 								"
 								suffix="x"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="2"
+								:fraction-digits="2"
 								:min="0.25"
 							/>
 						</div>
 						<div class="Settings__row">
 							<label>Unit icon scale</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="settings.unitIconScale"
-								@input="
-									settings.unitIconScale = Number($event.value);
+								@update:model-value="
+									settings.unitIconScale = $event;
 									saveSettings();
 								"
 								suffix="x"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="2"
+								:fraction-digits="2"
 								:min="0.25"
 							/>
 						</div>
 						<div class="Settings__row">
 							<label>Unit settings scale</label>
-							<PrimeInputNumber
+							<NumberInput
 								:model-value="settings.unitSettingsScale"
-								@input="
-									settings.unitSettingsScale = Number($event.value);
+								@update:model-value="
+									settings.unitSettingsScale = $event;
 									saveSettings();
 								"
 								suffix="x"
-								locale="en-UK"
-								:allowEmpty="false"
-								highlightOnFocus
-								:minFractionDigits="0"
-								:maxFractionDigits="2"
+								:fraction-digits="2"
 								:min="0.25"
 							/>
 						</div>
@@ -300,7 +271,6 @@
 	import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeCheckBox from 'primevue/checkbox';
-	import PrimeInputNumber from 'primevue/inputnumber';
 	import PrimeSelect from 'primevue/select';
 	import Tab from 'primevue/tab';
 	import Tabs from 'primevue/tabs';
@@ -309,9 +279,15 @@
 	import TabPanels from 'primevue/tabpanels';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
 	import ElectronKeyboardShortcut from '@/components/inputs/KeyboardShortcut/ElectronKeyboardShortcut.vue';
+	import NumberInput from '@/components/inputs/NumberInput.vue';
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import { isOverlay } from '@/lib/constants';
-	import { BackdropMode, saveSettings, settings, UserMode } from '@/lib/settings';
+	import {
+		BackdropMode,
+		saveSettings,
+		settings,
+		UserMode,
+	} from '@/lib/settings';
 
 	const visible = defineModel('visible', { default: false, type: Boolean });
 </script>

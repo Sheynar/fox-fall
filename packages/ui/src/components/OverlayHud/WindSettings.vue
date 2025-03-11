@@ -15,7 +15,7 @@
 			</div>
 			<div class="Wind__information__item">
 				<label>Wind tier:</label>
-				<DistanceInput :model-value="artillery.wind.value.distance" @update:model-value="artillery.wind.value.distance = $event; syncedRoom.updateWind()" :suffix="''" />
+				<NumberInput :model-value="artillery.wind.value.distance" @update:model-value="artillery.wind.value.distance = $event; syncedRoom.updateWind()" />
 			</div>
 			<div class="Wind__information__item" v-if="windMultiplier">
 				<label>Wind distance:</label>
@@ -59,6 +59,7 @@
 	import PrimeDialog from 'primevue/dialog';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
+	import NumberInput from '@/components/inputs/NumberInput.vue';
 	import { ARTILLERY_BY_SHELL } from '@/lib/constants/data';
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
