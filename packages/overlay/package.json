@@ -1,6 +1,6 @@
 {
   "name": "@packages/overlay",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "main": "dist/index.js",
   "description": "Foxhole artillery overlay",
   "author": "Daniel Olivier <KaoSDlanor@gmail.com>",
