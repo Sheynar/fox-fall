@@ -2,13 +2,13 @@
 	<div class="PlatformInfo__container">
 		<AmmoSelect
 			v-model="settings.globalAmmo"
-			@update:model-value="saveSettings"
+			@update:model-value="settings.globalPlatform = undefined; saveSettings()"
 		/>
 		<PlatformSelect
 			v-if="settings.globalAmmo != null"
 			:ammo-type="settings.globalAmmo"
 			v-model="settings.globalPlatform"
-			@update:model-value="saveSettings"
+			@update:model-value="saveSettings()"
 		/>
 	</div>
 </template>
