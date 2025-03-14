@@ -136,11 +136,11 @@
 	const onKeyDown = (event: KeyboardEvent) => {
 		switch (event.code) {
 			case 'ArrowUp':
-				numberValue.value++;
+				numberValue.value += event.ctrlKey ? 5 : event.shiftKey ? 0.1 : 1;
 				event.preventDefault();
 				break;
 			case 'ArrowDown':
-				numberValue.value--;
+				numberValue.value -= event.ctrlKey ? 5 : event.shiftKey ? 0.1 : 1;
 				event.preventDefault();
 				break;
 		}
