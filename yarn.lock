@@ -618,11 +618,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@packages/keyboard-shortcuts@workspace:*, @packages/keyboard-shortcuts@workspace:packages/keyboard-shortcuts":
+  version: 0.0.0-use.local
+  resolution: "@packages/keyboard-shortcuts@workspace:packages/keyboard-shortcuts"
+  dependencies:
+    "@packages/types": "workspace:*"
+    "@rwh/keystrokes": "npm:^1.5.6"
+    "@types/node": "npm:^20.12.7"
+    prettier: "npm:^3.0.3"
+    rimraf: "npm:^6.0.1"
+    typescript: "npm:^5.2.2"
+    uiohook-napi: "npm:^1.5.4"
+  languageName: unknown
+  linkType: soft
+
 "@packages/overlay@workspace:packages/overlay":
   version: 0.0.0-use.local
   resolution: "@packages/overlay@workspace:packages/overlay"
   dependencies:
     "@electron/packager": "npm:18.1.1"
+    "@packages/keyboard-shortcuts": "workspace:*"
     "@packages/server": "workspace:*"
     "@packages/types": "workspace:*"
     "@packages/ui": "workspace:*"
@@ -1020,6 +1035,13 @@ __metadata:
   version: 4.29.1
   resolution: "@rollup/rollup-win32-x64-msvc@npm:4.29.1"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@rwh/keystrokes@npm:^1.5.6":
+  version: 1.5.6
+  resolution: "@rwh/keystrokes@npm:1.5.6"
+  checksum: 10c0/2ed1a9a8210a20701414df9e962ff809cc2f363b5026744dbe4884a0530c123abbd74230486a33f4bd742805534262eb67e79a9c279ed4603839d0ab843679eb
   languageName: node
   linkType: hard
 
@@ -4907,6 +4929,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-gyp-build@npm:4.x.x":
+  version: 4.8.4
+  resolution: "node-gyp-build@npm:4.8.4"
+  bin:
+    node-gyp-build: bin.js
+    node-gyp-build-optional: optional.js
+    node-gyp-build-test: build-test.js
+  checksum: 10c0/444e189907ece2081fe60e75368784f7782cfddb554b60123743dfb89509df89f1f29c03bbfa16b3a3e0be3f48799a4783f487da6203245fa5bed239ba7407e1
+  languageName: node
+  linkType: hard
+
 "node-gyp@npm:latest":
   version: 10.2.0
   resolution: "node-gyp@npm:10.2.0"
@@ -6306,6 +6339,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10c0/ac8307bb06bbfd08ae7137da740769b7d8c3ee5943188743bb622c621f8ad61d244767480f90fbd840277fbf152d8932aa20c33f867dea1bb5e79b187ca1a92f
+  languageName: node
+  linkType: hard
+
+"uiohook-napi@npm:^1.5.4":
+  version: 1.5.4
+  resolution: "uiohook-napi@npm:1.5.4"
+  dependencies:
+    node-gyp: "npm:latest"
+    node-gyp-build: "npm:4.x.x"
+  checksum: 10c0/8e12756cd6bc4d26f4ede0ea9f9e61b4b79f0cc19ea2a16acdb4df9b9e4c94dfd9ab0ef8131436807f91bcc3964a9211131bd3d1fd3d91d6d7b8f71a9430b517
   languageName: node
   linkType: hard
 

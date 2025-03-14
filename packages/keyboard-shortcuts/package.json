@@ -1,0 +1,30 @@
+{
+	"name": "@packages/keyboard-shortcuts",
+	"version": "0.0.0",
+	"main": "dist/index.js",
+	"type": "module",
+	"description": "Keyboard shortcut creation / monitoring",
+	"author": "Daniel Olivier <KaoSDlanor@gmail.com>",
+	"homepage": "https://github.com/KaoSDlanor/fox-fall#readme",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/KaoSDlanor/fox-fall.git"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "rimraf dist && tsc",
+		"prepublishOnly": "npm run build"
+	},
+	"dependencies": {
+		"@packages/types": "workspace:*",
+		"@rwh/keystrokes": "^1.5.6",
+		"uiohook-napi": "^1.5.4"
+	},
+	"devDependencies": {
+		"@types/node": "^20.12.7",
+		"prettier": "^3.0.3",
+		"rimraf": "^6.0.1",
+		"typescript": "^5.2.2"
+	}
+}

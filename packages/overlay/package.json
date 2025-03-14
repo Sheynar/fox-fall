@@ -19,6 +19,7 @@
     "make": "rimraf out && electron-builder --config build.config.js"
   },
   "dependencies": {
+    "@packages/keyboard-shortcuts": "workspace:*",
     "@packages/server": "workspace:*",
     "@packages/types": "workspace:*",
     "electron-log": "^5.3.2",

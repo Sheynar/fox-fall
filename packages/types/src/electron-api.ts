@@ -2,17 +2,15 @@ import type { KeyboardCommand } from "./keyboard-config";
 
 export enum ElectronApiCommand {
 	GetRunningVersion = "get-running-version",
-	RunningVersionReply = "running-version-reply",
 	ToggleOverlay = "toggle-overlay",
 	GetOverlayOpen = "get-overlay-open",
-	OverlayOpenReply = "overlay-open-reply",
 	OverlayToggled = "overlay-toggled",
 	SendToggleSize = "send-toggle-size",
 	PauseKeyboardShortcuts = "pause-keyboard-shortcuts",
 	ResumeKeyboardShortcuts = "resume-keyboard-shortcuts",
 	UpdateKeyboardShortcut = "update-keyboard-shortcut",
 	GetKeyboardShortcut = "get-keyboard-shortcut",
-	KeyboardShortcutReply = "keyboard-shortcut-reply",
+	KeyboardShortcutPressed = "keyboard-shortcut-pressed",
 }
 
 export type ElectronApi = {
@@ -32,8 +30,15 @@ export type ElectronApi = {
 	/** Resumes the keyboard shortcuts so they can be activated */
 	resumeKeyboardShortcuts: () => Promise<void>;
 	/** Sends a message to the parent Electron process to update the keyboard shortcut for a command */
-	updateKeyboardShortcut: (command: KeyboardCommand, accelerator?: string) => Promise<void>;
+	updateKeyboardShortcut: (
+		command: KeyboardCommand,
+		accelerator?: string[]
+	) => Promise<void>;
 
 	/** Gets the current keyboard shortcut for a command */
-	getKeyboardShortcut: (command: KeyboardCommand) => Promise<string>;
+	getKeyboardShortcut: (command: KeyboardCommand) => Promise<string[]>;
+
+	onKeyboardShortcutPressed: (
+		callback: (command: KeyboardCommand) => unknown
+	) => () => void;
 };

@@ -243,7 +243,11 @@
 					<div class="Settings__content">
 						<div class="Settings__row">
 							<label>Toggle overlay</label>
-							<KeyboardShortcut :command="KeyboardCommand.ToggleOverlay" />
+							<ElectronKeyboardShortcut :command="KeyboardCommand.ToggleOverlay" />
+						</div>
+						<div class="Settings__row">
+							<label>Calibrate wind</label>
+							<ElectronKeyboardShortcut :command="KeyboardCommand.CalibrateWind" />
 						</div>
 					</div>
 				</TabPanel>
@@ -278,7 +282,7 @@
 	import TabPanel from 'primevue/tabpanel';
 	import TabPanels from 'primevue/tabpanels';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
-	import KeyboardShortcut from '@/components/inputs/KeyboardShortcut.vue';
+	import ElectronKeyboardShortcut from '@/components/inputs/KeyboardShortcut/ElectronKeyboardShortcut.vue';
 	import NumberInput from '@/components/inputs/NumberInput.vue';
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import { isOverlay } from '@/lib/constants';

@@ -1,6 +1,7 @@
 import { type Ref, ref, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 import { useEventListener } from '@vueuse/core';
+import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
 import { settings } from '@/lib/settings';
 import {
 	type Unit,
@@ -99,7 +100,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		const unit = unitMap.value[unitId];
 		if (unit == null) return;
 
-		if (selectedUnit.value === unitId && unit.parentId != null) {
+		if (selectedUnit.value === unitId && unit.selectUnitOnDeletion != null) {
+			selectedUnit.value = unit.selectUnitOnDeletion;
+		} else if (selectedUnit.value === unitId && unit.parentId != null) {
 			selectedUnit.value = unit.parentId;
 		}
 		if (pinnedUnits.value.has(unitId)) {
@@ -118,6 +121,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 					selectedUnit.value = otherUnit.id;
 				}
 				setUnitSource(otherUnit.id, unit.parentId);
+			}
+			if (otherUnit.selectUnitOnDeletion === unitId) {
+				delete otherUnit.selectUnitOnDeletion;
 			}
 		}
 		if (selectedUnit.value === unitId) {
@@ -152,6 +158,36 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		} catch (e) {
 			alert(`Failed to set unit source: ${e}`);
 		}
+	};
+
+	const calibrateWind = async () => {
+		let baseUnit = selectedUnit.value;
+		const originalBaseUnit = baseUnit;
+		if (
+			baseUnit != null &&
+			unitMap.value[baseUnit] != null &&
+			unitMap.value[baseUnit].type === UnitType.Target &&
+			unitMap.value[baseUnit].parentId != null
+		) {
+			baseUnit = unitMap.value[baseUnit].parentId!;
+		}
+		if (baseUnit == null) {
+			baseUnit = await new Promise<string>((resolve, reject) => {
+				unitSelector.value = {
+					selectUnit: (unitId) => {
+						unitSelector.value = null;
+						if (unitId == null) {
+							reject(new Error('User declined to select a unit'));
+						} else {
+							resolve(unitId);
+						}
+					},
+					prompt: 'Select base unit',
+				};
+			});
+		}
+		const newUnit = addUnit(UnitType.LandingZone, undefined, undefined, baseUnit);
+		newUnit.value.selectUnitOnDeletion = originalBaseUnit ?? baseUnit;
 	};
 
 	const editWind = async (unitId: string) => {
@@ -285,8 +321,8 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	});
 
 	useEventListener('keydown', (event) => {
-		console.log(event.key, event);
 		if (event.key === 'Tab' && event.ctrlKey) {
+			event.preventDefault();
 			const unitIdList = Object.keys(unitMap.value);
 
 			if (selectedUnit.value == null) {
@@ -308,7 +344,16 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 					unitIdList[(selectedUnitIndex + 1) % unitIdList.length];
 			}
 		} else if (event.key === 'Delete' && event.ctrlKey && selectedUnit.value) {
+			event.preventDefault();
 			removeUnit(selectedUnit.value);
+		}
+	});
+
+	window.electronApi?.onKeyboardShortcutPressed((command) => {
+		switch (command) {
+			case KeyboardCommand.CalibrateWind:
+				calibrateWind();
+				break;
 		}
 	});
 
@@ -316,6 +361,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		addUnit,
 		removeUnit,
 		setUnitSource,
+		calibrateWind,
 		editWind,
 		resetWind,
 		resetViewport,

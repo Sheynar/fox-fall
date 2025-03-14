@@ -47,6 +47,7 @@ export type Unit = {
 	type: UnitType;
 	vector: Vector;
 	parentId?: string;
+	selectUnitOnDeletion?: string;
 	ammunition?: AMMO_TYPE;
 	platform?: Platform<AMMO_TYPE>;
 	spottingType?: SPOTTING_TYPE;
