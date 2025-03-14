@@ -7,14 +7,15 @@ import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
 
 const electronApi: ElectronApi = {
 	getRunningVersion: async () => {
+		const requestId = crypto.randomUUID();
 		const output = new Promise<string>((resolve, reject) => {
 			ipcRenderer.once(
-				ElectronApiCommand.RunningVersionReply,
+				requestId,
 				(_event, version: string) => resolve(version)
 			);
 			setTimeout(() => reject(new Error("Timeout")), 1000);
 		});
-		ipcRenderer.send(ElectronApiCommand.GetRunningVersion);
+		ipcRenderer.send(ElectronApiCommand.GetRunningVersion, requestId);
 		return output;
 	},
 
@@ -23,14 +24,15 @@ const electronApi: ElectronApi = {
 	},
 
 	getOverlayOpen: async () => {
+		const requestId = crypto.randomUUID();
 		const output = new Promise<boolean>((resolve, reject) => {
 			ipcRenderer.once(
-				ElectronApiCommand.OverlayOpenReply,
+				requestId,
 				(_event, open: boolean) => resolve(open)
 			);
 			setTimeout(() => reject(new Error("Timeout")), 1000);
 		});
-		ipcRenderer.send(ElectronApiCommand.GetOverlayOpen);
+		ipcRenderer.send(ElectronApiCommand.GetOverlayOpen, requestId);
 		return output;
 	},
 
@@ -67,15 +69,28 @@ const electronApi: ElectronApi = {
 	},
 
 	getKeyboardShortcut: async (command: KeyboardCommand) => {
+		const requestId = crypto.randomUUID();
 		const output = new Promise<string[]>((resolve, reject) => {
 			ipcRenderer.once(
-				ElectronApiCommand.KeyboardShortcutReply,
+				requestId,
 				(_event, accelerator: string[]) => resolve(accelerator)
 			);
 			setTimeout(() => reject(new Error("Timeout")), 1000);
 		});
-		ipcRenderer.send(ElectronApiCommand.GetKeyboardShortcut, command);
+		ipcRenderer.send(ElectronApiCommand.GetKeyboardShortcut, requestId, command);
 		return output;
+	},
+
+	onKeyboardShortcutPressed: (callback) => {
+		const listener = (_event, command: KeyboardCommand) => {
+			callback(command);
+		};
+
+		ipcRenderer.on(ElectronApiCommand.KeyboardShortcutPressed, listener);
+
+		return () => {
+			ipcRenderer.off(ElectronApiCommand.KeyboardShortcutPressed, listener);
+		};
 	},
 };
 

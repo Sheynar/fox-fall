@@ -79,14 +79,14 @@ export const initialise = () => {
 		}
 	);
 
-	ipcMain.on(ElectronApiCommand.GetRunningVersion, (event) => {
-		event.reply(ElectronApiCommand.RunningVersionReply, packageJson.version);
+	ipcMain.on(ElectronApiCommand.GetRunningVersion, (event, requestId: string) => {
+		event.reply(requestId, packageJson.version);
 	});
 	ipcMain.on(ElectronApiCommand.ToggleOverlay, (event) => {
 		toggleOverlay();
 	});
-	ipcMain.on(ElectronApiCommand.GetOverlayOpen, (event) => {
-		event.reply(ElectronApiCommand.OverlayOpenReply, overlayOpen);
+	ipcMain.on(ElectronApiCommand.GetOverlayOpen, (event, requestId: string) => {
+		event.reply(requestId, overlayOpen);
 	});
 	ipcMain.on(
 		ElectronApiCommand.SendToggleSize,
@@ -111,9 +111,9 @@ export const initialise = () => {
 	);
 	ipcMain.on(
 		ElectronApiCommand.GetKeyboardShortcut,
-		(event, command: KeyboardCommand) => {
+		(event, requestId: string, command: KeyboardCommand) => {
 			event.reply(
-				ElectronApiCommand.KeyboardShortcutReply,
+				requestId,
 				getKeyboardShortcut(command)
 			);
 		}

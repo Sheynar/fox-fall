@@ -2,11 +2,15 @@ import {
 	KeyboardCommand,
 	type KeyboardConfig,
 } from "@packages/types/dist/keyboard-config.js";
-import { initialise as initKeyboardShortcutsModule, keystrokes } from "@packages/keyboard-shortcuts/dist/index.js";
-import { app } from "electron";
+import {
+	initialise as initKeyboardShortcutsModule,
+	keystrokes,
+} from "@packages/keyboard-shortcuts/dist/index.js";
+import { app, webContents } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { toggleOverlay } from "./window/index.mjs";
+import { ElectronApiCommand } from "@packages/types/dist/electron-api.js";
 
 const userDataFolder = app.getPath("userData");
 
@@ -19,7 +23,9 @@ const keyboardRunCommands: Partial<Record<KeyboardCommand, () => unknown>> = {};
 
 const loadConfig = () => {
 	try {
-		if (!fs.existsSync(path.join(userDataFolder, "keyboard-shortcuts-uio.json"))) {
+		if (
+			!fs.existsSync(path.join(userDataFolder, "keyboard-shortcuts-uio.json"))
+		) {
 			keyboardConfig = { ...defaultConfig };
 			return;
 		}
@@ -61,6 +67,10 @@ export const runCommand = async (command: KeyboardCommand) => {
 			toggleOverlay();
 			break;
 	}
+
+	for (const webContent of webContents.getAllWebContents()) {
+		webContent.send(ElectronApiCommand.KeyboardShortcutPressed, command);
+	}
 };
 
 export const updateKeyboardShortcut = (
@@ -69,7 +79,10 @@ export const updateKeyboardShortcut = (
 	skipSaving = false
 ) => {
 	if (keyboardConfig[command] && keyboardRunCommands[command]) {
-		keystrokes.unbindKeyCombo(keyboardConfig[command].join(' > '), keyboardRunCommands[command]);
+		keystrokes.unbindKeyCombo(
+			keyboardConfig[command].join(" > "),
+			keyboardRunCommands[command]
+		);
 	}
 
 	keyboardConfig[command] = accelerator;
@@ -79,9 +92,12 @@ export const updateKeyboardShortcut = (
 			keyboardRunCommands[command] = async () => {
 				await new Promise<void>((resolve) => setTimeout(resolve, 10));
 				await runCommand(command);
-			}
+			};
 		}
-		keystrokes.bindKeyCombo(accelerator.join(' > '), keyboardRunCommands[command]);
+		keystrokes.bindKeyCombo(
+			accelerator.join(" > "),
+			keyboardRunCommands[command]
+		);
 	}
 
 	if (!skipSaving) saveConfig();
@@ -91,6 +107,6 @@ export const initialise = () => {
 	initKeyboardShortcutsModule();
 	loadConfig();
 	for (const [command, accelerator] of Object.entries(keyboardConfig)) {
-		updateKeyboardShortcut(command as KeyboardCommand, accelerator, true)
+		updateKeyboardShortcut(command as KeyboardCommand, accelerator, true);
 	}
 };
