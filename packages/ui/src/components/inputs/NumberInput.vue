@@ -36,7 +36,11 @@
 		set: (newNumber: number) => {
 			if (props.min != null) newNumber = Math.max(props.min, newNumber);
 			if (props.max != null) newNumber = Math.min(props.max, newNumber);
-			_modelValue.value = Number(props.fractionDigits != null ? newNumber.toFixed(props.fractionDigits) : newNumber);
+			_modelValue.value = Number(
+				props.fractionDigits != null
+					? newNumber.toFixed(props.fractionDigits)
+					: newNumber
+			);
 		},
 	});
 	const formattedValue = computed(() => {
@@ -58,7 +62,12 @@
 		{ flush: 'sync' }
 	);
 	const parsedValue = computed(() => {
-		return Number(stringValue.value.substring(props.prefix.length, stringValue.value.length - props.suffix.length));
+		return Number(
+			stringValue.value.substring(
+				props.prefix.length,
+				stringValue.value.length - props.suffix.length
+			)
+		);
 	});
 
 	const checkCursor = () => {
@@ -67,19 +76,30 @@
 		if (!inputElement) return;
 
 		let selectionInvalid = false;
-		const selection = [inputElement.selectionStart!, inputElement.selectionEnd!];
+		const selection = [
+			inputElement.selectionStart!,
+			inputElement.selectionEnd!,
+		];
 		for (const [index, value] of selection.entries()) {
 			selection[index] = Math.max(props.prefix.length, value);
-			selection[index] = Math.min(inputElement.value.length - props.suffix.length, value);
+			selection[index] = Math.min(
+				inputElement.value.length - props.suffix.length,
+				value
+			);
 			if (selection[index] !== value) selectionInvalid = true;
 		}
 
-		if (selectionInvalid) inputElement.setSelectionRange(selection[0], selection[1], inputElement.selectionDirection || undefined);
+		if (selectionInvalid)
+			inputElement.setSelectionRange(
+				selection[0],
+				selection[1],
+				inputElement.selectionDirection || undefined
+			);
 	};
 	document.addEventListener('selectionchange', checkCursor);
 	onScopeDispose(() => {
 		document.removeEventListener('selectionchange', checkCursor);
-	})
+	});
 
 	const valuesOutOfSync = computed(
 		() => numberValue.value !== parsedValue.value
@@ -88,9 +108,17 @@
 	watch(
 		numberValue,
 		() => {
-			if (!isNaN(numberValue.value) && (valuesOutOfSync.value || !stringValue.value)) {
-				stringValue.value = formattedValue.value;
-			}
+			if (
+				isNaN(numberValue.value) ||
+				(!valuesOutOfSync.value && stringValue.value)
+			)
+				return;
+			stringValue.value = formattedValue.value;
+
+			const inputElement = textInput.value?.inputElement;
+			if (inputElement == null) return;
+			inputElement.value = stringValue.value;
+			if (inputElement.matches(':focus')) inputElement.select();
 		},
 		{ flush: 'sync', immediate: true }
 	);

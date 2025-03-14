@@ -1,7 +1,7 @@
 <template>
 	<BitmapDisplay
 		v-show="
-			overlayOpen &&
+			artillery.overlayOpen.value &&
 			!artillery.viewportControl.calibrating.value &&
 			!artillery.viewportControl.screenShotting.value
 		"
@@ -17,7 +17,7 @@
 		class="App__container"
 		:class="{
 			App__transparent: isOverlay && settings.transparentOverlay,
-			App__hidden: !overlayOpen,
+			App__hidden: !artillery.overlayOpen.value,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
 		@touchstart.prevent
@@ -102,7 +102,7 @@
 		</svg>
 	</div>
 
-	<OverlayToggle v-model:overlayOpen="overlayOpen" />
+	<OverlayToggle v-model:overlayOpen="artillery.overlayOpen.value" />
 </template>
 
 <style lang="scss">
@@ -160,7 +160,6 @@
 	import { getAvailableUnitTypes, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
-	const overlayOpen = ref(false);
 	const contextMenu = ref<null | InstanceType<typeof ContextMenu>>(null);
 
 	const onPointerMove = (event: PointerEvent) => {

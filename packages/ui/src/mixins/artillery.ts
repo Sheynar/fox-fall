@@ -20,6 +20,7 @@ type ArtilleryOptions = {
 	onWindUpdated?: () => unknown;
 };
 export const useArtillery = (options: ArtilleryOptions = {}) => {
+	const overlayOpen = ref(false);
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const readyToFire = ref(false);
 	const wind = ref(Vector.fromAngularVector({ azimuth: 0, distance: 0 }));
@@ -319,6 +320,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		resetWind,
 		resetViewport,
 
+		overlayOpen,
 		cursor,
 		wind,
 		unitMap,

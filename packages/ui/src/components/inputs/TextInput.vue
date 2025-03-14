@@ -4,7 +4,7 @@
 		v-model="modelValue"
 		:autofocus="props.autofocus"
 		:allowEmpty="props.allowEmpty"
-		highlightOnFocus
+		@focus="inputElement.select()"
 	/>
 </template>
 
