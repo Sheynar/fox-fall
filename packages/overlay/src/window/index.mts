@@ -45,12 +45,13 @@ export const updateShape = () => {
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
 };
-export const toggleOverlay = () => {
-	overlayOpen = !overlayOpen;
+export const toggleOverlay = (newState = !overlayOpen) => {
+	if (overlayOpen === newState) return;
+	overlayOpen = newState;
 	updateShape();
 
 	if (managerWindow == null) return;
-	managerWindow.webContents.send("overlay-toggled", overlayOpen);
+	managerWindow.webContents.send(ElectronApiCommand.OverlayToggled, overlayOpen);
 };
 
 export const initialise = () => {

@@ -63,6 +63,9 @@ export const getKeyboardShortcut = (command: KeyboardCommand) => {
 export const runCommand = async (command: KeyboardCommand) => {
 	if (paused) return;
 	switch (command) {
+		case KeyboardCommand.CalibrateWind:
+			toggleOverlay(true);
+			break;
 		case KeyboardCommand.ToggleOverlay:
 			toggleOverlay();
 			break;

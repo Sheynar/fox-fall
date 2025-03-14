@@ -1,6 +1,7 @@
 import { type Ref, ref, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 import { useEventListener } from '@vueuse/core';
+import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
 import { settings } from '@/lib/settings';
 import {
 	type Unit,
@@ -152,6 +153,34 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		} catch (e) {
 			alert(`Failed to set unit source: ${e}`);
 		}
+	};
+
+	const calibrateWind = async () => {
+		let baseUnit = selectedUnit.value;
+		if (
+			baseUnit != null &&
+			unitMap.value[baseUnit] != null &&
+			unitMap.value[baseUnit].type === UnitType.Target &&
+			unitMap.value[baseUnit].parentId != null
+		) {
+			baseUnit = unitMap.value[baseUnit].parentId!;
+		}
+		if (baseUnit == null) {
+			baseUnit = await new Promise<string>((resolve, reject) => {
+				unitSelector.value = {
+					selectUnit: (unitId) => {
+						unitSelector.value = null;
+						if (unitId == null) {
+							reject(new Error('User declined to select a unit'));
+						} else {
+							resolve(unitId);
+						}
+					},
+					prompt: 'Select base unit',
+				};
+			});
+		}
+		addUnit(UnitType.LandingZone, undefined, undefined, baseUnit);
 	};
 
 	const editWind = async (unitId: string) => {
@@ -311,10 +340,19 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		}
 	});
 
+	window.electronApi?.onKeyboardShortcutPressed((command) => {
+		switch (command) {
+			case KeyboardCommand.CalibrateWind:
+				calibrateWind();
+				break;
+		}
+	});
+
 	return {
 		addUnit,
 		removeUnit,
 		setUnitSource,
+		calibrateWind,
 		editWind,
 		resetWind,
 		resetViewport,

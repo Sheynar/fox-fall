@@ -245,6 +245,10 @@
 							<label>Toggle overlay</label>
 							<ElectronKeyboardShortcut :command="KeyboardCommand.ToggleOverlay" />
 						</div>
+						<div class="Settings__row">
+							<label>Calibrate wind</label>
+							<ElectronKeyboardShortcut :command="KeyboardCommand.CalibrateWind" />
+						</div>
 					</div>
 				</TabPanel>
 			</TabPanels>
