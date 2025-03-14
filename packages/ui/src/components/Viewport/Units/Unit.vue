@@ -194,7 +194,7 @@
 	const isHovered = ref(false);
 	const canDrag = ref(unit.value.parentId == null);
 	const open = computed({
-		get: () => artillery.selectedUnit.value === unit.value.id,
+		get: () => artillery.selectedUnit.value === unit.value.id && artillery.overlayOpen.value,
 		set: (value) => {
 			if (value) {
 				artillery.selectedUnit.value = unit.value.id;
