@@ -322,6 +322,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 
 	useEventListener('keydown', (event) => {
 		if (event.key === 'Tab' && event.ctrlKey) {
+			event.preventDefault();
 			const unitIdList = Object.keys(unitMap.value);
 
 			if (selectedUnit.value == null) {
@@ -343,6 +344,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 					unitIdList[(selectedUnitIndex + 1) % unitIdList.length];
 			}
 		} else if (event.key === 'Delete' && event.ctrlKey && selectedUnit.value) {
+			event.preventDefault();
 			removeUnit(selectedUnit.value);
 		}
 	});
