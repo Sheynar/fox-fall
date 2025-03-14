@@ -100,7 +100,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		const unit = unitMap.value[unitId];
 		if (unit == null) return;
 
-		if (selectedUnit.value === unitId && unit.parentId != null) {
+		if (selectedUnit.value === unitId && unit.selectUnitOnDeletion != null) {
+			selectedUnit.value = unit.selectUnitOnDeletion;
+		} else if (selectedUnit.value === unitId && unit.parentId != null) {
 			selectedUnit.value = unit.parentId;
 		}
 		if (pinnedUnits.value.has(unitId)) {
@@ -119,6 +121,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 					selectedUnit.value = otherUnit.id;
 				}
 				setUnitSource(otherUnit.id, unit.parentId);
+			}
+			if (otherUnit.selectUnitOnDeletion === unitId) {
+				delete otherUnit.selectUnitOnDeletion;
 			}
 		}
 		if (selectedUnit.value === unitId) {
@@ -157,6 +162,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 
 	const calibrateWind = async () => {
 		let baseUnit = selectedUnit.value;
+		const originalBaseUnit = baseUnit;
 		if (
 			baseUnit != null &&
 			unitMap.value[baseUnit] != null &&
@@ -180,7 +186,8 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				};
 			});
 		}
-		addUnit(UnitType.LandingZone, undefined, undefined, baseUnit);
+		const newUnit = addUnit(UnitType.LandingZone, undefined, undefined, baseUnit);
+		newUnit.value.selectUnitOnDeletion = originalBaseUnit ?? baseUnit;
 	};
 
 	const editWind = async (unitId: string) => {
