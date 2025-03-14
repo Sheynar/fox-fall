@@ -12,6 +12,7 @@
 	import TextInput from './TextInput.vue';
 
 	const textInput = ref<InstanceType<typeof TextInput>>(null!);
+	const inputElement = computed(() => textInput.value.inputElement);
 
 	const props = withDefaults(
 		defineProps<{
@@ -148,6 +149,7 @@
 
 	defineExpose({
 		textInput,
+		inputElement,
 		numberValue,
 		formattedValue,
 		stringValue,

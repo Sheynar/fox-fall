@@ -3,6 +3,7 @@
 		class="DirectionInput__input"
 		ref="numberInput"
 		v-model="modelValue"
+		v-bind="$attrs"
 		suffix="°"
 		:autofocus="props.autofocus"
 		:fractionDigits="1"
@@ -119,5 +120,9 @@
 				inputElement.value.select();
 			});
 		}
+	});
+
+	defineExpose({
+		inputElement,
 	});
 </script>

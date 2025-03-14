@@ -103,6 +103,7 @@
 					<div class="UnitSettings__row">
 						<span>Distance:</span>
 						<DistanceInput
+							ref="distanceInput"
 							autofocus
 							:model-value="unit.vector.distance"
 							@update:model-value="
@@ -110,15 +111,22 @@
 								emit('updated');
 							"
 							:min="1"
+							@keydown.enter="azimuthInput?.inputElement?.select()"
 						/>
 					</div>
 					<div class="UnitSettings__row">
 						<span>Azimuth:</span>
 						<DirectionInput
+							ref="azimuthInput"
 							:model-value="wrapDegrees(unit.vector.azimuth)"
 							@update:model-value="
 								unit.vector.azimuth = wrapDegrees($event);
 								emit('updated');
+							"
+							@keydown.enter="
+								unit.type === UnitType.LandingZone
+									? emit('update-wind')
+									: distanceInput?.inputElement?.select()
 							"
 						/>
 					</div>
@@ -382,7 +390,7 @@
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeInputText from 'primevue/inputtext';
-	import { computed } from 'vue';
+	import { computed, shallowRef, watchEffect } from 'vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
@@ -402,6 +410,13 @@
 	import { settings, UserMode } from '@/lib/settings';
 	import { getAvailableUnitTypes, getUnitLabel, UnitType } from '@/lib/unit';
 	import { useToggleButtonStore } from '@/stores/toggle-button';
+
+	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
+	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
+
+	watchEffect(() => {
+		console.log(distanceInput.value?.inputElement);
+	});
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
 	const customPosition = defineModel('customPosition', {
