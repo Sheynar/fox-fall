@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, ref, shallowRef, watch } from 'vue';
+	import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 	import TextInput from './TextInput.vue';
 
 	const textInput = shallowRef<InstanceType<typeof TextInput>>(null!);
