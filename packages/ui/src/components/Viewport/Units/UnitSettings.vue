@@ -390,7 +390,7 @@
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeInputText from 'primevue/inputtext';
-	import { computed, markRaw, shallowRef, watchEffect } from 'vue';
+	import { computed, markRaw, shallowRef } from 'vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
@@ -413,10 +413,6 @@
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
 	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
-
-	watchEffect(() => {
-		console.log(distanceInput.value?.inputElement);
-	});
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
 	const customPosition = defineModel('customPosition', {
