@@ -390,7 +390,7 @@
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeInputText from 'primevue/inputtext';
-	import { computed, shallowRef, watchEffect } from 'vue';
+	import { computed, markRaw, shallowRef, watchEffect } from 'vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
@@ -439,7 +439,7 @@
 	const unitTypeOptions = computed(() => {
 		return getAvailableUnitTypes().map((type) => ({
 			label: UnitType[type],
-			icon: UNIT_ICON_BY_TYPE[type],
+			icon: markRaw(UNIT_ICON_BY_TYPE[type]),
 			value: type,
 		}));
 	});

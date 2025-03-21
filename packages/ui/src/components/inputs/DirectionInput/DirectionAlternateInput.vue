@@ -18,11 +18,11 @@
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import { toDegrees, wrapDegrees } from '@/lib/angle';
 	import { useEventListener } from '@vueuse/core';
-	import { computed, defineModel, ref } from 'vue';
+	import { computed, defineModel, shallowRef } from 'vue';
 
 	const modelValue = defineModel({ type: Number, required: true });
 
-	const compassIcon = ref<InstanceType<typeof CompassIcon>>(null!);
+	const compassIcon = shallowRef<InstanceType<typeof CompassIcon>>(null!);
 	const compassEl = computed(() => compassIcon.value?.$el as Element);
 
 	let dragging = false;

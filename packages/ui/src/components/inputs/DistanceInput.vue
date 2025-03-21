@@ -10,10 +10,10 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, defineModel, ref } from 'vue';
+	import { computed, defineModel, shallowRef } from 'vue';
 	import NumberInput from './NumberInput.vue';
 
-	const numberInput = ref<InstanceType<typeof NumberInput>>(null!);
+	const numberInput = shallowRef<InstanceType<typeof NumberInput>>(null!);
 	const inputElement = computed(() => numberInput.value?.inputElement);
 
 	const props = withDefaults(defineProps<{

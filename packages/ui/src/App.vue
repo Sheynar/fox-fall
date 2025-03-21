@@ -147,7 +147,7 @@
 <script setup lang="ts">
 	import ContextMenu from 'primevue/contextmenu';
 	import type { MenuItem } from 'primevue/menuitem';
-	import { computed, ref } from 'vue';
+	import { computed, ref, shallowRef } from 'vue';
 	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Grid from '@/components/Grid.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
@@ -160,7 +160,7 @@
 	import { getAvailableUnitTypes, getUnitResolvedVector, UnitType } from '@/lib/unit';
 	import { Vector } from '@/lib/vector';
 
-	const contextMenu = ref<null | InstanceType<typeof ContextMenu>>(null);
+	const contextMenu = shallowRef<null | InstanceType<typeof ContextMenu>>(null);
 
 	const onPointerMove = (event: PointerEvent) => {
 		artillery.cursor.value.cartesianVector = {

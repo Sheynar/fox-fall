@@ -17,7 +17,7 @@
 		Platform,
 	} from '@/lib/constants/data';
 	import IconSelect from './IconSelect.vue';
-	import { computed } from 'vue';
+	import { computed, markRaw } from 'vue';
 
 	const modelValue = defineModel<Platform<AMMO_TYPE>>('modelValue');
 	const props = defineProps<{
@@ -35,7 +35,7 @@
 			.sort()
 			.map((platform) => ({
 				label: platform,
-				icon: ARTILLERY_BY_SHELL[props.ammoType!].PLATFORM[platform]?.ICON,
+				icon: markRaw(ARTILLERY_BY_SHELL[props.ammoType!].PLATFORM[platform]?.ICON),
 				value: platform,
 			}));
 	});

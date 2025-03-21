@@ -56,10 +56,10 @@
 	import { settings } from '@/lib/settings';
 	import { useToggleButtonStore } from '@/stores/toggle-button';
 	import { useElementBounding } from '@vueuse/core';
-	import { shallowRef, watchEffect } from 'vue';
+	import { ref, watchEffect } from 'vue';
 	import OverlayTooltip from './OverlayTooltip.vue';
 
-	const containerElement = shallowRef<HTMLButtonElement | null>(null);
+	const containerElement = ref<HTMLButtonElement | null>(null);
 	const overlayOpen = defineModel('overlayOpen', {
 		type: Boolean,
 		required: true,

@@ -8,10 +8,10 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, onScopeDispose, ref, watch } from 'vue';
+	import { computed, ref, shallowRef, watch } from 'vue';
 	import TextInput from './TextInput.vue';
 
-	const textInput = ref<InstanceType<typeof TextInput>>(null!);
+	const textInput = shallowRef<InstanceType<typeof TextInput>>(null!);
 	const inputElement = computed(() => textInput.value.inputElement);
 
 	const props = withDefaults(

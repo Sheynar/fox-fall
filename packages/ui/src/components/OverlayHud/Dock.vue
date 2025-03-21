@@ -65,7 +65,7 @@
 	import PrimePopover from 'primevue/popover';
 	import { computed, ref, shallowRef, watch } from 'vue';
 
-	const primePopover = ref<InstanceType<typeof PrimePopover> | null>(null);
+	const primePopover = shallowRef<InstanceType<typeof PrimePopover> | null>(null);
 	const tooltip = shallowRef<{ label: string; event: MouseEvent } | null>(null);
 	watch(
 		() => tooltip.value,

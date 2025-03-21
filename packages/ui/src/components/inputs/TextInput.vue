@@ -10,9 +10,9 @@
 
 <script setup lang="ts">
 	import PrimeInputText from 'primevue/inputtext';
-	import { computed, defineModel, nextTick, onMounted, ref } from 'vue';
+	import { computed, defineModel, nextTick, onMounted, shallowRef } from 'vue';
 
-	const primeInputText = ref<InstanceType<typeof PrimeInputText>>(null!);
+	const primeInputText = shallowRef<InstanceType<typeof PrimeInputText>>(null!);
 	const inputElement = computed(
 		() => (primeInputText.value as any).$el as HTMLInputElement
 	);

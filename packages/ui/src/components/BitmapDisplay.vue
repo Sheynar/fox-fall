@@ -21,13 +21,13 @@
 </style>
 
 <script setup lang="ts">
-	import { ref, watch } from 'vue';
+	import { shallowRef, watch } from 'vue';
 
 	const props = defineProps<{
 		image: ImageBitmap | null;
 	}>();
 
-	const screenCanvas = ref<HTMLCanvasElement | null>(null);
+	const screenCanvas = shallowRef<HTMLCanvasElement | null>(null);
 
 	watch(
 		() => props.image,
