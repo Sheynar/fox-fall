@@ -110,7 +110,6 @@
 								unit.vector.distance = $event;
 								emit('updated');
 							"
-							:min="1"
 							@keydown.enter="azimuthInput?.inputElement?.select()"
 						/>
 					</div>
@@ -163,7 +162,6 @@
 								unit.vector.distance = $event;
 								emit('updated');
 							"
-							:min="1"
 						/>
 					</div>
 					<div class="UnitSettings__row">
