@@ -8,26 +8,18 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
+	import { computed, ref, shallowRef, watch } from 'vue';
 	import TextInput from './TextInput.vue';
 
 	const textInput = shallowRef<InstanceType<typeof TextInput>>(null!);
 	const inputElement = computed(() => textInput.value.inputElement);
 
-	const props = withDefaults(
-		defineProps<{
-			autofocus?: boolean;
-			prefix?: string;
-			suffix?: string;
-			min?: number;
-			max?: number;
-			fractionDigits?: number;
-		}>(),
-		{
-			prefix: '',
-			suffix: '',
-		}
-	);
+	const props = defineProps<{
+		autofocus?: boolean;
+		min?: number;
+		max?: number;
+		fractionDigits?: number;
+	}>();
 
 	const _modelValue = defineModel({ type: Number, required: true });
 	const numberValue = computed({
@@ -45,7 +37,7 @@
 		},
 	});
 	const formattedValue = computed(() => {
-		return `${props.prefix}${props.fractionDigits != null ? numberValue.value.toFixed(props.fractionDigits) : numberValue.value}${props.suffix}`;
+		return `${props.fractionDigits != null ? numberValue.value.toFixed(props.fractionDigits) : numberValue.value}`;
 	});
 
 	const stringValue = ref('');
@@ -53,53 +45,12 @@
 		stringValue,
 		() => {
 			let _stringValue = stringValue.value;
-			if (!_stringValue.startsWith(props.prefix))
-				_stringValue = `${props.prefix}${_stringValue}`;
-			if (!_stringValue.endsWith(props.suffix))
-				_stringValue = `${_stringValue}${props.suffix}`;
-
 			if (stringValue.value !== _stringValue) stringValue.value = _stringValue;
 		},
 		{ flush: 'sync' }
 	);
 	const parsedValue = computed(() => {
-		return Number(
-			stringValue.value.substring(
-				props.prefix.length,
-				stringValue.value.length - props.suffix.length
-			)
-		);
-	});
-
-	const checkCursor = () => {
-		if (!textInput.value.$el.matches(':focus-within')) return;
-		const inputElement = textInput.value?.inputElement;
-		if (!inputElement) return;
-
-		let selectionInvalid = false;
-		const selection = [
-			inputElement.selectionStart!,
-			inputElement.selectionEnd!,
-		];
-		for (const [index, value] of selection.entries()) {
-			selection[index] = Math.max(props.prefix.length, value);
-			selection[index] = Math.min(
-				inputElement.value.length - props.suffix.length,
-				value
-			);
-			if (selection[index] !== value) selectionInvalid = true;
-		}
-
-		if (selectionInvalid)
-			inputElement.setSelectionRange(
-				selection[0],
-				selection[1],
-				inputElement.selectionDirection || undefined
-			);
-	};
-	document.addEventListener('selectionchange', checkCursor);
-	onScopeDispose(() => {
-		document.removeEventListener('selectionchange', checkCursor);
+		return Number(stringValue.value);
 	});
 
 	const valuesOutOfSync = computed(

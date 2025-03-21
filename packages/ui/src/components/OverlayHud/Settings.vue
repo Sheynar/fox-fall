@@ -123,7 +123,6 @@
 									saveSettings();
 								"
 								:autofocus="true"
-								suffix="px"
 								:fraction-digits="2"
 								:min="0"
 							/>
@@ -136,7 +135,6 @@
 									settings.gridDashGap = $event;
 									saveSettings();
 								"
-								suffix="px"
 								:fraction-digits="2"
 								:min="0"
 							/>
@@ -149,7 +147,6 @@
 									settings.gridLineWidth = $event;
 									saveSettings();
 								"
-								suffix="px"
 								:fraction-digits="2"
 								:min="0.25"
 							/>
@@ -167,7 +164,6 @@
 									saveSettings();
 								"
 								:autofocus="true"
-								suffix="%"
 								:fraction-digits="0"
 								:min="0"
 							/>
@@ -180,7 +176,6 @@
 									settings.firingArcOpacity = Math.floor($event) / 100;
 									saveSettings();
 								"
-								suffix="%"
 								:fraction-digits="0"
 								:min="0"
 							/>
@@ -193,7 +188,6 @@
 									settings.screenshotOpacity = Math.floor($event) / 100;
 									saveSettings();
 								"
-								suffix="%"
 								:fraction-digits="0"
 								:min="0.1"
 							/>
@@ -206,7 +200,6 @@
 									settings.toggleButtonScale = $event;
 									saveSettings();
 								"
-								suffix="x"
 								:fraction-digits="2"
 								:min="0.25"
 							/>
@@ -219,7 +212,6 @@
 									settings.unitIconScale = $event;
 									saveSettings();
 								"
-								suffix="x"
 								:fraction-digits="2"
 								:min="0.25"
 							/>
@@ -232,7 +224,6 @@
 									settings.unitSettingsScale = $event;
 									saveSettings();
 								"
-								suffix="x"
 								:fraction-digits="2"
 								:min="0.25"
 							/>

@@ -2,7 +2,6 @@
 	<NumberInput
 		ref="numberInput"
 		v-model="modelValue"
-		:suffix="props.suffix"
 		:autofocus="props.autofocus"
 		:fractionDigits="props.fractionDigits"
 		:min="props.min"
@@ -20,10 +19,8 @@
 		autofocus?: boolean;
 		fractionDigits?: number;
 		min?: number;
-		suffix?: string;
 	}>(), {
 		fractionDigits: 1,
-		suffix: 'm',
 	});
 
 	const modelValue = defineModel({ type: Number, required: true });

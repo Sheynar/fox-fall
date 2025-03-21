@@ -4,7 +4,6 @@
 		ref="numberInput"
 		v-model="modelValue"
 		v-bind="$attrs"
-		suffix="°"
 		:autofocus="props.autofocus"
 		:fractionDigits="1"
 	/>
