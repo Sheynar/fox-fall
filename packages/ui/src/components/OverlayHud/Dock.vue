@@ -28,11 +28,11 @@
 		{{ tooltip?.label }}
 	</PrimePopover>
 
-	<SyncSettings v-model:visible="syncSettingsVisible" />
+	<SyncSettings :visible="syncSettingsVisible && artillery.overlayOpen.value" @update:visible="syncSettingsVisible = $event" />
 
-	<Settings v-model:visible="settingsVisible" />
+	<Settings :visible="settingsVisible && artillery.overlayOpen.value" @update:visible="settingsVisible = $event" />
 
-	<WindSettings v-model:visible="windSettingsVisible" />
+	<WindSettings :visible="windSettingsVisible && artillery.overlayOpen.value" @update:visible="windSettingsVisible = $event" />
 </template>
 
 <style lang="scss">
