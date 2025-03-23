@@ -6,6 +6,7 @@
 			:unit-id-from="firingArc.from.id"
 			:unit-id-to="firingArc.to.id"
 			:hide-label="firingArc.hideLabel"
+			:is-primary="firingArc.isPrimary"
 		/>
 	</div>
 </template>
@@ -26,50 +27,53 @@
 
 <script setup lang="ts">
 	import { artillery } from '@/lib/globals';
+	import { settings } from '@/lib/settings';
 	import { UnitType, type Unit } from '@/lib/unit';
-	import { useFocusedUnitIds } from '@/mixins/focused-units';
+	import {
+		useFocusedUnitIds,
+		usePrimaryUnitsByType,
+		useUnitsByType,
+	} from '@/mixins/focused-units';
 	import { computed } from 'vue';
 	import FiringArc from './FiringArc.vue';
 
+	const unitsByType = useUnitsByType();
 	const focusedUnitIds = useFocusedUnitIds();
+	const primaryUnitsByType = usePrimaryUnitsByType();
 
-	const artilleryUnits = computed(() => {
-		const output: Unit[] = [];
-		for (const unitId of Object.keys(artillery.unitMap.value)) {
-			const unit = artillery.unitMap.value[unitId];
-			if (unit.type !== UnitType.Artillery) continue;
-			output.push(unit);
-		}
-		return output;
-	});
-
-	const targetUnits = computed(() => {
-		const output: Unit[] = [];
-		for (const unitId of Object.keys(artillery.unitMap.value)) {
-			const unit = artillery.unitMap.value[unitId];
-			if (unit.type !== UnitType.Target) continue;
-			output.push(unit);
-		}
-		return output;
-	});
+	type FiringArc = {
+		from: Unit;
+		to: Unit;
+		hideLabel: boolean;
+		isPrimary: boolean;
+	};
 
 	const firingArcList = computed(() => {
-		const output: { from: Unit; to: Unit; hideLabel: boolean }[] = [];
+		const output: FiringArc[] = [];
 
-		for (const targetUnit of targetUnits.value) {
-			for (const artilleryUnit of artilleryUnits.value) {
-				if (
-					!focusedUnitIds.value.includes(artilleryUnit.id) &&
-					!focusedUnitIds.value.includes(targetUnit.id)
-				)
-					continue;
-				output.push({
+		for (const targetUnit of unitsByType.value[UnitType.Target]) {
+			for (const artilleryUnit of unitsByType.value[UnitType.Artillery]) {
+				const isFocused =
+					focusedUnitIds.value.includes(artilleryUnit.id) ||
+					focusedUnitIds.value.includes(targetUnit.id);
+				const isPrimary =
+					primaryUnitsByType.value[UnitType.Artillery]?.id ===
+						artilleryUnit.id &&
+					primaryUnitsByType.value[UnitType.Target]?.id === targetUnit.id;
+
+				if (!isFocused && !isPrimary) continue;
+				const firingArc: FiringArc = {
 					from: artilleryUnit,
 					to: targetUnit,
 					hideLabel:
+						settings.value.firingArcOpacity <= 0 ||
 						artillery.draggingUnits.value.has(artilleryUnit.id) ||
-						artillery.draggingUnits.value.has(targetUnit.id),
-				});
+						artillery.draggingUnits.value.has(targetUnit.id) ||
+						!isFocused,
+					isPrimary,
+				};
+
+				if (firingArc.isPrimary || !firingArc.hideLabel) output.push(firingArc);
 			}
 		}
 

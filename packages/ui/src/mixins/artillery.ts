@@ -160,6 +160,30 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		}
 	};
 
+	const getFiringVector = (artilleryId: string, targetId: string) => {
+		const selectedArtilleryUnit = unitMap.value[artilleryId];
+		const selectedTargetUnit = unitMap.value[targetId];
+
+		if (selectedArtilleryUnit == null || selectedTargetUnit == null)
+			return undefined;
+
+		const resolvedArtillery = getUnitResolvedVector(
+			unitMap.value,
+			selectedArtilleryUnit.id
+		);
+		const resolvedTarget = getUnitResolvedVector(
+			unitMap.value,
+			selectedTargetUnit.id
+		);
+		const firingVector = resolvedArtillery.getRelativeOffset(resolvedTarget);
+		let firingVectorWithWind = firingVector.clone();
+		const specs = getUnitSpecs(unitMap.value, selectedArtilleryUnit.id);
+		if (specs) {
+			firingVectorWithWind = firingVectorWithWind.addVector(wind.value.scale(-specs.WIND_OFFSET));
+		}
+		return firingVectorWithWind;
+	};
+
 	const calibrateWind = async () => {
 		let baseUnit = selectedUnit.value;
 		const originalBaseUnit = baseUnit;
@@ -361,6 +385,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		addUnit,
 		removeUnit,
 		setUnitSource,
+		getFiringVector,
 		calibrateWind,
 		editWind,
 		resetWind,

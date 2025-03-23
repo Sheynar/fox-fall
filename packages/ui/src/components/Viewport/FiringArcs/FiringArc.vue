@@ -7,6 +7,9 @@
 		<svg
 			class="FiringArc__svg"
 			xmlns="http://www.w3.org/2000/svg"
+			:class="{
+				'FiringArc__svg--primary': props.isPrimary,
+			}"
 			preserve-aspect-ratio="none"
 		>
 			<path
@@ -90,7 +93,7 @@
 		--_line-gap-size: 0.5em;
 		--_line-segment-size: calc(var(--_line-dash-size) + var(--_line-gap-size));
 
-		stroke: currentColor;
+		stroke: var(--color-primary-contrast);
 		stroke-width: 0.2em;
 		stroke-dasharray: var(--_line-dash-size) var(--_line-gap-size);
 		animation: FiringArc__dash 1s linear infinite;
@@ -98,6 +101,10 @@
 		filter: url(#outline);
 
 		pointer-events: none;
+
+		&--primary {
+			stroke: var(--color-primary);
+		}
 	}
 
 	.FiringArc__label {
@@ -154,6 +161,7 @@
 		unitIdFrom: string;
 		unitIdTo: string;
 		hideLabel?: boolean;
+		isPrimary?: boolean;
 	}>();
 
 	const resolvedVectorFrom = computed(() =>

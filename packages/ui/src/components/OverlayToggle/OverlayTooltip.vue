@@ -46,8 +46,8 @@
 
 <script setup lang="ts">
 	import { artillery } from '@/lib/globals';
-	import { getUnitResolvedVector, getUnitSpecs, UnitType } from '@/lib/unit';
-	import { useFocusedUnitIds } from '@/mixins/focused-units';
+	import { UnitType } from '@/lib/unit';
+	import { usePrimaryUnitsByType } from '@/mixins/focused-units';
 	import { computed } from 'vue';
 
 	const artilleryUnits = computed(() => {
@@ -62,45 +62,17 @@
 		);
 	});
 
-	const focusedUnitIds = useFocusedUnitIds();
-
-	const selectedArtilleryUnit = computed(() => {
-		if (artilleryUnits.value.length === 0) return null;
-		if (artilleryUnits.value.length === 1) return artilleryUnits.value[0];
-		const highlightedArtilleryUnit = artilleryUnits.value.find((unit) =>
-			focusedUnitIds.value.includes(unit.id)
-		);
-		if (highlightedArtilleryUnit != null) return highlightedArtilleryUnit;
-		return artilleryUnits.value[0];
-	});
-
-	const selectedTargetUnit = computed(() => {
-		if (targetUnits.value.length === 0) return null;
-		if (targetUnits.value.length === 1) return targetUnits.value[0];
-		const highlightedTargetUnit = targetUnits.value.find((unit) =>
-			focusedUnitIds.value.includes(unit.id)
-		);
-		if (highlightedTargetUnit != null) return highlightedTargetUnit;
-		return targetUnits.value[0];
-	});
+	const primaryUnitsByType = usePrimaryUnitsByType();
 
 	const firingVector = computed(() => {
-		if (selectedArtilleryUnit.value == null || selectedTargetUnit.value == null)
+		if (
+			primaryUnitsByType.value[UnitType.Artillery] == null ||
+			primaryUnitsByType.value[UnitType.Target] == null
+		)
 			return undefined;
-		const resolvedArtillery = getUnitResolvedVector(
-			artillery.unitMap.value,
-			selectedArtilleryUnit.value.id
+		return artillery.getFiringVector(
+			primaryUnitsByType.value[UnitType.Artillery].id,
+			primaryUnitsByType.value[UnitType.Target].id
 		);
-		const resolvedTarget = getUnitResolvedVector(
-			artillery.unitMap.value,
-			selectedTargetUnit.value.id
-		);
-		const firingVector = resolvedArtillery.getRelativeOffset(resolvedTarget);
-		let firingVectorWithWind = firingVector.clone();
-		const specs = getUnitSpecs(artillery.unitMap.value, selectedArtilleryUnit.value.id);
-		if (specs) {
-			firingVectorWithWind = firingVectorWithWind.addVector(artillery.wind.value.scale(-specs.WIND_OFFSET));
-		}
-		return firingVectorWithWind;
 	});
 </script>
