@@ -29,7 +29,12 @@ export const unitTypeOrder = [
 
 export const getAvailableUnitTypes = (): UnitType[] => {
 	if (settings.value.userMode === UserMode.Basic) {
-		return [UnitType.Artillery, UnitType.Target, UnitType.LandingZone];
+		return [
+			UnitType.Artillery,
+			UnitType.Target,
+			UnitType.LandingZone,
+			UnitType.Location,
+		];
 	} else {
 		return [
 			UnitType.Artillery,
@@ -131,16 +136,24 @@ const _getUnitSpecs = (
 };
 
 const _getGlobalSpecs = (): ArtilleryPlatform | null => {
-	if (settings.value.globalAmmo == null || settings.value.globalPlatform == null) {
+	if (
+		settings.value.globalAmmo == null ||
+		settings.value.globalPlatform == null
+	) {
 		return null;
 	}
 
-	return ARTILLERY_BY_SHELL[settings.value.globalAmmo]?.PLATFORM[
-		settings.value.globalPlatform
-	] ?? null;
+	return (
+		ARTILLERY_BY_SHELL[settings.value.globalAmmo]?.PLATFORM[
+			settings.value.globalPlatform
+		] ?? null
+	);
 };
 
-export const getUnitSpecs = (unitMap: UnitMap, unitId: string): ArtilleryPlatform | null => {
+export const getUnitSpecs = (
+	unitMap: UnitMap,
+	unitId: string
+): ArtilleryPlatform | null => {
 	const unit = unitMap[unitId];
 
 	if (unit.type !== UnitType.Artillery) {
