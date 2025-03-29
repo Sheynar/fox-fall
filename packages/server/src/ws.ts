@@ -111,7 +111,7 @@ export const initialiseWebsocket = async (port = 81) => {
 		room.sockets.add(ws);
 
 		ws.addEventListener('message', (message) => {
-			const data = JSON.parse(message.toString());
+			const data = JSON.parse(message.data.toString());
 			if (!isRoomUpdate(data)) return;
 			if (data.type === UpdateType.full) {
 				room.setState(data.readyToFire, data.units, data.wind, data.eventFrom);
