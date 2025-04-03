@@ -24,7 +24,12 @@
 						:key="x"
 					>
 						<img class="HexMap__hex-image" v-if="hex" :src="HEX_ASSETS[hex]" />
-						<div class="HexMap__hex-label" v-show="artillery.viewport.value.zoom <= 0.1">{{ hex }}</div>
+						<div
+							class="HexMap__hex-label"
+							v-show="artillery.viewport.value.zoom <= 0.1"
+						>
+							{{ hex }}
+						</div>
 					</div>
 				</div>
 				<div class="HexMap__row"></div>
@@ -99,8 +104,13 @@
 </style>
 
 <script setup lang="ts">
+	import { computed } from 'vue';
+	import { HEX_MAPS } from '@/assets/images/hex-maps';
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
-	import { HEX_ASSETS, HEX_POSITIONS } from '@/lib/constants/hexMap';
+	import { HEX_POSITIONS } from '@/lib/constants/hexMap';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
+	import { MapSource, settings } from '@/lib/settings';
+
+	const HEX_ASSETS = computed(() => HEX_MAPS[settings.value.mapSource] ?? HEX_MAPS[MapSource.Vanilla]);
 </script>

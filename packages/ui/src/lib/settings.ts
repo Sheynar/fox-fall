@@ -13,6 +13,11 @@ export enum BackdropMode {
 	Grid = 'overlay',
 }
 
+export enum MapSource {
+	Vanilla = 'vanilla',
+	ImprovedMapModRustardKnightEdit = 'improved-map-mod-rustard-knight-edit',
+}
+
 export const settings = ref({
 	lockPan: false,
 	lockRotate: true,
@@ -20,12 +25,14 @@ export const settings = ref({
 
 	transparentOverlay: isOverlay,
 	backdropMode: isOverlay ? BackdropMode.Grid : BackdropMode.Map,
+	mapSource: MapSource.ImprovedMapModRustardKnightEdit,
 	userMode: UserMode.Basic,
 	globalAmmo: undefined as AMMO_TYPE | undefined,
 	globalPlatform: undefined as Platform<AMMO_TYPE> | undefined,
 
 	useNatoAlphabet: true,
 	showTooltip: true,
+	showWindMeters: false,
 	toggleButtonScale: 1,
 	unitIconScale: 1,
 	unitSettingsScale: 1,

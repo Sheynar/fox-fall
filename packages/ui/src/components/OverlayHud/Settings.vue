@@ -40,6 +40,21 @@
 								@update:model-value="saveSettings"
 							/>
 						</div>
+						<div class="Settings__row" v-if="settings.backdropMode === BackdropMode.Map">
+							<label>Map source</label>
+							<PrimeSelect
+								:options="
+									Object.keys(MapSource).map((mapSource) => ({
+										id: MapSource[mapSource as keyof typeof MapSource],
+										label: mapSource,
+									}))
+								"
+								optionLabel="label"
+								optionValue="id"
+								v-model="settings.mapSource"
+								@update:model-value="saveSettings"
+							/>
+						</div>
 						<div class="Settings__row">
 							<label>User mode</label>
 							<PrimeSelect
@@ -155,6 +170,14 @@
 				</TabPanel>
 				<TabPanel value="interface">
 					<div class="Settings__content">
+						<div class="Settings__row">
+							<label>Show wind meters</label>
+							<PrimeCheckBox
+								binary
+								v-model="settings.showWindMeters"
+								@update:model-value="saveSettings"
+							/>
+						</div>
 						<div class="Settings__row">
 							<label>Compass opacity</label>
 							<NumberInput
@@ -279,6 +302,7 @@
 	import { isOverlay } from '@/lib/constants';
 	import {
 		BackdropMode,
+		MapSource,
 		saveSettings,
 		settings,
 		UserMode,

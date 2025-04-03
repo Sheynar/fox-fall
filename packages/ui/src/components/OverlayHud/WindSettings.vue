@@ -17,7 +17,7 @@
 				<label>Wind tier:</label>
 				<NumberInput :model-value="artillery.wind.value.distance" @update:model-value="artillery.wind.value.distance = $event; syncedRoom.updateWind()" />
 			</div>
-			<div class="Wind__information__item" v-if="windMultiplier">
+			<div class="Wind__information__item" v-if="windMultiplier && settings.showWindMeters">
 				<label>Wind distance:</label>
 				<DistanceInput :model-value="artillery.wind.value.distance * windMultiplier" @update:model-value="artillery.wind.value.distance = $event / windMultiplier; syncedRoom.updateWind()" />
 			</div>
