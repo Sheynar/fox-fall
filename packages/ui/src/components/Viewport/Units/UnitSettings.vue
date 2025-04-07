@@ -123,9 +123,8 @@
 								emit('updated');
 							"
 							@keydown.enter="
-								unit.type === UnitType.LandingZone
-									? emit('update-wind')
-									: distanceInput?.inputElement?.select()
+								unit.type === UnitType.LandingZone && emit('update-wind');
+								visible = false;
 							"
 						/>
 					</div>

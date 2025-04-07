@@ -1,6 +1,7 @@
 export enum KeyboardCommand {
 	ToggleOverlay = "toggle-overlay",
 	CalibrateWind = "calibrate-wind",
+	EditTarget = "edit-target",
 }
 
 export type KeyboardConfig = Partial<Record<KeyboardCommand, string[]>>;

@@ -263,6 +263,10 @@
 							<label>Calibrate wind</label>
 							<ElectronKeyboardShortcut :command="KeyboardCommand.CalibrateWind" />
 						</div>
+						<div class="Settings__row">
+							<label>Edit target</label>
+							<ElectronKeyboardShortcut :command="KeyboardCommand.EditTarget" />
+						</div>
 					</div>
 				</TabPanel>
 			</TabPanels>

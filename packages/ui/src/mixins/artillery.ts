@@ -1,6 +1,6 @@
-import { type Ref, ref, watchEffect } from 'vue';
+import { computed, getCurrentScope, type Ref, ref, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
-import { useEventListener } from '@vueuse/core';
+import { useEventListener, until } from '@vueuse/core';
 import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
 import { settings } from '@/lib/settings';
 import {
@@ -21,6 +21,11 @@ type ArtilleryOptions = {
 	onWindUpdated?: () => unknown;
 };
 export const useArtillery = (options: ArtilleryOptions = {}) => {
+	const currentScope = getCurrentScope();
+	if (currentScope == null) {
+		throw new Error('useArtillery must be used within a Vue effect scope');
+	}
+
 	const overlayOpen = ref(false);
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const readyToFire = ref(false);
@@ -179,13 +184,31 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		let firingVectorWithWind = firingVector.clone();
 		const specs = getUnitSpecs(unitMap.value, selectedArtilleryUnit.id);
 		if (specs) {
-			firingVectorWithWind = firingVectorWithWind.addVector(wind.value.scale(-specs.WIND_OFFSET));
+			firingVectorWithWind = firingVectorWithWind.addVector(
+				wind.value.scale(-specs.WIND_OFFSET)
+			);
 		}
 		return firingVectorWithWind;
 	};
 
 	const calibrateWind = async () => {
-		let baseUnit = selectedUnit.value;
+		assertCanEditWind();
+		const availableUnits = Object.keys(unitMap.value).filter(
+			(unitId) =>
+				unitMap.value[unitId].type === UnitType.Target &&
+				unitMap.value[unitId].parentId != null
+		);
+		if (
+			selectedUnit.value != null &&
+			unitMap.value[selectedUnit.value]?.type === UnitType.Target &&
+			unitMap.value[selectedUnit.value].parentId != null
+		) {
+			availableUnits.unshift(selectedUnit.value);
+		} else if (selectedUnit.value != null) {
+			availableUnits.push(selectedUnit.value);
+		}
+
+		let baseUnit = availableUnits[0];
 		const originalBaseUnit = baseUnit;
 		if (
 			baseUnit != null &&
@@ -195,26 +218,85 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		) {
 			baseUnit = unitMap.value[baseUnit].parentId!;
 		}
-		if (baseUnit == null) {
-			baseUnit = await new Promise<string>((resolve, reject) => {
-				unitSelector.value = {
-					selectUnit: (unitId) => {
-						unitSelector.value = null;
-						if (unitId == null) {
-							reject(new Error('User declined to select a unit'));
-						} else {
-							resolve(unitId);
-						}
-					},
-					prompt: 'Select base unit',
-				};
-			});
-		}
-		const newUnit = addUnit(UnitType.LandingZone, undefined, undefined, baseUnit);
+		if (baseUnit == null) return;
+
+		const initalSelectedUnit = selectedUnit.value;
+		const overlayWasOpen = overlayOpen.value;
+
+		const newUnit = addUnit(
+			UnitType.LandingZone,
+			undefined,
+			undefined,
+			baseUnit
+		);
 		newUnit.value.selectUnitOnDeletion = originalBaseUnit ?? baseUnit;
+		selectedUnit.value = newUnit.value.id;
+		if (!overlayWasOpen) {
+			window.electronApi?.toggleOverlay();
+		}
+
+		overlayOpen.value = true;
+		currentScope.run(() => {
+			until(selectedUnit).toMatch((v) => v !== newUnit.value.id).then(() => {
+				selectedUnit.value = initalSelectedUnit;
+				removeUnit(newUnit.value.id);
+				if (!overlayWasOpen && overlayOpen.value) {
+					window.electronApi?.toggleOverlay();
+				}
+			});
+		});
 	};
 
+	const editTarget = async () => {
+		const targets = Object.keys(unitMap.value).filter(
+			(unitId) =>
+				unitMap.value[unitId].type === UnitType.Target &&
+				unitMap.value[unitId].parentId != null
+		);
+		const target = targets.includes(selectedUnit.value!)
+			? selectedUnit.value
+			: targets[0];
+		if (target == null) return;
+
+		const initalSelectedUnit = selectedUnit.value;
+		const overlayWasOpen = overlayOpen.value;
+
+		selectedUnit.value = target;
+		if (!overlayWasOpen) {
+			window.electronApi?.toggleOverlay();
+		}
+
+		overlayOpen.value = true;
+		currentScope.run(() => {
+			until(selectedUnit).toMatch((v) => v !== target).then(() => {
+				selectedUnit.value = initalSelectedUnit;
+				if (!overlayWasOpen && overlayOpen.value) {
+					window.electronApi?.toggleOverlay();
+				}
+			});
+		});
+	};
+
+	const windMultiplier = computed(() => {
+		const windMultipliers = Array.from(
+			new Set(
+				Object.keys(unitMap.value)
+					.map((unitId) => getUnitSpecs(unitMap.value, unitId)?.WIND_OFFSET)
+					.filter((windOffset) => windOffset != null)
+			)
+		);
+
+		if (windMultipliers.length === 1) return windMultipliers[0];
+		return undefined;
+	});
+	const assertCanEditWind = () => {
+		if (windMultiplier.value == null) {
+			throw new Error('No artillery unit with wind specs');
+		}
+	};
 	const editWind = async (unitId: string) => {
+		assertCanEditWind();
+		const _windMultiplier = windMultiplier.value!;
 		try {
 			const unit = unitMap.value[unitId];
 			if (unit == null) return;
@@ -246,45 +328,11 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				});
 			}
 
-			let windMultiplier = 0;
-			const windMultipliers = Array.from(
-				new Set(
-					Object.keys(unitMap.value)
-						.map((unitId) => getUnitSpecs(unitMap.value, unitId)?.WIND_OFFSET)
-						.filter((windOffset) => windOffset)
-				)
-			);
-			if (windMultipliers.length === 1) {
-				windMultiplier = windMultipliers[0]!;
-			} else {
-				windMultiplier = await new Promise<number>((resolve, reject) => {
-					unitSelector.value = {
-						selectUnit: (unitId) => {
-							unitSelector.value = null;
-							if (unitId == null) {
-								return reject(new Error('User declined to select a unit'));
-							}
-							if (unitMap.value[unitId].type !== UnitType.Artillery) {
-								return reject(new Error('Selected unit is not an artillery'));
-							}
-							const specs = getUnitSpecs(unitMap.value, unitId);
-							if (!specs) {
-								return reject(
-									new Error('Selected unit does not have specifications')
-								);
-							}
-							resolve(specs.WIND_OFFSET);
-						},
-						prompt: 'Select artillery',
-					};
-				});
-			}
-
 			const windCorrection = getUnitResolvedVector(unitMap.value, target)
 				.scale(-1)
 				.addVector(getUnitResolvedVector(unitMap.value, unit.id));
 			wind.value = wind.value.addVector(
-				windCorrection.scale(1 / windMultiplier)
+				windCorrection.scale(1 / _windMultiplier)
 			);
 			options.onWindUpdated?.();
 
@@ -377,6 +425,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		switch (command) {
 			case KeyboardCommand.CalibrateWind:
 				calibrateWind();
+				break;
+			case KeyboardCommand.EditTarget:
+				editTarget();
 				break;
 		}
 	});
