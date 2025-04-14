@@ -104,9 +104,14 @@ export const updateKeyboardShortcut = (
 };
 
 export const initialise = () => {
-	initKeyboardShortcutsModule();
-	loadConfig();
-	for (const [command, accelerator] of Object.entries(keyboardConfig)) {
-		updateKeyboardShortcut(command as KeyboardCommand, accelerator, true);
+	try {
+		initKeyboardShortcutsModule();
+		loadConfig();
+		for (const [command, accelerator] of Object.entries(keyboardConfig)) {
+			updateKeyboardShortcut(command as KeyboardCommand, accelerator, true);
+		}
+	} catch (e) {
+		console.log("Failed to initialise keyboard shortcuts");
+		console.error(e);
 	}
 };
