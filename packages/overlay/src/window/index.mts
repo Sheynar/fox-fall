@@ -16,33 +16,39 @@ import packageJson from "../../package.json" with { type: "json" };
 const __dirname = import.meta.dirname;
 const display = screen.getPrimaryDisplay();
 
+const defaultSize =
+	Math.min(display.bounds.width, display.bounds.height) * 0.05;
 let size = {
-	x: 0,
-	y: 0,
+	x: defaultSize,
+	y: defaultSize,
 };
 
 let managerWindow: BrowserWindow | null = null;
 
-let overlayOpen = true;
+let overlayOpen = false;
 export const updateShape = () => {
 	if (managerWindow == null) return;
 
 	if (overlayOpen) {
-		managerWindow.setShape([managerWindow.getBounds()]);
-		managerWindow.minimize();
-		managerWindow.restore();
+		managerWindow.setContentBounds(
+			{
+				x: 0,
+				y: 0,
+				width: display.bounds.width,
+				height: display.bounds.height,
+			},
+			false
+		);
 	} else {
-		managerWindow.setShape([
+		managerWindow.setContentBounds(
 			{
 				x: display.bounds.width - size.x,
 				y: display.bounds.height - size.y,
 				width: size.x,
 				height: size.y,
 			},
-		]);
-
-		managerWindow.minimize();
-		setTimeout(() => managerWindow!.showInactive(), 100);
+			false
+		);
 	}
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
@@ -53,7 +59,21 @@ export const toggleOverlay = (newState = !overlayOpen) => {
 	updateShape();
 
 	if (managerWindow == null) return;
-	managerWindow.webContents.send(ElectronApiCommand.OverlayToggled, overlayOpen);
+
+	if (overlayOpen) {
+		managerWindow.minimize();
+		managerWindow.restore();
+	} else {
+		managerWindow.minimize();
+		setTimeout(() => {
+			managerWindow!.showInactive();
+		}, 100);
+	}
+
+	managerWindow.webContents.send(
+		ElectronApiCommand.OverlayToggled,
+		overlayOpen
+	);
 };
 
 export const initialise = () => {
@@ -103,6 +123,12 @@ export const initialise = () => {
 			}
 		}
 	);
+	ipcMain.on(ElectronApiCommand.GetDisplaySize, (event, requestId: string) => {
+		event.reply(requestId, {
+			width: display.bounds.width,
+			height: display.bounds.height,
+		});
+	});
 	ipcMain.on(ElectronApiCommand.GetUpdateConfig, (event, requestId: string) => {
 		event.reply(requestId, getUpdateConfig());
 	});
@@ -127,19 +153,18 @@ export const initialise = () => {
 	ipcMain.on(
 		ElectronApiCommand.GetKeyboardShortcut,
 		(event, requestId: string, command: KeyboardCommand) => {
-			event.reply(
-				requestId,
-				getKeyboardShortcut(command)
-			);
+			event.reply(requestId, getKeyboardShortcut(command));
 		}
 	);
-	toggleOverlay();
+
+	// setInterval(() => updateShape(), 1000);
+	updateShape();
+	managerWindow.restore();
 
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
 
 	managerWindow.setAlwaysOnTop(true, "screen-saver");
 	managerWindow.loadURL(url.href);
-	// setInterval(() => managerWindow!.moveTop(), 1000);
 
 	managerWindow.on("close", () => {
 		app.quit();

@@ -20,3 +20,7 @@ app.use(PrimeVue, {
 });
 
 app.mount('#app');
+
+window.electronApi?.getDisplaySize().then((size) => {
+	document.documentElement.style.setProperty('--vmin', `${Math.min(size.width, size.height) * 0.01}px`);
+});

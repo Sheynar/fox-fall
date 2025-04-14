@@ -50,6 +50,17 @@ const electronApi: ElectronApi = {
 		ipcRenderer.send(ElectronApiCommand.SendToggleSize, size);
 	},
 
+	getDisplaySize: async () => {
+		const requestId = crypto.randomUUID();
+		const output = new Promise<{ width: number; height: number }>((resolve, reject) => {
+			ipcRenderer.once(requestId, (_event, size: { width: number; height: number }) => resolve(size)
+			);
+			setTimeout(() => reject(new Error("Timeout")), 1000);
+		});
+		ipcRenderer.send(ElectronApiCommand.GetDisplaySize, requestId);
+		return output;
+	},
+
 	getUpdateConfig: async () => {
 		const requestId = crypto.randomUUID();
 		const output = new Promise<UpdateConfig>((resolve, reject) => {
