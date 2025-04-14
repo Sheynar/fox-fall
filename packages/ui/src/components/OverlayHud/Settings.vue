@@ -12,7 +12,12 @@
 				<Tab as="div" value="features">Feature selection</Tab>
 				<Tab as="div" value="grid">Grid tweaks</Tab>
 				<Tab as="div" value="interface">Interface tweaks</Tab>
-				<Tab as="div" value="keyboard-shortcuts">Keyboard shortcuts</Tab>
+				<Tab as="div" value="keyboard-shortcuts" v-if="isOverlay"
+					>Keyboard shortcuts</Tab
+				>
+				<Tab as="div" value="updates" v-if="isOverlay && updateConfig != null"
+					>Updates</Tab
+				>
 			</TabList>
 			<TabPanels>
 				<TabPanel value="features">
@@ -40,7 +45,10 @@
 								@update:model-value="saveSettings"
 							/>
 						</div>
-						<div class="Settings__row" v-if="settings.backdropMode === BackdropMode.Map">
+						<div
+							class="Settings__row"
+							v-if="settings.backdropMode === BackdropMode.Map"
+						>
 							<label>Map source</label>
 							<PrimeSelect
 								:options="
@@ -257,15 +265,59 @@
 					<div class="Settings__content">
 						<div class="Settings__row">
 							<label>Toggle overlay</label>
-							<ElectronKeyboardShortcut :command="KeyboardCommand.ToggleOverlay" />
+							<ElectronKeyboardShortcut
+								:command="KeyboardCommand.ToggleOverlay"
+							/>
 						</div>
 						<div class="Settings__row">
 							<label>Calibrate wind</label>
-							<ElectronKeyboardShortcut :command="KeyboardCommand.CalibrateWind" />
+							<ElectronKeyboardShortcut
+								:command="KeyboardCommand.CalibrateWind"
+							/>
 						</div>
 						<div class="Settings__row">
 							<label>Edit target</label>
 							<ElectronKeyboardShortcut :command="KeyboardCommand.EditTarget" />
+						</div>
+					</div>
+				</TabPanel>
+				<TabPanel value="updates" v-if="updateConfig != null">
+					<div class="Settings__content">
+						<div class="Settings__row">
+							<label>Disable updates</label>
+							<PrimeCheckBox
+								binary
+								v-model="updateConfig.disableUpdates"
+								@update:model-value="saveUpdateConfig"
+							/>
+						</div>
+						<div class="Settings__row" v-if="!updateConfig.disableUpdates">
+							<label>Update check frequency</label>
+							<PrimeSelect
+								:options="[
+									{ id: 0, label: 'Only on startup' },
+									{ id: 12 * 60 * 60 * 1000, label: 'Every 12 hours' },
+									{ id: 6 * 60 * 60 * 1000, label: 'Every 6 hours' },
+									{ id: 3 * 60 * 60 * 1000, label: 'Every 3 hours' },
+									{ id: 60 * 60 * 1000, label: 'Every hour' },
+									{ id: 30 * 60 * 1000, label: 'Every 30 minutes' },
+								]"
+								optionLabel="label"
+								optionValue="id"
+								:model-value="updateConfig.updateInterval ?? 0"
+								@update:model-value="
+									updateConfig.updateInterval = $event;
+									saveUpdateConfig();
+								"
+							/>
+						</div>
+						<div class="Settings__row" v-if="!updateConfig.disableUpdates">
+							<label>Automatic updates</label>
+							<PrimeCheckBox
+								binary
+								v-model="updateConfig.automaticUpdates"
+								@update:model-value="saveUpdateConfig"
+							/>
 						</div>
 					</div>
 				</TabPanel>
@@ -291,6 +343,7 @@
 
 <script setup lang="ts">
 	import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
+	import type { UpdateConfig } from '@packages/types/dist/update-config';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeCheckBox from 'primevue/checkbox';
 	import PrimeSelect from 'primevue/select';
@@ -311,6 +364,19 @@
 		settings,
 		UserMode,
 	} from '@/lib/settings';
+	import { ref } from 'vue';
 
 	const visible = defineModel('visible', { default: false, type: Boolean });
+
+	const updateConfig = ref<UpdateConfig | null>(null);
+	window.electronApi?.getUpdateConfig().then((config) => {
+		updateConfig.value = config;
+	});
+
+	const saveUpdateConfig = () => {
+		if (updateConfig.value == null) return;
+		window.electronApi?.setUpdateConfig(
+			JSON.parse(JSON.stringify(updateConfig.value))
+		);
+	};
 </script>

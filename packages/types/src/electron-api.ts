@@ -1,4 +1,5 @@
 import type { KeyboardCommand } from "./keyboard-config";
+import type { UpdateConfig } from "./update-config";
 
 export enum ElectronApiCommand {
 	GetRunningVersion = "get-running-version",
@@ -6,6 +7,8 @@ export enum ElectronApiCommand {
 	GetOverlayOpen = "get-overlay-open",
 	OverlayToggled = "overlay-toggled",
 	SendToggleSize = "send-toggle-size",
+	GetUpdateConfig = "get-update-config",
+	SetUpdateConfig = "set-update-config",
 	PauseKeyboardShortcuts = "pause-keyboard-shortcuts",
 	ResumeKeyboardShortcuts = "resume-keyboard-shortcuts",
 	UpdateKeyboardShortcut = "update-keyboard-shortcut",
@@ -24,6 +27,11 @@ export type ElectronApi = {
 	onOverlayToggled: (callback: (open: boolean) => void) => Promise<void>;
 	/** Sends a message to the parent Electron process to update the size of the toggle button. This will determine the size of the window when the overlay is toggled off */
 	sendToggleSize: (size: { x: number; y: number }) => Promise<void>;
+
+	/** Returns the current update config */
+	getUpdateConfig: () => Promise<UpdateConfig>;
+	/** Sets the update config */
+	setUpdateConfig: (config: UpdateConfig) => Promise<void>;
 
 	/** Pauses the keyboard shortcuts from being activated */
 	pauseKeyboardShortcuts: () => Promise<void>;

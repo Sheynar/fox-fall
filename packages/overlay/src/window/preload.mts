@@ -4,6 +4,7 @@ import {
 	type ElectronApi,
 } from "@packages/types/dist/electron-api.js";
 import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
+import { UpdateConfig } from "@packages/types/dist/update-config.js";
 
 const electronApi: ElectronApi = {
 	getRunningVersion: async () => {
@@ -47,6 +48,21 @@ const electronApi: ElectronApi = {
 
 	sendToggleSize: async (size: { x: number; y: number }) => {
 		ipcRenderer.send(ElectronApiCommand.SendToggleSize, size);
+	},
+
+	getUpdateConfig: async () => {
+		const requestId = crypto.randomUUID();
+		const output = new Promise<UpdateConfig>((resolve, reject) => {
+			ipcRenderer.once(requestId, (_event, config: UpdateConfig) => resolve(config)
+			);
+			setTimeout(() => reject(new Error("Timeout")), 1000);
+		});
+		ipcRenderer.send(ElectronApiCommand.GetUpdateConfig, requestId);
+		return output;
+	},
+
+	setUpdateConfig: async (config: UpdateConfig) => {
+		ipcRenderer.send(ElectronApiCommand.SetUpdateConfig, config);
 	},
 
 	pauseKeyboardShortcuts: async () => {

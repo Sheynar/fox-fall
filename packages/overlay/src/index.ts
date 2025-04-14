@@ -10,8 +10,8 @@ Menu.setApplicationMenu(null);
 const initialise = async () => {
 	await app.whenReady();
 
-	const { AppUpdater } = await import("./updates.mjs");
-	new AppUpdater();
+	const { runUpdate: initialiseUpdates } = await import("./updates.mjs");
+	initialiseUpdates();
 
 	const { initialise: initialiseWindow } = await import("./window/index.mjs");
 	initialiseWindow();

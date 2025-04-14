@@ -1,5 +1,6 @@
 import { ElectronApiCommand } from "@packages/types/dist/electron-api.js";
 import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
+import type { UpdateConfig } from "@packages/types/dist/update-config.js";
 import { app, BrowserWindow, desktopCapturer, ipcMain, screen } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -9,6 +10,7 @@ import {
 	resumeKeyboardShortcuts,
 	updateKeyboardShortcut,
 } from "../keyboard-shortcuts.mjs";
+import { getUpdateConfig, setUpdateConfig } from "../updates.mjs";
 import packageJson from "../../package.json" with { type: "json" };
 
 const __dirname = import.meta.dirname;
@@ -80,9 +82,12 @@ export const initialise = () => {
 		}
 	);
 
-	ipcMain.on(ElectronApiCommand.GetRunningVersion, (event, requestId: string) => {
-		event.reply(requestId, packageJson.version);
-	});
+	ipcMain.on(
+		ElectronApiCommand.GetRunningVersion,
+		(event, requestId: string) => {
+			event.reply(requestId, packageJson.version);
+		}
+	);
 	ipcMain.on(ElectronApiCommand.ToggleOverlay, (event) => {
 		toggleOverlay();
 	});
@@ -96,6 +101,15 @@ export const initialise = () => {
 			if (!overlayOpen) {
 				updateShape();
 			}
+		}
+	);
+	ipcMain.on(ElectronApiCommand.GetUpdateConfig, (event, requestId: string) => {
+		event.reply(requestId, getUpdateConfig());
+	});
+	ipcMain.on(
+		ElectronApiCommand.SetUpdateConfig,
+		(event, config: UpdateConfig) => {
+			setUpdateConfig(config);
 		}
 	);
 	ipcMain.on(ElectronApiCommand.PauseKeyboardShortcuts, (event) => {
