@@ -237,13 +237,21 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 
 		overlayOpen.value = true;
 		currentScope.run(() => {
-			until(selectedUnit).toMatch((v) => v !== newUnit.value.id).then(() => {
-				selectedUnit.value = initalSelectedUnit;
-				removeUnit(newUnit.value.id);
-				if (!overlayWasOpen && overlayOpen.value) {
-					window.electronApi?.toggleOverlay();
-				}
-			});
+			until(
+				computed(
+					() => selectedUnit.value !== newUnit.value.id || !overlayOpen.value
+				)
+			)
+				.toBe(true)
+				.then(() => {
+					if (selectedUnit.value === newUnit.value.id || selectedUnit.value == null) {
+						selectedUnit.value = initalSelectedUnit;
+					}
+					removeUnit(newUnit.value.id);
+					if (!overlayWasOpen && overlayOpen.value) {
+						window.electronApi?.toggleOverlay();
+					}
+				});
 		});
 	};
 
@@ -268,12 +276,16 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 
 		overlayOpen.value = true;
 		currentScope.run(() => {
-			until(selectedUnit).toMatch((v) => v !== target).then(() => {
-				selectedUnit.value = initalSelectedUnit;
-				if (!overlayWasOpen && overlayOpen.value) {
-					window.electronApi?.toggleOverlay();
-				}
-			});
+			until(computed(() => selectedUnit.value !== target || !overlayOpen.value))
+				.toBe(true)
+				.then(() => {
+					if (selectedUnit.value === target || selectedUnit.value == null) {
+						selectedUnit.value = initalSelectedUnit;
+					}
+					if (!overlayWasOpen && overlayOpen.value) {
+						window.electronApi?.toggleOverlay();
+					}
+				});
 		});
 	};
 
