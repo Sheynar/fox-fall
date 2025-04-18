@@ -212,7 +212,7 @@
 							/>
 						</div>
 						<div class="Settings__row">
-							<label>Screenshot opacity</label>
+							<label>Screenshot/map opacity</label>
 							<NumberInput
 								:model-value="Math.floor(settings.screenshotOpacity * 100)"
 								@update:model-value="

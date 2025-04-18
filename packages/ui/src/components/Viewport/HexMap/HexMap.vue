@@ -5,6 +5,7 @@
 			:style="{
 				'--hex-size': `${artillery.viewport.value.resolvedZoom * 2197}px`,
 				'--viewport-rotation': `${artillery.viewport.value.rotation}deg`,
+				opacity: settings.screenshotOpacity,
 			}"
 		>
 			<div class="HexMap__container">
