@@ -59,13 +59,6 @@ export const setUpdateConfig = (config: UpdateConfig) => {
 };
 
 const getUpdateAvailable = async () => {
-	const checkingUpdateNotification = new Notification({
-		title: "FoxFall Update",
-		body: "Checking for updates...",
-		timeoutType: "never",
-		silent: true,
-	});
-	checkingUpdateNotification.show();
 	try {
 		const updateReady = new Promise<void>((resolve, reject) => {
 			autoUpdater.once("update-available", () => resolve());
@@ -81,8 +74,6 @@ const getUpdateAvailable = async () => {
 		return true;
 	} catch (e) {
 		return false;
-	} finally {
-		checkingUpdateNotification.close();
 	}
 };
 
