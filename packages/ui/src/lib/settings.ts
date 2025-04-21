@@ -33,6 +33,7 @@ export const settings = ref({
 
 	useNatoAlphabet: true,
 	showTooltip: true,
+	showWindTooltip: true,
 	showWindMeters: false,
 	toggleButtonScale: 1,
 	unitIconScale: 1,

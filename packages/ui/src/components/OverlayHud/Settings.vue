@@ -102,10 +102,18 @@
 							/>
 						</div>
 						<div class="Settings__row">
-							<label>Show tooltip</label>
+							<label>Show firing solution in bottom right</label>
 							<PrimeCheckBox
 								binary
 								v-model="settings.showTooltip"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row">
+							<label>Show wind in bottom right</label>
+							<PrimeCheckBox
+								binary
+								v-model="settings.showWindTooltip"
 								@update:model-value="saveSettings"
 							/>
 						</div>

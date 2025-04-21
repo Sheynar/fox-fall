@@ -5,8 +5,9 @@
 		:style="{ '--_scale': settings.toggleButtonScale }"
 		@pointerdown.prevent="executeToggle"
 	>
-		<OverlayTooltip v-if="settings.showTooltip" />
-		<button v-if="overlayActive" class="OverlayToggle__button">
+		<OverlayWindMeasurement v-if="settings.showWindTooltip" :style="{ gridArea: 'wind' }" />
+		<OverlayFiringSolution v-if="settings.showTooltip" :style="{ gridArea: 'tooltip' }" />
+		<button v-if="overlayActive" class="OverlayToggle__button" :style="{ gridArea: 'toggle' }">
 			<ShellIcon class="OverlayToggle__icon" />
 		</button>
 	</div>
@@ -20,9 +21,12 @@
 		bottom: 0;
 		right: 0;
 
-		display: flex;
-		flex-direction: row;
-		align-items: stretch;
+		display: grid;
+		grid-template-columns: repeat(2, auto);
+		grid-template-rows: repeat(2, auto);
+		grid-template-areas:
+			'wind     wind'
+			'tooltip  toggle';
 		gap: 0.5em;
 
 		cursor: pointer;
@@ -57,7 +61,8 @@
 	import { useToggleButtonStore } from '@/stores/toggle-button';
 	import { useElementBounding } from '@vueuse/core';
 	import { ref, watchEffect } from 'vue';
-	import OverlayTooltip from './OverlayTooltip.vue';
+	import OverlayFiringSolution from './OverlayFiringSolution.vue';
+	import OverlayWindMeasurement from './OverlayWindMeasurement.vue';
 
 	const containerElement = ref<HTMLButtonElement | null>(null);
 	const overlayOpen = defineModel('overlayOpen', {

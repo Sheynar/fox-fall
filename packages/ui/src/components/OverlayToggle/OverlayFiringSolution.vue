@@ -1,24 +1,24 @@
 <template>
 	<div
-		class="OverlayTooltip__container"
+		class="OverlayFiringSolution__container"
 		:class="{
-			OverlayTooltip__danger:
+			OverlayFiringSolution__danger:
 				artilleryUnits.length > 1 || targetUnits.length > 1,
 		}"
 		v-if="firingVector"
 	>
-		<div class="OverlayTooltip__row">
-			<span>distance:</span
+		<div class="OverlayFiringSolution__row">
+			<span>Distance:</span
 			><span>{{ Math.round(firingVector.distance) }}m</span>
 		</div>
-		<div class="OverlayTooltip__row">
-			<span>azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}°</span>
+		<div class="OverlayFiringSolution__row">
+			<span>Azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}°</span>
 		</div>
 	</div>
 </template>
 
 <style lang="scss">
-	.OverlayTooltip__container {
+	.OverlayFiringSolution__container {
 		display: grid;
 		grid-template-columns: auto;
 		grid-template-rows: repeat(2, auto);
@@ -31,12 +31,12 @@
 		border: 1px solid var(--p-button-secondary-color);
 		border-radius: calc(0.15 * var(--button-size));
 
-		&.OverlayTooltip__danger {
+		&.OverlayFiringSolution__danger {
 			border-color: var(--p-button-danger-border-color);
 		}
 	}
 
-	.OverlayTooltip__row {
+	.OverlayFiringSolution__row {
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
