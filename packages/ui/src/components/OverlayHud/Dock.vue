@@ -81,6 +81,14 @@
 	const windSettingsVisible = ref(false);
 	const syncSettingsVisible = ref(false);
 
+	watch(artillery.overlayOpen, (value) => {
+		if (!value) {
+			settingsVisible.value = false;
+			windSettingsVisible.value = false;
+			syncSettingsVisible.value = false;
+		}
+	});
+
 	const showHelp = async () => {
 		const version = await window.electronApi?.getRunningVersion();
 		alert(
