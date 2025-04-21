@@ -1,13 +1,21 @@
+import { ref } from 'vue';
 import { runGlobal } from '@/lib/globalScope';
 import { useArtillery } from '@/mixins/artillery';
 import { useServerConnection } from '@/mixins/server-connection';
 import { useSyncedRoom } from '@/mixins/synced-room';
 import { until } from '@vueuse/core';
 
-const { artillery, serverConnection, syncedRoom } = runGlobal(() => {
+const { artillery, interfaceVisibility, serverConnection, syncedRoom } = runGlobal(() => {
+
 	const artillery = useArtillery({
 		onUnitUpdated: (unitId: string) => syncedRoom.updateUnit(unitId),
 		onWindUpdated: () => syncedRoom.updateWind(),
+	});
+
+	const interfaceVisibility = ref({
+		windSettings: false,
+		syncSettings: false,
+		settings: false,
 	});
 
 	const serverConnection = useServerConnection();
@@ -22,9 +30,10 @@ const { artillery, serverConnection, syncedRoom } = runGlobal(() => {
 
 	return {
 		artillery,
+		interfaceVisibility,
 		serverConnection,
 		syncedRoom,
 	};
 });
 
-export { artillery, serverConnection, syncedRoom };
+export { interfaceVisibility, artillery, serverConnection, syncedRoom };

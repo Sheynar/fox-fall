@@ -28,11 +28,20 @@
 		{{ tooltip?.label }}
 	</PrimePopover>
 
-	<SyncSettings :visible="syncSettingsVisible && artillery.overlayOpen.value" @update:visible="syncSettingsVisible = $event" />
+	<Settings
+		:visible="interfaceVisibility.settings && artillery.overlayOpen.value"
+		@update:visible="interfaceVisibility.settings = $event"
+	/>
 
-	<Settings :visible="settingsVisible && artillery.overlayOpen.value" @update:visible="settingsVisible = $event" />
+	<SyncSettings
+		:visible="interfaceVisibility.syncSettings && artillery.overlayOpen.value"
+		@update:visible="interfaceVisibility.syncSettings = $event"
+	/>
 
-	<WindSettings :visible="windSettingsVisible && artillery.overlayOpen.value" @update:visible="windSettingsVisible = $event" />
+	<WindSettings
+		:visible="interfaceVisibility.windSettings && artillery.overlayOpen.value"
+		@update:visible="interfaceVisibility.windSettings = $event"
+	/>
 </template>
 
 <style lang="scss">
@@ -56,16 +65,23 @@
 	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
 	import WindIndicator from '@/components/OverlayHud/WindIndicator.vue';
 	import WindSettings from '@/components/OverlayHud/WindSettings.vue';
-	import { artillery, serverConnection, syncedRoom } from '@/lib/globals';
+	import {
+		artillery,
+		interfaceVisibility,
+		serverConnection,
+		syncedRoom,
+	} from '@/lib/globals';
 	import { BackdropMode, settings } from '@/lib/settings';
 	import { UnitType } from '@/lib/unit';
 	import { ServerConnectionState } from '@/mixins/server-connection';
 	import PrimeButton from 'primevue/button';
 	import PrimeDock from 'primevue/dock';
 	import PrimePopover from 'primevue/popover';
-	import { computed, ref, shallowRef, watch } from 'vue';
+	import { computed, shallowRef, watch } from 'vue';
 
-	const primePopover = shallowRef<InstanceType<typeof PrimePopover> | null>(null);
+	const primePopover = shallowRef<InstanceType<typeof PrimePopover> | null>(
+		null
+	);
 	const tooltip = shallowRef<{ label: string; event: MouseEvent } | null>(null);
 	watch(
 		() => tooltip.value,
@@ -77,15 +93,11 @@
 		}
 	);
 
-	const settingsVisible = ref(false);
-	const windSettingsVisible = ref(false);
-	const syncSettingsVisible = ref(false);
-
 	watch(artillery.overlayOpen, (value) => {
 		if (!value) {
-			settingsVisible.value = false;
-			windSettingsVisible.value = false;
-			syncSettingsVisible.value = false;
+			interfaceVisibility.value.settings = false;
+			interfaceVisibility.value.syncSettings = false;
+			interfaceVisibility.value.windSettings = false;
 		}
 	});
 
@@ -149,7 +161,9 @@
 		label: isConnected.value ? 'Connected' : 'Disconnected',
 		icons: ['pi pi-sync'],
 		severity: isConnected.value ? 'success' : 'danger',
-		command: () => (syncSettingsVisible.value = !syncSettingsVisible.value),
+		command: () =>
+			(interfaceVisibility.value.syncSettings =
+				!interfaceVisibility.value.syncSettings),
 	}));
 
 	const items = computed<Item[]>(() => {
@@ -158,7 +172,9 @@
 				label: 'Wind',
 				iconComponents: [WindIndicator],
 				severity: 'secondary',
-				command: () => (windSettingsVisible.value = !windSettingsVisible.value),
+				command: () =>
+					(interfaceVisibility.value.windSettings =
+						!interfaceVisibility.value.windSettings),
 			},
 			{
 				label: 'Add unit',
@@ -172,7 +188,9 @@
 				label: 'Settings',
 				icons: ['pi pi-cog'],
 				severity: 'secondary',
-				command: () => (settingsVisible.value = !settingsVisible.value),
+				command: () =>
+					(interfaceVisibility.value.settings =
+						!interfaceVisibility.value.settings),
 			},
 			connectedItem.value,
 			{
@@ -183,7 +201,10 @@
 			},
 		];
 
-		if (settings.value.backdropMode === BackdropMode.Grid && settings.value.transparentOverlay) {
+		if (
+			settings.value.backdropMode === BackdropMode.Grid &&
+			settings.value.transparentOverlay
+		) {
 			output.unshift(calibrateGridItem.value, screenshotItem.value);
 		}
 

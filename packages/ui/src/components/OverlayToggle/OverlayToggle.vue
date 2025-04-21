@@ -5,9 +5,19 @@
 		:style="{ '--_scale': settings.toggleButtonScale }"
 		@pointerdown.prevent="executeToggle"
 	>
-		<OverlayWindMeasurement v-if="settings.showWindTooltip" :style="{ gridArea: 'wind' }" />
-		<OverlayFiringSolution v-if="settings.showTooltip" :style="{ gridArea: 'tooltip' }" />
-		<button v-if="overlayActive" class="OverlayToggle__button" :style="{ gridArea: 'toggle' }">
+		<OverlayWindMeasurement
+			v-if="settings.showWindTooltip"
+			:style="{ gridArea: 'wind' }"
+		/>
+		<OverlayFiringSolution
+			v-if="settings.showTooltip"
+			:style="{ gridArea: 'tooltip' }"
+		/>
+		<button
+			v-if="overlayActive"
+			class="OverlayToggle__button"
+			:style="{ gridArea: 'toggle' }"
+		>
 			<ShellIcon class="OverlayToggle__icon" />
 		</button>
 	</div>

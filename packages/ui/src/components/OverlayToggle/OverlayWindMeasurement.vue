@@ -1,5 +1,9 @@
 <template>
-	<div class="OverlayWindMeasurement__container" v-if="artillery.wind.value.distance">
+	<div
+		class="OverlayWindMeasurement__container"
+		v-if="artillery.wind.value.distance"
+		@pointerdown.prevent="interfaceVisibility.windSettings = true"
+	>
 		<div class="OverlayWindMeasurement__row">
 			<span>Wind tier:</span
 			><span>{{ Math.round(artillery.wind.value.distance * 100) / 100 }}</span>
@@ -39,5 +43,5 @@
 </style>
 
 <script setup lang="ts">
-	import { artillery } from '@/lib/globals';
+	import { artillery, interfaceVisibility } from '@/lib/globals';
 </script>

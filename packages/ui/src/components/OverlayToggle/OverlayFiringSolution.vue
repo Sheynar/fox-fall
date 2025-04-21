@@ -6,6 +6,7 @@
 				artilleryUnits.length > 1 || targetUnits.length > 1,
 		}"
 		v-if="firingVector"
+		@pointerdown.prevent="artillery.selectedUnit.value = selectedTarget?.id"
 	>
 		<div class="OverlayFiringSolution__row">
 			<span>Distance:</span
@@ -64,15 +65,20 @@
 
 	const primaryUnitsByType = usePrimaryUnitsByType();
 
+	const selectedTarget = computed(() => {
+		return primaryUnitsByType.value[UnitType.Target];
+	});
+
+	const selectedArtillery = computed(() => {
+		return primaryUnitsByType.value[UnitType.Artillery];
+	});
+
 	const firingVector = computed(() => {
-		if (
-			primaryUnitsByType.value[UnitType.Artillery] == null ||
-			primaryUnitsByType.value[UnitType.Target] == null
-		)
+		if (selectedArtillery.value == null || selectedTarget.value == null)
 			return undefined;
 		return artillery.getFiringVector(
-			primaryUnitsByType.value[UnitType.Artillery].id,
-			primaryUnitsByType.value[UnitType.Target].id
+			selectedArtillery.value.id,
+			selectedTarget.value.id
 		);
 	});
 </script>
