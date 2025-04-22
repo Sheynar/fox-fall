@@ -25,7 +25,7 @@ export type ElectronApi = {
 	/** Returns whether the overlay is currently open */
 	getOverlayOpen: () => Promise<boolean>;
 	/** Register a callback to be called when the overlay is toggled */
-	onOverlayToggled: (callback: (open: boolean) => void) => Promise<void>;
+	onOverlayToggled: (callback: (open: boolean) => void) => () => void;
 	/** Sends a message to the parent Electron process to update the size of the toggle button. This will determine the size of the window when the overlay is toggled off */
 	sendToggleSize: (size: { x: number; y: number }) => Promise<void>;
 	/** Returns the size of the display */

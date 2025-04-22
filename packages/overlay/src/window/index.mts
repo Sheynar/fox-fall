@@ -102,19 +102,16 @@ export const initialise = () => {
 		}
 	);
 
-	ipcMain.on(
-		ElectronApiCommand.GetRunningVersion,
-		(event, requestId: string) => {
-			event.reply(requestId, packageJson.version);
-		}
-	);
-	ipcMain.on(ElectronApiCommand.ToggleOverlay, (event) => {
+	ipcMain.handle(ElectronApiCommand.GetRunningVersion, () => {
+		return packageJson.version;
+	});
+	ipcMain.handle(ElectronApiCommand.ToggleOverlay, () => {
 		toggleOverlay();
 	});
-	ipcMain.on(ElectronApiCommand.GetOverlayOpen, (event, requestId: string) => {
-		event.reply(requestId, overlayOpen);
+	ipcMain.handle(ElectronApiCommand.GetOverlayOpen, () => {
+		return overlayOpen;
 	});
-	ipcMain.on(
+	ipcMain.handle(
 		ElectronApiCommand.SendToggleSize,
 		(event, newSize: { x: number; y: number }) => {
 			size = newSize;
@@ -123,37 +120,37 @@ export const initialise = () => {
 			}
 		}
 	);
-	ipcMain.on(ElectronApiCommand.GetDisplaySize, (event, requestId: string) => {
-		event.reply(requestId, {
+	ipcMain.handle(ElectronApiCommand.GetDisplaySize, () => {
+		return {
 			width: display.bounds.width,
 			height: display.bounds.height,
-		});
+		};
 	});
-	ipcMain.on(ElectronApiCommand.GetUpdateConfig, (event, requestId: string) => {
-		event.reply(requestId, getUpdateConfig());
+	ipcMain.handle(ElectronApiCommand.GetUpdateConfig, () => {
+		return getUpdateConfig();
 	});
-	ipcMain.on(
+	ipcMain.handle(
 		ElectronApiCommand.SetUpdateConfig,
 		(event, config: UpdateConfig) => {
 			setUpdateConfig(config);
 		}
 	);
-	ipcMain.on(ElectronApiCommand.PauseKeyboardShortcuts, (event) => {
+	ipcMain.handle(ElectronApiCommand.PauseKeyboardShortcuts, () => {
 		pauseKeyboardShortcuts();
 	});
-	ipcMain.on(ElectronApiCommand.ResumeKeyboardShortcuts, (event) => {
+	ipcMain.handle(ElectronApiCommand.ResumeKeyboardShortcuts, () => {
 		resumeKeyboardShortcuts();
 	});
-	ipcMain.on(
+	ipcMain.handle(
 		ElectronApiCommand.UpdateKeyboardShortcut,
 		(event, command: KeyboardCommand, accelerator?: string[]) => {
 			updateKeyboardShortcut(command, accelerator);
 		}
 	);
-	ipcMain.on(
+	ipcMain.handle(
 		ElectronApiCommand.GetKeyboardShortcut,
-		(event, requestId: string, command: KeyboardCommand) => {
-			event.reply(requestId, getKeyboardShortcut(command));
+		(event, command: KeyboardCommand) => {
+			return getKeyboardShortcut(command);
 		}
 	);
 

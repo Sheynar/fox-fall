@@ -7,106 +7,58 @@ import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
 import { UpdateConfig } from "@packages/types/dist/update-config.js";
 
 const electronApi: ElectronApi = {
-	getRunningVersion: async () => {
-		const requestId = crypto.randomUUID();
-		const output = new Promise<string>((resolve, reject) => {
-			ipcRenderer.once(
-				requestId,
-				(_event, version: string) => resolve(version)
-			);
-			setTimeout(() => reject(new Error("Timeout")), 1000);
-		});
-		ipcRenderer.send(ElectronApiCommand.GetRunningVersion, requestId);
-		return output;
+	getRunningVersion: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.GetRunningVersion),
+
+	toggleOverlay: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.ToggleOverlay),
+
+	getOverlayOpen: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.GetOverlayOpen),
+
+	// TODO: Add a way to remove the listener
+	onOverlayToggled: (callback: (open: boolean) => void) => {
+		const listener = (_event, open: boolean) => {
+			callback(open);
+		};
+
+		ipcRenderer.on(ElectronApiCommand.OverlayToggled, listener);
+
+		return () => {
+			ipcRenderer.off(ElectronApiCommand.OverlayToggled, listener);
+		};
 	},
 
-	toggleOverlay: async () => {
-		ipcRenderer.send(ElectronApiCommand.ToggleOverlay);
-	},
+	sendToggleSize: async (size: { x: number; y: number }) =>
+		ipcRenderer.invoke(ElectronApiCommand.SendToggleSize, size),
 
-	getOverlayOpen: async () => {
-		const requestId = crypto.randomUUID();
-		const output = new Promise<boolean>((resolve, reject) => {
-			ipcRenderer.once(
-				requestId,
-				(_event, open: boolean) => resolve(open)
-			);
-			setTimeout(() => reject(new Error("Timeout")), 1000);
-		});
-		ipcRenderer.send(ElectronApiCommand.GetOverlayOpen, requestId);
-		return output;
-	},
+	getDisplaySize: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.GetDisplaySize),
 
-	onOverlayToggled: async (callback: (open: boolean) => void) => {
-		ipcRenderer.on(
-			ElectronApiCommand.OverlayToggled,
-			(_event, open: boolean) => {
-				callback(open);
-			}
-		);
-	},
+	getUpdateConfig: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.GetUpdateConfig),
 
-	sendToggleSize: async (size: { x: number; y: number }) => {
-		ipcRenderer.send(ElectronApiCommand.SendToggleSize, size);
-	},
+	setUpdateConfig: async (config: UpdateConfig) =>
+		ipcRenderer.invoke(ElectronApiCommand.SetUpdateConfig, config),
 
-	getDisplaySize: async () => {
-		const requestId = crypto.randomUUID();
-		const output = new Promise<{ width: number; height: number }>((resolve, reject) => {
-			ipcRenderer.once(requestId, (_event, size: { width: number; height: number }) => resolve(size)
-			);
-			setTimeout(() => reject(new Error("Timeout")), 1000);
-		});
-		ipcRenderer.send(ElectronApiCommand.GetDisplaySize, requestId);
-		return output;
-	},
+	pauseKeyboardShortcuts: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.PauseKeyboardShortcuts),
 
-	getUpdateConfig: async () => {
-		const requestId = crypto.randomUUID();
-		const output = new Promise<UpdateConfig>((resolve, reject) => {
-			ipcRenderer.once(requestId, (_event, config: UpdateConfig) => resolve(config)
-			);
-			setTimeout(() => reject(new Error("Timeout")), 1000);
-		});
-		ipcRenderer.send(ElectronApiCommand.GetUpdateConfig, requestId);
-		return output;
-	},
-
-	setUpdateConfig: async (config: UpdateConfig) => {
-		ipcRenderer.send(ElectronApiCommand.SetUpdateConfig, config);
-	},
-
-	pauseKeyboardShortcuts: async () => {
-		ipcRenderer.send(ElectronApiCommand.PauseKeyboardShortcuts);
-	},
-
-	resumeKeyboardShortcuts: async () => {
-		ipcRenderer.send(ElectronApiCommand.ResumeKeyboardShortcuts);
-	},
+	resumeKeyboardShortcuts: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.ResumeKeyboardShortcuts),
 
 	updateKeyboardShortcut: async (
 		command: KeyboardCommand,
 		accelerator: string[]
-	) => {
-		ipcRenderer.send(
+	) =>
+		ipcRenderer.invoke(
 			ElectronApiCommand.UpdateKeyboardShortcut,
 			command,
 			accelerator
-		);
-	},
+		),
 
-	getKeyboardShortcut: async (command: KeyboardCommand) => {
-		const requestId = crypto.randomUUID();
-		const output = new Promise<string[]>((resolve, reject) => {
-			ipcRenderer.once(
-				requestId,
-				(_event, accelerator: string[]) => resolve(accelerator)
-			);
-			setTimeout(() => reject(new Error("Timeout")), 1000);
-		});
-		ipcRenderer.send(ElectronApiCommand.GetKeyboardShortcut, requestId, command);
-		return output;
-	},
+	getKeyboardShortcut: async (command: KeyboardCommand) =>
+		ipcRenderer.invoke(ElectronApiCommand.GetKeyboardShortcut, command),
 
 	onKeyboardShortcutPressed: (callback) => {
 		const listener = (_event, command: KeyboardCommand) => {
