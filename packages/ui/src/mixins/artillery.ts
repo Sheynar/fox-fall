@@ -1,4 +1,4 @@
-import { computed, getCurrentScope, type Ref, ref, watchEffect } from 'vue';
+import { computed, getCurrentScope, type Ref, ref, watch, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 import { useEventListener, until } from '@vueuse/core';
 import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
@@ -27,6 +27,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	}
 
 	const overlayOpen = ref(false);
+	const mouseActive = ref(false);
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
 	const readyToFire = ref(false);
 	const wind = ref(Vector.fromAngularVector({ azimuth: 0, distance: 0 }));
@@ -443,6 +444,24 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				break;
 		}
 	});
+
+	const updateMouseActive = () => {
+		mouseActive.value = document.querySelector('.MouseCapture:hover') != null;
+	};
+	useEventListener('pointermove', updateMouseActive);
+	updateMouseActive();
+
+	watch(
+		() => overlayOpen.value || mouseActive.value,
+		(active) => {
+			if (active) {
+				window.electronApi?.enableMouse();
+			} else {
+				window.electronApi?.disableMouse();
+			}
+		},
+		{ immediate: true }
+	);
 
 	return {
 		addUnit,

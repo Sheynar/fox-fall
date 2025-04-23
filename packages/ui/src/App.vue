@@ -126,7 +126,7 @@
 		}
 
 		&.App__hidden {
-			opacity: 0.01;
+			filter: opacity(0);
 			pointer-events: none;
 		}
 

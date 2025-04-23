@@ -16,47 +16,12 @@ import packageJson from "../../package.json" with { type: "json" };
 const __dirname = import.meta.dirname;
 const display = screen.getPrimaryDisplay();
 
-const defaultSize =
-	Math.min(display.bounds.width, display.bounds.height) * 0.05;
-let size = {
-	x: defaultSize,
-	y: defaultSize,
-};
-
 let managerWindow: BrowserWindow | null = null;
 
 let overlayOpen = false;
-export const updateShape = () => {
-	if (managerWindow == null) return;
-
-	if (overlayOpen) {
-		managerWindow.setContentBounds(
-			{
-				x: 0,
-				y: 0,
-				width: display.bounds.width,
-				height: display.bounds.height,
-			},
-			false
-		);
-	} else {
-		managerWindow.setContentBounds(
-			{
-				x: display.bounds.width - size.x,
-				y: display.bounds.height - size.y,
-				width: size.x,
-				height: size.y,
-			},
-			false
-		);
-	}
-
-	managerWindow.setAlwaysOnTop(true, "screen-saver");
-};
 export const toggleOverlay = (newState = !overlayOpen) => {
 	if (overlayOpen === newState) return;
 	overlayOpen = newState;
-	updateShape();
 
 	if (managerWindow == null) return;
 
@@ -67,7 +32,7 @@ export const toggleOverlay = (newState = !overlayOpen) => {
 		managerWindow.minimize();
 		setTimeout(() => {
 			managerWindow!.showInactive();
-		}, 100);
+		}, 10);
 	}
 
 	managerWindow.webContents.send(
@@ -76,7 +41,7 @@ export const toggleOverlay = (newState = !overlayOpen) => {
 	);
 };
 
-export const initialise = () => {
+export const initialise = async () => {
 	managerWindow = new BrowserWindow({
 		frame: false,
 		autoHideMenuBar: true,
@@ -111,15 +76,14 @@ export const initialise = () => {
 	ipcMain.handle(ElectronApiCommand.GetOverlayOpen, () => {
 		return overlayOpen;
 	});
-	ipcMain.handle(
-		ElectronApiCommand.SendToggleSize,
-		(event, newSize: { x: number; y: number }) => {
-			size = newSize;
-			if (!overlayOpen) {
-				updateShape();
-			}
-		}
-	);
+	ipcMain.handle(ElectronApiCommand.EnableMouse, (event) => {
+		if (!managerWindow) return;
+		managerWindow.setIgnoreMouseEvents(false, { forward: true });
+	});
+	ipcMain.handle(ElectronApiCommand.DisableMouse, () => {
+		if (!managerWindow) return;
+		managerWindow.setIgnoreMouseEvents(true, { forward: true });
+	});
 	ipcMain.handle(ElectronApiCommand.GetDisplaySize, () => {
 		return {
 			width: display.bounds.width,
@@ -154,13 +118,13 @@ export const initialise = () => {
 		}
 	);
 
-	// setInterval(() => updateShape(), 1000);
-	updateShape();
-	managerWindow.restore();
+	managerWindow.setIgnoreMouseEvents(true, { forward: true });
+	const { setWindowAsOverlay } = await import("./native-window.mjs");
+	setWindowAsOverlay(managerWindow, "War", true);
 
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
 
-	managerWindow.setAlwaysOnTop(true, "screen-saver");
+	// managerWindow.setAlwaysOnTop(true, "screen-saver");
 	managerWindow.loadURL(url.href);
 
 	managerWindow.on("close", () => {

@@ -5,7 +5,7 @@ app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") app.quit();
 });
 
-Menu.setApplicationMenu(null);
+// Menu.setApplicationMenu(null);
 
 const initialise = async () => {
 	await app.whenReady();

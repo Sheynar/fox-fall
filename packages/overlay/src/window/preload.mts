@@ -29,8 +29,11 @@ const electronApi: ElectronApi = {
 		};
 	},
 
-	sendToggleSize: async (size: { x: number; y: number }) =>
-		ipcRenderer.invoke(ElectronApiCommand.SendToggleSize, size),
+	enableMouse: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.EnableMouse),
+
+	disableMouse: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.DisableMouse),
 
 	getDisplaySize: async () =>
 		ipcRenderer.invoke(ElectronApiCommand.GetDisplaySize),

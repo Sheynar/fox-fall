@@ -6,7 +6,8 @@ export enum ElectronApiCommand {
 	ToggleOverlay = "toggle-overlay",
 	GetOverlayOpen = "get-overlay-open",
 	OverlayToggled = "overlay-toggled",
-	SendToggleSize = "send-toggle-size",
+	EnableMouse = "enable-mouse",
+	DisableMouse = "disable-mouse",
 	GetDisplaySize = "get-display-size",
 	GetUpdateConfig = "get-update-config",
 	SetUpdateConfig = "set-update-config",
@@ -26,8 +27,11 @@ export type ElectronApi = {
 	getOverlayOpen: () => Promise<boolean>;
 	/** Register a callback to be called when the overlay is toggled */
 	onOverlayToggled: (callback: (open: boolean) => void) => () => void;
-	/** Sends a message to the parent Electron process to update the size of the toggle button. This will determine the size of the window when the overlay is toggled off */
-	sendToggleSize: (size: { x: number; y: number }) => Promise<void>;
+	/** Sends a message to the parent Electron process to start capturing mouse events */
+	enableMouse: () => Promise<void>;
+	/** Sends a message to the parent Electron process to stop capturing mouse events */
+	disableMouse: () => Promise<void>;
+
 	/** Returns the size of the display */
 	getDisplaySize: () => Promise<{ width: number; height: number }>;
 

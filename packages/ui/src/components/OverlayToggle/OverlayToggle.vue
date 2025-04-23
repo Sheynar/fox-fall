@@ -1,7 +1,7 @@
 <template>
 	<div
 		ref="containerElement"
-		class="OverlayToggle__container"
+		class="OverlayToggle__container MouseCapture"
 		:style="{ '--_scale': settings.toggleButtonScale }"
 		@pointerdown.prevent="executeToggle"
 	>
@@ -100,11 +100,6 @@
 
 	const bounding = useElementBounding(containerElement);
 	watchEffect(() => {
-		window.electronApi?.sendToggleSize({
-			x: bounding.width.value,
-			y: bounding.height.value,
-		});
-
 		toggleButtonStore.setSize(bounding.width.value, bounding.height.value);
 	});
 </script>
