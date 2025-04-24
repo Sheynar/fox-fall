@@ -32,7 +32,7 @@ export const toggleOverlay = (newState = !overlayOpen) => {
 		managerWindow.minimize();
 		setTimeout(() => {
 			managerWindow!.showInactive();
-		}, 10);
+		}, 100);
 	}
 
 	managerWindow.webContents.send(
@@ -46,7 +46,7 @@ export const initialise = async () => {
 		frame: false,
 		autoHideMenuBar: true,
 		transparent: true,
-		fullscreen: true,
+		fullscreen: false,
 		movable: false,
 		resizable: false,
 		webPreferences: {
@@ -120,7 +120,7 @@ export const initialise = async () => {
 
 	managerWindow.setIgnoreMouseEvents(true, { forward: true });
 	const { setWindowAsOverlay } = await import("./native-window.mjs");
-	setWindowAsOverlay(managerWindow, "War", true);
+	const overlayManager = setWindowAsOverlay(managerWindow, "War", true);
 
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
 
@@ -130,4 +130,8 @@ export const initialise = async () => {
 	managerWindow.on("close", () => {
 		app.quit();
 	});
+
+	return {
+		overlayManager,
+	}
 };

@@ -10,7 +10,7 @@ module.exports = {
 		output: "out/${productName}/${os}",
 	},
 	win: {
-		// icon: `${iconPath}.ico`,
+		icon: path.resolve(__dirname, './icon.png'),
 		publish: ['github'],
 	},
 	linux: {

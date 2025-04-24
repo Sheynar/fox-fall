@@ -1,14 +1,35 @@
 import type { BrowserWindow } from "electron";
 import koffi from "koffi";
+import EventEmitter from "node:events";
 import { debounceImmediate } from "../helpers.mjs";
 
 const user32 = koffi.load("user32.dll");
 
 const EVENT_SYSTEM_FOREGROUND = 0x0003;
+const EVENT_SYSTEM_MOVESIZEEND = 0x000b;
 const EVENT_SYSTEM_MINIMIZEEND = 0x0017;
-// const EVENT_OBJECT_FOCUS = 0x8005;
+const EVENT_OBJECT_DESTROY = 0x8001;
+const EVENT_OBJECT_SHOW = 0x8002;
+const EVENT_OBJECT_HIDE = 0x8003;
 const EVENT_OBJECT_LOCATIONCHANGE = 0x800b;
+const EVENT_OBJECT_NAMECHANGE = 0x800c;
+
+const SIZE_EVENTS = [
+	EVENT_SYSTEM_MOVESIZEEND,
+	EVENT_SYSTEM_MINIMIZEEND,
+	EVENT_OBJECT_DESTROY,
+	EVENT_OBJECT_SHOW,
+	EVENT_OBJECT_HIDE,
+	EVENT_OBJECT_LOCATIONCHANGE,
+];
+
 const WINEVENT_OUTOFCONTEXT = 0x0000;
+
+type HWND_Pointer = {
+	readonly __type: unique symbol;
+};
+type HWND_Value = BigInt;
+type HWND = HWND_Pointer | HWND_Value;
 
 const GetForegroundWindow = user32.func("GetForegroundWindow", "void*", []);
 
@@ -111,6 +132,10 @@ const GetWindowPlacement = user32.func("GetWindowPlacement", "bool", [
 	koffi.out(koffi.pointer(WINDOW_PLACEMENT)), // lpwndpl
 ]);
 
+const CloseWindow = user32.func("CloseWindow", "bool", [
+	"void*", // hwnd
+]);
+
 const ShowWindow = user32.func("ShowWindow", "bool", [
 	"void*", // hwnd
 	"int32", // nCmdShow
@@ -124,6 +149,17 @@ const SetWindowPos = user32.func("SetWindowPos", "int32", [
 	"int32", // cx
 	"int32", // cy
 	"uint32", // uFlags
+]);
+
+const SetParent = user32.func("SetParent", "void*", [
+	"void*", // hWnd
+	"void*", // hWndInsertAfter
+]);
+
+const SetWindowLongPtr = user32.func("SetWindowLongPtrW", "int32", [
+	"void*", // hWnd
+	"int32", // nIndex
+	"void*", // dwNewLong
 ]);
 
 const EnumWindowsProc = koffi.proto(`
@@ -164,7 +200,11 @@ const UnhookWinEvent = user32.func("UnhookWinEvent", "bool", [
 	"void*", // hWinEventHook
 ]);
 
-export function titleMatches(testTitle: string | null, desiredTitle: string, strictMatch: boolean): boolean {
+export function titleMatches(
+	testTitle: string | null,
+	desiredTitle: string,
+	strictMatch: boolean
+): boolean {
 	if (!testTitle) return false;
 	if (strictMatch) {
 		return testTitle.trim() === desiredTitle.trim();
@@ -172,18 +212,18 @@ export function titleMatches(testTitle: string | null, desiredTitle: string, str
 	return testTitle.includes(desiredTitle);
 }
 
-export function getWindowTitle(hwnd: number): string | null {
+export function getWindowTitle(hwnd: HWND): string | null {
 	let buf = new Uint16Array(512);
 	const len = GetWindowTextW(hwnd, buf, buf.length);
 	const title = koffi.decode(buf, "wchar_t", len) || (null as string | null);
 	return title;
 }
 
-export function getWindowThread(hwnd: number): number {
+export function getWindowThread(hwnd: HWND): number {
 	return GetWindowThreadProcessId(hwnd, [0]);
 }
 
-export function getWindowPlacement(hwnd: number): WINDOW_PLACEMENT_TYPE {
+export function getWindowPlacement(hwnd: HWND): WINDOW_PLACEMENT_TYPE {
 	let placement: WINDOW_PLACEMENT_TYPE = {
 		length: koffi.sizeof(WINDOW_PLACEMENT),
 		flags: 0,
@@ -197,26 +237,65 @@ export function getWindowPlacement(hwnd: number): WINDOW_PLACEMENT_TYPE {
 	return placement;
 }
 
+export enum WINDOW_Z_POSITION {
+	HWND_BOTTOM = 1,
+	HWND_TOP = 0,
+	HWND_TOPMOST = -1,
+	HWND_NOTOPMOST = -2,
+}
+
+export enum WINDOW_POSITION_FLAGS {
+	SWP_ASYNCWINDOWPOS = 0x4000,
+	SWP_DEFERERASE = 0x2000,
+	SWP_DRAWFRAME = 0x0020,
+	SWP_FRAMECHANGED = 0x0020,
+	SWP_HIDEWINDOW = 0x0080,
+	SWP_NOACTIVATE = 0x0010,
+	SWP_NOMOVE = 0x0002,
+	SWP_NOOWNERZORDER = 0x0200,
+	SWP_NOREDRAW = 0x0008,
+	SWP_NOREPOSITION = 0x0200,
+	SWP_NOSENDCHANGING = 0x0400,
+	SWP_NOSIZE = 0x0001,
+	SWP_NOZORDER = 0x0004,
+	SWP_SHOWWINDOW = 0x0040,
+}
+
 export function setWindowPos(
-	hwnd: number,
+	hwnd: HWND,
+	onTopOf: HWND | WINDOW_Z_POSITION,
 	x: number,
 	y: number,
 	width: number,
 	height: number,
-	flags: number,
-	onTopOf: number = 0
-) {
-	return SetWindowPos(hwnd, onTopOf, x, y, width, height, flags);
+	flags: number
+): boolean {
+	return !!SetWindowPos(hwnd, onTopOf, x, y, width, height, flags);
 }
 
-export function enumWindows(callback: (hwnd: number) => boolean) {
-	EnumWindows((hwnd: number, lParam: number) => {
+export function setWindowParent(hwnd: HWND, parent: HWND) {
+	return SetParent(hwnd, parent) as HWND;
+}
+
+export function setWindowLongPointer(
+	hwnd: HWND,
+	nIndex: number,
+	dwNewLong: HWND | 0
+) {
+	return SetWindowLongPtr(hwnd, nIndex, dwNewLong) as HWND;
+}
+
+export function enumWindows(callback: (hwnd: HWND) => boolean) {
+	EnumWindows((hwnd: HWND, lParam: number) => {
 		return callback(hwnd);
 	}, 0);
 }
 
-export function findWindow(windowTitle: string, strictMatch: boolean): number | null {
-	let hwnd: number | null = null;
+export function findWindow(
+	windowTitle: string,
+	strictMatch: boolean
+): HWND | null {
+	let hwnd: HWND | null = null;
 	enumWindows((h) => {
 		const title = getWindowTitle(h);
 		if (titleMatches(title, windowTitle, strictMatch)) {
@@ -228,18 +307,18 @@ export function findWindow(windowTitle: string, strictMatch: boolean): number | 
 	return hwnd;
 }
 
-export function onWindowPositionChange(callback: (hwnd: number) => void) {
+export function onWindowPositionChange(callback: (hwnd: HWND) => void) {
 	const winEventProc = koffi.register(
 		(
 			hWinEventHook: number,
 			event: number,
-			hwnd: number,
+			hwnd: HWND,
 			idObject: number,
 			idChild: number,
 			idEventThread: number,
 			dwmsEventTime: number
 		) => {
-			if (event === EVENT_OBJECT_LOCATIONCHANGE && hwnd && idObject === 0) {
+			if (SIZE_EVENTS.includes(event) && hwnd && idObject === 0) {
 				callback(hwnd);
 			}
 		},
@@ -247,8 +326,8 @@ export function onWindowPositionChange(callback: (hwnd: number) => void) {
 	);
 
 	const hook = SetWinEventHook(
-		EVENT_OBJECT_LOCATIONCHANGE,
-		EVENT_OBJECT_LOCATIONCHANGE,
+		Math.min(...SIZE_EVENTS),
+		Math.max(...SIZE_EVENTS),
 		0,
 		winEventProc,
 		0,
@@ -265,12 +344,52 @@ export function onWindowPositionChange(callback: (hwnd: number) => void) {
 	};
 }
 
-export function onWindowFocusChange(callback: (hwnd: number) => void) {
+export function onWindowNameChange(
+	callback: (hwnd: HWND, newName: string | null) => void
+) {
 	const winEventProc = koffi.register(
 		(
 			hWinEventHook: number,
 			event: number,
-			hwnd: number,
+			hwnd: HWND,
+			idObject: number,
+			idChild: number,
+			idEventThread: number,
+			dwmsEventTime: number
+		) => {
+			if (event === EVENT_OBJECT_NAMECHANGE && hwnd && idObject === 0) {
+				const newName = getWindowTitle(hwnd);
+				callback(hwnd, newName);
+			}
+		},
+		"Wineventproc*"
+	);
+
+	const hook = SetWinEventHook(
+		EVENT_OBJECT_NAMECHANGE,
+		EVENT_OBJECT_NAMECHANGE,
+		0,
+		winEventProc,
+		0,
+		0,
+		WINEVENT_OUTOFCONTEXT
+	);
+
+	if (!hook) {
+		throw new Error("Failed to set event hook");
+	}
+
+	return () => {
+		UnhookWinEvent(hook);
+	};
+}
+
+export function onWindowFocusChange(callback: (hwnd: HWND) => void) {
+	const winEventProc = koffi.register(
+		(
+			hWinEventHook: number,
+			event: number,
+			hwnd: HWND,
 			idObject: number,
 			idChild: number,
 			idEventThread: number,
@@ -307,14 +426,15 @@ export function onWindowFocusChange(callback: (hwnd: number) => void) {
 	};
 }
 
-export function getWindowClientRect(hwnd: number): RECT_TYPE {
+export function getWindowClientRect(hwnd: HWND): RECT_TYPE | null {
 	let rect: RECT_TYPE = {
 		left: 0,
 		top: 0,
 		right: 0,
 		bottom: 0,
 	};
-	GetClientRect(hwnd, rect);
+	const success = !!GetClientRect(hwnd, rect);
+	if (!success) return null;
 	const topLeft: POINT_TYPE = {
 		x: rect.left,
 		y: rect.top,
@@ -337,32 +457,54 @@ export function getWindowClientRect(hwnd: number): RECT_TYPE {
 export function monitorWindowClientRect(
 	windowTitle: string,
 	strictMatch: boolean,
-	callback: (
-		hwnd: number,
-		position: RECT_TYPE,
-		placement: WINDOW_PLACEMENT_TYPE
-	) => void
+	callback: (hwnd: HWND, position: RECT_TYPE | null) => void
 ) {
-	let hwnd = findWindow(windowTitle, strictMatch);
-	if (hwnd) {
-		const position = getWindowClientRect(hwnd);
-		const placement = getWindowPlacement(hwnd);
-		callback(hwnd, position, placement);
-	}
+	let hwnd: HWND_Value | null = null;
 
-	const unmonitor = onWindowPositionChange((h) => {
-		const title = getWindowTitle(h);
-		if (!titleMatches(title, windowTitle, strictMatch)) return;
-		hwnd = h;
+	const onPositionUpdated = (h: HWND) => {
+		const newHwnd = koffi.address(h);
+		if (hwnd == null) {
+			const title = getWindowTitle(h);
+			if (!titleMatches(title, windowTitle, strictMatch)) return;
+			hwnd = newHwnd;
+		}
+
+		if (hwnd != null && newHwnd !== hwnd) {
+			return;
+		}
 		const position = getWindowClientRect(h);
-		const placement = getWindowPlacement(h);
-		callback(h, position, placement);
+		if (!position) hwnd = null;
+		callback(h, position);
+	};
+
+	const unmonitor = onWindowPositionChange(onPositionUpdated);
+
+	Promise.resolve().then(() => {
+		const foundHwnd = findWindow(windowTitle, strictMatch);
+		if (foundHwnd) {
+			hwnd = koffi.address(foundHwnd);
+			const position = getWindowClientRect(hwnd);
+			callback(hwnd, position);
+		}
 	});
 
-	return unmonitor;
+	return {
+		update: () => {
+			if (!hwnd) return;
+			onPositionUpdated(hwnd);
+		},
+		reset: (newWindowTitle: string = windowTitle, newStrictMatch: boolean = strictMatch) => {
+			hwnd = null;
+			windowTitle = newWindowTitle;
+			strictMatch = newStrictMatch;
+		},
+		destroy: () => {
+			unmonitor();
+		},
+	};
 }
 
-export function getWindowPosition(hwnd: number): RECT_TYPE {
+export function getWindowPosition(hwnd: HWND): RECT_TYPE {
 	let rect: RECT_TYPE = {
 		left: 0,
 		top: 0,
@@ -376,26 +518,29 @@ export function getWindowPosition(hwnd: number): RECT_TYPE {
 export function monitorWindowPosition(
 	windowTitle: string,
 	strictMatch: boolean,
-	callback: (
-		hwnd: number,
-		position: RECT_TYPE,
-		placement: WINDOW_PLACEMENT_TYPE
-	) => void
+	callback: (hwnd: HWND, position: RECT_TYPE) => void
 ) {
-	let hwnd = findWindow(windowTitle, strictMatch);
-	if (hwnd) {
+	let hwnd: HWND_Value | null = null;
+	const foundHwnd = findWindow(windowTitle, strictMatch);
+	if (foundHwnd) {
+		hwnd = koffi.address(foundHwnd);
 		const position = getWindowPosition(hwnd);
-		const placement = getWindowPlacement(hwnd);
-		callback(hwnd, position, placement);
+		callback(hwnd, position);
 	}
 
 	const unmonitor = onWindowPositionChange((h) => {
-		const title = getWindowTitle(h);
-		if (!titleMatches(title, windowTitle, strictMatch)) return;
-		hwnd = h;
+		const newHwnd = koffi.address(h);
+		if (hwnd == null) {
+			const title = getWindowTitle(h);
+			if (!titleMatches(title, windowTitle, strictMatch)) return;
+			hwnd = newHwnd;
+		}
+
+		if (hwnd != null && newHwnd !== hwnd) {
+			return;
+		}
 		const position = getWindowPosition(h);
-		const placement = getWindowPlacement(h);
-		callback(h, position, placement);
+		callback(h, position);
 	});
 
 	return unmonitor;
@@ -419,99 +564,139 @@ export function monitorWindowFocus(
 	return unmonitor;
 }
 
-export function getHasFocusedWindow(windowTitle: string, strictMatch: boolean): boolean | null {
-	const focusedWindow = GetForegroundWindow();
+export function getHasFocusedWindow(
+	windowTitle: string,
+	strictMatch: boolean
+): boolean | null {
+	const focusedWindow: HWND | null = GetForegroundWindow();
 	if (!focusedWindow) return null;
 	const title = getWindowTitle(focusedWindow);
 	if (!title) return null;
 	return titleMatches(title, windowTitle, strictMatch);
 }
 
+export function getBrowserWindowHandle(
+	browserWindow: BrowserWindow
+): HWND_Value {
+	return BigInt(browserWindow.getNativeWindowHandle().readInt32LE());
+}
+
 export function setWindowAsOverlay(
 	overlayWindow: BrowserWindow,
 	backdropWindowTitle: string,
 	strictMatch: boolean,
-	updateDelay: number = 10
+	minUpdateFrequency: number = 10,
+	maxUpdateFrequency: number = 1_000
 ) {
+	const events = new EventEmitter<{
+		attached: [];
+		detached: [];
+		positionChanged: [];
+		destroyed: [];
+	}>();
+
 	let lastBackdropPosition = null as {
-		hwnd: number;
+		hwnd: HWND;
 		position: RECT_TYPE;
-		placement: WINDOW_PLACEMENT_TYPE;
 	} | null;
 
-	let lastBackdropFocused = null as boolean | null;
+	const _update = () => {
+		const overlayHWND = getBrowserWindowHandle(overlayWindow);
 
-	const update = debounceImmediate(() => {
 		if (!lastBackdropPosition) {
-			if (!overlayWindow.isMinimized()) {
-				overlayWindow.minimize();
+			const overlayPlacement = getWindowPlacement(overlayHWND);
+			if (overlayPlacement.showCmd !== WINDOW_SHOW_COMMAND.SW_SHOWMINIMIZED) {
+				ShowWindow(overlayHWND, WINDOW_SHOW_COMMAND.SW_HIDE);
+				setWindowLongPointer(overlayHWND, -8 /* GWLP_HWNDPARENT */, 0);
 			}
 			return;
 		}
-		const { position, placement } = lastBackdropPosition;
+		const { hwnd, position } = lastBackdropPosition;
 
-		if (placement.showCmd === WINDOW_SHOW_COMMAND.SW_SHOWMINIMIZED) {
-			if (!overlayWindow.isMinimized()) {
-				overlayWindow.minimize();
-			}
-			return;
-		}
-
-		if (lastBackdropFocused) {
-			if (overlayWindow.isMinimized()) {
-				overlayWindow.showInactive();
-			}
-			if (!overlayWindow.isAlwaysOnTop()) {
-				overlayWindow.setAlwaysOnTop(true, "screen-saver");
-			}
-		} else if (lastBackdropFocused) {
-			if (!overlayWindow.isMinimized()) {
-				overlayWindow.minimize();
-			}
-			if (overlayWindow.isAlwaysOnTop()) {
-				overlayWindow.setAlwaysOnTop(false);
-			}
-		}
-
-		overlayWindow.setContentBounds(
-			{
-				x: position.left,
-				y: position.top,
-				width: position.right - position.left,
-				height: position.bottom - position.top,
-			},
-			false
+		setWindowLongPointer(overlayHWND, -8 /* GWLP_HWNDPARENT */, hwnd);
+		ShowWindow(overlayHWND, WINDOW_SHOW_COMMAND.SW_SHOWNOACTIVATE);
+		const success = setWindowPos(
+			overlayHWND,
+			hwnd,
+			position.left,
+			position.top,
+			position.right - position.left,
+			position.bottom - position.top,
+			WINDOW_POSITION_FLAGS.SWP_NOACTIVATE |
+				WINDOW_POSITION_FLAGS.SWP_SHOWWINDOW
 		);
-		overlayWindow.setAlwaysOnTop(true, "screen-saver");
-	}, updateDelay);
+		if (!success) {
+			reset();
+		} else {
+			events.emit("positionChanged");
+		}
+	};
 
-	const unmonitorBackdropPosition = monitorWindowClientRect(
+	let updateTimeout: ReturnType<typeof setTimeout> | null = null;
+	const update = debounceImmediate(() => {
+		if (updateTimeout) {
+			clearTimeout(updateTimeout);
+			updateTimeout = null;
+		}
+		try {
+			_update();
+		} finally {
+			updateTimeout = setTimeout(update, maxUpdateFrequency);
+		}
+	}, minUpdateFrequency);
+
+	const reset = (newBackdropWindowTitle: string = backdropWindowTitle, newStrictMatch: boolean = strictMatch) => {
+		const wasLinked = lastBackdropPosition != null;
+
+		lastBackdropPosition = null;
+		backdropWindowTitle = newBackdropWindowTitle;
+		strictMatch = newStrictMatch;
+
+		if (wasLinked) {
+			events.emit("detached");
+		}
+
+		windowMonitor.reset(newBackdropWindowTitle, newStrictMatch);
+		update();
+	};
+
+	const windowMonitor = monitorWindowClientRect(
 		backdropWindowTitle,
 		strictMatch,
-		(hwnd, position, placement) => {
-			lastBackdropPosition = {
-				hwnd,
-				position,
-				placement,
-			};
+		(hwnd, position) => {
+			const wasLinked = lastBackdropPosition != null;
+
+			if (position != null) {
+				lastBackdropPosition = {
+					hwnd,
+					position,
+				};
+			} else {
+				lastBackdropPosition = null;
+			}
+
+			const isLinked = lastBackdropPosition != null;
+			if (wasLinked !== isLinked) {
+				events.emit(isLinked ? "attached" : "detached");
+			}
 			update();
 		}
 	);
 
-	const unmonitorFocus = monitorWindowFocus(backdropWindowTitle, strictMatch, (focused) => {
-		lastBackdropFocused = focused || (lastBackdropFocused && overlayWindow.isFocused());
-		update();
-	});
-
 	overlayWindow.on("focus", update);
 	overlayWindow.on("blur", update);
-
 	update();
 
-	return () => {
-		unmonitorBackdropPosition();
-		unmonitorFocus();
-		overlayWindow.off("focus", update);
-		overlayWindow.off("blur", update);
+	return {
+		isLinked: () => lastBackdropPosition != null,
+		events,
+		destroy: () => {
+			windowMonitor.destroy();
+			overlayWindow.off("focus", update);
+			overlayWindow.off("blur", update);
+			reset();
+			events.emit("destroyed");
+			events.removeAllListeners();
+		},
 	};
 }
