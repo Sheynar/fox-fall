@@ -11,12 +11,14 @@ import {
 	updateKeyboardShortcut,
 } from "../keyboard-shortcuts.mjs";
 import { getUpdateConfig, setUpdateConfig } from "../updates.mjs";
+import { setWindowAsOverlay } from "./native-window.mjs";
 import packageJson from "../../package.json" with { type: "json" };
 
 const __dirname = import.meta.dirname;
 const display = screen.getPrimaryDisplay();
 
 let managerWindow: BrowserWindow | null = null;
+let overlayManager: ReturnType<typeof setWindowAsOverlay> | null = null;
 
 let overlayOpen = false;
 export const toggleOverlay = (newState = !overlayOpen) => {
@@ -24,15 +26,10 @@ export const toggleOverlay = (newState = !overlayOpen) => {
 	overlayOpen = newState;
 
 	if (managerWindow == null) return;
-
 	if (overlayOpen) {
-		managerWindow.minimize();
-		managerWindow.restore();
+		overlayManager?.setFocus("overlay");
 	} else {
-		managerWindow.minimize();
-		setTimeout(() => {
-			managerWindow!.showInactive();
-		}, 100);
+		overlayManager?.setFocus("backdrop");
 	}
 
 	managerWindow.webContents.send(
@@ -118,20 +115,19 @@ export const initialise = async () => {
 		}
 	);
 
-	managerWindow.setIgnoreMouseEvents(true, { forward: true });
-	const { setWindowAsOverlay } = await import("./native-window.mjs");
-	const overlayManager = setWindowAsOverlay(managerWindow, "War", true);
-
 	const url = pathToFileURL(path.join(__dirname, "../../www/index.html"));
 
-	// managerWindow.setAlwaysOnTop(true, "screen-saver");
 	managerWindow.loadURL(url.href);
+
+	managerWindow.setIgnoreMouseEvents(true, { forward: true });
+	overlayManager = setWindowAsOverlay(managerWindow, "War", true);
 
 	managerWindow.on("close", () => {
 		app.quit();
 	});
 
 	return {
+		managerWindow,
 		overlayManager,
-	}
+	};
 };

@@ -32,6 +32,7 @@ type HWND_Value = BigInt;
 type HWND = HWND_Pointer | HWND_Value;
 
 const GetForegroundWindow = user32.func("GetForegroundWindow", "void*", []);
+const SetForegroundWindow = user32.func("SetForegroundWindow", "bool", ["void*"]);
 
 const FindWindowW = user32.func("FindWindowW", "void*", [
 	koffi.types.str16, // lpClassName
@@ -575,6 +576,10 @@ export function getHasFocusedWindow(
 	return titleMatches(title, windowTitle, strictMatch);
 }
 
+export function setForegroundWindow(hwnd: HWND) {
+	return !!SetForegroundWindow(hwnd);
+}
+
 export function getBrowserWindowHandle(
 	browserWindow: BrowserWindow
 ): HWND_Value {
@@ -607,13 +612,13 @@ export function setWindowAsOverlay(
 			const overlayPlacement = getWindowPlacement(overlayHWND);
 			if (overlayPlacement.showCmd !== WINDOW_SHOW_COMMAND.SW_SHOWMINIMIZED) {
 				ShowWindow(overlayHWND, WINDOW_SHOW_COMMAND.SW_HIDE);
-				setWindowLongPointer(overlayHWND, -8 /* GWLP_HWNDPARENT */, 0);
+				// setWindowLongPointer(overlayHWND, -8 /* GWLP_HWNDPARENT */, 0);
 			}
 			return;
 		}
 		const { hwnd, position } = lastBackdropPosition;
 
-		setWindowLongPointer(overlayHWND, -8 /* GWLP_HWNDPARENT */, hwnd);
+		// setWindowLongPointer(overlayHWND, -8 /* GWLP_HWNDPARENT */, hwnd);
 		ShowWindow(overlayHWND, WINDOW_SHOW_COMMAND.SW_SHOWNOACTIVATE);
 		const success = setWindowPos(
 			overlayHWND,
@@ -628,6 +633,7 @@ export function setWindowAsOverlay(
 		if (!success) {
 			reset();
 		} else {
+			overlayWindow.setAlwaysOnTop(true, "screen-saver");
 			events.emit("positionChanged");
 		}
 	};
@@ -660,6 +666,16 @@ export function setWindowAsOverlay(
 		update();
 	};
 
+	const setFocus = (target: 'backdrop' | 'overlay') => {
+		if (target === 'backdrop') {
+			if (!lastBackdropPosition) return;
+			setForegroundWindow(lastBackdropPosition.hwnd);
+		} else {
+			const overlayHWND = getBrowserWindowHandle(overlayWindow);
+			setForegroundWindow(overlayHWND);
+		}
+	};
+
 	const windowMonitor = monitorWindowClientRect(
 		backdropWindowTitle,
 		strictMatch,
@@ -690,6 +706,8 @@ export function setWindowAsOverlay(
 	return {
 		isLinked: () => lastBackdropPosition != null,
 		events,
+		setFocus,
+		update,
 		destroy: () => {
 			windowMonitor.destroy();
 			overlayWindow.off("focus", update);
