@@ -17,7 +17,7 @@
 		class="App__container"
 		:class="{
 			App__transparent: isOverlay && settings.transparentOverlay,
-			App__hidden: !artillery.overlayOpen.value,
+			App__hidden: !artillery.overlayOpen.value && !settings.overlayAlwaysVisible,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
 		@touchstart.prevent

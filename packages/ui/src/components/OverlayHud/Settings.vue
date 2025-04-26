@@ -23,6 +23,14 @@
 				<TabPanel value="features">
 					<div class="Settings__content">
 						<div class="Settings__row">
+							<label>Render closed overlay</label>
+							<PrimeCheckBox
+								binary
+								v-model="settings.overlayAlwaysVisible"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row">
 							<label>Transparent background</label>
 							<PrimeCheckBox
 								binary

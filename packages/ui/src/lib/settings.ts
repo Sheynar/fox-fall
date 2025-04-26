@@ -31,6 +31,7 @@ export const settings = ref({
 	globalAmmo: undefined as AMMO_TYPE | undefined,
 	globalPlatform: undefined as Platform<AMMO_TYPE> | undefined,
 
+	overlayAlwaysVisible: false,
 	useNatoAlphabet: true,
 	showTooltip: true,
 	showWindTooltip: true,
