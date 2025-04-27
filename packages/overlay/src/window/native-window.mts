@@ -671,8 +671,13 @@ export function setWindowAsOverlay(
 			if (!lastBackdropPosition) return;
 			setForegroundWindow(lastBackdropPosition.hwnd);
 		} else {
-			const overlayHWND = getBrowserWindowHandle(overlayWindow);
-			setForegroundWindow(overlayHWND);
+			// This doesn't work for some reason but using the same function for Foxhole works
+			// const overlayHWND = getBrowserWindowHandle(overlayWindow);
+			// setForegroundWindow(overlayHWND);
+
+			// overlayWindow.focus(); doesn't work either
+			overlayWindow.minimize();
+			overlayWindow.restore();
 		}
 	};
 
