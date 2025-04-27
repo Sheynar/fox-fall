@@ -44,12 +44,14 @@ export const initialise = async () => {
 		autoHideMenuBar: true,
 		transparent: true,
 		fullscreen: false,
+		fullscreenable: false,
 		movable: false,
 		resizable: false,
 		webPreferences: {
 			preload: path.join(__dirname, "./preload.mjs"),
 			nodeIntegration: true,
 		},
+		skipTaskbar: true,
 		// focusable: false,
 	});
 

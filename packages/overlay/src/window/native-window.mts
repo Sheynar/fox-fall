@@ -385,7 +385,17 @@ export function onWindowNameChange(
 	};
 }
 
-export function onWindowFocusChange(callback: (hwnd: HWND) => void) {
+export function onWindowFocusChange(callback: (hwnd: HWND_Pointer) => void) {
+	let lastFocusedHwnd: HWND_Pointer | null = null;
+
+	const update = () => {
+		const focusedHwnd: HWND_Pointer = GetForegroundWindow();
+		if (focusedHwnd !== lastFocusedHwnd) {
+			lastFocusedHwnd = focusedHwnd;
+			callback(focusedHwnd);
+		}
+	};
+
 	const winEventProc = koffi.register(
 		(
 			hWinEventHook: number,
@@ -402,7 +412,7 @@ export function onWindowFocusChange(callback: (hwnd: HWND) => void) {
 				hwnd &&
 				idObject === 0
 			) {
-				callback(hwnd);
+				update();
 			}
 		},
 		"Wineventproc*"
@@ -421,6 +431,10 @@ export function onWindowFocusChange(callback: (hwnd: HWND) => void) {
 	if (!hook) {
 		throw new Error("Failed to set event hook");
 	}
+
+	Promise.resolve().then(() => {
+		update();
+	});
 
 	return () => {
 		UnhookWinEvent(hook);
@@ -458,7 +472,7 @@ export function getWindowClientRect(hwnd: HWND): RECT_TYPE | null {
 export function monitorWindowClientRect(
 	windowTitle: string,
 	strictMatch: boolean,
-	callback: (hwnd: HWND, position: RECT_TYPE | null) => void
+	callback: (hwnd: HWND_Value, position: RECT_TYPE | null) => void
 ) {
 	let hwnd: HWND_Value | null = null;
 
@@ -475,7 +489,7 @@ export function monitorWindowClientRect(
 		}
 		const position = getWindowClientRect(h);
 		if (!position) hwnd = null;
-		callback(h, position);
+		callback(newHwnd, position);
 	};
 
 	const unmonitor = onWindowPositionChange(onPositionUpdated);
@@ -565,6 +579,40 @@ export function monitorWindowFocus(
 	return unmonitor;
 }
 
+export function monitorWindowFocusHwnd(
+	hwndList: HWND_Value[],
+	callback: (focused: boolean) => void
+) {
+	let focusedHwnd: HWND_Value | null = null;
+	let lastFocusedState: boolean | null = null;
+
+	const update = () => {
+		const isFocusedState = focusedHwnd != null && hwndList.includes(focusedHwnd);
+		if (isFocusedState !== lastFocusedState) {
+			lastFocusedState = isFocusedState;
+			callback(isFocusedState);
+		}
+	};
+
+	const reset = (newHwndList: HWND_Value[]) => {
+		hwndList = newHwndList;
+		update();
+	};
+
+	const unmonitor = onWindowFocusChange((h) => {
+		focusedHwnd = koffi.address(h);
+		update();
+	});
+
+	return {
+		reset,
+		update,
+		destroy: () => {
+			unmonitor();
+		},
+	};
+}
+
 export function getHasFocusedWindow(
 	windowTitle: string,
 	strictMatch: boolean
@@ -593,6 +641,8 @@ export function setWindowAsOverlay(
 	minUpdateFrequency: number = 10,
 	maxUpdateFrequency: number = 1_000
 ) {
+	const overlayHwnd = getBrowserWindowHandle(overlayWindow);
+
 	const events = new EventEmitter<{
 		attached: [];
 		detached: [];
@@ -601,17 +651,16 @@ export function setWindowAsOverlay(
 	}>();
 
 	let lastBackdropPosition = null as {
-		hwnd: HWND;
+		hwnd: HWND_Value;
 		position: RECT_TYPE;
 	} | null;
+	let lastFocusedState: boolean | null = null;
 
 	const _update = () => {
-		const overlayHWND = getBrowserWindowHandle(overlayWindow);
-
-		if (!lastBackdropPosition) {
-			const overlayPlacement = getWindowPlacement(overlayHWND);
+		if (!lastBackdropPosition || !lastFocusedState) {
+			const overlayPlacement = getWindowPlacement(overlayHwnd);
 			if (overlayPlacement.showCmd !== WINDOW_SHOW_COMMAND.SW_SHOWMINIMIZED) {
-				ShowWindow(overlayHWND, WINDOW_SHOW_COMMAND.SW_HIDE);
+				ShowWindow(overlayHwnd, WINDOW_SHOW_COMMAND.SW_HIDE);
 				// setWindowLongPointer(overlayHWND, -8 /* GWLP_HWNDPARENT */, 0);
 			}
 			return;
@@ -619,9 +668,9 @@ export function setWindowAsOverlay(
 		const { hwnd, position } = lastBackdropPosition;
 
 		// setWindowLongPointer(overlayHWND, -8 /* GWLP_HWNDPARENT */, hwnd);
-		ShowWindow(overlayHWND, WINDOW_SHOW_COMMAND.SW_SHOWNOACTIVATE);
+		ShowWindow(overlayHwnd, WINDOW_SHOW_COMMAND.SW_SHOWNOACTIVATE);
 		const success = setWindowPos(
-			overlayHWND,
+			overlayHwnd,
 			hwnd,
 			position.left,
 			position.top,
@@ -672,14 +721,18 @@ export function setWindowAsOverlay(
 			setForegroundWindow(lastBackdropPosition.hwnd);
 		} else {
 			// This doesn't work for some reason but using the same function for Foxhole works
-			// const overlayHWND = getBrowserWindowHandle(overlayWindow);
-			// setForegroundWindow(overlayHWND);
+			// setForegroundWindow(overlayHwnd);
 
 			// overlayWindow.focus(); doesn't work either
 			overlayWindow.minimize();
 			overlayWindow.restore();
 		}
 	};
+
+	const focusMonitor = monitorWindowFocusHwnd([overlayHwnd], (focused) => {
+		lastFocusedState = focused;
+		update();
+	});
 
 	const windowMonitor = monitorWindowClientRect(
 		backdropWindowTitle,
@@ -692,6 +745,7 @@ export function setWindowAsOverlay(
 					hwnd,
 					position,
 				};
+				focusMonitor.reset([hwnd, overlayHwnd]);
 			} else {
 				lastBackdropPosition = null;
 			}
