@@ -60,7 +60,7 @@ export const useServerConnection = () => {
 		if (useEncryption) connType = 'wss';
 
 		return address
-			? `${connType}://${address}:${connPort}/?code=${encodeURIComponent(connectionDetails?.code ?? '')}`
+			? `${connType}://${address}${connPort}/?code=${encodeURIComponent(connectionDetails?.code ?? '')}`
 			: null;
 	});
 
