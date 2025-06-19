@@ -48,6 +48,7 @@ export const initialise = async () => {
 		movable: false,
 		resizable: false,
 		webPreferences: {
+			backgroundThrottling: false,
 			preload: path.join(__dirname, "./preload.mjs"),
 			nodeIntegration: true,
 		},
