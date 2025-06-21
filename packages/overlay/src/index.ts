@@ -1,6 +1,7 @@
-import { app, BrowserWindow, Menu, Tray } from "electron";
-import "../server.js";
+import { app, BrowserWindow, dialog, Menu, Tray } from "electron";
 import path from "node:path";
+
+const isMainInstance = app.requestSingleInstanceLock();
 
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") app.quit();
@@ -9,6 +10,19 @@ app.on("window-all-closed", () => {
 
 const initialise = async () => {
 	await app.whenReady();
+
+	if (!isMainInstance) {
+		await dialog.showMessageBox({
+			type: "info",
+			buttons: ["Close"],
+			title: `FoxFall multiple instances`,
+			message: `An instance of FoxFall is already running. Please check your system tray for the application.`,
+		});
+		app.quit();
+		return;
+	}
+
+	await import("../server.js");
 
 	const { runUpdate: initialiseUpdates } = await import("./updates.mjs");
 	initialiseUpdates();
@@ -21,7 +35,8 @@ const initialise = async () => {
 	const menu = Menu.buildFromTemplate([
 		{
 			label: "Attached",
-			toolTip: "Whether the overlay is attached to a Foxhole window (any window with the title 'War')",
+			toolTip:
+				"Whether the overlay is attached to a Foxhole window (any window with the title 'War')",
 			type: "checkbox",
 			checked: overlayManager.isLinked(),
 			enabled: false,
