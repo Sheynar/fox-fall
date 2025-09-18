@@ -6,7 +6,7 @@
 				artilleryUnits.length > 1 || targetUnits.length > 1,
 		}"
 		v-if="firingVector"
-		@pointerdown.prevent="artillery.selectedUnit.value = selectedTarget?.id"
+		@pointerdown.prevent="artillery.selectedUnit.value = selectedTarget?.id ?? null"
 	>
 		<div class="OverlayFiringSolution__row">
 			<span>Distance:</span
