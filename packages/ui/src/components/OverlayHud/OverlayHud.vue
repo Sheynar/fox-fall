@@ -66,6 +66,15 @@
 
 		<PlatformInfo @pointerdown.stop />
 
+		<FiringSolutionOverride
+			v-if="artillery.overridingFiringSolution.value != null"
+			:visible="true"
+			@update:visible="!$event && (artillery.overridingFiringSolution.value = null);"
+			:unit-id-from="artillery.overridingFiringSolution.value?.unitIdFrom"
+			:unit-id-to="artillery.overridingFiringSolution.value?.unitIdTo"
+			v-model:custom-position="firingSolutionOverrideCustomPosition"
+		/>
+
 		<Dock />
 	</div>
 </template>
@@ -131,8 +140,9 @@
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
 	import vPrimeTooltip from 'primevue/tooltip';
-	import { computed } from 'vue';
+	import { computed, ref } from 'vue';
 	import Dock from '@/components/OverlayHud/Dock.vue';
+	import FiringSolutionOverride from '@/components/OverlayHud/FiringSolutionOverride.vue';
 	import PlatformInfo from '@/components/OverlayHud/PlatformInfo.vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
@@ -158,4 +168,6 @@
 			artillery.resetViewport();
 		});
 	};
+
+	const firingSolutionOverrideCustomPosition = ref(false);
 </script>

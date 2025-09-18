@@ -13,6 +13,7 @@ import {
 } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
 import { Viewport } from '@/lib/viewport';
+import { usePrimaryUnitsByType } from './focused-units';
 import { useViewportControl } from './viewport-control';
 
 type ArtilleryOptions = {
@@ -40,6 +41,10 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	const pinnedUnits = ref<Set<Unit['id']>>(new Set());
 	const highlightedUnits = ref<Set<Unit['id']>>(new Set());
 	const draggingUnits = ref<Set<Unit['id']>>(new Set());
+	const overridingFiringSolution = ref<{
+		unitIdFrom: string;
+		unitIdTo: string;
+	} | null>(null);
 
 	const containerElement = options.containerElement ?? ref(null);
 	const viewport = ref(
@@ -290,6 +295,38 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		});
 	};
 
+	const primaryUnitsByType = usePrimaryUnitsByType();
+	const overrideFiringSolution = async () => {
+		const artilleryUnit = primaryUnitsByType.value[UnitType.Artillery];
+		const targetUnit = primaryUnitsByType.value[UnitType.Target];
+		if (artilleryUnit == null) {
+			alert('No artillery unit selected');
+			return;
+		}
+		if (targetUnit == null) {
+			alert('No target unit selected');
+			return;
+		}
+
+		const overlayWasOpen = overlayOpen.value;
+
+		overridingFiringSolution.value = { unitIdFrom: artilleryUnit.id, unitIdTo: targetUnit.id };
+		if (!overlayWasOpen) {
+			window.electronApi?.toggleOverlay();
+		}
+
+		overlayOpen.value = true;
+		currentScope.run(() => {
+			until(computed(() => overridingFiringSolution.value == null || !overlayOpen.value))
+				.toBe(true)
+				.then(() => {
+					if (!overlayWasOpen && overlayOpen.value) {
+						window.electronApi?.toggleOverlay();
+					}
+				});
+		});
+	};
+
 	const windMultiplier = computed(() => {
 		const windMultipliers = Array.from(
 			new Set(
@@ -442,6 +479,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			case KeyboardCommand.EditTarget:
 				editTarget();
 				break;
+			case KeyboardCommand.OverrideFiringSolution:
+				overrideFiringSolution();
+				break;
 		}
 	});
 
@@ -483,6 +523,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		pinnedUnits,
 		highlightedUnits,
 		draggingUnits,
+		overridingFiringSolution,
 		containerElement,
 		viewport,
 		viewportControl,

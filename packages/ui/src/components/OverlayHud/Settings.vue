@@ -295,6 +295,12 @@
 							<label>Edit target</label>
 							<ElectronKeyboardShortcut :command="KeyboardCommand.EditTarget" />
 						</div>
+						<div class="Settings__row">
+							<label>Override firing solution</label>
+							<ElectronKeyboardShortcut
+								:command="KeyboardCommand.OverrideFiringSolution"
+							/>
+						</div>
 					</div>
 				</TabPanel>
 				<TabPanel value="updates" v-if="updateConfig != null">
