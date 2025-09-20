@@ -167,7 +167,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			unit.parentId = newParentId;
 			options.onUnitUpdated?.(unitId);
 		} catch (e) {
-			alert(`Failed to set unit source: ${e}`);
+			new Notification('FoxFall error', {
+				body: `Failed to set unit source: ${e}`,
+			});
 		}
 	};
 
@@ -215,6 +217,12 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		}
 
 		let baseUnit = availableUnits[0];
+		if (baseUnit == null) {
+			new Notification('FoxFall error', {
+				body: 'No available target unit found',
+			});
+			return;
+		}
 		const originalBaseUnit = baseUnit;
 		if (
 			baseUnit != null &&
@@ -224,7 +232,6 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		) {
 			baseUnit = unitMap.value[baseUnit].parentId!;
 		}
-		if (baseUnit == null) return;
 
 		const initalSelectedUnit = selectedUnit.value;
 		const overlayWasOpen = overlayOpen.value;
@@ -270,7 +277,12 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		const target = targets.includes(selectedUnit.value!)
 			? selectedUnit.value
 			: targets[0];
-		if (target == null) return;
+		if (target == null) {
+			new Notification('FoxFall error', {
+				body: Object.keys(unitMap.value).some((unitId) => unitMap.value[unitId].type === UnitType.Target) ? 'Target units are not positioned from a parent unit' : 'No target unit found',
+			});
+			return;
+		}
 
 		const initalSelectedUnit = selectedUnit.value;
 		const overlayWasOpen = overlayOpen.value;
@@ -300,11 +312,23 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		const artilleryUnit = primaryUnitsByType.value[UnitType.Artillery];
 		const targetUnit = primaryUnitsByType.value[UnitType.Target];
 		if (artilleryUnit == null) {
-			alert('No artillery unit selected');
+			new Notification('FoxFall error', {
+				body: 'No artillery unit found',
+			});
 			return;
 		}
 		if (targetUnit == null) {
-			alert('No target unit selected');
+			new Notification('FoxFall error', {
+				body: 'No target unit found',
+			});
+			return;
+		}
+
+		const specs = getUnitSpecs(unitMap.value, artilleryUnit.id);
+		if (specs == null) {
+			new Notification('FoxFall error', {
+				body: 'Artillery type not selected',
+			});
 			return;
 		}
 
@@ -388,7 +412,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 
 			removeUnit(unitId);
 		} catch (e) {
-			alert(`Failed to update wind: ${e}`);
+			new Notification('FoxFall error', {
+				body: `Failed to update wind: ${e}`,
+			});
 		}
 	};
 
