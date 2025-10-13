@@ -5,15 +5,15 @@
 			OverlayFiringSolution__danger:
 				artilleryUnits.length > 1 || targetUnits.length > 1,
 		}"
-		v-if="firingVector"
-		@pointerdown.prevent="artillery.selectedUnit.value = selectedTarget?.id ?? null"
+		v-if="artillery.selectedFiringVector.value"
+		@pointerdown.prevent
 	>
 		<div class="OverlayFiringSolution__row">
 			<span>Distance:</span
-			><span>{{ Math.round(firingVector.distance) }}m</span>
+			><span>{{ Math.round(artillery.selectedFiringVector.value.distance) }}m</span>
 		</div>
 		<div class="OverlayFiringSolution__row">
-			<span>Azimuth:</span><span>{{ firingVector.azimuth.toFixed(1) }}°</span>
+			<span>Azimuth:</span><span>{{ artillery.selectedFiringVector.value.azimuth.toFixed(1) }}°</span>
 		</div>
 	</div>
 </template>
@@ -48,7 +48,6 @@
 <script setup lang="ts">
 	import { artillery } from '@/lib/globals';
 	import { UnitType } from '@/lib/unit';
-	import { usePrimaryUnitsByType } from '@/mixins/focused-units';
 	import { computed } from 'vue';
 
 	const artilleryUnits = computed(() => {
@@ -60,25 +59,6 @@
 	const targetUnits = computed(() => {
 		return Object.values(artillery.unitMap.value).filter(
 			(unit) => unit != null && unit.type === UnitType.Target
-		);
-	});
-
-	const primaryUnitsByType = usePrimaryUnitsByType();
-
-	const selectedTarget = computed(() => {
-		return primaryUnitsByType.value[UnitType.Target];
-	});
-
-	const selectedArtillery = computed(() => {
-		return primaryUnitsByType.value[UnitType.Artillery];
-	});
-
-	const firingVector = computed(() => {
-		if (selectedArtillery.value == null || selectedTarget.value == null)
-			return undefined;
-		return artillery.getFiringVector(
-			selectedArtillery.value.id,
-			selectedTarget.value.id
 		);
 	});
 </script>

@@ -173,6 +173,12 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		}
 	};
 
+	const getWindOffset = (unitId: string) => {
+		const specs = getUnitSpecs(unitMap.value, unitId);
+		if (specs == null) return Vector.fromCartesianVector({ x: 0, y: 0 });
+		return wind.value.scale(specs.WIND_OFFSET);
+	};
+
 	const getFiringVector = (artilleryId: string, targetId: string) => {
 		const selectedArtilleryUnit = unitMap.value[artilleryId];
 		const selectedTargetUnit = unitMap.value[targetId];
@@ -189,13 +195,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			selectedTargetUnit.id
 		);
 		const firingVector = resolvedArtillery.getRelativeOffset(resolvedTarget);
-		let firingVectorWithWind = firingVector.clone();
-		const specs = getUnitSpecs(unitMap.value, selectedArtilleryUnit.id);
-		if (specs) {
-			firingVectorWithWind = firingVectorWithWind.addVector(
-				wind.value.scale(-specs.WIND_OFFSET)
-			);
-		}
+		const firingVectorWithWind = firingVector.addVector(getWindOffset(selectedArtilleryUnit.id).scale(-1));
 		return firingVectorWithWind;
 	};
 
@@ -308,6 +308,25 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const primaryUnitsByType = usePrimaryUnitsByType();
+
+	const selectedFiringPair = computed(() => {
+		if (primaryUnitsByType.value[UnitType.Artillery] == null || primaryUnitsByType.value[UnitType.Target] == null)
+			return undefined;
+		return {
+			artillery: primaryUnitsByType.value[UnitType.Artillery].id,
+			target: primaryUnitsByType.value[UnitType.Target].id,
+		};
+	});
+
+	const selectedFiringVector = computed(() => {
+		if (selectedFiringPair.value == null)
+			return undefined;
+		return getFiringVector(
+			selectedFiringPair.value.artillery,
+			selectedFiringPair.value.target
+		);
+	});
+
 	const overrideFiringSolution = async () => {
 		const artilleryUnit = primaryUnitsByType.value[UnitType.Artillery];
 		const targetUnit = primaryUnitsByType.value[UnitType.Target];
@@ -368,7 +387,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			throw new Error('No artillery unit with wind specs');
 		}
 	};
-	const editWind = async (unitId: string) => {
+	const editWind = async (unitId: string, firingSolution: Vector) => {
 		assertCanEditWind();
 		const _windMultiplier = windMultiplier.value!;
 		try {
@@ -377,32 +396,13 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			if (unit.type !== UnitType.LandingZone) {
 				throw new Error('Only landing zones can update wind');
 			}
-
-			const targets = Object.keys(unitMap.value).filter(
-				(unitId) => unitMap.value[unitId].type === UnitType.Target
-			);
-			let target: string;
-			if (targets.length === 1) {
-				target = targets[0];
-			} else {
-				target = await new Promise<string>((resolve, reject) => {
-					unitSelector.value = {
-						selectUnit: (unitId) => {
-							unitSelector.value = null;
-							if (unitId == null) {
-								reject(new Error('User declined to select a unit'));
-							} else if (unitMap.value[unitId].type !== UnitType.Target) {
-								reject(new Error('Selected unit is not a target'));
-							} else {
-								resolve(unitId);
-							}
-						},
-						prompt: 'Select target',
-					};
-				});
+			if (selectedFiringPair.value == null) {
+				throw new Error('No artillery found');
 			}
 
-			const windCorrection = getUnitResolvedVector(unitMap.value, target)
+			const windCorrection = getUnitResolvedVector(unitMap.value, selectedFiringPair.value.artillery)
+				.addVector(firingSolution)
+				.addVector(getWindOffset(selectedFiringPair.value.artillery))
 				.scale(-1)
 				.addVector(getUnitResolvedVector(unitMap.value, unit.id));
 			wind.value = wind.value.addVector(
@@ -533,6 +533,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		addUnit,
 		removeUnit,
 		setUnitSource,
+		getWindOffset,
 		getFiringVector,
 		calibrateWind,
 		editWind,
@@ -549,6 +550,8 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		pinnedUnits,
 		highlightedUnits,
 		draggingUnits,
+		selectedFiringPair,
+		selectedFiringVector,
 		overridingFiringSolution,
 		containerElement,
 		viewport,

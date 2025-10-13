@@ -61,7 +61,7 @@
 		@remove="emit('remove')"
 		@set-unit-source="emit('set-unit-source', $event)"
 		@updated="emit('updated')"
-		@update-wind="emit('update-wind')"
+		@update-wind="emit('update-wind', $event)"
 	/>
 </template>
 
@@ -164,7 +164,7 @@
 		(event: 'remove'): void;
 		(event: 'set-unit-source', payload: string | undefined): void;
 		(event: 'updated'): void;
-		(event: 'update-wind'): void;
+		(event: 'update-wind', payload: Vector): void;
 	}>();
 
 	const unit = injectUnit();

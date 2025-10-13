@@ -123,7 +123,8 @@
 								emit('updated');
 							"
 							@keydown.enter="
-								unit.type === UnitType.LandingZone && emit('update-wind');
+								unit.type === UnitType.LandingZone &&
+									emit('update-wind', langingZoneFiringSolution);
 								visible = false;
 							"
 						/>
@@ -150,50 +151,84 @@
 							/>
 						</div>
 					</template>
-					<span class="UnitSettings__span">
-						{{ unitLabel }} -> {{ parentLabel }}
-					</span>
-					<div class="UnitSettings__row">
-						<span>Distance:</span>
-						<DistanceInput
-							:model-value="unit.vector.distance"
-							@update:model-value="
-								unit.vector.distance = $event;
-								emit('updated');
-							"
-						/>
-					</div>
-					<div class="UnitSettings__row">
-						<span>Azimuth:</span>
-						<DirectionInput
-							:model-value="wrapDegrees(unit.vector.azimuth + 180)"
-							@update:model-value="
-								unit.vector.azimuth = wrapDegrees($event - 180);
-								emit('updated');
-							"
-						/>
-					</div>
-					<template v-if="settings.showXYOffsets">
+					<template v-if="unit.type === UnitType.LandingZone">
 						<div class="UnitSettings__row">
-							<span>X:</span>
+							<span class="UnitSettings__span">Gun measurement:</span>
+						</div>
+						<div class="UnitSettings__row">
+							<span>Distance:</span>
 							<DistanceInput
-								:model-value="-unit.vector.x"
+								ref="landingZoneFiringSolutionDistanceInput"
+								:model-value="langingZoneFiringSolution.distance"
 								@update:model-value="
-									unit.vector.x = -$event;
+									langingZoneFiringSolution.distance = $event
+								"
+								@keydown.enter="
+									landingZoneFiringSolutionAzimuthInput?.inputElement?.select()
+								"
+							/>
+						</div>
+						<div class="UnitSettings__row">
+							<span>Azimuth:</span>
+							<DirectionInput
+								ref="landingZoneFiringSolutionAzimuthInput"
+								:model-value="wrapDegrees(langingZoneFiringSolution.azimuth)"
+								@update:model-value="
+									langingZoneFiringSolution.azimuth = wrapDegrees($event)
+								"
+								@keydown.enter="
+									emit('update-wind', langingZoneFiringSolution);
+									visible = false;
+								"
+							/>
+						</div>
+					</template>
+					<template v-else>
+						<span class="UnitSettings__span">
+							{{ unitLabel }} -> {{ parentLabel }}
+						</span>
+						<div class="UnitSettings__row">
+							<span>Distance:</span>
+							<DistanceInput
+								:model-value="unit.vector.distance"
+								@update:model-value="
+									unit.vector.distance = $event;
 									emit('updated');
 								"
 							/>
 						</div>
 						<div class="UnitSettings__row">
-							<span>Y:</span>
-							<DistanceInput
-								:model-value="-unit.vector.y"
+							<span>Azimuth:</span>
+							<DirectionInput
+								:model-value="wrapDegrees(unit.vector.azimuth + 180)"
 								@update:model-value="
-									unit.vector.y = -$event;
+									unit.vector.azimuth = wrapDegrees($event - 180);
 									emit('updated');
 								"
 							/>
 						</div>
+						<template v-if="settings.showXYOffsets">
+							<div class="UnitSettings__row">
+								<span>X:</span>
+								<DistanceInput
+									:model-value="-unit.vector.x"
+									@update:model-value="
+										unit.vector.x = -$event;
+										emit('updated');
+									"
+								/>
+							</div>
+							<div class="UnitSettings__row">
+								<span>Y:</span>
+								<DistanceInput
+									:model-value="-unit.vector.y"
+									@update:model-value="
+										unit.vector.y = -$event;
+										emit('updated');
+									"
+								/>
+							</div>
+						</template>
 					</template>
 				</template>
 			</div>
@@ -286,7 +321,7 @@
 			>
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="emit('update-wind')"
+					@click.stop="emit('update-wind', langingZoneFiringSolution)"
 					title="Update wind"
 				>
 					<WindIcon />
@@ -387,7 +422,7 @@
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeInputText from 'primevue/inputtext';
-	import { computed, markRaw, shallowRef } from 'vue';
+	import { computed, markRaw, ref, shallowRef, watch } from 'vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
@@ -406,10 +441,17 @@
 	import { artillery } from '@/lib/globals';
 	import { settings, UserMode } from '@/lib/settings';
 	import { getAvailableUnitTypes, getUnitLabel, UnitType } from '@/lib/unit';
+	import { Vector } from '@/lib/vector';
 	import { useToggleButtonStore } from '@/stores/toggle-button';
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
 	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
+	const landingZoneFiringSolutionDistanceInput = shallowRef<
+		InstanceType<typeof DistanceInput> | null | undefined
+	>(null);
+	const landingZoneFiringSolutionAzimuthInput = shallowRef<
+		InstanceType<typeof DirectionInput> | null | undefined
+	>(null);
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
 	const customPosition = defineModel('customPosition', {
@@ -417,6 +459,9 @@
 		required: true,
 	});
 	const canDrag = defineModel('canDrag', { type: Boolean, required: true });
+	const langingZoneFiringSolution = ref(
+		Vector.fromCartesianVector({ x: 0, y: 0 })
+	);
 
 	const props = defineProps<{
 		readonly?: boolean;
@@ -483,12 +528,21 @@
 		}
 	};
 
+	watch(
+		artillery.selectedFiringVector,
+		(value) => {
+			if (value == null) return;
+			langingZoneFiringSolution.value = value.clone();
+		},
+		{ immediate: true }
+	);
+
 	const emit = defineEmits<{
 		(event: 'create-child', payload: UnitType): void;
 		(event: 'remove'): void;
 		(event: 'set-unit-source', payload: string | undefined): void;
 		(event: 'set-unit-type', payload: UnitType): void;
 		(event: 'updated'): void;
-		(event: 'update-wind'): void;
+		(event: 'update-wind', payload: Vector): void;
 	}>();
 </script>

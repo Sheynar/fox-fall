@@ -10,7 +10,7 @@
 				@updated="syncedRoom.updateUnit(unitId)"
 				@remove="artillery.removeUnit(unitId)"
 				@set-unit-source="artillery.setUnitSource(unitId, $event)"
-				@update-wind="artillery.editWind(unitId)"
+				@update-wind="artillery.editWind(unitId, $event)"
 			/>
 		</UnitProvider>
 		<UnitLink

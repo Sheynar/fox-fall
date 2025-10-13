@@ -173,7 +173,6 @@
 	import {
 		getUnitLabel,
 		getUnitResolvedVector,
-		getUnitSpecs,
 	} from '@/lib/unit';
 	import { computed, ref, shallowRef, watch } from 'vue';
 
@@ -201,18 +200,7 @@
 		resolvedVectorFrom.value.getRelativeOffset(resolvedVectorTo.value)
 	);
 
-	const specs = computed(() =>
-		getUnitSpecs(artillery.unitMap.value, props.unitIdFrom)
-	);
-	const firingVectorWithWind = computed(() => {
-		let firingVectorWithWind = firingVector.value.clone();
-		if (specs.value) {
-			firingVectorWithWind = firingVectorWithWind.addVector(
-				artillery.wind.value.scale(-specs.value.WIND_OFFSET)
-			);
-		}
-		return firingVectorWithWind;
-	});
+	const firingVectorWithWind = computed(() => firingVector.value.addVector(artillery.getWindOffset(props.unitIdFrom).scale(-1)));
 
 	const vectorValue = ref(firingVectorWithWind.value.clone());
 	watch(firingVectorWithWind, (value) => {
