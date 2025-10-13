@@ -41,12 +41,10 @@ export const useServerConnection = () => {
 	const serverUrl = computed(() => {
 		const connectionDetails = getConnectionDetails();
 
-		const [address, port = '81'] = (
-			connectionDetails?.serverAddress ?? ''
-		).split(':');
+		const [_, protocol = 'ws', hostname, port = '81'] = /(?:([^\:]+)\:\/\/)?([^\:]+)?(?:\:(\d+))?/.exec(connectionDetails?.serverAddress ?? '') ?? [];
 
-		return address
-			? `ws://${address}:${port}/?code=${encodeURIComponent(connectionDetails?.code ?? '')}`
+		return hostname
+			? `${protocol}://${hostname}:${port}/?code=${encodeURIComponent(connectionDetails?.code ?? '')}`
 			: null;
 	});
 
