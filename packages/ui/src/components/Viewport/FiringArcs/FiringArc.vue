@@ -123,11 +123,11 @@
 
 		background: var(--color-primary-contrast);
 		border: 1px solid;
-    border-radius: 0.3em;
+		border-radius: 0.3em;
 
-    font-size:  calc((16px + 2vmin) / 2);
+		font-size:  calc((16px + 2vmin) / 2);
 
-    line-height: 100%;
+		line-height: 100%;
 
 		pointer-events: none;
 		user-select: none;
@@ -135,14 +135,14 @@
 		.FiringArc__label-row {
 			grid-column: 1 / -1;
 
-      display: flex;
-      gap: 0.5em;
+			display: flex;
+			gap: 0.5em;
 
-      margin: auto;
+			margin: auto;
 		}
 
 		.FiringArc__span {
-      margin: auto;
+			margin: auto;
 		}
 	}
 </style>
