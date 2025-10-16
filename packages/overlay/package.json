@@ -16,7 +16,7 @@
     "serve": "yarn run build && yarn run start",
     "build:nocache": "yarn run build && yarn run make",
     "package": "electron-forge package",
-    "make": "rimraf out && electron-builder --config build.config.js"
+    "make": "rimraf out && electron-builder --config build.config.js --publish never"
   },
   "dependencies": {
     "@packages/keyboard-shortcuts": "workspace:*",
