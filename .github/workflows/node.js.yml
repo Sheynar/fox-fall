@@ -29,7 +29,7 @@ jobs:
     - name: Install Yarn
       run: npm i -g yarn
     - name: Install dependencies
-      run: yarn install --immutable --immutable-cache --check-cache
+      run: yarn install --immutable
     - name: Build binary
       run: yarn run build:nocache --filter=./packages/overlay
     - name: Create release
