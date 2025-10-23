@@ -12,6 +12,7 @@
   "dependencies": {
     "@kaosdlanor/kanim": "^1.0.1",
     "@kaosdlanor/vue-reactivity": "^1.0.2",
+    "@packages/helpers": "workspace:*",
     "@packages/types": "workspace:*",
     "@primeuix/themes": "^1.0.0",
     "@vueuse/core": "^12.2.0",

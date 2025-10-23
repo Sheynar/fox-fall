@@ -1,6 +1,6 @@
+import { generateId } from '@packages/helpers';
 import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/types';
 import { ref, watch, type Ref } from 'vue';
-import { generateId } from '@/lib/id';
 import { UnitMap, Unit } from '@/lib/unit';
 import { Vector } from '@/lib/vector';
 

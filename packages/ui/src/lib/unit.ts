@@ -1,4 +1,5 @@
 import { type Ref, ref } from 'vue';
+import { generateId } from '@packages/helpers';
 import {
 	AMMO_TYPE,
 	ARTILLERY_BY_SHELL,
@@ -6,7 +7,6 @@ import {
 	SPOTTING_TYPE,
 	type Platform,
 } from '@/lib/constants/data';
-import { generateId } from '@/lib/id';
 import { natoAlphabet } from '@/lib/names';
 import { settings, UserMode } from '@/lib/settings';
 import { Vector } from '@/lib/vector';
