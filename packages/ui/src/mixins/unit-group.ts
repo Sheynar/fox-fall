@@ -1,6 +1,7 @@
 import { computed, type Ref } from 'vue';
-import { getUnitResolvedVector, type UnitMap } from '@/lib/unit';
-import { Vector } from '@/lib/vector';
+import { type UnitMap } from '@packages/data/dist/artillery/unit';
+import { Vector } from '@packages/data/dist/artillery/vector';
+import { getUnitResolvedVector } from '@/lib/unit';
 
 // TODO : abstract this into some helper methods which can then be called by the backdrop when resetting the viewport
 export const useUnitGroup = (unitMap: Ref<UnitMap>, unitIds: Ref<string[]>) => {

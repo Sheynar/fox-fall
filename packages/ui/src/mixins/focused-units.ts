@@ -1,5 +1,5 @@
+import { type Unit, UnitType } from '@packages/data/dist/artillery/unit';
 import { artillery } from '@/lib/globals';
-import { Unit, UnitType } from '@/lib/unit';
 import { computed } from 'vue';
 
 export const useFocusedUnitIds = () => {

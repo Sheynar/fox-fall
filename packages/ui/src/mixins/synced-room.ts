@@ -1,8 +1,8 @@
 import { generateId } from '@packages/helpers';
 import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/data';
+import { type UnitMap, type Unit } from '@packages/data/dist/artillery/unit';
+import { Vector } from '@packages/data/dist/artillery/vector';
 import { ref, watch, type Ref } from 'vue';
-import { UnitMap, Unit } from '@/lib/unit';
-import { Vector } from '@/lib/vector';
 
 const myId = generateId();
 

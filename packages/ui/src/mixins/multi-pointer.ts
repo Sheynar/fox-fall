@@ -1,7 +1,7 @@
 import { type Ref, ref } from 'vue';
 import { useEventListener } from '@vueuse/core';
-import { wrapDegrees } from '@/lib/angle';
-import { Vector } from '@/lib/vector';
+import { wrapDegrees } from '@packages/data/dist/artillery/angle';
+import { Vector } from '@packages/data/dist/artillery/vector';
 
 export type PointerMap = {
 	[pointerId: string]: {

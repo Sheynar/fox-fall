@@ -37,15 +37,14 @@
 		ArtilleryPlatform,
 		SPOTTING_BY_TYPE,
 		SpottingSpecs,
-	} from '@/lib/constants/data';
+	} from '@packages/data/dist/artillery/unit/constants';
+	import { UnitType, type Unit } from '@packages/data/dist/artillery/unit';
+	import type { Vector } from '@packages/data/dist/artillery/vector';
 	import { artillery } from '@/lib/globals';
 	import {
 		getUnitResolvedVector,
 		getUnitSpecs,
-		UnitType,
-		type Unit,
 	} from '@/lib/unit';
-	import type { Vector } from '@/lib/vector';
 	import { useFocusedUnitIds } from '@/mixins/focused-units';
 	import { computed } from 'vue';
 	import RangeFinder from './RangeFinder.vue';

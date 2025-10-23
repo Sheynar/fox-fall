@@ -50,11 +50,11 @@
 </style>
 
 <script setup lang="ts">
+	import { Vector } from '@packages/data/dist/artillery/vector';
 	import Disk from '@/components/svg/Disk.vue';
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
-	import { Vector } from '@/lib/vector';
 	import { RangeFinderStyle } from './enums';
 
 	const props = withDefaults(

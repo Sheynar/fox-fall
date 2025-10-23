@@ -423,6 +423,10 @@
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeInputText from 'primevue/inputtext';
 	import { computed, markRaw, ref, shallowRef, watch } from 'vue';
+	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
+	import { SPOTTING_BY_TYPE, SPOTTING_TYPE } from '@packages/data/dist/artillery/unit/constants';
+	import { UnitType } from '@packages/data/dist/artillery/unit';
+	import { Vector } from '@packages/data/dist/artillery/vector';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import PinIcon from '@/components/icons/PinIcon.vue';
 	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
@@ -435,13 +439,11 @@
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
 	import { injectUnit } from '@/contexts/unit';
-	import { wrapDegrees } from '@/lib/angle';
-	import { SPOTTING_BY_TYPE, SPOTTING_TYPE } from '@/lib/constants/data';
+	import { ICONS } from '@/lib/constants/icons';
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings, UserMode } from '@/lib/settings';
-	import { getAvailableUnitTypes, getUnitLabel, UnitType } from '@/lib/unit';
-	import { Vector } from '@/lib/vector';
+	import { getAvailableUnitTypes, getUnitLabel } from '@/lib/unit';
 	import { useToggleButtonStore } from '@/stores/toggle-button';
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
@@ -493,7 +495,7 @@
 	const spottingTypeOptions = computed(() => {
 		return (Object.keys(SPOTTING_BY_TYPE) as SPOTTING_TYPE[]).map((type) => ({
 			label: type,
-			icon: SPOTTING_BY_TYPE[type].ICON,
+			icon: ICONS[type],
 			value: type,
 		}));
 	});

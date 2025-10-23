@@ -1,9 +1,9 @@
 import { computed } from 'vue';
 import KAnim from '@kaosdlanor/kanim';
 import { useWindowSize } from '@vueuse/core';
-import { toRadians, wrapDegrees } from '@/lib/angle';
+import { toRadians, wrapDegrees } from '@packages/data/dist/artillery/angle';
+import { Vector } from '@packages/data/dist/artillery/vector';
 import { runGlobal } from '@/lib/globalScope';
-import { Vector } from '@/lib/vector';
 
 const { distanceScale, viewportSize } = runGlobal(() => {
 	const { height, width } = useWindowSize();

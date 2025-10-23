@@ -1,4 +1,4 @@
-import { UnitType } from '@/lib/unit';
+import { UnitType } from '@packages/data/dist/artillery/unit';
 import ICON__artillery from '@/components/icons/ArtilleryIcon.vue';
 import ICON__landing_zone from '@/components/icons/ExplosionIcon.vue';
 import ICON__location from '@/components/icons/LocationIcon.vue';

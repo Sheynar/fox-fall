@@ -15,7 +15,8 @@
 		AMMO_TYPE,
 		ARTILLERY_BY_SHELL,
 		Platform,
-	} from '@/lib/constants/data';
+	} from '@packages/data/dist/artillery/unit/constants';
+	import { ICONS } from '@/lib/constants/icons';
 	import IconSelect from './IconSelect.vue';
 	import { computed, markRaw } from 'vue';
 
@@ -35,7 +36,7 @@
 			.sort()
 			.map((platform) => ({
 				label: platform,
-				icon: markRaw(ARTILLERY_BY_SHELL[props.ammoType!].PLATFORM[platform]?.ICON),
+				icon: markRaw(ICONS[platform]),
 				value: platform,
 			}));
 	});

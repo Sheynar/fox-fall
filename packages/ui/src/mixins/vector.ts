@@ -1,5 +1,5 @@
 import { type Ref, computed } from 'vue';
-import { Vector } from '@/lib/vector';
+import { Vector } from '@packages/data/dist/artillery/vector';
 
 export const useVectorSum = (
 	vectorA: Ref<Vector>,

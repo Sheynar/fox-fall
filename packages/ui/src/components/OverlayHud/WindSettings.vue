@@ -57,10 +57,10 @@
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
+	import { ARTILLERY_BY_SHELL } from '@packages/data/dist/artillery/unit/constants';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import NumberInput from '@/components/inputs/NumberInput.vue';
-	import { ARTILLERY_BY_SHELL } from '@/lib/constants/data';
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitSpecs } from '@/lib/unit';

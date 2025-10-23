@@ -46,9 +46,9 @@
 </style>
 
 <script setup lang="ts">
-	import { artillery } from '@/lib/globals';
-	import { UnitType } from '@/lib/unit';
 	import { computed } from 'vue';
+	import { UnitType } from '@packages/data/dist/artillery/unit';
+	import { artillery } from '@/lib/globals';
 
 	const artilleryUnits = computed(() => {
 		return Object.values(artillery.unitMap.value).filter(

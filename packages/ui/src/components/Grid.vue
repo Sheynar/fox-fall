@@ -73,10 +73,10 @@
 
 <script setup lang="ts">
 	import { computed } from 'vue';
+	import { Vector } from '@packages/data/dist/artillery/vector';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
-	import { Vector } from '@/lib/vector';
 
 	const cellCount = computed(() => {
 		const hypot = Math.sqrt(

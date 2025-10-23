@@ -11,8 +11,9 @@
 </template>
 
 <script setup lang="ts">
-	import { AMMO_TYPE, ARTILLERY_BY_SHELL } from '@/lib/constants/data';
 	import { computed, markRaw } from 'vue';
+	import { AMMO_TYPE, ARTILLERY_BY_SHELL } from '@packages/data/dist/artillery/unit/constants';
+	import { ICONS } from '@/lib/constants/icons';
 	import IconSelect from './IconSelect.vue';
 
 	const modelValue = defineModel<AMMO_TYPE>('modelValue');
@@ -22,7 +23,7 @@
 			.sort()
 			.map((shell) => ({
 				label: shell,
-				icon: markRaw(ARTILLERY_BY_SHELL[shell].ICON),
+				icon: markRaw(ICONS[shell]),
 				value: shell,
 			}));
 	});

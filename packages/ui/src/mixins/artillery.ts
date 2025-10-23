@@ -1,17 +1,15 @@
 import { computed, getCurrentScope, type Ref, ref, watch, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 import { useEventListener, until } from '@vueuse/core';
+import { type Unit, type UnitMap, UnitType } from '@packages/data/dist/artillery/unit';
+import { Vector } from '@packages/data/dist/artillery/vector';
 import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
 import { settings } from '@/lib/settings';
 import {
-	type Unit,
-	type UnitMap,
 	createUnit,
-	UnitType,
 	getUnitResolvedVector,
 	getUnitSpecs,
 } from '@/lib/unit';
-import { Vector } from '@/lib/vector';
 import { Viewport } from '@/lib/viewport';
 import { usePrimaryUnitsByType } from './focused-units';
 import { useViewportControl } from './viewport-control';

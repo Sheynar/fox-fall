@@ -1,4 +1,4 @@
-import { Vector } from './vector';
+import { Vector } from '@packages/data/dist/artillery/vector';
 import { Viewport } from './viewport';
 
 export const calibrateGrid = async (viewport: Viewport) => {

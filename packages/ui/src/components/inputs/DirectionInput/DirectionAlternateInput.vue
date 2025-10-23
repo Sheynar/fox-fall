@@ -15,10 +15,10 @@
 </style>
 
 <script setup lang="ts">
-	import CompassIcon from '@/components/icons/CompassIcon.vue';
-	import { toDegrees, wrapDegrees } from '@/lib/angle';
-	import { useEventListener } from '@vueuse/core';
 	import { computed, defineModel, shallowRef } from 'vue';
+	import { useEventListener } from '@vueuse/core';
+	import { toDegrees, wrapDegrees } from '@packages/data/dist/artillery/angle';
+	import CompassIcon from '@/components/icons/CompassIcon.vue';
 
 	const modelValue = defineModel({ type: Number, required: true });
 

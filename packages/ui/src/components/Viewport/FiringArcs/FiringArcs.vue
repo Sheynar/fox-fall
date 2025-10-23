@@ -26,9 +26,9 @@
 </style>
 
 <script setup lang="ts">
+	import { UnitType, type Unit } from '@packages/data/dist/artillery/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
-	import { UnitType, type Unit } from '@/lib/unit';
 	import {
 		useFocusedUnitIds,
 		usePrimaryUnitsByType,

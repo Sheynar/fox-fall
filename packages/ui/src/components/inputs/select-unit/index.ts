@@ -1,5 +1,6 @@
+import { type Unit, UnitType } from '@packages/data/dist/artillery/unit';
 import { artillery } from '@/lib/globals';
-import { type Unit, UnitType, getUnitLabel, getAvailableUnitTypes } from '@/lib/unit';
+import { getUnitLabel, getAvailableUnitTypes } from '@/lib/unit';
 import { computed } from 'vue';
 
 export type Options = {

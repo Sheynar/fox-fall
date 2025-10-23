@@ -1,5 +1,5 @@
 import { inject, provide, type Ref } from 'vue';
-import type { Unit } from '@/lib/unit';
+import { type Unit } from '@packages/data/dist/artillery/unit';
 
 export const unitSymbol = Symbol('unit');
 

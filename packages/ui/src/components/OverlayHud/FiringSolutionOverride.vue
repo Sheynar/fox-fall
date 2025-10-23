@@ -165,9 +165,9 @@
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
+	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
-	import { wrapDegrees } from '@/lib/angle';
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import {

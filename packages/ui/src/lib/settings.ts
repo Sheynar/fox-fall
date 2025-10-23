@@ -1,6 +1,6 @@
 import { ref } from 'vue';
+import { AMMO_TYPE, Platform } from '@packages/data/dist/artillery/unit/constants';
 import { isOverlay } from './constants';
-import { AMMO_TYPE, Platform } from './constants/data';
 
 export enum UserMode {
 	Basic = 'basic',

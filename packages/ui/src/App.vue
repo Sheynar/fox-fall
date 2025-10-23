@@ -149,6 +149,8 @@
 	import ContextMenu from 'primevue/contextmenu';
 	import type { MenuItem } from 'primevue/menuitem';
 	import { computed, ref, shallowRef } from 'vue';
+	import { UnitType } from '@packages/data/dist/artillery/unit';
+	import { Vector } from '@packages/data/dist/artillery/vector';
 	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Grid from '@/components/Grid.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
@@ -158,8 +160,7 @@
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { BackdropMode, settings, UserMode } from '@/lib/settings';
-	import { getAvailableUnitTypes, getUnitResolvedVector, UnitType } from '@/lib/unit';
-	import { Vector } from '@/lib/vector';
+	import { getAvailableUnitTypes, getUnitResolvedVector } from '@/lib/unit';
 
 	const contextMenu = shallowRef<null | InstanceType<typeof ContextMenu>>(null);
 

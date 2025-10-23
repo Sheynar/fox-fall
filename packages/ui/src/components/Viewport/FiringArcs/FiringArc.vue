@@ -148,6 +148,7 @@
 </style>
 
 <script setup lang="ts">
+	import { Vector } from '@packages/data/dist/artillery/vector';
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
 	import { RangeFinderStyle } from '@/components/Viewport/RangeFinders/enums';
 	import RangeFinder from '@/components/Viewport/RangeFinders/RangeFinder.vue';
@@ -159,7 +160,6 @@
 		getUnitResolvedVector,
 		getUnitSpecs,
 	} from '@/lib/unit';
-	import { Vector } from '@/lib/vector';
 	import { computed } from 'vue';
 
 	const props = defineProps<{

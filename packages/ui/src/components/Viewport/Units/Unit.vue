@@ -136,11 +136,12 @@
 
 <script setup lang="ts">
 	import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
+	import { UnitType } from '@packages/data/dist/artillery/unit';
+	import { Vector } from '@packages/data/dist/artillery/vector';
 	import type ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
 	import UnitSettings from '@/components/Viewport/Units/UnitSettings.vue';
 	import { injectUnit } from '@/contexts/unit';
-	import { SPOTTING_BY_TYPE } from '@/lib/constants/data';
 	import { LAYER } from '@/lib/constants/ui';
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
@@ -149,9 +150,8 @@
 		getUnitLabel,
 		getUnitResolvedVector,
 		getUnitSpecs,
-		UnitType,
 	} from '@/lib/unit';
-	import { Vector } from '@/lib/vector';
+	import { ICONS } from '@/lib/constants/icons';
 
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
 
@@ -169,23 +169,18 @@
 
 	const unit = injectUnit();
 
-	const spottingSpecs = computed(() => {
-		if (unit.value.spottingType != null) {
-			return SPOTTING_BY_TYPE[unit.value.spottingType];
-		}
-	});
 	const unitLabel = computed(() =>
 		getUnitLabel(artillery.unitMap.value, unit.value.id)
 	);
 	const unitIcon = computed(() => {
 		if (unit.value.type === UnitType.Spotter) {
-			return spottingSpecs.value?.ICON ?? UNIT_ICON_BY_TYPE[unit.value.type];
+			return unit.value.spottingType != null
+				? ICONS[unit.value.spottingType]
+				: UNIT_ICON_BY_TYPE[unit.value.type];
 		}
 		if (unit.value.type === UnitType.Artillery) {
-			return (
-				getUnitSpecs(artillery.unitMap.value, unit.value.id)?.ICON ??
-				UNIT_ICON_BY_TYPE[unit.value.type]
-			);
+			const unitSpecs = getUnitSpecs(artillery.unitMap.value, unit.value.id);
+			return ICONS[unitSpecs?.PLATFORM!] ?? ICONS[unitSpecs?.AMMO_TYPE!] ?? UNIT_ICON_BY_TYPE[unit.value.type];
 		}
 
 		return UNIT_ICON_BY_TYPE[unit.value.type];
@@ -194,7 +189,9 @@
 	const isHovered = ref(false);
 	const canDrag = ref(unit.value.parentId == null);
 	const open = computed({
-		get: () => artillery.selectedUnit.value === unit.value.id && artillery.overlayOpen.value,
+		get: () =>
+			artillery.selectedUnit.value === unit.value.id &&
+			artillery.overlayOpen.value,
 		set: (value) => {
 			if (value) {
 				artillery.selectedUnit.value = unit.value.id;
@@ -335,7 +332,9 @@
 		let firingVectorWithWind = resolvedVector.value.clone();
 		const specs = getUnitSpecs(artillery.unitMap.value, unit.value.id);
 		if (specs) {
-			firingVectorWithWind = firingVectorWithWind.addVector(artillery.wind.value.scale(-specs.WIND_OFFSET));
+			firingVectorWithWind = firingVectorWithWind.addVector(
+				artillery.wind.value.scale(-specs.WIND_OFFSET)
+			);
 		}
 		return firingVectorWithWind;
 	});

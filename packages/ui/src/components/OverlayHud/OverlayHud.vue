@@ -141,6 +141,7 @@
 	import PrimeButton from 'primevue/button';
 	import vPrimeTooltip from 'primevue/tooltip';
 	import { computed, ref } from 'vue';
+	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import Dock from '@/components/OverlayHud/Dock.vue';
 	import FiringSolutionOverride from '@/components/OverlayHud/FiringSolutionOverride.vue';
 	import PlatformInfo from '@/components/OverlayHud/PlatformInfo.vue';
@@ -148,7 +149,6 @@
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	import RotateIcon from '@/components/icons/RotateIcon.vue';
 	import ZoomIcon from '@/components/icons/ZoomIcon.vue';
-	import { wrapDegrees } from '@/lib/angle';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';

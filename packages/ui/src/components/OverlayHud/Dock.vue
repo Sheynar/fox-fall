@@ -60,6 +60,7 @@
 </style>
 
 <script setup lang="ts">
+	import { UnitType } from '@packages/data/dist/artillery/unit';
 	import GridIcon from '@/components/icons/GridIcon.vue';
 	import Settings from '@/components/OverlayHud/Settings.vue';
 	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
@@ -72,7 +73,6 @@
 		syncedRoom,
 	} from '@/lib/globals';
 	import { BackdropMode, settings } from '@/lib/settings';
-	import { UnitType } from '@/lib/unit';
 	import { ServerConnectionState } from '@/mixins/server-connection';
 	import PrimeButton from 'primevue/button';
 	import PrimeDock from 'primevue/dock';

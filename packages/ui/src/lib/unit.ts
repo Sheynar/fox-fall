@@ -1,31 +1,13 @@
 import { type Ref, ref } from 'vue';
-import { generateId } from '@packages/helpers';
 import {
-	AMMO_TYPE,
 	ARTILLERY_BY_SHELL,
 	ArtilleryPlatform,
-	SPOTTING_TYPE,
-	type Platform,
-} from '@/lib/constants/data';
+} from '@packages/data/dist/artillery/unit/constants';
+import { type Unit, type UnitMap, UnitType } from '@packages/data/dist/artillery/unit';
+import { Vector } from '@packages/data/dist/artillery/vector';
+import { generateId } from '@packages/helpers';
 import { natoAlphabet } from '@/lib/names';
 import { settings, UserMode } from '@/lib/settings';
-import { Vector } from '@/lib/vector';
-
-export enum UnitType {
-	Artillery = 0,
-	Spotter = 1,
-	Location = 2,
-	Target = 3,
-	LandingZone = 4,
-}
-
-export const unitTypeOrder = [
-	UnitType.Artillery,
-	UnitType.Spotter,
-	UnitType.Location,
-	UnitType.Target,
-	UnitType.LandingZone,
-];
 
 export const getAvailableUnitTypes = (): UnitType[] => {
 	if (settings.value.userMode === UserMode.Basic) {
@@ -44,22 +26,6 @@ export const getAvailableUnitTypes = (): UnitType[] => {
 			UnitType.LandingZone,
 		];
 	}
-};
-
-export type Unit = {
-	id: string;
-	label?: string;
-	type: UnitType;
-	vector: Vector;
-	parentId?: string;
-	selectUnitOnDeletion?: string;
-	ammunition?: AMMO_TYPE;
-	platform?: Platform<AMMO_TYPE>;
-	spottingType?: SPOTTING_TYPE;
-};
-
-export type UnitMap = {
-	[unitId: string]: Unit;
 };
 
 export const createUnit = (
