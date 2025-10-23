@@ -1,3 +1,4 @@
+import EventEmitter from 'events';
 import { applyPatch, compare, type Operation } from "fast-json-patch";
 import { generateId } from "./id";
 
@@ -11,6 +12,7 @@ export type SharedObjectUpdate = {
 };
 
 export class SharedObject<T extends Record<string, unknown>> {
+	readonly emitter = new EventEmitter<{ updateProduced: [SharedObjectUpdate] }>();
 	updates: Record<string, SharedObjectUpdate> = {};
 	firstUpdate: string | undefined;
 	lastUpdate: string | undefined;
@@ -18,7 +20,6 @@ export class SharedObject<T extends Record<string, unknown>> {
 
 	constructor(
 		private readonly initialState: T,
-		readonly onUpdateProduced: (update: SharedObjectUpdate) => void,
 		readonly user: string
 	) {
 		this.currentState = structuredClone(initialState);
@@ -107,6 +108,6 @@ export class SharedObject<T extends Record<string, unknown>> {
 		};
 
 		this.addUpdate(newUpdate);
-		this.onUpdateProduced(newUpdate);
+		this.emitter.emit('updateProduced', newUpdate);
 	}
 }
