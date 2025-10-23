@@ -118,7 +118,7 @@ export const useServerConnection = () => {
 		disconnect();
 	};
 
-	watch(serverUrl, () => connect(), { immediate: true });
+	watch(serverUrl, () => connect().catch(() => {}), { immediate: true });
 	onScopeDispose(stop);
 
 	return {
@@ -127,6 +127,8 @@ export const useServerConnection = () => {
 		connectionState,
 		reconnect,
 
-		webSocket,
+		webSocket: computed(() => {
+			return connectionState.value === ServerConnectionState.connected ? webSocket.value : undefined;
+		}),
 	};
 };
