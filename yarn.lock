@@ -622,16 +622,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@packages/data@workspace:packages/data"
   dependencies:
-    prettier: "npm:^3.0.3"
-    rimraf: "npm:^6.0.1"
-    typescript: "npm:^5.2.2"
-  languageName: unknown
-  linkType: soft
-
-"@packages/helpers@workspace:*, @packages/helpers@workspace:packages/helpers":
-  version: 0.0.0-use.local
-  resolution: "@packages/helpers@workspace:packages/helpers"
-  dependencies:
     fast-json-patch: "npm:^3.1.1"
     prettier: "npm:^3.0.3"
     rimraf: "npm:^6.0.1"
@@ -702,7 +692,6 @@ __metadata:
     "@kaosdlanor/kanim": "npm:^1.0.1"
     "@kaosdlanor/vue-reactivity": "npm:^1.0.2"
     "@packages/data": "workspace:*"
-    "@packages/helpers": "workspace:*"
     "@primeuix/themes": "npm:^1.0.0"
     "@types/node": "npm:^22.7.4"
     "@types/w3c-image-capture": "npm:^1.0.10"

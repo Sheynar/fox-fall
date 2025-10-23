@@ -5,7 +5,7 @@ import {
 } from '@packages/data/dist/artillery/unit/constants';
 import { type Unit, type UnitMap, UnitType } from '@packages/data/dist/artillery/unit';
 import { Vector } from '@packages/data/dist/artillery/vector';
-import { generateId } from '@packages/helpers';
+import { generateId } from '@packages/data/dist/id';
 import { natoAlphabet } from '@/lib/names';
 import { settings, UserMode } from '@/lib/settings';
 
