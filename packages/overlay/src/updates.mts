@@ -1,4 +1,4 @@
-import { UpdateConfig } from "@packages/types/dist/update-config.js";
+import { UpdateConfig } from "@packages/data/dist/update-config.js";
 import { app, dialog, Notification } from "electron";
 import electronUpdater from "electron-updater";
 import log from "electron-log";

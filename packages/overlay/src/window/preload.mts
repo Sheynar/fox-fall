@@ -2,9 +2,9 @@ import { contextBridge, ipcRenderer } from "electron";
 import {
 	ElectronApiCommand,
 	type ElectronApi,
-} from "@packages/types/dist/electron-api.js";
-import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
-import { UpdateConfig } from "@packages/types/dist/update-config.js";
+} from "@packages/data/dist/electron-api.js";
+import type { KeyboardCommand } from "@packages/data/dist/keyboard-config.js";
+import { UpdateConfig } from "@packages/data/dist/update-config.js";
 
 const electronApi: ElectronApi = {
 	getRunningVersion: async () =>

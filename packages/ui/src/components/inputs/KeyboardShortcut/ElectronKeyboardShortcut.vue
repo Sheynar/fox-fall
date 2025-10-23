@@ -8,7 +8,7 @@
 </template>
 
 <script lang="ts" setup>
-	import { type KeyboardCommand } from '@packages/types/dist/keyboard-config';
+	import { type KeyboardCommand } from '@packages/data/dist/keyboard-config';
 	import { ref } from 'vue';
 	import KeyboardShortcut from './KeyboardShortcut.vue';
 

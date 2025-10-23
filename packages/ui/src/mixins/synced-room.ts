@@ -1,5 +1,5 @@
 import { generateId } from '@packages/helpers';
-import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/types';
+import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/data';
 import { ref, watch, type Ref } from 'vue';
 import { UnitMap, Unit } from '@/lib/unit';
 import { Vector } from '@/lib/vector';

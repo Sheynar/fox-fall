@@ -1,6 +1,6 @@
-import { ElectronApiCommand } from "@packages/types/dist/electron-api.js";
-import type { KeyboardCommand } from "@packages/types/dist/keyboard-config.js";
-import type { UpdateConfig } from "@packages/types/dist/update-config.js";
+import { ElectronApiCommand } from "@packages/data/dist/electron-api.js";
+import type { KeyboardCommand } from "@packages/data/dist/keyboard-config.js";
+import type { UpdateConfig } from "@packages/data/dist/update-config.js";
 import { app, BrowserWindow, desktopCapturer, ipcMain, screen } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";

@@ -17,7 +17,7 @@
 		"prepublishOnly": "npm run build"
 	},
 	"dependencies": {
-		"@packages/types": "workspace:*",
+		"@packages/data": "workspace:*",
 		"@rwh/keystrokes": "^1.5.6",
 		"uiohook-napi": "^1.5.4"
 	},

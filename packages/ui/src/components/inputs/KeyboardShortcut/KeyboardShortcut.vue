@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-	import { keyDefinitionByCode } from '@packages/types/dist/keyboard-config';
+	import { keyDefinitionByCode } from '@packages/data/dist/keyboard-config';
 	import TextInput from '@/components/inputs/TextInput.vue';
 	import { computed, ref } from 'vue';
 

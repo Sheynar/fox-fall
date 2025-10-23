@@ -364,8 +364,8 @@
 </style>
 
 <script setup lang="ts">
-	import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
-	import type { UpdateConfig } from '@packages/types/dist/update-config';
+	import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
+	import type { UpdateConfig } from '@packages/data/dist/update-config';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeCheckBox from 'primevue/checkbox';
 	import PrimeSelect from 'primevue/select';

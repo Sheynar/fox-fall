@@ -1,7 +1,7 @@
 import { computed, getCurrentScope, type Ref, ref, watch, watchEffect } from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 import { useEventListener, until } from '@vueuse/core';
-import { KeyboardCommand } from '@packages/types/dist/keyboard-config';
+import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
 import { settings } from '@/lib/settings';
 import {
 	type Unit,

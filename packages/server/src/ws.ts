@@ -1,4 +1,4 @@
-import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/types';
+import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/data';
 import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
 

@@ -1,4 +1,4 @@
-import { keyDefinitionByUIo } from "@packages/types/dist/keyboard-config.js";
+import { keyDefinitionByUIo } from "@packages/data/dist/keyboard-config.js";
 import { Keystrokes } from "@rwh/keystrokes";
 import { uIOhook, UiohookKey, UiohookKeyboardEvent } from "uiohook-napi";
 

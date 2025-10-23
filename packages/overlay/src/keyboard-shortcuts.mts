@@ -1,7 +1,7 @@
 import {
 	KeyboardCommand,
 	type KeyboardConfig,
-} from "@packages/types/dist/keyboard-config.js";
+} from "@packages/data/dist/keyboard-config.js";
 import {
 	initialise as initKeyboardShortcutsModule,
 	keystrokes,
@@ -10,7 +10,7 @@ import { app, webContents } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { toggleOverlay } from "./window/index.mjs";
-import { ElectronApiCommand } from "@packages/types/dist/electron-api.js";
+import { ElectronApiCommand } from "@packages/data/dist/electron-api.js";
 
 const userDataFolder = app.getPath("userData");
 

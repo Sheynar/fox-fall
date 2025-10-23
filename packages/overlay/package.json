@@ -19,9 +19,9 @@
     "make": "rimraf out && electron-builder --config build.config.js --publish never"
   },
   "dependencies": {
+    "@packages/data": "workspace:*",
     "@packages/keyboard-shortcuts": "workspace:*",
     "@packages/server": "workspace:*",
-    "@packages/types": "workspace:*",
     "electron-log": "^5.3.2",
     "electron-updater": "6.3.9",
     "koffi": "^2.11.0"

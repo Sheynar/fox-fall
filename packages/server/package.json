@@ -27,7 +27,7 @@
 	"license": "MIT",
 	"dependencies": {
 		"@hono/node-server": "^1.11.1",
-		"@packages/types": "workspace:*",
+		"@packages/data": "workspace:*",
 		"hono": "^4.2.8",
 		"ws": "^8.16.0"
 	}
