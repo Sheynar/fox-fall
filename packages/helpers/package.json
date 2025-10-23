@@ -12,6 +12,7 @@
   "repository": "https://github.com/KaoSDlanor/fox-fall",
   "author": "KaoSDlanor <KaoSDlanor@gmail.com>",
   "dependencies": {
+    "fast-json-patch": "^3.1.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
