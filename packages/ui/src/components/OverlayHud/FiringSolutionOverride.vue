@@ -5,9 +5,15 @@
 		v-model:visible="visible"
 		:header="
 			'Firing solution override: ' +
-			getUnitLabel(artillery.unitMap.value, props.unitIdFrom) +
+			getUnitLabel(
+				artillery.sharedState.currentState.value.unitMap,
+				props.unitIdFrom
+			) +
 			' -> ' +
-			getUnitLabel(artillery.unitMap.value, props.unitIdTo)
+			getUnitLabel(
+				artillery.sharedState.currentState.value.unitMap,
+				props.unitIdTo
+			)
 		"
 		:style="{
 			minWidth: '30rem',
@@ -166,14 +172,12 @@
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
+	import { Vector } from '@packages/data/dist/artillery/vector';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
-	import {
-		getUnitLabel,
-		getUnitResolvedVector,
-	} from '@/lib/unit';
+	import { getUnitLabel, getUnitResolvedVector } from '@/lib/unit';
 	import { computed, ref, shallowRef, watch } from 'vue';
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
@@ -191,16 +195,26 @@
 	}>();
 
 	const resolvedVectorFrom = computed(() =>
-		getUnitResolvedVector(artillery.unitMap.value, props.unitIdFrom)
+		getUnitResolvedVector(
+			artillery.sharedState.currentState.value.unitMap,
+			props.unitIdFrom
+		)
 	);
 	const resolvedVectorTo = computed(() =>
-		getUnitResolvedVector(artillery.unitMap.value, props.unitIdTo)
+		getUnitResolvedVector(
+			artillery.sharedState.currentState.value.unitMap,
+			props.unitIdTo
+		)
 	);
 	const firingVector = computed(() =>
 		resolvedVectorFrom.value.getRelativeOffset(resolvedVectorTo.value)
 	);
 
-	const firingVectorWithWind = computed(() => firingVector.value.addVector(artillery.getWindOffset(props.unitIdFrom).scale(-1)));
+	const firingVectorWithWind = computed(() =>
+		firingVector.value.addVector(
+			artillery.getWindOffset(props.unitIdFrom).scale(-1)
+		)
+	);
 
 	const vectorValue = ref(firingVectorWithWind.value.clone());
 	watch(firingVectorWithWind, (value) => {
@@ -208,12 +222,14 @@
 	});
 
 	const submit = () => {
-		const unitTo = artillery.unitMap.value[props.unitIdTo];
-		if (unitTo == null) return;
-		unitTo.vector = unitTo.vector.addVector(
-			vectorValue.value.addVector(firingVectorWithWind.value.scale(-1))
-		);
-		syncedRoom.updateUnit(unitTo.id);
+		artillery.sharedState.produceUpdate((draft) => {
+			const unitTo = draft.unitMap[props.unitIdTo];
+			if (unitTo == null) return;
+			unitTo.vector = Vector.fromAngularVector(unitTo.vector).addVector(
+				vectorValue.value.addVector(firingVectorWithWind.value.scale(-1))
+			).angularVector;
+			syncedRoom.updateUnit(unitTo.id);
+		});
 		emit('updated');
 		visible.value = false;
 	};

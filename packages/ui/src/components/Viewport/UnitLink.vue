@@ -64,10 +64,10 @@
 	}>();
 
 	const unitPositionFrom = computed(() =>
-		getUnitResolvedVector(artillery.unitMap.value, props.unitIdFrom)
+		getUnitResolvedVector(artillery.sharedState.currentState.value.unitMap, props.unitIdFrom)
 	);
 	const unitPositionTo = computed(() =>
-		getUnitResolvedVector(artillery.unitMap.value, props.unitIdTo)
+		getUnitResolvedVector(artillery.sharedState.currentState.value.unitMap, props.unitIdTo)
 	);
 
 	const lineVector = computed(() =>

@@ -128,11 +128,13 @@
 	const readyToFireItem = computed<Item>(() => ({
 		label: 'Ready to fire',
 		icons: [
-			`pi ${artillery.readyToFire.value ? 'pi-play-circle' : 'pi-pause-circle'}`,
+			`pi ${artillery.sharedState.currentState.value.readyToFire ? 'pi-play-circle' : 'pi-pause-circle'}`,
 		],
-		severity: artillery.readyToFire.value ? 'success' : 'danger',
+		severity: artillery.sharedState.currentState.value.readyToFire ? 'success' : 'danger',
 		command: () => {
-			artillery.readyToFire.value = !artillery.readyToFire.value;
+			artillery.sharedState.produceUpdate((draft) => {
+				draft.readyToFire = !draft.readyToFire;
+			});
 			syncedRoom.updateReadyToFire();
 		},
 	}));

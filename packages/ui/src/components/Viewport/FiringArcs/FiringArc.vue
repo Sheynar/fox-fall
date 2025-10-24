@@ -32,8 +32,8 @@
 		>
 			<div class="FiringArc__label-row">
 				<span>
-					{{ getUnitLabel(artillery.unitMap.value, unitIdFrom) }} ->
-					{{ getUnitLabel(artillery.unitMap.value, unitIdTo) }}
+					{{ getUnitLabel(artillery.sharedState.currentState.value.unitMap, unitIdFrom) }} ->
+					{{ getUnitLabel(artillery.sharedState.currentState.value.unitMap, unitIdTo) }}
 				</span>
 			</div>
 			<div class="FiringArc__label-row">
@@ -170,10 +170,10 @@
 	}>();
 
 	const resolvedVectorFrom = computed(() =>
-		getUnitResolvedVector(artillery.unitMap.value, props.unitIdFrom)
+		getUnitResolvedVector(artillery.sharedState.currentState.value.unitMap, props.unitIdFrom)
 	);
 	const resolvedVectorTo = computed(() =>
-		getUnitResolvedVector(artillery.unitMap.value, props.unitIdTo)
+		getUnitResolvedVector(artillery.sharedState.currentState.value.unitMap, props.unitIdTo)
 	);
 	const firingVector = computed(() =>
 		resolvedVectorFrom.value.getRelativeOffset(resolvedVectorTo.value)
@@ -201,7 +201,7 @@
 	);
 
 	const specs = computed(() =>
-		getUnitSpecs(artillery.unitMap.value, props.unitIdFrom)
+		getUnitSpecs(artillery.sharedState.currentState.value.unitMap, props.unitIdFrom)
 	);
 
 	const currentSpread = computed(() => {

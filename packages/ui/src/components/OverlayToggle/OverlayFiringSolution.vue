@@ -51,13 +51,13 @@
 	import { artillery } from '@/lib/globals';
 
 	const artilleryUnits = computed(() => {
-		return Object.values(artillery.unitMap.value).filter(
+		return Object.values(artillery.sharedState.currentState.value.unitMap).filter(
 			(unit) => unit != null && unit.type === UnitType.Artillery
 		);
 	});
 
 	const targetUnits = computed(() => {
-		return Object.values(artillery.unitMap.value).filter(
+		return Object.values(artillery.sharedState.currentState.value.unitMap).filter(
 			(unit) => unit != null && unit.type === UnitType.Target
 		);
 	});

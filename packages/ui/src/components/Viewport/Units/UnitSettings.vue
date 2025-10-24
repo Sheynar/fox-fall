@@ -39,8 +39,10 @@
 							class="UnitSettings__select"
 							:model-value="unit.ammunition"
 							@update:model-value="
-								unit.ammunition = $event;
-								unit.platform = undefined;
+								artillery.sharedState.produceUpdate((draft) => {
+									draft.unitMap[unit.id].ammunition = $event;
+									draft.unitMap[unit.id].platform = undefined;
+								});
 								emit('updated');
 							"
 							:disabled="props.readonly"
@@ -56,7 +58,9 @@
 							:ammo-type="unit.ammunition"
 							:model-value="unit.platform"
 							@update:model-value="
-								unit.platform = $event;
+								artillery.sharedState.produceUpdate((draft) => {
+									draft.unitMap[unit.id].platform = $event;
+								});
 								emit('updated');
 							"
 							:disabled="props.readonly"
@@ -107,7 +111,9 @@
 							autofocus
 							:model-value="unit.vector.distance"
 							@update:model-value="
-								unit.vector.distance = $event;
+								artillery.sharedState.produceUpdate((draft) => {
+									draft.unitMap[unit.id].vector.distance = $event;
+								});
 								emit('updated');
 							"
 							@keydown.enter="azimuthInput?.inputElement?.select()"
@@ -119,7 +125,9 @@
 							ref="azimuthInput"
 							:model-value="wrapDegrees(unit.vector.azimuth)"
 							@update:model-value="
-								unit.vector.azimuth = wrapDegrees($event);
+								artillery.sharedState.produceUpdate((draft) => {
+									draft.unitMap[unit.id].vector.azimuth = wrapDegrees($event);
+								});
 								emit('updated');
 							"
 							@keydown.enter="
@@ -133,9 +141,13 @@
 						<div class="UnitSettings__row">
 							<span>X:</span>
 							<DistanceInput
-								:model-value="unit.vector.x"
+								:model-value="Vector.fromAngularVector(unit.vector).x"
 								@update:model-value="
-									unit.vector.x = $event;
+									artillery.sharedState.produceUpdate((draft) => {
+										const currentVector = Vector.fromAngularVector(draft.unitMap[unit.id].vector);
+										currentVector.x = $event;
+										draft.unitMap[unit.id].vector = currentVector.angularVector;
+									});
 									emit('updated');
 								"
 							/>
@@ -143,9 +155,13 @@
 						<div class="UnitSettings__row">
 							<span>Y:</span>
 							<DistanceInput
-								:model-value="unit.vector.y"
+								:model-value="Vector.fromAngularVector(unit.vector).y"
 								@update:model-value="
-									unit.vector.y = $event;
+									artillery.sharedState.produceUpdate((draft) => {
+										const currentVector = Vector.fromAngularVector(draft.unitMap[unit.id].vector);
+										currentVector.y = $event;
+										draft.unitMap[unit.id].vector = currentVector.angularVector;
+									});
 									emit('updated');
 								"
 							/>
@@ -192,7 +208,9 @@
 							<DistanceInput
 								:model-value="unit.vector.distance"
 								@update:model-value="
-									unit.vector.distance = $event;
+									artillery.sharedState.produceUpdate((draft) => {
+										draft.unitMap[unit.id].vector.distance = $event;
+									});
 									emit('updated');
 								"
 							/>
@@ -202,7 +220,9 @@
 							<DirectionInput
 								:model-value="wrapDegrees(unit.vector.azimuth + 180)"
 								@update:model-value="
-									unit.vector.azimuth = wrapDegrees($event - 180);
+									artillery.sharedState.produceUpdate((draft) => {
+										draft.unitMap[unit.id].vector.azimuth = wrapDegrees($event - 180);
+									});
 									emit('updated');
 								"
 							/>
@@ -211,9 +231,13 @@
 							<div class="UnitSettings__row">
 								<span>X:</span>
 								<DistanceInput
-									:model-value="-unit.vector.x"
+									:model-value="-Vector.fromAngularVector(unit.vector).x"
 									@update:model-value="
-										unit.vector.x = -$event;
+										artillery.sharedState.produceUpdate((draft) => {
+											const currentVector = Vector.fromAngularVector(draft.unitMap[unit.id].vector);
+											currentVector.x = -$event;
+											draft.unitMap[unit.id].vector = currentVector.angularVector;
+										});
 										emit('updated');
 									"
 								/>
@@ -221,9 +245,13 @@
 							<div class="UnitSettings__row">
 								<span>Y:</span>
 								<DistanceInput
-									:model-value="-unit.vector.y"
+									:model-value="-Vector.fromAngularVector(unit.vector).y"
 									@update:model-value="
-										unit.vector.y = -$event;
+										artillery.sharedState.produceUpdate((draft) => {
+											const currentVector = Vector.fromAngularVector(draft.unitMap[unit.id].vector);
+											currentVector.y = -$event;
+											draft.unitMap[unit.id].vector = currentVector.angularVector;
+										});
 										emit('updated');
 									"
 								/>
@@ -473,7 +501,7 @@
 	const unit = injectUnit();
 
 	const unitLabel = computed(() =>
-		getUnitLabel(artillery.unitMap.value, unit.value.id)
+		getUnitLabel(artillery.sharedState.currentState.value.unitMap, unit.value.id)
 	);
 
 	const unitTypeOptions = computed(() => {
@@ -512,13 +540,13 @@
 
 	const parent = computed(() =>
 		unit.value.parentId != null
-			? artillery.unitMap.value[unit.value.parentId]
+			? artillery.sharedState.currentState.value.unitMap[unit.value.parentId]
 			: undefined
 	);
 	const parentLabel = computed(() =>
 		parent.value == null
 			? 'Unknown'
-			: getUnitLabel(artillery.unitMap.value, parent.value.id)
+			: getUnitLabel(artillery.sharedState.currentState.value.unitMap, parent.value.id)
 	);
 
 	const onUnitTypeClicked = (e: MouseEvent, type: UnitType) => {

@@ -33,7 +33,7 @@
 	</PositionedElement>
 
 	<PositionedElement
-		v-if="unit.type === UnitType.Target && artillery.wind.value.distance > 0"
+		v-if="unit.type === UnitType.Target && artillery.sharedState.currentState.value.wind.distance > 0"
 		:x="firingPosition.x"
 		:y="firingPosition.y"
 		:layer="LAYER.UNITS"
@@ -170,7 +170,7 @@
 	const unit = injectUnit();
 
 	const unitLabel = computed(() =>
-		getUnitLabel(artillery.unitMap.value, unit.value.id)
+		getUnitLabel(artillery.sharedState.currentState.value.unitMap, unit.value.id)
 	);
 	const unitIcon = computed(() => {
 		if (unit.value.type === UnitType.Spotter) {
@@ -179,7 +179,7 @@
 				: UNIT_ICON_BY_TYPE[unit.value.type];
 		}
 		if (unit.value.type === UnitType.Artillery) {
-			const unitSpecs = getUnitSpecs(artillery.unitMap.value, unit.value.id);
+			const unitSpecs = getUnitSpecs(artillery.sharedState.currentState.value.unitMap, unit.value.id);
 			return ICONS[unitSpecs?.PLATFORM!] ?? ICONS[unitSpecs?.AMMO_TYPE!] ?? UNIT_ICON_BY_TYPE[unit.value.type];
 		}
 
@@ -241,7 +241,7 @@
 					y: event.clientY,
 				})
 			),
-			startUnitPosition: unit.value.vector.clone(),
+			startUnitPosition: Vector.fromAngularVector(unit.value.vector),
 		};
 		iconElement.value.$el.setPointerCapture(event.pointerId);
 	};
@@ -275,24 +275,29 @@
 			})
 		);
 
-		unit.value.vector.cartesianVector = {
-			x:
-				movingData.startUnitPosition.x +
-				currentCursorViewport.x -
-				movingData.startCursorViewport.x,
-			y:
-				movingData.startUnitPosition.y +
-				currentCursorViewport.y -
-				movingData.startCursorViewport.y,
-		};
-
-		// Round values
-		if (unit.value.parentId != null) {
-			unit.value.vector.angularVector = {
-				distance: Number(unit.value.vector.distance.toFixed(1)),
-				azimuth: Number(unit.value.vector.azimuth.toFixed(1)),
+		artillery.sharedState.produceUpdate((draft) => {
+			const currentVector = Vector.fromAngularVector(draft.unitMap[unit.value.id].vector);
+			currentVector.cartesianVector = {
+				x:
+					movingData.startUnitPosition.x +
+					currentCursorViewport.x -
+					movingData.startCursorViewport.x,
+				y:
+					movingData.startUnitPosition.y +
+					currentCursorViewport.y -
+					movingData.startCursorViewport.y,
 			};
-		}
+
+			// Round values
+			if (draft.unitMap[unit.value.id].parentId != null) {
+				currentVector.angularVector = {
+					distance: Number(currentVector.distance.toFixed(1)),
+					azimuth: Number(currentVector.azimuth.toFixed(1)),
+				};
+			}
+
+			draft.unitMap[unit.value.id].vector = currentVector.angularVector;
+		});
 
 		emit('updated');
 	};
@@ -325,15 +330,15 @@
 	});
 
 	const resolvedVector = computed(() =>
-		getUnitResolvedVector(artillery.unitMap.value, unit.value.id)
+		getUnitResolvedVector(artillery.sharedState.currentState.value.unitMap, unit.value.id)
 	);
 
 	const firingPosition = computed(() => {
 		let firingVectorWithWind = resolvedVector.value.clone();
-		const specs = getUnitSpecs(artillery.unitMap.value, unit.value.id);
+		const specs = getUnitSpecs(artillery.sharedState.currentState.value.unitMap, unit.value.id);
 		if (specs) {
 			firingVectorWithWind = firingVectorWithWind.addVector(
-				artillery.wind.value.scale(-specs.WIND_OFFSET)
+				Vector.fromAngularVector(artillery.sharedState.currentState.value.wind).scale(-specs.WIND_OFFSET)
 			);
 		}
 		return firingVectorWithWind;

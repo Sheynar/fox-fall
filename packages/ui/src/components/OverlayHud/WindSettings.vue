@@ -11,15 +11,15 @@
 		<div class="Wind__information">
 			<div class="Wind__information__item">
 				<label>Wind direction:</label>
-				<DirectionInput v-model="artillery.wind.value.azimuth" @update:model-value="syncedRoom.updateWind()" autofocus />
+				<DirectionInput :model-value="artillery.sharedState.currentState.value.wind.azimuth" @update:model-value="artillery.sharedState.produceUpdate((draft) => { draft.wind.azimuth = $event; }); syncedRoom.updateWind()" autofocus />
 			</div>
 			<div class="Wind__information__item">
 				<label>Wind tier:</label>
-				<NumberInput :model-value="artillery.wind.value.distance" @update:model-value="artillery.wind.value.distance = $event; syncedRoom.updateWind()" />
+				<NumberInput :model-value="artillery.sharedState.currentState.value.wind.distance" @update:model-value="artillery.sharedState.produceUpdate((draft) => { draft.wind.distance = $event; }); syncedRoom.updateWind()" />
 			</div>
 			<div class="Wind__information__item" v-if="windMultiplier && settings.showWindMeters">
 				<label>Wind distance:</label>
-				<DistanceInput :model-value="artillery.wind.value.distance * windMultiplier" @update:model-value="artillery.wind.value.distance = $event / windMultiplier; syncedRoom.updateWind()" />
+				<DistanceInput :model-value="artillery.sharedState.currentState.value.wind.distance * windMultiplier" @update:model-value="artillery.sharedState.produceUpdate((draft) => draft.wind.distance = $event / windMultiplier!); syncedRoom.updateWind()" />
 			</div>
 			<PrimeButton
 				class="Wind__information__button"
@@ -69,7 +69,7 @@
 	const visible = defineModel('visible', { type: Boolean, required: true });
 
 	const windMultiplier = computed(() => {
-		const windOffsets = Object.keys(artillery.unitMap.value).map((unitId) => getUnitSpecs(artillery.unitMap.value, unitId)?.WIND_OFFSET).filter((windOffset) => windOffset != null);
+		const windOffsets = Object.keys(artillery.sharedState.currentState.value.unitMap).map((unitId) => getUnitSpecs(artillery.sharedState.currentState.value.unitMap, unitId)?.WIND_OFFSET).filter((windOffset) => windOffset != null);
 		if (windOffsets.length > 0) return windOffsets.reduce((a, b) => a + b, 0) / windOffsets.length;
 
 		if (settings.value.globalAmmo == null || settings.value.globalPlatform == null) return null;

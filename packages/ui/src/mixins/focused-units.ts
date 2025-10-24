@@ -12,8 +12,8 @@ export const useFocusedUnitIds = () => {
 
 		focusedUnits.push(...artillery.pinnedUnits.value);
 
-		const artilleryUnitIds = Object.keys(artillery.unitMap.value).filter(
-			(unitId) => artillery.unitMap.value[unitId].type === UnitType.Artillery
+		const artilleryUnitIds = Object.keys(artillery.sharedState.currentState.value.unitMap).filter(
+			(unitId) => artillery.sharedState.currentState.value.unitMap[unitId].type === UnitType.Artillery
 		);
 		if (
 			artilleryUnitIds.length === 1 &&
@@ -36,7 +36,7 @@ export const useUnitsByType = () => {
 			[UnitType.Target]: [],
 		};
 
-		for (const unit of Object.values(artillery.unitMap.value)) {
+		for (const unit of Object.values(artillery.sharedState.currentState.value.unitMap)) {
 			output[unit.type].push(unit);
 		}
 

@@ -231,7 +231,7 @@
 									.toWorldPosition(contextMenuPosition.value!)
 									.addVector(
 										getUnitResolvedVector(
-											artillery.unitMap.value,
+											artillery.sharedState.currentState.value.unitMap,
 											artillery.selectedUnit.value!
 										).scale(-1)
 									)

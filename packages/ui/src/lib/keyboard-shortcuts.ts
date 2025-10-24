@@ -4,12 +4,14 @@ export enum KeyboardCommand {
 	SelectNextUnit = 'Select next unit',
 	SelectPrevUnit = 'Select previous unit',
 	DeleteSelectedUnit = 'Delete selected unit',
+	Undo = 'Undo',
 }
 
 export const keyboardShortcuts = ref({
 	[KeyboardCommand.SelectNextUnit]: 'CommandOrControl+Tab',
 	[KeyboardCommand.SelectPrevUnit]: 'CommandOrControl+Shift+Tab',
 	[KeyboardCommand.DeleteSelectedUnit]: 'CommandOrControl+Delete',
+	[KeyboardCommand.Undo]: 'CommandOrControl+Z',
 } satisfies Partial<Record<KeyboardCommand, string>>);
 
 export const saveKeyboardShortcuts = () => {

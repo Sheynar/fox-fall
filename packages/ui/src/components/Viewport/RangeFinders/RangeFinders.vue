@@ -60,18 +60,18 @@
 		}[] = [];
 
 		for (const unitId of focusedUnitIds.value) {
-			const unit = artillery.unitMap.value[unitId];
+			const unit = artillery.sharedState.currentState.value.unitMap[unitId];
 
 			if (unit.type !== UnitType.Artillery) continue;
 
-			const specs = getUnitSpecs(artillery.unitMap.value, unitId);
+			const specs = getUnitSpecs(artillery.sharedState.currentState.value.unitMap, unitId);
 			if (specs == null) continue;
 
 			output.push({
 				unit,
 				specs,
 				resolvedPosition: getUnitResolvedVector(
-					artillery.unitMap.value,
+					artillery.sharedState.currentState.value.unitMap,
 					unit.id
 				).addVector(
 					artillery.getWindOffset(unit.id).scale(unit.type === UnitType.Artillery ? 1 : -1)
@@ -90,7 +90,7 @@
 		}[] = [];
 
 		for (const unitId of focusedUnitIds.value) {
-			const unit = artillery.unitMap.value[unitId];
+			const unit = artillery.sharedState.currentState.value.unitMap[unitId];
 			if (
 				unit.type !== UnitType.Spotter ||
 				unit.spottingType == null
@@ -101,7 +101,7 @@
 				unit,
 				specs: SPOTTING_BY_TYPE[unit.spottingType],
 				resolvedPosition: getUnitResolvedVector(
-					artillery.unitMap.value,
+					artillery.sharedState.currentState.value.unitMap,
 					unit.id
 				),
 			});

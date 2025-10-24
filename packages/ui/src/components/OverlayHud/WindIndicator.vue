@@ -2,7 +2,7 @@
 	<WindIcon
 		class="Wind__indicator"
 		:style="{
-			'--wind-deg': artillery.wind.value.azimuth,
+			'--wind-deg': artillery.sharedState.currentState.value.wind.azimuth,
 			'--viewport-deg': artillery.viewport.value.rotation,
 		}"
 	/>

@@ -1,15 +1,19 @@
-import { computed, getCurrentScope, type Ref, ref, watch, watchEffect } from 'vue';
+import {
+	computed,
+	getCurrentScope,
+	type Ref,
+	ref,
+	watch,
+	watchEffect,
+} from 'vue';
 import { useScopePerKey } from '@kaosdlanor/vue-reactivity';
 import { useEventListener, until } from '@vueuse/core';
-import { type Unit, type UnitMap, UnitType } from '@packages/data/dist/artillery/unit';
+import { type Unit, UnitType } from '@packages/data/dist/artillery/unit';
 import { Vector } from '@packages/data/dist/artillery/vector';
 import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
 import { settings } from '@/lib/settings';
-import {
-	createUnit,
-	getUnitResolvedVector,
-	getUnitSpecs,
-} from '@/lib/unit';
+import { sharedState } from '@/lib/shared-state';
+import { createUnit, getUnitResolvedVector, getUnitSpecs } from '@/lib/unit';
 import { Viewport } from '@/lib/viewport';
 import { usePrimaryUnitsByType } from './focused-units';
 import { useViewportControl } from './viewport-control';
@@ -28,9 +32,6 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	const overlayOpen = ref(false);
 	const mouseActive = ref(false);
 	const cursor = ref(Vector.fromCartesianVector({ x: 0, y: 0 }));
-	const readyToFire = ref(false);
-	const wind = ref(Vector.fromAngularVector({ azimuth: 0, distance: 0 }));
-	const unitMap = ref<UnitMap>({});
 	const unitSelector = ref<{
 		selectUnit: (unitId?: string | null) => unknown;
 		prompt?: string;
@@ -81,7 +82,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			}
 		}
 
-		const parentUnit = parentUnitId ? unitMap.value[parentUnitId] : undefined;
+		const parentUnit = parentUnitId
+			? sharedState.currentState.value.unitMap[parentUnitId]
+			: undefined;
 		const newUnit = createUnit(type, vector, parentUnitId);
 
 		if (event) {
@@ -90,15 +93,22 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 					x: event.clientX,
 					y: event.clientY,
 				})
-			);
+			).angularVector;
 			if (parentUnit) {
-				newUnit.value.vector = newUnit.value.vector.addVector(
-					getUnitResolvedVector(unitMap.value, parentUnit.id).scale(-1)
-				);
+				newUnit.value.vector = Vector.fromAngularVector(
+					newUnit.value.vector
+				).addVector(
+					getUnitResolvedVector(
+						sharedState.currentState.value.unitMap,
+						parentUnit.id
+					).scale(-1)
+				).angularVector;
 			}
 		}
 
-		unitMap.value[newUnit.value.id] = newUnit.value;
+		sharedState.produceUpdate((draft) => {
+			draft.unitMap[newUnit.value.id] = newUnit.value;
+		});
 		selectedUnit.value = newUnit.value.id;
 		options.onUnitUpdated?.(newUnit.value.id);
 
@@ -106,63 +116,72 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const removeUnit = (unitId: string) => {
-		const unit = unitMap.value[unitId];
-		if (unit == null) return;
+		sharedState.produceUpdate((draft) => {
+			const unit = draft.unitMap[unitId];
+			if (unit == null) return;
 
-		if (selectedUnit.value === unitId && unit.selectUnitOnDeletion != null) {
-			selectedUnit.value = unit.selectUnitOnDeletion;
-		} else if (selectedUnit.value === unitId && unit.parentId != null) {
-			selectedUnit.value = unit.parentId;
-		}
-		if (pinnedUnits.value.has(unitId)) {
-			pinnedUnits.value.delete(unitId);
-		}
-		if (highlightedUnits.value.has(unitId)) {
-			highlightedUnits.value.delete(unitId);
-		}
-		if (draggingUnits.value.has(unitId)) {
-			draggingUnits.value.delete(unitId);
-		}
+			if (selectedUnit.value === unitId && unit.selectUnitOnDeletion != null) {
+				selectedUnit.value = unit.selectUnitOnDeletion;
+			} else if (selectedUnit.value === unitId && unit.parentId != null) {
+				selectedUnit.value = unit.parentId;
+			}
+			if (pinnedUnits.value.has(unitId)) {
+				pinnedUnits.value.delete(unitId);
+			}
+			if (highlightedUnits.value.has(unitId)) {
+				highlightedUnits.value.delete(unitId);
+			}
+			if (draggingUnits.value.has(unitId)) {
+				draggingUnits.value.delete(unitId);
+			}
 
-		for (const otherUnit of Object.values(unitMap.value)) {
-			if (otherUnit.parentId === unitId) {
-				if (selectedUnit.value === unitId) {
-					selectedUnit.value = otherUnit.id;
+			for (const otherUnit of Object.values(
+				draft.unitMap
+			)) {
+				if (otherUnit.parentId === unitId) {
+					if (selectedUnit.value === unitId) {
+						selectedUnit.value = otherUnit.id;
+					}
+					setUnitSource(otherUnit.id, unit.parentId);
 				}
-				setUnitSource(otherUnit.id, unit.parentId);
+				if (otherUnit.selectUnitOnDeletion === unitId) {
+					delete otherUnit.selectUnitOnDeletion;
+				}
 			}
-			if (otherUnit.selectUnitOnDeletion === unitId) {
-				delete otherUnit.selectUnitOnDeletion;
+			if (selectedUnit.value === unitId) {
+				selectedUnit.value = null;
 			}
-		}
-		if (selectedUnit.value === unitId) {
-			selectedUnit.value = null;
-		}
-		delete unitMap.value[unitId];
+			delete draft.unitMap[unitId];
+		});
 		options.onUnitUpdated?.(unitId);
 	};
 
 	const setUnitSource = async (unitId: string, newParentId?: string) => {
 		try {
-			const unit = unitMap.value[unitId];
-			if (unit == null) return;
+			sharedState.produceUpdate((draft) => {
+				const unit = draft.unitMap[unitId];
+				if (unit == null) return;
 
-			let currentlyCheckingParent = newParentId;
-			while (currentlyCheckingParent != null) {
-				if (currentlyCheckingParent === unitId) {
-					setUnitSource(newParentId!, undefined);
+				let currentlyCheckingParent = newParentId;
+				while (currentlyCheckingParent != null) {
+					if (currentlyCheckingParent === unitId) {
+						setUnitSource(newParentId!, undefined);
+					}
+					currentlyCheckingParent =
+						draft.unitMap[currentlyCheckingParent]?.parentId;
 				}
-				currentlyCheckingParent =
-					unitMap.value[currentlyCheckingParent]?.parentId;
-			}
 
-			unit.vector = getUnitResolvedVector(unitMap.value, unitId);
-			if (newParentId != null) {
-				unit.vector = unit.vector.addVector(
-					getUnitResolvedVector(unitMap.value, newParentId).scale(-1)
-				);
-			}
-			unit.parentId = newParentId;
+				unit.vector = getUnitResolvedVector(
+					draft.unitMap,
+					unitId
+				).angularVector;
+				if (newParentId != null) {
+					unit.vector = Vector.fromAngularVector(unit.vector).addVector(
+						getUnitResolvedVector(draft.unitMap, newParentId).scale(-1)
+					).angularVector;
+				}
+				unit.parentId = newParentId;
+			});
 			options.onUnitUpdated?.(unitId);
 		} catch (e) {
 			new Notification('FoxFall error', {
@@ -172,42 +191,52 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const getWindOffset = (unitId: string) => {
-		const specs = getUnitSpecs(unitMap.value, unitId);
+		const specs = getUnitSpecs(sharedState.currentState.value.unitMap, unitId);
 		if (specs == null) return Vector.fromCartesianVector({ x: 0, y: 0 });
-		return wind.value.scale(specs.WIND_OFFSET);
+		return Vector.fromAngularVector(sharedState.currentState.value.wind).scale(
+			specs.WIND_OFFSET
+		);
 	};
 
 	const getFiringVector = (artilleryId: string, targetId: string) => {
-		const selectedArtilleryUnit = unitMap.value[artilleryId];
-		const selectedTargetUnit = unitMap.value[targetId];
+		const selectedArtilleryUnit =
+			sharedState.currentState.value.unitMap[artilleryId];
+		const selectedTargetUnit = sharedState.currentState.value.unitMap[targetId];
 
 		if (selectedArtilleryUnit == null || selectedTargetUnit == null)
 			return undefined;
 
 		const resolvedArtillery = getUnitResolvedVector(
-			unitMap.value,
+			sharedState.currentState.value.unitMap,
 			selectedArtilleryUnit.id
 		);
 		const resolvedTarget = getUnitResolvedVector(
-			unitMap.value,
+			sharedState.currentState.value.unitMap,
 			selectedTargetUnit.id
 		);
 		const firingVector = resolvedArtillery.getRelativeOffset(resolvedTarget);
-		const firingVectorWithWind = firingVector.addVector(getWindOffset(selectedArtilleryUnit.id).scale(-1));
+		const firingVectorWithWind = firingVector.addVector(
+			getWindOffset(selectedArtilleryUnit.id).scale(-1)
+		);
 		return firingVectorWithWind;
 	};
 
 	const calibrateWind = async () => {
 		assertCanEditWind();
-		const availableUnits = Object.keys(unitMap.value).filter(
+		const availableUnits = Object.keys(
+			sharedState.currentState.value.unitMap
+		).filter(
 			(unitId) =>
-				unitMap.value[unitId].type === UnitType.Target &&
-				unitMap.value[unitId].parentId != null
+				sharedState.currentState.value.unitMap[unitId].type ===
+					UnitType.Target &&
+				sharedState.currentState.value.unitMap[unitId].parentId != null
 		);
 		if (
 			selectedUnit.value != null &&
-			unitMap.value[selectedUnit.value]?.type === UnitType.Target &&
-			unitMap.value[selectedUnit.value].parentId != null
+			sharedState.currentState.value.unitMap[selectedUnit.value]?.type ===
+				UnitType.Target &&
+			sharedState.currentState.value.unitMap[selectedUnit.value].parentId !=
+				null
 		) {
 			availableUnits.unshift(selectedUnit.value);
 		} else if (selectedUnit.value != null) {
@@ -224,11 +253,12 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		const originalBaseUnit = baseUnit;
 		if (
 			baseUnit != null &&
-			unitMap.value[baseUnit] != null &&
-			unitMap.value[baseUnit].type === UnitType.Target &&
-			unitMap.value[baseUnit].parentId != null
+			sharedState.currentState.value.unitMap[baseUnit] != null &&
+			sharedState.currentState.value.unitMap[baseUnit].type ===
+				UnitType.Target &&
+			sharedState.currentState.value.unitMap[baseUnit].parentId != null
 		) {
-			baseUnit = unitMap.value[baseUnit].parentId!;
+			baseUnit = sharedState.currentState.value.unitMap[baseUnit].parentId!;
 		}
 
 		const initalSelectedUnit = selectedUnit.value;
@@ -240,6 +270,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			undefined,
 			baseUnit
 		);
+		// TODO : move selectUnitOnDeletion to a map outside of the shared state
 		newUnit.value.selectUnitOnDeletion = originalBaseUnit ?? baseUnit;
 		selectedUnit.value = newUnit.value.id;
 		if (!overlayWasOpen) {
@@ -255,7 +286,10 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			)
 				.toBe(true)
 				.then(() => {
-					if (selectedUnit.value === newUnit.value.id || selectedUnit.value == null) {
+					if (
+						selectedUnit.value === newUnit.value.id ||
+						selectedUnit.value == null
+					) {
 						selectedUnit.value = initalSelectedUnit;
 					}
 					removeUnit(newUnit.value.id);
@@ -267,17 +301,24 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const editTarget = async () => {
-		const targets = Object.keys(unitMap.value).filter(
+		const targets = Object.keys(sharedState.currentState.value.unitMap).filter(
 			(unitId) =>
-				unitMap.value[unitId].type === UnitType.Target &&
-				unitMap.value[unitId].parentId != null
+				sharedState.currentState.value.unitMap[unitId].type ===
+					UnitType.Target &&
+				sharedState.currentState.value.unitMap[unitId].parentId != null
 		);
 		const target = targets.includes(selectedUnit.value!)
 			? selectedUnit.value
 			: targets[0];
 		if (target == null) {
 			new Notification('FoxFall error', {
-				body: Object.keys(unitMap.value).some((unitId) => unitMap.value[unitId].type === UnitType.Target) ? 'Target units are not positioned from a parent unit' : 'No target unit found',
+				body: Object.keys(sharedState.currentState.value.unitMap).some(
+					(unitId) =>
+						sharedState.currentState.value.unitMap[unitId].type ===
+						UnitType.Target
+				)
+					? 'Target units are not positioned from a parent unit'
+					: 'No target unit found',
 			});
 			return;
 		}
@@ -308,7 +349,10 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	const primaryUnitsByType = usePrimaryUnitsByType();
 
 	const selectedFiringPair = computed(() => {
-		if (primaryUnitsByType.value[UnitType.Artillery] == null || primaryUnitsByType.value[UnitType.Target] == null)
+		if (
+			primaryUnitsByType.value[UnitType.Artillery] == null ||
+			primaryUnitsByType.value[UnitType.Target] == null
+		)
 			return undefined;
 		return {
 			artillery: primaryUnitsByType.value[UnitType.Artillery].id,
@@ -317,8 +361,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	});
 
 	const selectedFiringVector = computed(() => {
-		if (selectedFiringPair.value == null)
-			return undefined;
+		if (selectedFiringPair.value == null) return undefined;
 		return getFiringVector(
 			selectedFiringPair.value.artillery,
 			selectedFiringPair.value.target
@@ -341,7 +384,10 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			return;
 		}
 
-		const specs = getUnitSpecs(unitMap.value, artilleryUnit.id);
+		const specs = getUnitSpecs(
+			sharedState.currentState.value.unitMap,
+			artilleryUnit.id
+		);
 		if (specs == null) {
 			new Notification('FoxFall error', {
 				body: 'Artillery type not selected',
@@ -351,14 +397,21 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 
 		const overlayWasOpen = overlayOpen.value;
 
-		overridingFiringSolution.value = { unitIdFrom: artilleryUnit.id, unitIdTo: targetUnit.id };
+		overridingFiringSolution.value = {
+			unitIdFrom: artilleryUnit.id,
+			unitIdTo: targetUnit.id,
+		};
 		if (!overlayWasOpen) {
 			window.electronApi?.toggleOverlay();
 		}
 
 		overlayOpen.value = true;
 		currentScope.run(() => {
-			until(computed(() => overridingFiringSolution.value == null || !overlayOpen.value))
+			until(
+				computed(
+					() => overridingFiringSolution.value == null || !overlayOpen.value
+				)
+			)
 				.toBe(true)
 				.then(() => {
 					if (!overlayWasOpen && overlayOpen.value) {
@@ -371,8 +424,12 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	const windMultiplier = computed(() => {
 		const windMultipliers = Array.from(
 			new Set(
-				Object.keys(unitMap.value)
-					.map((unitId) => getUnitSpecs(unitMap.value, unitId)?.WIND_OFFSET)
+				Object.keys(sharedState.currentState.value.unitMap)
+					.map(
+						(unitId) =>
+							getUnitSpecs(sharedState.currentState.value.unitMap, unitId)
+								?.WIND_OFFSET
+					)
 					.filter((windOffset) => windOffset != null)
 			)
 		);
@@ -389,7 +446,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		assertCanEditWind();
 		const _windMultiplier = windMultiplier.value!;
 		try {
-			const unit = unitMap.value[unitId];
+			const unit = sharedState.currentState.value.unitMap[unitId];
 			if (unit == null) return;
 			if (unit.type !== UnitType.LandingZone) {
 				throw new Error('Only landing zones can update wind');
@@ -398,14 +455,21 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				throw new Error('No artillery found');
 			}
 
-			const windCorrection = getUnitResolvedVector(unitMap.value, selectedFiringPair.value.artillery)
+			const windCorrection = getUnitResolvedVector(
+				sharedState.currentState.value.unitMap,
+				selectedFiringPair.value.artillery
+			)
 				.addVector(firingSolution)
 				.addVector(getWindOffset(selectedFiringPair.value.artillery))
 				.scale(-1)
-				.addVector(getUnitResolvedVector(unitMap.value, unit.id));
-			wind.value = wind.value.addVector(
-				windCorrection.scale(1 / _windMultiplier)
-			);
+				.addVector(
+					getUnitResolvedVector(sharedState.currentState.value.unitMap, unit.id)
+				);
+			sharedState.produceUpdate((draft) => {
+				draft.wind = Vector.fromAngularVector(draft.wind).addVector(
+					windCorrection.scale(1 / _windMultiplier)
+				).angularVector;
+			});
 			options.onWindUpdated?.();
 
 			removeUnit(unitId);
@@ -417,15 +481,22 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const resetWind = () => {
-		wind.value = Vector.fromAngularVector({ azimuth: 0, distance: 0 });
+		sharedState.produceUpdate((draft) => {
+			draft.wind = Vector.fromAngularVector({ azimuth: 0, distance: 0 });
+		});
 		options.onWindUpdated?.();
 	};
 
 	const resetViewport = () => {
 		if (!settings.value.lockRotate) viewport.value.resetRotation();
 
-		const unitVectors = Object.values(unitMap.value).map((unit) => {
-			return getUnitResolvedVector(unitMap.value, unit.id);
+		const unitVectors = Object.values(
+			sharedState.currentState.value.unitMap
+		).map((unit) => {
+			return getUnitResolvedVector(
+				sharedState.currentState.value.unitMap,
+				unit.id
+			);
 		});
 
 		const center = unitVectors
@@ -455,21 +526,24 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		if (!settings.value.lockPan) viewport.value.panTo(center);
 	};
 
-	useScopePerKey(unitMap, (key) => {
-		watchEffect(() => {
-			const unit = unitMap.value[key];
-			if (unit?.parentId == null) return;
-			const parent = unitMap.value[unit.parentId];
-			if (parent == null) {
-				removeUnit(unit.id);
-			}
-		});
-	});
+	useScopePerKey(
+		computed(() => sharedState.currentState.value.unitMap),
+		(key) => {
+			watchEffect(() => {
+				const unit = sharedState.currentState.value.unitMap[key];
+				if (unit?.parentId == null) return;
+				const parent = sharedState.currentState.value.unitMap[unit.parentId];
+				if (parent == null) {
+					removeUnit(unit.id);
+				}
+			});
+		}
+	);
 
 	useEventListener('keydown', (event) => {
 		if (event.key === 'Tab' && event.ctrlKey) {
 			event.preventDefault();
-			const unitIdList = Object.keys(unitMap.value);
+			const unitIdList = Object.keys(sharedState.currentState.value.unitMap);
 
 			if (selectedUnit.value == null) {
 				selectedUnit.value =
@@ -492,6 +566,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		} else if (event.key === 'Delete' && event.ctrlKey && selectedUnit.value) {
 			event.preventDefault();
 			removeUnit(selectedUnit.value);
+		} else if (event.key === 'z' && event.ctrlKey && sharedState.lastUpdate != null) {
+			event.preventDefault();
+			sharedState.purgeUpdate(sharedState.lastUpdate);
 		}
 	});
 
@@ -540,9 +617,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 
 		overlayOpen,
 		cursor,
-		wind,
-		unitMap,
-		readyToFire,
+		sharedState,
 		unitSelector,
 		selectedUnit,
 		pinnedUnits,

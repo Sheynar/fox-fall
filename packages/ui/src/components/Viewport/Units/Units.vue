@@ -1,9 +1,9 @@
 <template>
 	<div class="Units__container">
 		<UnitProvider
-			v-for="unitId in Object.keys(artillery.unitMap.value)"
+			v-for="unitId in Object.keys(artillery.sharedState.currentState.value.unitMap)"
 			:key="unitId"
-			:unit="artillery.unitMap.value[unitId]"
+			:unit="artillery.sharedState.currentState.value.unitMap[unitId]"
 		>
 			<UnitComponent
 				@create-child="artillery.addUnit($event, undefined, undefined, unitId)"
@@ -14,11 +14,11 @@
 			/>
 		</UnitProvider>
 		<UnitLink
-			v-for="unitId in Object.keys(artillery.unitMap.value).filter(
-				(unitId) => artillery.unitMap.value[unitId].parentId != null
+			v-for="unitId in Object.keys(artillery.sharedState.currentState.value.unitMap).filter(
+				(unitId) => artillery.sharedState.currentState.value.unitMap[unitId].parentId != null
 			)"
 			:key="unitId"
-			:unit-id-from="artillery.unitMap.value[unitId].parentId!"
+			:unit-id-from="artillery.sharedState.currentState.value.unitMap[unitId].parentId!"
 			:unit-id-to="unitId"
 		/>
 	</div>
