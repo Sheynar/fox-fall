@@ -4,7 +4,7 @@
 		v-model="modelValue"
 		:autofocus="props.autofocus"
 		:allowEmpty="props.allowEmpty"
-		@focus="inputElement.select()"
+		@focus="inputElement?.select()"
 	/>
 </template>
 
@@ -14,7 +14,7 @@
 
 	const primeInputText = shallowRef<InstanceType<typeof PrimeInputText>>(null!);
 	const inputElement = computed(
-		() => (primeInputText.value as any).$el as HTMLInputElement
+		() => (primeInputText.value as any)?.$el as HTMLInputElement | undefined
 	);
 
 	const props = defineProps<{
@@ -26,7 +26,7 @@
 	onMounted(() => {
 		if (props.autofocus) {
 			nextTick(() => {
-				inputElement.value.select();
+				inputElement.value?.select();
 			});
 		}
 	});

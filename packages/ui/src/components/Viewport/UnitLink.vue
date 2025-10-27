@@ -47,7 +47,7 @@
 		stroke: currentColor;
 		stroke-width: 1px;
 		fill: currentColor;
-		filter: url(#outline);
+		filter: url(#outline-black);
 	}
 </style>
 

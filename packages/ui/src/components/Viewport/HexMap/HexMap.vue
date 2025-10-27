@@ -87,7 +87,7 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		filter: url(#outline-inset);
+		filter: url(#outline-black-inset);
 	}
 
 	.HexMap__hex-label {
@@ -100,7 +100,7 @@
 		font-size: 12px;
 		font-weight: bold;
 		color: #fff;
-		filter: url(#outline);
+		filter: url(#outline-black);
 	}
 </style>
 

@@ -21,12 +21,12 @@
 			<div class="UnitSettings__table">
 				<div class="UnitSettings__row">
 					<span>Type:</span>
-					<IconSelect
+					<FoxSelect
 						class="UnitSettings__select"
-						v-model="selectedUnitType"
+						v-model="unit.type"
 						:disabled="props.readonly"
+						enable-search
 						:options="unitTypeOptions"
-						optionLabel="label"
 					/>
 				</div>
 				<template v-if="settings.userMode === UserMode.Advanced">
@@ -48,7 +48,7 @@
 					</div>
 					<div
 						class="UnitSettings__row"
-						v-if="unit.type === UnitType.Artillery && unit.ammunition != null"
+						v-if="unit.type === UnitType.Artillery"
 					>
 						<span>Platform:</span>
 						<PlatformSelect
@@ -64,16 +64,16 @@
 					</div>
 					<div class="UnitSettings__row" v-if="unit.type === UnitType.Spotter">
 						<span>Spotting type:</span>
-						<IconSelect
+						<FoxSelect
 							class="UnitSettings__select"
-							filter
-							showClear
-							v-model="selectedSpottingType"
-							placeholder="Select spotter type"
+							enable-search
+							enable-clear
+							v-model="unit.spottingType"
 							:disabled="props.readonly"
 							:options="spottingTypeOptions"
-							optionLabel="label"
-						/>
+						>
+							<template #placeholder>Select spotter type</template>
+						</FoxSelect>
 					</div>
 					<div class="UnitSettings__row">
 						<span>Positioned from:</span>
@@ -424,7 +424,10 @@
 	import PrimeInputText from 'primevue/inputtext';
 	import { computed, markRaw, ref, shallowRef, watch } from 'vue';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
-	import { SPOTTING_BY_TYPE, SPOTTING_TYPE } from '@packages/data/dist/artillery/unit/constants';
+	import {
+		SPOTTING_BY_TYPE,
+		SPOTTING_TYPE,
+	} from '@packages/data/dist/artillery/unit/constants';
 	import { UnitType } from '@packages/data/dist/artillery/unit';
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import DragIcon from '@/components/icons/DragIcon.vue';
@@ -433,9 +436,9 @@
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
 	import WindIcon from '@/components/icons/WindIcon.vue';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
-	import IconSelect from '@/components/inputs/IconSelect.vue';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
+	import FoxSelect from '@/components/inputs/FoxSelect.vue';
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
 	import { injectUnit } from '@/contexts/unit';
@@ -477,27 +480,33 @@
 	);
 
 	const unitTypeOptions = computed(() => {
-		return getAvailableUnitTypes().map((type) => ({
-			label: UnitType[type],
-			icon: markRaw(UNIT_ICON_BY_TYPE[type]),
-			value: type,
-		}));
-	});
-	const selectedUnitType = computed({
-		get: () =>
-			unitTypeOptions.value.find((option) => option.value === unit.value.type),
-		set: (option) => {
-			unit.value.type = option?.value ?? UnitType.Artillery;
-			emit('updated');
-		},
+		const output: Map<UnitType, { label: string; icon?: any; order: number }> =
+			new Map();
+		for (const [index, type] of (
+			getAvailableUnitTypes() as UnitType[]
+		).entries()) {
+			output.set(type, {
+				label: UnitType[type],
+				icon: markRaw(UNIT_ICON_BY_TYPE[type]),
+				order: index,
+			});
+		}
+		return output;
 	});
 
 	const spottingTypeOptions = computed(() => {
-		return (Object.keys(SPOTTING_BY_TYPE) as SPOTTING_TYPE[]).map((type) => ({
-			label: type,
-			icon: ICONS[type],
-			value: type,
-		}));
+		const output: Map<
+			SPOTTING_TYPE,
+			{ label: string; icon?: any; order: number }
+		> = new Map();
+		for (const [index, type] of (
+			Object.keys(SPOTTING_BY_TYPE) as SPOTTING_TYPE[]
+		)
+			.sort()
+			.entries()) {
+			output.set(type, { label: type, icon: ICONS[type], order: index });
+		}
+		return output;
 	});
 	const selectedSpottingType = computed({
 		get: () =>

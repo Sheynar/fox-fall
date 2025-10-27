@@ -80,6 +80,12 @@
 			.Unit__border {
 				outline-color: var(--color-selected);
 			}
+
+			.Unit__label {
+				color: var(--color-selected);
+				filter: url(#outline-white);
+				font-weight: bold;
+			}
 		}
 
 		&:not(:focus-within):not(.Unit__moving):not(.Unit__highlighted) {
@@ -104,7 +110,7 @@
 		z-index: -1;
 		background: var(--color-primary-contrast);
 		outline: 0.2em solid var(--color-primary);
-		filter: url(#outline);
+		filter: url(#outline-black);
 
 		transform-origin: 50% 50%;
 		transform: rotate(45deg);
@@ -122,7 +128,7 @@
 		pointer-events: none;
 		user-select: none;
 		white-space: nowrap;
-		filter: url(#outline);
+		filter: url(#outline-black);
 	}
 
 	.Unit__icon {

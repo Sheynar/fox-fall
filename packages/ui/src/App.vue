@@ -17,7 +17,8 @@
 		class="App__container"
 		:class="{
 			App__transparent: isOverlay && settings.transparentOverlay,
-			App__hidden: !artillery.overlayOpen.value && !settings.overlayAlwaysVisible,
+			App__hidden:
+				!artillery.overlayOpen.value && !settings.overlayAlwaysVisible,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
 		@touchstart.prevent
@@ -32,7 +33,10 @@
 				!artillery.viewportControl.screenShotting.value
 			"
 		>
-			<Grid v-if="settings.backdropMode === BackdropMode.Grid" @contextMenu="onContextMenu" />
+			<Grid
+				v-if="settings.backdropMode === BackdropMode.Grid"
+				@contextMenu="onContextMenu"
+			/>
 
 			<Viewport />
 
@@ -62,12 +66,12 @@
 
 		<svg>
 			<defs>
-				<filter id="outline">
+				<filter id="outline-black">
 					<feMorphology
 						in="SourceGraphic"
 						result="DILATED"
 						operator="dilate"
-						radius="1"
+						radius="2"
 					/>
 					<feColorMatrix
 						in="DILATED"
@@ -86,11 +90,47 @@
 						<feMergeNode in="SourceGraphic" />
 					</feMerge>
 				</filter>
-				<filter id="outline-inset">
+				<filter id="outline-white">
+					<feMorphology
+						in="SourceGraphic"
+						result="DILATED"
+						operator="dilate"
+						radius="2"
+					/>
+					<feColorMatrix
+						in="DILATED"
+						result="OUTLINED"
+						type="matrix"
+						values="
+						1 1 1 0 0
+						1 1 1 0 0
+						1 1 1 0 0
+						0 0 0 1 0
+					"
+					/>
+
+					<feMerge>
+						<feMergeNode in="OUTLINED" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+				<filter id="outline-black-inset">
 					<feFlood flood-color="black" result="inside-color" />
 					<feComposite in2="SourceAlpha" operator="in" result="inside-stroke" />
 					<!--fill-area-->
-					<feMorphology in="SourceAlpha" operator="erode" radius="1" />
+					<feMorphology in="SourceAlpha" operator="erode" radius="2" />
+					<feComposite in="SourceGraphic" operator="in" result="fill-area" />
+
+					<feMerge>
+						<feMergeNode in="inside-stroke" />
+						<feMergeNode in="fill-area" />
+					</feMerge>
+				</filter>
+				<filter id="outline-white-inset">
+					<feFlood flood-color="white" result="inside-color" />
+					<feComposite in2="SourceAlpha" operator="in" result="inside-stroke" />
+					<!--fill-area-->
+					<feMorphology in="SourceAlpha" operator="erode" radius="2" />
 					<feComposite in="SourceGraphic" operator="in" result="fill-area" />
 
 					<feMerge>
@@ -183,16 +223,15 @@
 		}
 	};
 	const contextMenuOptions = computed(() => {
-		const standaloneOnly = settings.value.userMode === UserMode.Basic || artillery.selectedUnit.value == null;
+		const standaloneOnly =
+			settings.value.userMode === UserMode.Basic ||
+			artillery.selectedUnit.value == null;
 
 		const availableUnitTypes = getAvailableUnitTypes();
 
 		const output: MenuItem[] = [
 			{
-				label:
-					!standaloneOnly
-						? 'Add standalone unit'
-						: 'Add unit',
+				label: !standaloneOnly ? 'Add standalone unit' : 'Add unit',
 				items: availableUnitTypes.map((unitType) => ({
 					label: `${UnitType[unitType]}`,
 					icon: UNIT_ICON_BY_TYPE[unitType],

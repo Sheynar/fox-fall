@@ -40,15 +40,15 @@
 						</div>
 						<div class="Settings__row">
 							<label>Backdrop mode</label>
-							<PrimeSelect
+							<FoxSelect
 								:options="
-									Object.keys(BackdropMode).map((backdropMode) => ({
-										id: BackdropMode[backdropMode as keyof typeof BackdropMode],
-										label: backdropMode,
-									}))
+									new Map(
+										Object.keys(BackdropMode).map((backdropMode) => [
+											BackdropMode[backdropMode as keyof typeof BackdropMode],
+											{ label: backdropMode },
+										])
+									)
 								"
-								optionLabel="label"
-								optionValue="id"
 								v-model="settings.backdropMode"
 								@update:model-value="saveSettings"
 							/>
@@ -58,30 +58,30 @@
 							v-if="settings.backdropMode === BackdropMode.Map"
 						>
 							<label>Map source</label>
-							<PrimeSelect
+							<FoxSelect
 								:options="
-									Object.keys(MapSource).map((mapSource) => ({
-										id: MapSource[mapSource as keyof typeof MapSource],
-										label: mapSource,
-									}))
+									new Map(
+										Object.keys(MapSource).map((mapSource) => [
+											MapSource[mapSource as keyof typeof MapSource],
+											{ label: mapSource },
+										])
+									)
 								"
-								optionLabel="label"
-								optionValue="id"
 								v-model="settings.mapSource"
 								@update:model-value="saveSettings"
 							/>
 						</div>
 						<div class="Settings__row">
 							<label>User mode</label>
-							<PrimeSelect
+							<FoxSelect
 								:options="
-									Object.keys(UserMode).map((userMode) => ({
-										id: UserMode[userMode as keyof typeof UserMode],
-										label: userMode,
-									}))
+									new Map(
+										Object.keys(UserMode).map((userMode) => [
+											UserMode[userMode as keyof typeof UserMode],
+											{ label: userMode },
+										])
+									)
 								"
-								optionLabel="label"
-								optionValue="id"
 								v-model="settings.userMode"
 								@update:model-value="saveSettings"
 							/>
@@ -315,17 +315,17 @@
 						</div>
 						<div class="Settings__row" v-if="!updateConfig.disableUpdates">
 							<label>Update check frequency</label>
-							<PrimeSelect
-								:options="[
-									{ id: 0, label: 'Only on startup' },
-									{ id: 12 * 60 * 60 * 1000, label: 'Every 12 hours' },
-									{ id: 6 * 60 * 60 * 1000, label: 'Every 6 hours' },
-									{ id: 3 * 60 * 60 * 1000, label: 'Every 3 hours' },
-									{ id: 60 * 60 * 1000, label: 'Every hour' },
-									{ id: 30 * 60 * 1000, label: 'Every 30 minutes' },
-								]"
-								optionLabel="label"
-								optionValue="id"
+							<FoxSelect
+								:options="
+									new Map([
+										[0, { label: 'Only on startup' }],
+										[12 * 60 * 60 * 1000, { label: 'Every 12 hours' }],
+										[6 * 60 * 60 * 1000, { label: 'Every 6 hours' }],
+										[3 * 60 * 60 * 1000, { label: 'Every 3 hours' }],
+										[60 * 60 * 1000, { label: 'Every hour' }],
+										[30 * 60 * 1000, { label: 'Every 30 minutes' }],
+									])
+								"
 								:model-value="updateConfig.updateInterval ?? 0"
 								@update:model-value="
 									updateConfig.updateInterval = $event;
@@ -364,17 +364,18 @@
 </style>
 
 <script setup lang="ts">
-	import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
-	import type { UpdateConfig } from '@packages/data/dist/update-config';
+	import { ref } from 'vue';
 	import PrimeDialog from 'primevue/dialog';
 	import PrimeCheckBox from 'primevue/checkbox';
-	import PrimeSelect from 'primevue/select';
 	import Tab from 'primevue/tab';
 	import Tabs from 'primevue/tabs';
 	import TabList from 'primevue/tablist';
 	import TabPanel from 'primevue/tabpanel';
 	import TabPanels from 'primevue/tabpanels';
+	import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
+	import type { UpdateConfig } from '@packages/data/dist/update-config';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
+	import FoxSelect from '@/components/inputs/FoxSelect.vue';
 	import ElectronKeyboardShortcut from '@/components/inputs/KeyboardShortcut/ElectronKeyboardShortcut.vue';
 	import NumberInput from '@/components/inputs/NumberInput.vue';
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
@@ -386,7 +387,6 @@
 		settings,
 		UserMode,
 	} from '@/lib/settings';
-	import { ref } from 'vue';
 
 	const visible = defineModel('visible', { default: false, type: Boolean });
 

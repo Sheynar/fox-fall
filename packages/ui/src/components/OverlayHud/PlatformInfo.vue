@@ -5,7 +5,6 @@
 			@update:model-value="settings.globalPlatform = undefined; saveSettings()"
 		/>
 		<PlatformSelect
-			v-if="settings.globalAmmo != null"
 			:ammo-type="settings.globalAmmo"
 			v-model="settings.globalPlatform"
 			@update:model-value="saveSettings()"

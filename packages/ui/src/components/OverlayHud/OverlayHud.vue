@@ -113,7 +113,7 @@
 
 		cursor: pointer;
 		user-select: none;
-		filter: url(#outline);
+		filter: url(#outline-black);
 	}
 
 	.Hud__viewport-controls {
@@ -124,7 +124,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5em;
-		filter: url(#outline);
+		filter: url(#outline-black);
 	}
 
 	.Hud__debug-info {
@@ -133,7 +133,7 @@
 		left: 1em;
 
 		user-select: none;
-		filter: url(#outline);
+		filter: url(#outline-black);
 	}
 </style>
 
