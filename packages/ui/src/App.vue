@@ -25,7 +25,6 @@
 		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
 		@pointermove="onPointerMove"
 		@contextmenu.prevent="onContextMenu"
-		tabindex="-1"
 	>
 		<template
 			v-if="

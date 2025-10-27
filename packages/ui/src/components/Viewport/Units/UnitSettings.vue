@@ -25,6 +25,7 @@
 						class="UnitSettings__select"
 						v-model="unit.type"
 						:disabled="props.readonly"
+						:autofocus="!parent"
 						enable-search
 						:options="unitTypeOptions"
 					/>
@@ -40,7 +41,11 @@
 							:model-value="unit.ammunition"
 							@update:model-value="
 								unit.ammunition = $event;
-								unit.platform = undefined;
+								unit.ammunition &&
+									!ARTILLERY_BY_SHELL[unit.ammunition!]?.PLATFORM[
+										unit.platform!
+									] &&
+									(unit.platform = undefined);
 								emit('updated');
 							"
 							:disabled="props.readonly"
@@ -425,6 +430,7 @@
 	import { computed, markRaw, ref, shallowRef, watch } from 'vue';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import {
+		ARTILLERY_BY_SHELL,
 		SPOTTING_BY_TYPE,
 		SPOTTING_TYPE,
 	} from '@packages/data/dist/artillery/unit/constants';
@@ -507,16 +513,6 @@
 			output.set(type, { label: type, icon: ICONS[type], order: index });
 		}
 		return output;
-	});
-	const selectedSpottingType = computed({
-		get: () =>
-			spottingTypeOptions.value.find(
-				(option) => option.value === unit.value.spottingType
-			),
-		set: (option) => {
-			unit.value.spottingType = option?.value;
-			emit('updated');
-		},
 	});
 
 	const parent = computed(() =>

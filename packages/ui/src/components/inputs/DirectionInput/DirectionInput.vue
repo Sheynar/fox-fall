@@ -116,7 +116,7 @@
 	onMounted(() => {
 		if (props.autofocus) {
 			nextTick(() => {
-				inputElement.value.select();
+				inputElement.value?.select();
 			});
 		}
 	});

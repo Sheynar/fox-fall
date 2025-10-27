@@ -2,7 +2,14 @@
 	<div class="PlatformInfo__container">
 		<AmmoSelect
 			v-model="settings.globalAmmo"
-			@update:model-value="settings.globalPlatform = undefined; saveSettings()"
+			@update:model-value="
+				settings.globalAmmo &&
+					!ARTILLERY_BY_SHELL[settings.globalAmmo!]?.PLATFORM[
+						settings.globalPlatform!
+					] &&
+					(settings.globalPlatform = undefined);
+				saveSettings();
+			"
 		/>
 		<PlatformSelect
 			:ammo-type="settings.globalAmmo"
@@ -25,6 +32,7 @@
 </style>
 
 <script setup lang="ts">
+	import { ARTILLERY_BY_SHELL } from '@packages/data/dist/artillery/unit/constants';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import { saveSettings, settings } from '@/lib/settings';

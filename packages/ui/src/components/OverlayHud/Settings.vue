@@ -94,7 +94,14 @@
 							}}</label>
 							<AmmoSelect
 								v-model="settings.globalAmmo"
-								@update:model-value="saveSettings"
+								@update:model-value="
+									settings.globalAmmo &&
+										!ARTILLERY_BY_SHELL[settings.globalAmmo!]?.PLATFORM[
+											settings.globalPlatform!
+										] &&
+										(settings.globalPlatform = undefined);
+									saveSettings();
+								"
 							/>
 						</div>
 						<div class="Settings__row" v-if="settings.globalAmmo != null">
@@ -372,6 +379,7 @@
 	import TabList from 'primevue/tablist';
 	import TabPanel from 'primevue/tabpanel';
 	import TabPanels from 'primevue/tabpanels';
+	import { ARTILLERY_BY_SHELL } from '@packages/data/dist/artillery/unit/constants';
 	import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
 	import type { UpdateConfig } from '@packages/data/dist/update-config';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';

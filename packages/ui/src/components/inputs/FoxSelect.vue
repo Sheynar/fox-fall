@@ -12,13 +12,13 @@
 		tabindex="0"
 		@keydown.stop.enter="toggle()"
 		@keydown.stop.space="toggle()"
-		@keydown.stop.escape="
-			isOpen ? close() : props.enableClear ? submit(null) : undefined
-		"
+		@keydown.escape="isOpen ? (close(), $event.stopPropagation()) : undefined"
+		@keydown.stop.delete="props.enableClear && submit(null)"
+		@keydown.stop.backspace="props.enableClear && submit(null)"
 		@keydown.stop.arrow-up="toggle()"
 		@keydown.stop.arrow-down="toggle()"
-		@keydown.stop.tab="close()"
-		@keydown.stop.shift.tab="close()"
+		@keydown.stop.tab="isOpen ? (close(), $event.stopPropagation()) : undefined"
+		@keydown.stop.shift.tab="isOpen ? (close(), $event.stopPropagation()) : undefined"
 	>
 		<span v-if="modelValue != null" class="FoxSelect__label">
 			<slot name="label" :value="modelValue">
@@ -113,6 +113,9 @@
 		padding: 0.5em 0.75em;
 		gap: 0.5em;
 
+		background: canvas;
+		color: var(--color-primary);
+
 		border: 1px solid;
 		border-radius: 0.25em;
 		user-select: none;
@@ -178,12 +181,10 @@
 
 		&:popover-open {
 			display: flex;
-			transform: translateY(0);
-			clip-path: inset(0 0 0 0);
+			transform: rotateX(0);
 
 			@starting-style {
-				transform: translateY(-100%);
-				clip-path: inset(100% 0 0 0);
+				transform: rotateX(90deg);
 			}
 		}
 		flex-direction: column;
@@ -194,11 +195,10 @@
 		border-radius: 0.25em;
 
 		transition:
-			transform 0.1s ease-in-out,
-			clip-path 0.1s ease-in-out;
+			transform 0.1s ease-in-out;
 		transition-behavior: allow-discrete;
-		transform: translateY(0);
-		clip-path: inset(0 0 0 0);
+		transform: rotateX(0);
+		transform-origin: top center;
 	}
 
 	.FoxSelect__option {
@@ -220,7 +220,7 @@
 </style>
 
 <script setup lang="ts">
-	import { computed, ref, shallowRef, watch } from 'vue';
+	import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue';
 	import TextInput from './TextInput.vue';
 
 	const containerElement = shallowRef<HTMLSpanElement>(null!);
@@ -238,6 +238,7 @@
 			any,
 			{ label: string; searchKeys?: string[]; icon?: any; order?: number }
 		>;
+		autofocus?: boolean;
 		enableSearch?: boolean;
 		enableClear?: boolean;
 	}>();
@@ -349,6 +350,16 @@
 		close();
 	};
 
+	const focus = () => containerElement.value!.focus();
+
+	onMounted(() => {
+		if (props.autofocus) {
+			nextTick(() => {
+				focus();
+			});
+		}
+	});
+
 	const onOptionsEnter = () => {
 		let newValue = focused.value;
 		if (newValue == null && finalValues.value.length === 1)
@@ -357,4 +368,16 @@
 
 		submit(newValue?.value);
 	};
+
+	defineExpose({
+		containerElement,
+		optionsElement,
+		searchInputElement,
+
+		open,
+		close,
+		toggle,
+		focus,
+		submit,
+	});
 </script>

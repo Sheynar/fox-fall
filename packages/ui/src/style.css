@@ -13,6 +13,7 @@
 	--color-primary-contrast: #242424;
 
 	--color-selected: #6900cc;
+	--p-inputtext-focus-border-color: var(--color-selected) !important;
 }
 
 body {
