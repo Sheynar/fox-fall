@@ -34,7 +34,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "electron": "^38.4.0",
-    "electron-builder": "26.1.0",
+    "electron-builder": "24.6.3",
     "prettier": "^3.0.3",
     "rimraf": "^6.0.1",
     "typescript": "^5.2.2"
