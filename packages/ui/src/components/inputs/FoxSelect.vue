@@ -10,17 +10,23 @@
 		"
 		@pointerdown.stop.prevent
 		tabindex="0"
-		@keydown.stop.enter="toggle()"
-		@keydown.stop.space="toggle()"
-		@keydown.escape="isOpen ? (close(), $event.stopPropagation()) : undefined"
-		@keydown.stop.delete="props.enableClear && submit(null)"
-		@keydown.stop.backspace="props.enableClear && submit(null)"
-		@keydown.stop.arrow-up="toggle()"
-		@keydown.stop.arrow-down="toggle()"
-		@keydown.tab="isOpen ? (close(), $event.stopPropagation()) : undefined"
-		@keydown.shift.tab="
-			isOpen ? (close(), $event.stopPropagation()) : undefined
+		@keydown.enter="toggle()"
+		@keydown.space="toggle()"
+		@keydown.escape="isOpen && close()"
+		@keydown.delete="
+			props.enableClear &&
+				modelValue != null &&
+				(submit(null), $event.stopPropagation())
 		"
+		@keydown.backspace="
+			props.enableClear &&
+				modelValue != null &&
+				(submit(null), $event.stopPropagation())
+		"
+		@keydown.arrow-up="toggle()"
+		@keydown.arrow-down="toggle()"
+		@keydown.tab="isOpen && close()"
+		@keydown.shift.tab="isOpen && close()"
 	>
 		<span v-if="modelValue != null" class="FoxSelect__label">
 			<slot name="label" :value="modelValue">
@@ -79,11 +85,22 @@
 				"
 				v-model="searchString"
 				placeholder="Search"
-				@keydown.escape="searchString ? ($event.stopPropagation(), $event.preventDefault(), searchString = '') : undefined"
+				@keydown.escape="
+					searchString
+						? ($event.stopPropagation(),
+							$event.preventDefault(),
+							(searchString = ''))
+						: undefined
+				"
 			>
 				<template #icons-after>
 					<i v-if="!searchString" class="pi pi-search" />
-					<i v-else class="pi pi-times" style="pointer-events: auto; cursor: pointer;" @pointerdown.stop.prevent="searchString = ''" />
+					<i
+						v-else
+						class="pi pi-times"
+						style="pointer-events: auto; cursor: pointer"
+						@pointerdown.stop.prevent="searchString = ''"
+					/>
 				</template>
 			</FoxText>
 		</slot>
