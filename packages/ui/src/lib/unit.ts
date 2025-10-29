@@ -35,7 +35,8 @@ export const getAvailableUnitTypes = (): UnitType[] => {
 export const createUnit = (
 	type: UnitType,
 	vector: Ref<Vector>,
-	parentId?: string
+	parentId?: string,
+	specs?: Pick<Unit, 'ammunition' | 'platform' | 'spottingType'>
 ): Ref<Unit> => {
 	return ref({
 		id: generateId(),
@@ -43,6 +44,9 @@ export const createUnit = (
 		vector,
 		canDrag: parentId == null,
 		parentId,
+		ammunition: specs?.ammunition,
+		platform: specs?.platform,
+		spottingType: specs?.spottingType,
 	});
 };
 

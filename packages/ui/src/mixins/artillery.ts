@@ -67,7 +67,8 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		type: UnitType,
 		event?: PointerEvent,
 		vector?: Ref<Vector>,
-		parentUnitId?: string
+		parentUnitId?: string,
+		specs?: Pick<Unit, 'ammunition' | 'platform' | 'spottingType'>
 	) => {
 		if (vector == null) {
 			vector = ref(
@@ -82,7 +83,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		}
 
 		const parentUnit = parentUnitId ? unitMap.value[parentUnitId] : undefined;
-		const newUnit = createUnit(type, vector, parentUnitId);
+		const newUnit = createUnit(type, vector, parentUnitId, specs);
 
 		if (event) {
 			newUnit.value.vector = viewport.value.toWorldPosition(

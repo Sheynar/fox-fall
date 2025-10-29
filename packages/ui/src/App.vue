@@ -227,14 +227,14 @@
 			);
 		}
 
-		const newUnit = artillery.addUnit(
+		artillery.addUnit(
 			payload.type,
 			undefined,
 			ref(newUnitPosition),
-			artillery.selectedUnit.value || undefined
+			artillery.selectedUnit.value || undefined,
+			payload
 		);
 
-		Object.assign(newUnit.value, payload);
 		contextMenuPosition.value = null;
 	};
 </script>
