@@ -40,6 +40,6 @@ jobs:
       with:
         draft: true
         files: |
-          packages/overlay/out/FoxFall Overlay/win/FoxFall-2.4.1-win-x64.exe
-          packages/overlay/out/FoxFall Overlay/win/FoxFall-2.4.1-win-x64.exe.blockmap
+          packages/overlay/out/FoxFall Overlay/win/FoxFall-*-win-x64.exe
+          packages/overlay/out/FoxFall Overlay/win/FoxFall-*-win-x64.exe.blockmap
           packages/overlay/out/FoxFall Overlay/win/latest.yml
