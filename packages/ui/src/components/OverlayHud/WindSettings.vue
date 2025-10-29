@@ -1,13 +1,12 @@
 <template>
-	<PrimeDialog
-		append-to=".App__container"
+	<FoxDialog
 		v-model:visible="visible"
-		header="Wind"
-		position="bottomleft"
+		class="WindSettings__dialog"
 		@pointerdown.stop
 		@wheel.stop
 		:style="{ animation: 'none', transition: 'none' }"
 	>
+		<template #header>Wind</template>
 		<div class="Wind__information">
 			<div class="Wind__information__item">
 				<label>Wind direction:</label>
@@ -27,14 +26,20 @@
 				@pointerdown.stop="artillery.resetWind()"
 			/>
 		</div>
-	</PrimeDialog>
+	</FoxDialog>
 </template>
 
 <style lang="scss">
+	.WindSettings__dialog {
+		top: auto;
+		right: auto;
+	}
+
 	.Wind__information {
 		display: grid;
 		grid-template-columns: max-content 1fr;
 		gap: 1rem;
+		padding: 1rem;
 		align-items: center;
 	}
 
@@ -56,8 +61,7 @@
 
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
-	import PrimeDialog from 'primevue/dialog';
-	import { ARTILLERY_BY_SHELL } from '@packages/data/dist/artillery/unit/constants';
+	import FoxDialog from '@/components/FoxDialog.vue';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import NumberInput from '@/components/inputs/NumberInput.vue';
@@ -72,7 +76,6 @@
 		const windOffsets = Object.keys(artillery.unitMap.value).map((unitId) => getUnitSpecs(artillery.unitMap.value, unitId)?.WIND_OFFSET).filter((windOffset) => windOffset != null);
 		if (windOffsets.length > 0) return windOffsets.reduce((a, b) => a + b, 0) / windOffsets.length;
 
-		if (settings.value.globalAmmo == null || settings.value.globalPlatform == null) return null;
-		return ARTILLERY_BY_SHELL[settings.value.globalAmmo]?.PLATFORM[settings.value.globalPlatform]?.WIND_OFFSET ?? null;
+		return null;
 	});
 </script>

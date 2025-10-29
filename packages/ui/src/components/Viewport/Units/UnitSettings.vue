@@ -1,22 +1,16 @@
 <template>
-	<PrimeDialog
-		append-to=".App__container"
+	<FoxDialog
 		class="UnitSettings__dialog"
 		v-model:visible="visible"
-		:header="'Unit: ' + unitLabel"
 		:style="{
-			minWidth: '30rem',
+			minWidth: '20rem',
 			'--ui-scale': settings.unitSettingsScale,
-			'--toggle-button-size': toggleButtonStore.sizeY + 'px',
-			animation: 'none',
-			transition: 'none',
 		}"
-		position="bottomright"
-		@pointerdown.stop
-		@wheel.stop
+		tabindex="-1"
 		@show="customPosition = false"
 		@dragend="customPosition = true"
 	>
+		<template #header>Unit: {{ unitLabel }}</template>
 		<div class="UnitSettings__container" @pointerdown.stop @touchstart.stop>
 			<div class="UnitSettings__table">
 				<div class="UnitSettings__row">
@@ -93,9 +87,10 @@
 				</template>
 				<div class="UnitSettings__row">
 					<label>Name:</label>
-					<PrimeInputText
+					<FoxText
 						:readonly="props.readonly"
-						v-model="unit.label"
+						:model-value="unit.label ?? ''"
+						@update:model-value="unit.label = $event ?? undefined"
 						@input="emit('updated')"
 					/>
 				</div>
@@ -286,7 +281,10 @@
 			<div class="UnitSettings__actions">
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="canDrag = !canDrag"
+					@click.stop="
+						canDrag = !canDrag;
+						emit('updated');
+					"
 					:severity="canDrag ? 'success' : 'danger'"
 					title="Can drag"
 				>
@@ -333,22 +331,21 @@
 				</PrimeButton>
 			</div>
 		</div>
-	</PrimeDialog>
+	</FoxDialog>
 </template>
 
 <style lang="scss">
-	.UnitSettings__dialog {
-		font-size: calc(1em * var(--ui-scale) * 0.4);
-		margin-bottom: calc(0.75rem + var(--toggle-button-size)) !important;
-		margin-right: 0.75rem !important;
+	@use '@/styles/constants' as constants;
+	@use '@/styles/mixins/border' as border;
 
-		.p-dialog-title {
-			font-size: 2em;
-		}
-		.p-button-icon-only.p-button-rounded {
-			height: 2em;
-			width: 2em;
-		}
+	.UnitSettings__dialog {
+		display: grid;
+		grid-auto-rows: auto;
+		grid-template-columns: auto;
+		align-items: inherit;
+
+		top: auto;
+		left: auto;
 	}
 
 	.UnitSettings__container {
@@ -369,6 +366,7 @@
 			grid-auto-rows: min-content;
 			align-items: center;
 
+			font-size: 1.5em;
 			gap: 0.5em;
 
 			text-align: end;
@@ -425,8 +423,6 @@
 
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
-	import PrimeDialog from 'primevue/dialog';
-	import PrimeInputText from 'primevue/inputtext';
 	import { computed, markRaw, ref, shallowRef, watch } from 'vue';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import {
@@ -453,7 +449,8 @@
 	import { artillery } from '@/lib/globals';
 	import { settings, UserMode } from '@/lib/settings';
 	import { getAvailableUnitTypes, getUnitLabel } from '@/lib/unit';
-	import { useToggleButtonStore } from '@/stores/toggle-button';
+	import FoxText from '@/components/inputs/FoxText.vue';
+	import FoxDialog from '@/components/FoxDialog.vue';
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
 	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
@@ -469,7 +466,7 @@
 		type: Boolean,
 		required: true,
 	});
-	const canDrag = defineModel('canDrag', { type: Boolean, required: true });
+	const canDrag = defineModel('canDrag', { type: Boolean });
 	const langingZoneFiringSolution = ref(
 		Vector.fromCartesianVector({ x: 0, y: 0 })
 	);
@@ -478,7 +475,6 @@
 		readonly?: boolean;
 	}>();
 
-	const toggleButtonStore = useToggleButtonStore();
 	const unit = injectUnit();
 
 	const unitLabel = computed(() =>

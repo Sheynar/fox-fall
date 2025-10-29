@@ -1,12 +1,12 @@
 <template>
-	<PrimeDialog
-		append-to=".App__container"
+	<FoxDialog
+		class="Settings__dialog"
 		v-model:visible="visible"
 		:style="{ minWidth: '25vw', minHeight: '80vh' }"
-		header="Settings"
 		@pointerdown.stop
 		@wheel.stop
 	>
+		<template #header>Settings</template>
 		<Tabs value="features">
 			<TabList>
 				<Tab as="div" value="features">Feature selection</Tab>
@@ -71,6 +71,7 @@
 								@update:model-value="saveSettings"
 							/>
 						</div>
+						<!--
 						<div class="Settings__row">
 							<label>User mode</label>
 							<FoxSelect
@@ -86,36 +87,7 @@
 								@update:model-value="saveSettings"
 							/>
 						</div>
-						<div class="Settings__row">
-							<label>{{
-								settings.userMode === UserMode.Basic
-									? 'Global ammo'
-									: 'Default Ammo'
-							}}</label>
-							<AmmoSelect
-								v-model="settings.globalAmmo"
-								@update:model-value="
-									settings.globalAmmo &&
-										!ARTILLERY_BY_SHELL[settings.globalAmmo!]?.PLATFORM[
-											settings.globalPlatform!
-										] &&
-										(settings.globalPlatform = undefined);
-									saveSettings();
-								"
-							/>
-						</div>
-						<div class="Settings__row" v-if="settings.globalAmmo != null">
-							<label>{{
-								settings.userMode === UserMode.Basic
-									? 'Global platform'
-									: 'Default platform'
-							}}</label>
-							<PlatformSelect
-								:ammo-type="settings.globalAmmo"
-								v-model="settings.globalPlatform"
-								@update:model-value="saveSettings"
-							/>
-						</div>
+						-->
 						<div class="Settings__row">
 							<label>Show firing solution in bottom right</label>
 							<PrimeCheckBox
@@ -352,10 +324,14 @@
 				</TabPanel>
 			</TabPanels>
 		</Tabs>
-	</PrimeDialog>
+	</FoxDialog>
 </template>
 
 <style lang="scss">
+	.Settings__dialog .p-tabpanels {
+		flex-grow: 1
+	}
+
 	.Settings__content {
 		display: grid;
 		grid-template-columns: max-content 1fr;
@@ -372,28 +348,25 @@
 
 <script setup lang="ts">
 	import { ref } from 'vue';
-	import PrimeDialog from 'primevue/dialog';
 	import PrimeCheckBox from 'primevue/checkbox';
 	import Tab from 'primevue/tab';
 	import Tabs from 'primevue/tabs';
 	import TabList from 'primevue/tablist';
 	import TabPanel from 'primevue/tabpanel';
 	import TabPanels from 'primevue/tabpanels';
-	import { ARTILLERY_BY_SHELL } from '@packages/data/dist/artillery/unit/constants';
 	import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
 	import type { UpdateConfig } from '@packages/data/dist/update-config';
-	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
+	import FoxDialog from '@/components/FoxDialog.vue';
 	import FoxSelect from '@/components/inputs/FoxSelect.vue';
 	import ElectronKeyboardShortcut from '@/components/inputs/KeyboardShortcut/ElectronKeyboardShortcut.vue';
 	import NumberInput from '@/components/inputs/NumberInput.vue';
-	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import { isOverlay } from '@/lib/constants';
 	import {
 		BackdropMode,
 		MapSource,
 		saveSettings,
 		settings,
-		UserMode,
+		// UserMode,
 	} from '@/lib/settings';
 
 	const visible = defineModel('visible', { default: false, type: Boolean });

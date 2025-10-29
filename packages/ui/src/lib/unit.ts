@@ -41,6 +41,7 @@ export const createUnit = (
 		id: generateId(),
 		type,
 		vector,
+		canDrag: parentId == null,
 		parentId,
 	});
 };
@@ -86,23 +87,11 @@ const _getUnitSpecs = (
 	unitMap: UnitMap,
 	unitId: string
 ): ArtilleryPlatform | null => {
-	const platform =
-		(settings.value.userMode === UserMode.Advanced
-			? unitMap[unitId].platform
-			: undefined) ?? settings.value.globalPlatform;
-	if (platform == null) {
+	if (unitMap[unitId].platform == null) {
 		return null;
 	}
 
-	return ARTILLERY_BY_PLATFORM[platform] ?? null;
-};
-
-const _getGlobalSpecs = (): ArtilleryPlatform | null => {
-	if (settings.value.globalPlatform == null) {
-		return null;
-	}
-
-	return ARTILLERY_BY_PLATFORM[settings.value.globalPlatform] ?? null;
+	return ARTILLERY_BY_PLATFORM[unitMap[unitId].platform] ?? null;
 };
 
 export const getUnitSpecs = (
@@ -116,8 +105,8 @@ export const getUnitSpecs = (
 	}
 
 	if (settings.value.userMode === UserMode.Advanced) {
-		return _getUnitSpecs(unitMap, unitId) ?? _getGlobalSpecs();
+		return _getUnitSpecs(unitMap, unitId);
 	}
 
-	return _getGlobalSpecs();
+	return null;
 };

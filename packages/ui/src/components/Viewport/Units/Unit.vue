@@ -2,7 +2,7 @@
 	<PositionedElement
 		:x="resolvedVector.x"
 		:y="resolvedVector.y"
-		:layer="moving ? LAYER.UNITS_DRAGGING : LAYER.UNITS"
+		:layer="moving || isHighlighted ? LAYER.UNITS_HIGHLIGHTED : LAYER.UNITS"
 		cancel-viewport-rotation
 	>
 		<div
@@ -10,10 +10,7 @@
 			:class="{
 				Unit__moving: !!moving,
 				Unit__readonly: props.readonly,
-				Unit__highlighted:
-					artillery.pinnedUnits.value.has(unit.id) ||
-					artillery.highlightedUnits.value.has(unit.id) ||
-					open,
+				Unit__highlighted: isHighlighted,
 			}"
 			:style="{
 				'--unit-icon-scale': settings.unitIconScale,
@@ -55,7 +52,7 @@
 
 	<UnitSettings
 		v-model:visible="open"
-		v-model:can-drag="canDrag"
+		v-model:can-drag="unit.canDrag"
 		v-model:custom-position="unitSettingsHasCustomPosition"
 		@create-child="emit('create-child', $event)"
 		@remove="emit('remove')"
@@ -186,14 +183,17 @@
 		}
 		if (unit.value.type === UnitType.Artillery) {
 			const unitSpecs = getUnitSpecs(artillery.unitMap.value, unit.value.id);
-			return ICONS[unitSpecs?.PLATFORM!] ?? ICONS[unitSpecs?.AMMO_TYPE!] ?? UNIT_ICON_BY_TYPE[unit.value.type];
+			return (
+				ICONS[unitSpecs?.PLATFORM!] ??
+				ICONS[unitSpecs?.AMMO_TYPE!] ??
+				UNIT_ICON_BY_TYPE[unit.value.type]
+			);
 		}
 
 		return UNIT_ICON_BY_TYPE[unit.value.type];
 	});
 
 	const isHovered = ref(false);
-	const canDrag = ref(unit.value.parentId == null);
 	const open = computed({
 		get: () =>
 			artillery.selectedUnit.value === unit.value.id &&
@@ -205,6 +205,13 @@
 				artillery.selectedUnit.value = null;
 			}
 		},
+	});
+	const isHighlighted = computed(() => {
+		return (
+			artillery.pinnedUnits.value.has(unit.value.id) ||
+			artillery.highlightedUnits.value.has(unit.value.id) ||
+			open.value
+		);
 	});
 	const unitSettingsHasCustomPosition = ref(false);
 
@@ -234,7 +241,7 @@
 			return;
 		}
 
-		if (!canDrag.value) {
+		if (!unit.value.canDrag) {
 			open.value = !open.value;
 			return;
 		}

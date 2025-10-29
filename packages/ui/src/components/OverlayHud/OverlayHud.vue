@@ -28,6 +28,7 @@
 			>
 				<DragIcon />
 			</PrimeButton>
+			<!--
 			<PrimeButton
 				class="Dock__button"
 				raised
@@ -37,6 +38,7 @@
 			>
 				<RotateIcon />
 			</PrimeButton>
+			-->
 			<PrimeButton
 				class="Dock__button"
 				raised
@@ -63,8 +65,6 @@
 			</div>
 			<div>zoom: {{ Math.round(artillery.viewport.value.zoom * 100) }}%</div>
 		</div>
-
-		<PlatformInfo @pointerdown.stop />
 
 		<FiringSolutionOverride
 			v-if="artillery.overridingFiringSolution.value != null"
@@ -120,11 +120,17 @@
 		position: fixed;
 		top: 1em;
 		right: 12em;
+		height: 10em;
 
 		display: flex;
 		flex-direction: column;
+		justify-content: space-around;
 		gap: 0.5em;
 		filter: url(#outline-black);
+
+		.Dock__button {
+			flex: 1 0 0;
+		}
 	}
 
 	.Hud__debug-info {
@@ -144,10 +150,9 @@
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import Dock from '@/components/OverlayHud/Dock.vue';
 	import FiringSolutionOverride from '@/components/OverlayHud/FiringSolutionOverride.vue';
-	import PlatformInfo from '@/components/OverlayHud/PlatformInfo.vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
-	import RotateIcon from '@/components/icons/RotateIcon.vue';
+	// import RotateIcon from '@/components/icons/RotateIcon.vue';
 	import ZoomIcon from '@/components/icons/ZoomIcon.vue';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';

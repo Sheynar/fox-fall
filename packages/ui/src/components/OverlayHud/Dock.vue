@@ -7,7 +7,7 @@
 				raised
 				:severity="item.severity"
 				:disabled="item.disabled"
-				@pointerdown.stop="item.command()"
+				@click.stop="item.command()"
 				@pointerenter="(event) => (tooltip = { label: item.label, event })"
 				@pointerleave="tooltip = null"
 			>
@@ -60,7 +60,6 @@
 </style>
 
 <script setup lang="ts">
-	import { UnitType } from '@packages/data/dist/artillery/unit';
 	import GridIcon from '@/components/icons/GridIcon.vue';
 	import Settings from '@/components/OverlayHud/Settings.vue';
 	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
@@ -175,13 +174,6 @@
 				command: () =>
 					(interfaceVisibility.value.windSettings =
 						!interfaceVisibility.value.windSettings),
-			},
-			{
-				label: 'Add unit',
-				icons: ['pi pi-plus'],
-				severity: 'secondary',
-				command: () =>
-					artillery.addUnit(UnitType.Location, undefined, undefined),
 			},
 			readyToFireItem.value,
 			{

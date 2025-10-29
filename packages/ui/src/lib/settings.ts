@@ -1,5 +1,4 @@
 import { ref } from 'vue';
-import { AMMO_TYPE, Platform } from '@packages/data/dist/artillery/unit/constants';
 import { isOverlay } from './constants';
 
 export enum UserMode {
@@ -27,9 +26,7 @@ export const settings = ref({
 	transparentOverlay: isOverlay,
 	backdropMode: isOverlay ? BackdropMode.Grid : BackdropMode.Map,
 	mapSource: MapSource.ImprovedMapModRustardKnightEdit,
-	userMode: UserMode.Basic,
-	globalAmmo: undefined as AMMO_TYPE | undefined,
-	globalPlatform: undefined as Platform<AMMO_TYPE> | undefined,
+	userMode: UserMode.Advanced,
 
 	overlayAlwaysVisible: false,
 	useNatoAlphabet: true,
@@ -61,7 +58,9 @@ export const loadSettings = () => {
 	const savedSettings = localStorage.getItem('settings');
 	if (savedSettings != null) {
 		Object.assign(settings.value, JSON.parse(savedSettings));
+		settings.value.lockRotate = true;
+		settings.value.userMode = UserMode.Advanced;
 	}
-	console.log(JSON.parse(JSON.stringify(settings.value)));
+	console.log('settings loaded', JSON.parse(JSON.stringify(settings.value)));
 };
 loadSettings();

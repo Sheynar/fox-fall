@@ -162,6 +162,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 					getUnitResolvedVector(unitMap.value, newParentId).scale(-1)
 				);
 			}
+			unit.canDrag = newParentId == null;
 			unit.parentId = newParentId;
 			options.onUnitUpdated?.(unitId);
 		} catch (e) {

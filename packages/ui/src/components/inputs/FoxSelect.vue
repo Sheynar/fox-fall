@@ -18,7 +18,9 @@
 		@keydown.stop.arrow-up="toggle()"
 		@keydown.stop.arrow-down="toggle()"
 		@keydown.stop.tab="isOpen ? (close(), $event.stopPropagation()) : undefined"
-		@keydown.stop.shift.tab="isOpen ? (close(), $event.stopPropagation()) : undefined"
+		@keydown.stop.shift.tab="
+			isOpen ? (close(), $event.stopPropagation()) : undefined
+		"
 	>
 		<span v-if="modelValue != null" class="FoxSelect__label">
 			<slot name="label" :value="modelValue">
@@ -60,7 +62,7 @@
 		@keydown.stop.arrow-down="focusNext()"
 		@keydown.stop.enter="onOptionsEnter()"
 		@keydown.stop.escape="close()"
-		@focusout="!optionsElement.matches(':focus-within') && false && close()"
+		@focusout="!optionsElement.matches(':focus-within') && close()"
 	>
 		<slot
 			name="search-input"
@@ -69,15 +71,21 @@
 			:update-value="(value: string) => (searchString = value)"
 			:link-el="(el: HTMLInputElement) => (searchInputElement = el)"
 		>
-			<TextInput
+			<FoxText
 				:ref="
 					(el) =>
-						(searchInputElement = (el as InstanceType<typeof TextInput>)
+						(searchInputElement = (el as InstanceType<typeof FoxText>)
 							?.inputElement)
 				"
 				v-model="searchString"
 				placeholder="Search"
-			/>
+				@keydown.escape="searchString ? ($event.stopPropagation(), $event.preventDefault(), searchString = '') : undefined"
+			>
+				<template #icons-after>
+					<i v-if="!searchString" class="pi pi-search" />
+					<i v-else class="pi pi-times" style="pointer-events: auto; cursor: pointer;" @pointerdown.stop.prevent="searchString = ''" />
+				</template>
+			</FoxText>
 		</slot>
 		<li
 			class="FoxSelect__option"
@@ -106,26 +114,33 @@
 </template>
 
 <style lang="scss">
+	@use '@/styles/constants' as constants;
+	@use '@/styles/mixins/border' as border;
+
 	.FoxSelect__container {
+		position: relative;
 		display: grid;
 		grid-template-columns: 1fr auto;
 		align-items: center;
 		padding: 0.5em 0.75em;
 		gap: 0.5em;
 
-		background: canvas;
 		color: var(--color-primary);
 
-		border: 1px solid;
 		border-radius: 0.25em;
 		user-select: none;
 		cursor: pointer;
 
+		@include border.border-gradient();
+		&:hover {
+			@include border.border-gradient-hovered();
+		}
 		&.FoxSelect__container--open,
 		&:focus {
-			border-color: var(--color-selected);
-			outline: 1px solid var(--color-selected);
+			@include border.border-gradient-focused();
+			outline: none;
 		}
+		@include border.border-gradient-transition();
 	}
 
 	.FoxSelect__label,
@@ -140,6 +155,7 @@
 	.FoxSelect__icon {
 		width: 1.5em;
 		height: 1.5em;
+		margin: -0.25em 0;
 	}
 
 	.FoxSelect__placeholder {
@@ -179,6 +195,18 @@
 		background: canvas;
 		overflow: auto;
 
+		/* display: flex; */
+		flex-direction: column;
+		align-items: stretch;
+		margin: 0;
+		padding: 0.125em;
+		gap: 0.125em;
+		border-radius: 0.25em;
+
+		transition: transform 0.1s ease-in-out;
+		transition-behavior: allow-discrete;
+		transform-origin: top center;
+
 		&:popover-open {
 			display: flex;
 			transform: rotateX(0);
@@ -187,41 +215,43 @@
 				transform: rotateX(90deg);
 			}
 		}
-		flex-direction: column;
-		align-items: stretch;
-		margin: 0;
-		padding: 0.25em;
-		gap: 0.125em;
-		border-radius: 0.25em;
 
-		transition:
-			transform 0.1s ease-in-out;
-		transition-behavior: allow-discrete;
-		transform: rotateX(0);
-		transform-origin: top center;
+		.FoxSelect__option:hover,
+		.FoxSelect__option.FoxSelect__option--focused {
+			@include border.border-gradient-focused();
+			--_background: linear-gradient(#{constants.$dark});
+		}
+
+		.FoxSelect__option:hover {
+			@include border.border-gradient-hovered();
+		}
+
+		&:hover .FoxSelect__option.FoxSelect__option--focused:not(:hover) {
+			--_background: linear-gradient(canvas);
+		}
 	}
 
 	.FoxSelect__option {
 		border-radius: inherit;
 		padding: 0.5em 0.75em;
-		background: var(--color-primary-contrast);
 		cursor: pointer;
-		border: 1px solid transparent;
 
-		&:hover,
-		&.FoxSelect__option--focused {
-			border: 1px dashed var(--color-selected);
-		}
+		color: var(--color-primary);
+		--_background: linear-gradient(canvas);
 
+		@include border.border-gradient();
+		/*
 		&.FoxSelect__option--selected {
-			border: 1px solid var(--color-selected);
+			@include border.border-gradient-focused();
 		}
+		*/
+		@include border.border-gradient-transition();
 	}
 </style>
 
 <script setup lang="ts">
 	import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue';
-	import TextInput from './TextInput.vue';
+	import FoxText from './FoxText.vue';
 
 	const containerElement = shallowRef<HTMLSpanElement>(null!);
 	const optionsElement = shallowRef<HTMLDivElement>(null!);
@@ -238,6 +268,7 @@
 			any,
 			{ label: string; searchKeys?: string[]; icon?: any; order?: number }
 		>;
+		disabled?: boolean;
 		autofocus?: boolean;
 		enableSearch?: boolean;
 		enableClear?: boolean;
@@ -312,20 +343,8 @@
 		}
 	};
 
-	watch([isOpen], () => {
-		focused.value = undefined;
-		checkFocused();
-	});
-
-	watch(
-		[modelValue, () => finalValues.value.length],
-		() => {
-			checkFocused();
-		},
-		{ immediate: true }
-	);
-
 	const open = () => {
+		if (props.disabled) return;
 		optionsElement.value.togglePopover(<any>{
 			source: containerElement.value,
 			force: true,
@@ -351,6 +370,28 @@
 	};
 
 	const focus = () => containerElement.value!.focus();
+
+	watch([isOpen], () => {
+		focused.value = undefined;
+		checkFocused();
+	});
+
+	watch(
+		[modelValue, () => finalValues.value.length],
+		() => {
+			checkFocused();
+		},
+		{ immediate: true }
+	);
+
+	watch(
+		() => props.disabled,
+		() => {
+			if (props.disabled) {
+				close();
+			}
+		}
+	);
 
 	onMounted(() => {
 		if (props.autofocus) {

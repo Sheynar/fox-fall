@@ -1,17 +1,24 @@
 <template>
-	<TextInput
+	<FoxText
 		ref="textInput"
 		:autofocus="props.autofocus"
 		v-model="stringValue"
 		@keydown="onKeyDown"
-	/>
+	>
+		<template #icons-before v-if="$slots['icons-before']">
+			<slot name="icons-before" />
+		</template>
+		<template #icons-after v-if="$slots['icons-after']">
+			<slot name="icons-after" />
+		</template>
+	</FoxText>
 </template>
 
 <script setup lang="ts">
 	import { computed, ref, shallowRef, watch } from 'vue';
-	import TextInput from './TextInput.vue';
+	import FoxText from './FoxText.vue';
 
-	const textInput = shallowRef<InstanceType<typeof TextInput>>(null!);
+	const textInput = shallowRef<InstanceType<typeof FoxText>>(null!);
 	const inputElement = computed(() => textInput.value.inputElement);
 
 	const props = defineProps<{
@@ -88,11 +95,11 @@
 	const onKeyDown = (event: KeyboardEvent) => {
 		switch (event.code) {
 			case 'ArrowUp':
-				numberValue.value += event.ctrlKey ? 5 : event.shiftKey ? 0.1 : 1;
+				numberValue.value += event.ctrlKey ? 5 : event.altKey ? 0.1 : 1;
 				event.preventDefault();
 				break;
 			case 'ArrowDown':
-				numberValue.value -= event.ctrlKey ? 5 : event.shiftKey ? 0.1 : 1;
+				numberValue.value -= event.ctrlKey ? 5 : event.altKey ? 0.1 : 1;
 				event.preventDefault();
 				break;
 		}
