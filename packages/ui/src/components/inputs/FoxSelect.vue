@@ -17,8 +17,8 @@
 		@keydown.stop.backspace="props.enableClear && submit(null)"
 		@keydown.stop.arrow-up="toggle()"
 		@keydown.stop.arrow-down="toggle()"
-		@keydown.stop.tab="isOpen ? (close(), $event.stopPropagation()) : undefined"
-		@keydown.stop.shift.tab="
+		@keydown.tab="isOpen ? (close(), $event.stopPropagation()) : undefined"
+		@keydown.shift.tab="
 			isOpen ? (close(), $event.stopPropagation()) : undefined
 		"
 	>
