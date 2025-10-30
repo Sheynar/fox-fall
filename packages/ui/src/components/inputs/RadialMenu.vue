@@ -69,9 +69,9 @@
 
 	.RadialMenu__container {
 		@starting-style {
-			--_radial-menu-outer-radius: 0;
-    }
-		transition: --_radial-menu-outer-radius 0.25s ease-in-out;
+			--_radial-menu-outer-radius: var(--_radial-menu-inner-radius);
+		}
+		transition: --_radial-menu-outer-radius 0.2s ease-in-out;
 
 		/* This one won't animate. It's used for the font-size calculation. */
 		--_radial-menu-outer-radius-eventual: 20;
