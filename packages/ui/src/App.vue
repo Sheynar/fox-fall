@@ -47,7 +47,7 @@
 					:y="contextMenuPosition.y"
 				>
 					<ContextRadial
-						@submit="($event) => onContextMenuSubmit($event.value)"
+						@submit="($event) => artillery.sharedState.produceUpdate(() => onContextMenuSubmit($event.value))"
 						@cancel="() => (contextMenuPosition = null)"
 					/>
 				</PositionedElement>

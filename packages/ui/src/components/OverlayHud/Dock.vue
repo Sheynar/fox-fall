@@ -7,7 +7,7 @@
 				raised
 				:severity="item.severity"
 				:disabled="item.disabled"
-				@click.stop="item.command()"
+				@click.stop="() => artillery.sharedState.produceUpdate(() => item.command())"
 				@pointerenter="(event) => (tooltip = { label: item.label, event })"
 				@pointerleave="tooltip = null"
 			>
@@ -131,9 +131,7 @@
 		],
 		severity: artillery.sharedState.currentState.value.readyToFire ? 'success' : 'danger',
 		command: () => {
-			artillery.sharedState.produceUpdate((draft) => {
-				draft.readyToFire = !draft.readyToFire;
-			});
+			artillery.sharedState.currentState.value.readyToFire = !artillery.sharedState.currentState.value.readyToFire;
 			syncedRoom.updateReadyToFire();
 		},
 	}));

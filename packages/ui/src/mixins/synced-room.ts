@@ -9,9 +9,12 @@ import type { SharedState } from '@/lib/shared-state';
 const myId = generateId();
 
 const parseVector = (vector: any): Vector => {
-	return vector._angularVector != null
-		? Vector.fromAngularVector(vector._angularVector)
-		: Vector.fromCartesianVector(vector._cartesianVector);
+	if (vector == null) return Vector.fromCartesianVector({ x: 0, y: 0 });
+	if (vector.x != null && vector.y != null) return Vector.fromCartesianVector({ x: vector.x, y: vector.y });
+	if (vector.azimuth != null && vector.distance != null) return Vector.fromAngularVector({ azimuth: vector.azimuth, distance: vector.distance });
+	if (vector._angularVector != null) return Vector.fromAngularVector(vector._angularVector);
+	if (vector._cartesianVector != null) return Vector.fromCartesianVector(vector._cartesianVector);
+	throw new Error('Invalid vector');
 };
 
 export const useSyncedRoom = (
@@ -21,38 +24,40 @@ export const useSyncedRoom = (
 	const isReady = ref(false);
 
 	const onMessage = (event: MessageEvent<any>) => {
-		const roomUpdate = JSON.parse(event.data);
-		if (!isRoomUpdate(roomUpdate) || roomUpdate.eventFrom === myId) return;
-		if (roomUpdate.type === UpdateType.full) {
-			const newValue: UnitMap = {};
-			for (const unitId of Object.keys(roomUpdate.units)) {
-				newValue[unitId] = roomUpdate.units[unitId] as Unit;
-			}
-			sharedState.currentState.value.unitMap = newValue;
+		sharedState.produceUpdate(() => {
+			const roomUpdate = JSON.parse(event.data);
+			if (!isRoomUpdate(roomUpdate) || roomUpdate.eventFrom === myId) return;
+			if (roomUpdate.type === UpdateType.full) {
+				const newValue: UnitMap = {};
+				for (const unitId of Object.keys(roomUpdate.units)) {
+					newValue[unitId] = roomUpdate.units[unitId] as Unit;
+				}
+				sharedState.currentState.value.unitMap = newValue;
 
-			if (roomUpdate.wind != null) {
-				sharedState.currentState.value.wind = parseVector(roomUpdate.wind);
-			}
+				if (roomUpdate.wind != null) {
+					sharedState.currentState.value.wind = parseVector(roomUpdate.wind);
+				}
 
-			if (roomUpdate.readyToFire != null) {
-				sharedState.currentState.value.readyToFire = roomUpdate.readyToFire;
-			}
+				if (roomUpdate.readyToFire != null) {
+					sharedState.currentState.value.readyToFire = roomUpdate.readyToFire;
+				}
 
-			if (!isReady.value) {
-				isReady.value = true;
+				if (!isReady.value) {
+					isReady.value = true;
+				}
+			} else if (roomUpdate.type === UpdateType.readyToFire) {
+				sharedState.currentState.value.readyToFire = roomUpdate.value;
+			} else if (roomUpdate.type === UpdateType.unit) {
+				const unitId = roomUpdate.unitId;
+				if (roomUpdate.value == null) {
+					delete sharedState.currentState.value.unitMap[unitId];
+				} else {
+					sharedState.currentState.value.unitMap[unitId] = roomUpdate.value as Unit;
+				}
+			} else if (roomUpdate.type === UpdateType.wind) {
+				sharedState.currentState.value.wind = parseVector(roomUpdate.value);
 			}
-		} else if (roomUpdate.type === UpdateType.readyToFire) {
-			sharedState.currentState.value.readyToFire = roomUpdate.value;
-		} else if (roomUpdate.type === UpdateType.unit) {
-			const unitId = roomUpdate.unitId;
-			if (roomUpdate.value == null) {
-				delete sharedState.currentState.value.unitMap[unitId];
-			} else {
-				sharedState.currentState.value.unitMap[unitId] = roomUpdate.value as Unit;
-			}
-		} else if (roomUpdate.type === UpdateType.wind) {
-			sharedState.currentState.value.wind = parseVector(roomUpdate.value);
-		}
+		}, 'sync-system');
 	};
 
 	watch(
@@ -113,6 +118,8 @@ export const useSyncedRoom = (
 		};
 		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
+
+	sharedState.emitter.on('updateRemoved', () => Promise.resolve().then(() => fullSync()));
 
 	return {
 		isReady,

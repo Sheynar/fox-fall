@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { applyPatch, compare, type Operation } from "fast-json-patch";
+import { applyPatch, compare, type Operation } from 'fast-json-patch';
 import { ref, type Ref } from 'vue';
 import { generateId } from '@packages/data/dist/id';
 
@@ -14,18 +14,78 @@ export type SharedObjectUpdate = {
 
 const defaultUser = generateId();
 
+// function createToggleableReadonlyProxy<T extends object>(
+// 	obj: T,
+// 	currentlyReadonly: () => boolean,
+// 	currentPath: (string | symbol)[] = []
+// ) {
+// 	const handler: ProxyHandler<T> = {
+// 		get(target, prop, receiver) {
+// 			const value = Reflect.get(target, prop, receiver);
+// 			if (value !== null && typeof value === 'object') {
+// 				return createToggleableReadonlyProxy(value, currentlyReadonly, [
+// 					...currentPath,
+// 					prop,
+// 				]);
+// 			}
+// 			return value;
+// 		},
+// 		set(target, prop, value, _receiver) {
+// 			if (currentlyReadonly() && currentPath[0] !== 'dep')
+// 				throw new Error(
+// 					`Cannot set property '${currentPath.join('.')}.${String(prop)}' on a readonly object.`
+// 				);
+// 			return Reflect.set(
+// 				target,
+// 				prop,
+// 				value,
+// 				currentPath[0] !== 'dep' ? target : _receiver
+// 			);
+// 		},
+// 		deleteProperty(target, prop) {
+// 			if (currentlyReadonly() && currentPath[0] !== 'dep')
+// 				throw new Error(
+// 					`Cannot delete property '${currentPath.join('.')}.${String(prop)}' from a readonly object.`
+// 				);
+// 			return Reflect.deleteProperty(target, prop);
+// 		},
+// 		defineProperty(target, prop, descriptor) {
+// 			if (currentlyReadonly() && currentPath[0] !== 'dep')
+// 				throw new Error(
+// 					`Cannot define property '${currentPath.join('.')}.${String(prop)}' on a readonly object.`
+// 				);
+// 			return Reflect.defineProperty(target, prop, descriptor);
+// 		},
+// 	};
+
+// 	return new Proxy(obj, handler);
+// }
+
 export class SharedObject<T extends Record<string, unknown>> {
-	readonly emitter = new EventEmitter<{ updateProduced: [SharedObjectUpdate], updateRemoved: [SharedObjectUpdate] }>();
+	readonly emitter = new EventEmitter<{
+		updateProduced: [SharedObjectUpdate];
+		updateRemoved: [SharedObjectUpdate];
+	}>();
 	updates: Record<string, SharedObjectUpdate> = {};
 	firstUpdate: string | undefined;
 	lastUpdate: string | undefined;
-	currentState: Ref<T>;
+	protected _currentState: Ref<T>;
+
+	get currentState() {
+		return this._currentState;
+		// return createToggleableReadonlyProxy(
+		// 	this._currentState,
+		// 	() => this._stateBeforeProduction == null
+		// );
+	}
 
 	constructor(
 		private readonly initialState: T,
 		readonly user: string = defaultUser
 	) {
-		this.currentState = ref(JSON.parse(JSON.stringify(initialState))) as Ref<T>;
+		this._currentState = ref(
+			JSON.parse(JSON.stringify(initialState))
+		) as Ref<T>;
 	}
 
 	protected recalculateCurrentState() {
@@ -33,18 +93,21 @@ export class SharedObject<T extends Record<string, unknown>> {
 		let update = this.firstUpdate;
 		while (update != null) {
 			const updateData = this.updates[update];
-			if (updateData == null) throw new Error(`Update data not found for id: ${update}`);
+			if (updateData == null)
+				throw new Error(`Update data not found for id: ${update}`);
 			applyPatch(newState, updateData.patch);
 			update = updateData.nextUpdate;
 		}
-		this.currentState.value = newState;
+		this._currentState.value = newState;
 	}
 
 	protected _removeUpdate(id: string) {
-		if (this.updates[id] == null) throw new Error(`Update data not found for id: ${id}`);
+		if (this.updates[id] == null)
+			throw new Error(`Update data not found for id: ${id}`);
 		const update = this.updates[id];
 		delete this.updates[id];
-		if (update.lastUpdate != null) this.updates[update.lastUpdate]!.nextUpdate = update.nextUpdate;
+		if (update.lastUpdate != null)
+			this.updates[update.lastUpdate]!.nextUpdate = update.nextUpdate;
 		if (this.lastUpdate === id) this.lastUpdate = update.lastUpdate;
 		if (this.firstUpdate === id) this.firstUpdate = undefined;
 		this.emitter.emit('updateRemoved', update);
@@ -59,7 +122,8 @@ export class SharedObject<T extends Record<string, unknown>> {
 	}
 
 	protected _purgeUpdate(id: string): SharedObjectUpdate[] {
-		if (this.updates[id] == null) throw new Error(`Update data not found for id: ${id}`);
+		if (this.updates[id] == null)
+			throw new Error(`Update data not found for id: ${id}`);
 		const update = this.updates[id];
 
 		const purged: SharedObjectUpdate[] = [];
@@ -91,10 +155,12 @@ export class SharedObject<T extends Record<string, unknown>> {
 		return true;
 	}
 
-	addUpdate(update: SharedObjectUpdate) {
+	addUpdate(update: SharedObjectUpdate, skipApplyPatch: boolean = false) {
 		if (!this.checkConflicts(update)) return false;
 
-		applyPatch(this.currentState.value, update.patch);
+		if (!skipApplyPatch) {
+			applyPatch(this._currentState.value, update.patch);
+		}
 		this.updates[update.id] = update;
 		if (this.firstUpdate == null) this.firstUpdate = update.id;
 		this.lastUpdate = update.id;
@@ -104,27 +170,45 @@ export class SharedObject<T extends Record<string, unknown>> {
 		return true;
 	}
 
-	protected _producingState: T | null = null;
-	produceUpdate(recipe: (draft: T) => void) {
-		const productionInProgress = this._producingState != null;
-		if (!productionInProgress) {
-			this._producingState = JSON.parse(JSON.stringify(this.currentState.value));
+	protected _stateBeforeProduction: T | null = null;
+	produceUpdate(recipe: () => void, author: string = this.user) {
+		const hasParentProduction = this._stateBeforeProduction != null;
+		if (!hasParentProduction) {
+			this._stateBeforeProduction = JSON.parse(
+				JSON.stringify(this._currentState.value)
+			);
 		}
-		recipe(this._producingState!);
-		if (productionInProgress) return;
-		const patch = compare(JSON.parse(JSON.stringify(this.currentState.value)), JSON.parse(JSON.stringify(this._producingState!)));
-		this._producingState = null;
+		recipe();
+		if (hasParentProduction) return;
+		const patch = compare(
+			JSON.parse(JSON.stringify(this._stateBeforeProduction!)),
+			JSON.parse(JSON.stringify(this._currentState.value))
+		);
+		this._stateBeforeProduction = null;
 		if (patch.length === 0) return;
 
 		const newUpdate = {
 			id: generateId(),
-			author: this.user,
+			author,
 			patch,
 			timestamp: Date.now(),
 			lastUpdate: this.lastUpdate,
 		};
 
-		this.addUpdate(newUpdate);
+		this.addUpdate(newUpdate, true);
 		this.emitter.emit('updateProduced', newUpdate);
+	}
+
+	undo(author?: string) {
+		let lastUpdate = this.lastUpdate;
+		while (lastUpdate != null) {
+			const update = this.updates[lastUpdate];
+			if (update == null) break;
+			if (author == null || update.author === author) {
+				this.purgeUpdate(lastUpdate);
+				return;
+			}
+			lastUpdate = update.lastUpdate;
+		}
 	}
 }

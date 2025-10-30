@@ -17,6 +17,7 @@ import { createUnit, getUnitResolvedVector, getUnitSpecs } from '@/lib/unit';
 import { Viewport } from '@/lib/viewport';
 import { usePrimaryUnitsByType } from './focused-units';
 import { useViewportControl } from './viewport-control';
+import { useUnitSet } from './unit-group';
 
 type ArtilleryOptions = {
 	containerElement?: Ref<HTMLElement | null>;
@@ -37,9 +38,17 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		prompt?: string;
 	} | null>(null);
 	const selectedUnit = ref<Unit['id'] | null>(null);
-	const pinnedUnits = ref<Set<Unit['id']>>(new Set());
-	const highlightedUnits = ref<Set<Unit['id']>>(new Set());
-	const draggingUnits = ref<Set<Unit['id']>>(new Set());
+	watch(() => selectedUnit.value != null ? sharedState.currentState.value.unitMap[selectedUnit.value] : null, (unit, prevUnit) => {
+		if (unit == null && selectedUnit.value != null) {
+			selectedUnit.value = prevUnit?.parentId ?? null;
+		}
+	}, {
+		immediate: true,
+		flush: 'sync',
+	});
+	const pinnedUnits = useUnitSet();
+	const highlightedUnits = useUnitSet();
+	const draggingUnits = useUnitSet();
 	const overridingFiringSolution = ref<{
 		unitIdFrom: string;
 		unitIdTo: string;
@@ -107,9 +116,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			}
 		}
 
-		sharedState.produceUpdate((draft) => {
-			draft.unitMap[newUnit.value.id] = newUnit.value;
-		});
+		sharedState.currentState.value.unitMap[newUnit.value.id] = newUnit.value;
 		selectedUnit.value = newUnit.value.id;
 		options.onUnitUpdated?.(newUnit.value.id);
 
@@ -117,73 +124,73 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const removeUnit = (unitId: string) => {
-		sharedState.produceUpdate((draft) => {
-			const unit = draft.unitMap[unitId];
-			if (unit == null) return;
+		const unit = sharedState.currentState.value.unitMap[unitId];
+		if (unit == null) return;
 
-			if (selectedUnit.value === unitId && unit.selectUnitOnDeletion != null) {
-				selectedUnit.value = unit.selectUnitOnDeletion;
-			} else if (selectedUnit.value === unitId && unit.parentId != null) {
-				selectedUnit.value = unit.parentId;
-			}
-			if (pinnedUnits.value.has(unitId)) {
-				pinnedUnits.value.delete(unitId);
-			}
-			if (highlightedUnits.value.has(unitId)) {
-				highlightedUnits.value.delete(unitId);
-			}
-			if (draggingUnits.value.has(unitId)) {
-				draggingUnits.value.delete(unitId);
-			}
+		if (selectedUnit.value === unitId && unit.selectUnitOnDeletion != null) {
+			selectedUnit.value = unit.selectUnitOnDeletion;
+		} else if (selectedUnit.value === unitId && unit.parentId != null) {
+			selectedUnit.value = unit.parentId;
+		}
+		if (pinnedUnits.value.has(unitId)) {
+			pinnedUnits.value.delete(unitId);
+		}
+		if (highlightedUnits.value.has(unitId)) {
+			highlightedUnits.value.delete(unitId);
+		}
+		if (draggingUnits.value.has(unitId)) {
+			draggingUnits.value.delete(unitId);
+		}
 
-			for (const otherUnit of Object.values(
-				draft.unitMap
-			)) {
-				if (otherUnit.parentId === unitId) {
-					if (selectedUnit.value === unitId) {
-						selectedUnit.value = otherUnit.id;
-					}
-					setUnitSource(otherUnit.id, unit.parentId);
+		for (const otherUnit of Object.values(
+			sharedState.currentState.value.unitMap
+		)) {
+			if (otherUnit.parentId === unitId) {
+				if (selectedUnit.value === unitId) {
+					selectedUnit.value = otherUnit.id;
 				}
-				if (otherUnit.selectUnitOnDeletion === unitId) {
-					delete otherUnit.selectUnitOnDeletion;
-				}
+				setUnitSource(otherUnit.id, unit.parentId);
 			}
-			if (selectedUnit.value === unitId) {
-				selectedUnit.value = null;
+			if (otherUnit.selectUnitOnDeletion === unitId) {
+				delete otherUnit.selectUnitOnDeletion;
 			}
-			delete draft.unitMap[unitId];
-		});
+		}
+		if (selectedUnit.value === unitId) {
+			selectedUnit.value = null;
+		}
+		delete sharedState.currentState.value.unitMap[unitId];
 		options.onUnitUpdated?.(unitId);
 	};
 
-	const setUnitSource = async (unitId: string, newParentId?: string) => {
+	const setUnitSource = (unitId: string, newParentId?: string) => {
 		try {
-			sharedState.produceUpdate((draft) => {
-				const unit = draft.unitMap[unitId];
-				if (unit == null) return;
+			const unit = sharedState.currentState.value.unitMap[unitId];
+			if (unit == null) return;
 
-				let currentlyCheckingParent = newParentId;
-				while (currentlyCheckingParent != null) {
-					if (currentlyCheckingParent === unitId) {
-						setUnitSource(newParentId!, undefined);
-					}
-					currentlyCheckingParent =
-						draft.unitMap[currentlyCheckingParent]?.parentId;
+			let currentlyCheckingParent = newParentId;
+			while (currentlyCheckingParent != null) {
+				if (currentlyCheckingParent === unitId) {
+					setUnitSource(newParentId!, undefined);
 				}
+				currentlyCheckingParent =
+					sharedState.currentState.value.unitMap[currentlyCheckingParent]
+						?.parentId;
+			}
 
-				unit.vector = getUnitResolvedVector(
-					draft.unitMap,
-					unitId
+			unit.vector = getUnitResolvedVector(
+				sharedState.currentState.value.unitMap,
+				unitId
+			).angularVector;
+			if (newParentId != null) {
+				unit.vector = Vector.fromAngularVector(unit.vector).addVector(
+					getUnitResolvedVector(
+						sharedState.currentState.value.unitMap,
+						newParentId
+					).scale(-1)
 				).angularVector;
-				if (newParentId != null) {
-					unit.vector = Vector.fromAngularVector(unit.vector).addVector(
-						getUnitResolvedVector(draft.unitMap, newParentId).scale(-1)
-					).angularVector;
-				}
-				unit.canDrag = newParentId == null;
-				unit.parentId = newParentId;
-			});
+			}
+			unit.canDrag = newParentId == null;
+			unit.parentId = newParentId;
 			options.onUnitUpdated?.(unitId);
 		} catch (e) {
 			new Notification('FoxFall error', {
@@ -467,11 +474,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				.addVector(
 					getUnitResolvedVector(sharedState.currentState.value.unitMap, unit.id)
 				);
-			sharedState.produceUpdate((draft) => {
-				draft.wind = Vector.fromAngularVector(draft.wind).addVector(
-					windCorrection.scale(1 / _windMultiplier)
-				).angularVector;
-			});
+			sharedState.currentState.value.wind = Vector.fromAngularVector(
+				sharedState.currentState.value.wind
+			).addVector(windCorrection.scale(1 / _windMultiplier)).angularVector;
 			options.onWindUpdated?.();
 
 			removeUnit(unitId);
@@ -483,9 +488,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const resetWind = () => {
-		sharedState.produceUpdate((draft) => {
-			draft.wind = Vector.fromAngularVector({ azimuth: 0, distance: 0 });
-		});
+		sharedState.currentState.value.wind = Vector.fromAngularVector({ azimuth: 0, distance: 0 }).angularVector;
 		options.onWindUpdated?.();
 	};
 
@@ -568,9 +571,13 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		} else if (event.key === 'Delete' && event.ctrlKey && selectedUnit.value) {
 			event.preventDefault();
 			removeUnit(selectedUnit.value);
-		} else if (event.key === 'z' && event.ctrlKey && sharedState.lastUpdate != null) {
+		} else if (
+			event.key === 'z' &&
+			event.ctrlKey &&
+			sharedState.lastUpdate != null
+		) {
 			event.preventDefault();
-			sharedState.purgeUpdate(sharedState.lastUpdate);
+			sharedState.undo();
 		}
 	});
 

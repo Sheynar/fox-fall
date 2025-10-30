@@ -17,9 +17,9 @@
 			}"
 			@mouseover="isHovered = true"
 			@mouseleave="isHovered = false"
-			@pointerdown="onPointerDown"
-			@pointermove="onPointerMove"
-			@pointerup="onPointerUp"
+			@pointerdown="($event) => artillery.sharedState.produceUpdate(() => onPointerDown($event))"
+			@pointermove="($event) => artillery.sharedState.produceUpdate(() => onPointerMove($event))"
+			@pointerup="($event) => artillery.sharedState.produceUpdate(() => onPointerUp($event))"
 		>
 			<div class="Unit__border"></div>
 			<div class="Unit__label" v-if="unitLabel">
@@ -30,7 +30,10 @@
 	</PositionedElement>
 
 	<PositionedElement
-		v-if="unit.type === UnitType.Target && artillery.sharedState.currentState.value.wind.distance > 0"
+		v-if="
+			unit.type === UnitType.Target &&
+			artillery.sharedState.currentState.value.wind.distance > 0
+		"
 		:x="firingPosition.x"
 		:y="firingPosition.y"
 		:layer="LAYER.UNITS"
@@ -173,7 +176,10 @@
 	const unit = injectUnit();
 
 	const unitLabel = computed(() =>
-		getUnitLabel(artillery.sharedState.currentState.value.unitMap, unit.value.id)
+		getUnitLabel(
+			artillery.sharedState.currentState.value.unitMap,
+			unit.value.id
+		)
 	);
 	const unitIcon = computed(() => {
 		if (unit.value.type === UnitType.Spotter) {
@@ -182,8 +188,15 @@
 				: UNIT_ICON_BY_TYPE[unit.value.type];
 		}
 		if (unit.value.type === UnitType.Artillery) {
-			const unitSpecs = getUnitSpecs(artillery.sharedState.currentState.value.unitMap, unit.value.id);
-			return ICONS[unitSpecs?.PLATFORM!] ?? ICONS[unitSpecs?.AMMO_TYPE!] ?? UNIT_ICON_BY_TYPE[unit.value.type];
+			const unitSpecs = getUnitSpecs(
+				artillery.sharedState.currentState.value.unitMap,
+				unit.value.id
+			);
+			return (
+				ICONS[unitSpecs?.PLATFORM!] ??
+				ICONS[unitSpecs?.AMMO_TYPE!] ??
+				UNIT_ICON_BY_TYPE[unit.value.type]
+			);
 		}
 
 		return UNIT_ICON_BY_TYPE[unit.value.type];
@@ -284,29 +297,33 @@
 			})
 		);
 
-		artillery.sharedState.produceUpdate((draft) => {
-			const currentVector = Vector.fromAngularVector(draft.unitMap[unit.value.id].vector);
-			currentVector.cartesianVector = {
-				x:
-					movingData.startUnitPosition.x +
-					currentCursorViewport.x -
-					movingData.startCursorViewport.x,
-				y:
-					movingData.startUnitPosition.y +
-					currentCursorViewport.y -
-					movingData.startCursorViewport.y,
+		const currentVector = Vector.fromAngularVector(
+			artillery.sharedState.currentState.value.unitMap[unit.value.id].vector
+		);
+		currentVector.cartesianVector = {
+			x:
+				movingData.startUnitPosition.x +
+				currentCursorViewport.x -
+				movingData.startCursorViewport.x,
+			y:
+				movingData.startUnitPosition.y +
+				currentCursorViewport.y -
+				movingData.startCursorViewport.y,
+		};
+
+		// Round values
+		if (
+			artillery.sharedState.currentState.value.unitMap[unit.value.id]
+				.parentId != null
+		) {
+			currentVector.angularVector = {
+				distance: Number(currentVector.distance.toFixed(1)),
+				azimuth: Number(currentVector.azimuth.toFixed(1)),
 			};
+		}
 
-			// Round values
-			if (draft.unitMap[unit.value.id].parentId != null) {
-				currentVector.angularVector = {
-					distance: Number(currentVector.distance.toFixed(1)),
-					azimuth: Number(currentVector.azimuth.toFixed(1)),
-				};
-			}
-
-			draft.unitMap[unit.value.id].vector = currentVector.angularVector;
-		});
+		artillery.sharedState.currentState.value.unitMap[unit.value.id].vector =
+			currentVector.angularVector;
 
 		emit('updated');
 	};
@@ -339,15 +356,23 @@
 	});
 
 	const resolvedVector = computed(() =>
-		getUnitResolvedVector(artillery.sharedState.currentState.value.unitMap, unit.value.id)
+		getUnitResolvedVector(
+			artillery.sharedState.currentState.value.unitMap,
+			unit.value.id
+		)
 	);
 
 	const firingPosition = computed(() => {
 		let firingVectorWithWind = resolvedVector.value.clone();
-		const specs = getUnitSpecs(artillery.sharedState.currentState.value.unitMap, unit.value.id);
+		const specs = getUnitSpecs(
+			artillery.sharedState.currentState.value.unitMap,
+			unit.value.id
+		);
 		if (specs) {
 			firingVectorWithWind = firingVectorWithWind.addVector(
-				Vector.fromAngularVector(artillery.sharedState.currentState.value.wind).scale(-specs.WIND_OFFSET)
+				Vector.fromAngularVector(
+					artillery.sharedState.currentState.value.wind
+				).scale(-specs.WIND_OFFSET)
 			);
 		}
 		return firingVectorWithWind;

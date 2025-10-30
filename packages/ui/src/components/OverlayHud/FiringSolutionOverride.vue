@@ -49,7 +49,7 @@
 						ref="azimuthInput"
 						:model-value="wrapDegrees(firingVectorWithWind.azimuth)"
 						@update:model-value="vectorValue.azimuth = wrapDegrees($event)"
-						@keydown.enter="submit()"
+						@keydown.enter="() => artillery.sharedState.produceUpdate(() => submit())"
 					/>
 				</div>
 				<template v-if="settings.showXYOffsets">
@@ -72,7 +72,7 @@
 			<div class="FiringSolutionOverride__actions">
 				<PrimeButton
 					class="FiringSolutionOverride__action"
-					@click.stop="submit"
+					@click.stop="() => artillery.sharedState.produceUpdate(() => submit())"
 				>
 					Submit
 				</PrimeButton>
@@ -222,14 +222,12 @@
 	});
 
 	const submit = () => {
-		artillery.sharedState.produceUpdate((draft) => {
-			const unitTo = draft.unitMap[props.unitIdTo];
-			if (unitTo == null) return;
-			unitTo.vector = Vector.fromAngularVector(unitTo.vector).addVector(
-				vectorValue.value.addVector(firingVectorWithWind.value.scale(-1))
-			).angularVector;
-			syncedRoom.updateUnit(unitTo.id);
-		});
+		const unitTo = artillery.sharedState.currentState.value.unitMap[props.unitIdTo];
+		if (unitTo == null) return;
+		unitTo.vector = Vector.fromAngularVector(unitTo.vector).addVector(
+			vectorValue.value.addVector(firingVectorWithWind.value.scale(-1))
+		).angularVector;
+		syncedRoom.updateUnit(unitTo.id);
 		emit('updated');
 		visible.value = false;
 	};

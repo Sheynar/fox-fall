@@ -6,11 +6,11 @@
 			:unit="artillery.sharedState.currentState.value.unitMap[unitId]"
 		>
 			<UnitComponent
-				@create-child="artillery.addUnit($event, undefined, undefined, unitId)"
-				@updated="syncedRoom.updateUnit(unitId)"
-				@remove="artillery.removeUnit(unitId)"
-				@set-unit-source="artillery.setUnitSource(unitId, $event)"
-				@update-wind="artillery.editWind(unitId, $event)"
+				@create-child="($event) => artillery.sharedState.produceUpdate(() => artillery.addUnit($event, undefined, undefined, unitId))"
+				@updated="() => artillery.sharedState.produceUpdate(() => syncedRoom.updateUnit(unitId))"
+				@remove="() => artillery.sharedState.produceUpdate(() => artillery.removeUnit(unitId))"
+				@set-unit-source="($event) => artillery.sharedState.produceUpdate(() => artillery.setUnitSource(unitId, $event))"
+				@update-wind="($event) => artillery.sharedState.produceUpdate(() => artillery.editWind(unitId, $event))"
 			/>
 		</UnitProvider>
 		<UnitLink
