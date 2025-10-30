@@ -1,7 +1,9 @@
-import { computed, type Ref } from 'vue';
-import { type UnitMap } from '@packages/data/dist/artillery/unit';
+import { computed, ref, watch, type Ref } from 'vue';
+import { type Unit, type UnitMap } from '@packages/data/dist/artillery/unit';
 import { Vector } from '@packages/data/dist/artillery/vector';
+import { sharedState } from '@/lib/shared-state';
 import { getUnitResolvedVector } from '@/lib/unit';
+import { useScopePerSetEntry } from './scope';
 
 // TODO : abstract this into some helper methods which can then be called by the backdrop when resetting the viewport
 export const useUnitGroup = (unitMap: Ref<UnitMap>, unitIds: Ref<string[]>) => {
@@ -35,16 +37,34 @@ export const useUnitGroup = (unitMap: Ref<UnitMap>, unitIds: Ref<string[]>) => {
 		);
 	});
 
-	(<any>window).unitGroup = {
-		units,
-		unitVectors,
-		averageVector,
-		maxOffset,
-	};
-
 	return {
 		units,
 		averageVector,
 		maxOffset,
 	};
+};
+
+export const useUnitSet = () => {
+	const unitSet = ref<Set<Unit['id']>>(new Set());
+
+	useScopePerSetEntry(
+		unitSet,
+		(unitId) => {
+			watch(
+				() => sharedState.currentState.value.unitMap[unitId],
+				(unit) => {
+					if (unit == null) {
+						unitSet.value.delete(unitId);
+					}
+				},
+				{
+					immediate: true,
+					flush: 'sync',
+				}
+			);
+		},
+		'sync'
+	);
+
+	return unitSet;
 };

@@ -639,7 +639,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@packages/data@workspace:packages/data"
   dependencies:
-    fast-json-patch: "npm:^3.1.1"
     prettier: "npm:^3.0.3"
     rimraf: "npm:^6.0.1"
     typescript: "npm:^5.2.2"
@@ -714,6 +713,7 @@ __metadata:
     "@types/w3c-image-capture": "npm:^1.0.10"
     "@vitejs/plugin-vue": "npm:^4.4.0"
     "@vueuse/core": "npm:^12.2.0"
+    fast-json-patch: "npm:^3.1.1"
     pinia: "npm:^2.3.1"
     prettier: "npm:^3.0.3"
     primeicons: "npm:^7.0.0"

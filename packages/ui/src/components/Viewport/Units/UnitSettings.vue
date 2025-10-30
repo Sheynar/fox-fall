@@ -34,13 +34,24 @@
 							class="UnitSettings__select"
 							:model-value="unit.ammunition"
 							@update:model-value="
-								unit.ammunition = $event;
-								unit.ammunition &&
-									!ARTILLERY_BY_SHELL[unit.ammunition!]?.PLATFORM[
-										unit.platform!
-									] &&
-									(unit.platform = undefined);
-								emit('updated');
+								artillery.sharedState.produceUpdate(() => {
+									artillery.sharedState.currentState.value.unitMap[
+										unit.id
+									].ammunition = $event;
+									artillery.sharedState.currentState.value.unitMap[unit.id]
+										.ammunition &&
+										!ARTILLERY_BY_SHELL[
+											artillery.sharedState.currentState.value.unitMap[unit.id]
+												.ammunition!
+										]?.PLATFORM[
+											artillery.sharedState.currentState.value.unitMap[unit.id]
+												.platform!
+										] &&
+										(artillery.sharedState.currentState.value.unitMap[
+											unit.id
+										].platform = undefined);
+									emit('updated');
+								})
 							"
 							:disabled="props.readonly"
 						/>
@@ -55,8 +66,11 @@
 							:ammo-type="unit.ammunition"
 							:model-value="unit.platform"
 							@update:model-value="
-								unit.platform = $event;
-								emit('updated');
+								artillery.sharedState.produceUpdate(() => {
+									artillery.sharedState.currentState.value.unitMap[unit.id].platform =
+										$event;
+									emit('updated');
+								})
 							"
 							:disabled="props.readonly"
 						/>
@@ -90,7 +104,12 @@
 					<FoxText
 						:readonly="props.readonly"
 						:model-value="unit.label ?? ''"
-						@update:model-value="unit.label = $event ?? undefined"
+						@update:model-value="
+							artillery.sharedState.produceUpdate(() => {
+								unit.label = $event ?? undefined;
+								emit('updated');
+							})
+						"
 						@input="emit('updated')"
 					/>
 				</div>
@@ -107,8 +126,12 @@
 							autofocus
 							:model-value="unit.vector.distance"
 							@update:model-value="
-								unit.vector.distance = $event;
-								emit('updated');
+								artillery.sharedState.produceUpdate(() => {
+									artillery.sharedState.currentState.value.unitMap[
+										unit.id
+									].vector.distance = $event;
+									emit('updated');
+								})
 							"
 							@keydown.enter="azimuthInput?.inputElement?.select()"
 						/>
@@ -119,8 +142,12 @@
 							ref="azimuthInput"
 							:model-value="wrapDegrees(unit.vector.azimuth)"
 							@update:model-value="
-								unit.vector.azimuth = wrapDegrees($event);
-								emit('updated');
+								artillery.sharedState.produceUpdate(() => {
+									artillery.sharedState.currentState.value.unitMap[
+										unit.id
+									].vector.azimuth = wrapDegrees($event);
+									emit('updated');
+								})
 							"
 							@keydown.enter="
 								unit.type === UnitType.LandingZone &&
@@ -133,20 +160,30 @@
 						<div class="UnitSettings__row">
 							<span>X:</span>
 							<DistanceInput
-								:model-value="unit.vector.x"
+								:model-value="Vector.fromAngularVector(unit.vector).x"
 								@update:model-value="
-									unit.vector.x = $event;
-									emit('updated');
+									artillery.sharedState.produceUpdate(() => {
+										unit.vector = Object.assign(
+											Vector.fromAngularVector(unit.vector),
+											{ x: $event }
+										).angularVector;
+										emit('updated');
+									})
 								"
 							/>
 						</div>
 						<div class="UnitSettings__row">
 							<span>Y:</span>
 							<DistanceInput
-								:model-value="unit.vector.y"
+								:model-value="Vector.fromAngularVector(unit.vector).y"
 								@update:model-value="
-									unit.vector.y = $event;
-									emit('updated');
+									artillery.sharedState.produceUpdate(() => {
+										unit.vector = Object.assign(
+											Vector.fromAngularVector(unit.vector),
+											{ y: $event }
+										).angularVector;
+										emit('updated');
+									})
 								"
 							/>
 						</div>
@@ -192,8 +229,13 @@
 							<DistanceInput
 								:model-value="unit.vector.distance"
 								@update:model-value="
-									unit.vector.distance = $event;
-									emit('updated');
+									artillery.sharedState.produceUpdate(() => {
+										unit.vector = Object.assign(
+											Vector.fromAngularVector(unit.vector),
+											{ distance: $event }
+										).angularVector;
+										emit('updated');
+									})
 								"
 							/>
 						</div>
@@ -202,8 +244,13 @@
 							<DirectionInput
 								:model-value="wrapDegrees(unit.vector.azimuth + 180)"
 								@update:model-value="
-									unit.vector.azimuth = wrapDegrees($event - 180);
-									emit('updated');
+									artillery.sharedState.produceUpdate(() => {
+										unit.vector = Object.assign(
+											Vector.fromAngularVector(unit.vector),
+											{ azimuth: wrapDegrees($event - 180) }
+										).angularVector;
+										emit('updated');
+									})
 								"
 							/>
 						</div>
@@ -211,20 +258,30 @@
 							<div class="UnitSettings__row">
 								<span>X:</span>
 								<DistanceInput
-									:model-value="-unit.vector.x"
+									:model-value="-Vector.fromAngularVector(unit.vector).x"
 									@update:model-value="
-										unit.vector.x = -$event;
-										emit('updated');
+										artillery.sharedState.produceUpdate(() => {
+											unit.vector = Object.assign(
+												Vector.fromAngularVector(unit.vector),
+												{ x: -$event }
+											).angularVector;
+											emit('updated');
+										})
 									"
 								/>
 							</div>
 							<div class="UnitSettings__row">
 								<span>Y:</span>
 								<DistanceInput
-									:model-value="-unit.vector.y"
+									:model-value="-Vector.fromAngularVector(unit.vector).y"
 									@update:model-value="
-										unit.vector.y = -$event;
-										emit('updated');
+										artillery.sharedState.produceUpdate(() => {
+											unit.vector = Object.assign(
+												Vector.fromAngularVector(unit.vector),
+												{ y: -$event }
+											).angularVector;
+											emit('updated');
+										})
 									"
 								/>
 							</div>
@@ -236,7 +293,11 @@
 				<div class="UnitSettings__actions">
 					<PrimeButton
 						class="UnitSettings__action"
-						@click.stop="onUnitTypeClicked($event, UnitType.Artillery)"
+						@click.stop="
+							artillery.sharedState.produceUpdate(() => {
+								onUnitTypeClicked($event, UnitType.Artillery);
+							})
+						"
 						severity="secondary"
 						title="Create artillery"
 					>
@@ -244,7 +305,11 @@
 					</PrimeButton>
 					<PrimeButton
 						class="UnitSettings__action"
-						@click.stop="onUnitTypeClicked($event, UnitType.Spotter)"
+						@click.stop="
+							artillery.sharedState.produceUpdate(() => {
+								onUnitTypeClicked($event, UnitType.Spotter);
+							})
+						"
 						severity="secondary"
 						title="Create spotter"
 					>
@@ -252,7 +317,11 @@
 					</PrimeButton>
 					<PrimeButton
 						class="UnitSettings__action"
-						@click.stop="onUnitTypeClicked($event, UnitType.Location)"
+						@click.stop="
+							artillery.sharedState.produceUpdate(() => {
+								onUnitTypeClicked($event, UnitType.Location);
+							})
+						"
 						severity="secondary"
 						title="Create location"
 					>
@@ -262,7 +331,11 @@
 				<div class="UnitSettings__actions">
 					<PrimeButton
 						class="UnitSettings__action"
-						@click.stop="onUnitTypeClicked($event, UnitType.Target)"
+						@click.stop="
+							artillery.sharedState.produceUpdate(() => {
+								onUnitTypeClicked($event, UnitType.Target);
+							})
+						"
 						severity="secondary"
 						title="Create target"
 					>
@@ -270,7 +343,11 @@
 					</PrimeButton>
 					<PrimeButton
 						class="UnitSettings__action"
-						@click.stop="onUnitTypeClicked($event, UnitType.LandingZone)"
+						@click.stop="
+							artillery.sharedState.produceUpdate(() => {
+								onUnitTypeClicked($event, UnitType.LandingZone);
+							})
+						"
 						severity="secondary"
 						title="Create landing zone"
 					>
@@ -282,10 +359,13 @@
 				<PrimeButton
 					class="UnitSettings__action"
 					@click.stop="
-						canDrag = !canDrag;
+						artillery.sharedState.produceUpdate(() => {
+							unit.canDrag = !unit.canDrag;
+							emit('updated');
+						})
 						emit('updated');
 					"
-					:severity="canDrag ? 'success' : 'danger'"
+					:severity="unit.canDrag ? 'success' : 'danger'"
 					title="Can drag"
 				>
 					<DragIcon />
@@ -466,7 +546,6 @@
 		type: Boolean,
 		required: true,
 	});
-	const canDrag = defineModel('canDrag', { type: Boolean });
 	const langingZoneFiringSolution = ref(
 		Vector.fromCartesianVector({ x: 0, y: 0 })
 	);
@@ -478,7 +557,7 @@
 	const unit = injectUnit();
 
 	const unitLabel = computed(() =>
-		getUnitLabel(artillery.unitMap.value, unit.value.id)
+		getUnitLabel(artillery.sharedState.currentState.value.unitMap, unit.value.id)
 	);
 
 	const unitTypeOptions = computed(() => {
@@ -513,13 +592,16 @@
 
 	const parent = computed(() =>
 		unit.value.parentId != null
-			? artillery.unitMap.value[unit.value.parentId]
+			? artillery.sharedState.currentState.value.unitMap[unit.value.parentId]
 			: undefined
 	);
 	const parentLabel = computed(() =>
 		parent.value == null
 			? 'Unknown'
-			: getUnitLabel(artillery.unitMap.value, parent.value.id)
+			: getUnitLabel(
+					artillery.sharedState.currentState.value.unitMap,
+					parent.value.id
+				)
 	);
 
 	const onUnitTypeClicked = (e: MouseEvent, type: UnitType) => {

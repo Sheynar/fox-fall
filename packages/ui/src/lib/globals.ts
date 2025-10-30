@@ -20,9 +20,7 @@ const { artillery, interfaceVisibility, serverConnection, syncedRoom } = runGlob
 
 	const serverConnection = useServerConnection();
 	const syncedRoom = useSyncedRoom(
-		artillery.readyToFire,
-		artillery.unitMap,
-		artillery.wind,
+		artillery.sharedState,
 		serverConnection.webSocket
 	);
 

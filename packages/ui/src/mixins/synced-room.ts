@@ -1,65 +1,63 @@
+import { ref, watch, type Ref } from 'vue';
 import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/data';
 import { generateId } from '@packages/data/dist/id';
 import { type UnitMap, type Unit } from '@packages/data/dist/artillery/unit';
 import { Vector } from '@packages/data/dist/artillery/vector';
-import { ref, watch, type Ref } from 'vue';
+import type { SharedObject } from '@/lib/shared-object';
+import type { SharedState } from '@/lib/shared-state';
 
 const myId = generateId();
 
 const parseVector = (vector: any): Vector => {
-	return vector._angularVector != null
-		? Vector.fromAngularVector(vector._angularVector)
-		: Vector.fromCartesianVector(vector._cartesianVector);
-};
-
-const parseUnit = (unit: Unit): Unit => {
-	if (!(unit.vector instanceof Vector)) {
-		unit.vector = parseVector(unit.vector);
-	}
-	return unit;
+	if (vector == null) return Vector.fromCartesianVector({ x: 0, y: 0 });
+	if (vector.x != null && vector.y != null) return Vector.fromCartesianVector({ x: vector.x, y: vector.y });
+	if (vector.azimuth != null && vector.distance != null) return Vector.fromAngularVector({ azimuth: vector.azimuth, distance: vector.distance });
+	if (vector._angularVector != null) return Vector.fromAngularVector(vector._angularVector);
+	if (vector._cartesianVector != null) return Vector.fromCartesianVector(vector._cartesianVector);
+	throw new Error('Invalid vector');
 };
 
 export const useSyncedRoom = (
-	readyToFire: Ref<boolean>,
-	unitMap: Ref<UnitMap>,
-	wind: Ref<Vector>,
+	sharedState: SharedObject<SharedState>,
 	webSocket: Ref<WebSocket | null | undefined>
 ) => {
 	const isReady = ref(false);
 
 	const onMessage = (event: MessageEvent<any>) => {
-		const roomUpdate = JSON.parse(event.data);
-		if (!isRoomUpdate(roomUpdate) || roomUpdate.eventFrom === myId) return;
-		if (roomUpdate.type === UpdateType.full) {
-			const newValue: UnitMap = {};
-			for (const unitId of Object.keys(roomUpdate.units)) {
-				newValue[unitId] = parseUnit(roomUpdate.units[unitId] as Unit);
-			}
-			unitMap.value = newValue;
+		sharedState.produceUpdate(() => {
+			const roomUpdate = JSON.parse(event.data);
+			if (!isRoomUpdate(roomUpdate) || roomUpdate.eventFrom === myId) return;
+			if (roomUpdate.type === UpdateType.full) {
+				const newValue: UnitMap = {};
+				for (const unitId of Object.keys(roomUpdate.units)) {
+					newValue[unitId] = roomUpdate.units[unitId] as Unit;
+				}
+				sharedState.currentState.value.unitMap = newValue;
 
-			if (roomUpdate.wind != null) {
-				wind.value = parseVector(roomUpdate.wind);
-			}
+				if (roomUpdate.wind != null) {
+					sharedState.currentState.value.wind = parseVector(roomUpdate.wind);
+				}
 
-			if (roomUpdate.readyToFire != null) {
-				readyToFire.value = roomUpdate.readyToFire;
-			}
+				if (roomUpdate.readyToFire != null) {
+					sharedState.currentState.value.readyToFire = roomUpdate.readyToFire;
+				}
 
-			if (!isReady.value) {
-				isReady.value = true;
+				if (!isReady.value) {
+					isReady.value = true;
+				}
+			} else if (roomUpdate.type === UpdateType.readyToFire) {
+				sharedState.currentState.value.readyToFire = roomUpdate.value;
+			} else if (roomUpdate.type === UpdateType.unit) {
+				const unitId = roomUpdate.unitId;
+				if (roomUpdate.value == null) {
+					delete sharedState.currentState.value.unitMap[unitId];
+				} else {
+					sharedState.currentState.value.unitMap[unitId] = roomUpdate.value as Unit;
+				}
+			} else if (roomUpdate.type === UpdateType.wind) {
+				sharedState.currentState.value.wind = parseVector(roomUpdate.value);
 			}
-		} else if (roomUpdate.type === UpdateType.readyToFire) {
-			readyToFire.value = roomUpdate.value;
-		} else if (roomUpdate.type === UpdateType.unit) {
-			const unitId = roomUpdate.unitId;
-			if (roomUpdate.value == null) {
-				delete unitMap.value[unitId];
-			} else {
-				unitMap.value[unitId] = parseUnit(roomUpdate.value as Unit);
-			}
-		} else if (roomUpdate.type === UpdateType.wind) {
-			wind.value = parseVector(roomUpdate.value);
-		}
+		}, 'sync-system');
 	};
 
 	watch(
@@ -82,13 +80,13 @@ export const useSyncedRoom = (
 			eventFrom: myId,
 			unitId,
 			value:
-				unitMap.value[unitId] != null
-					? JSON.parse(JSON.stringify(unitMap.value[unitId]))
+				sharedState.currentState.value.unitMap[unitId] != null
+					? JSON.parse(JSON.stringify(sharedState.currentState.value.unitMap[unitId]))
 					: undefined,
 		};
 		webSocket.value?.send(JSON.stringify(roomUpdate));
 
-		readyToFire.value = false;
+		sharedState.currentState.value.readyToFire = false;
 		updateReadyToFire();
 	};
 
@@ -96,7 +94,7 @@ export const useSyncedRoom = (
 		const roomUpdate: RoomUpdate = {
 			type: UpdateType.wind,
 			eventFrom: myId,
-			value: JSON.parse(JSON.stringify(wind.value)),
+			value: JSON.parse(JSON.stringify(sharedState.currentState.value.wind)),
 		};
 		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
@@ -105,7 +103,7 @@ export const useSyncedRoom = (
 		const roomUpdate: RoomUpdate = {
 			type: UpdateType.readyToFire,
 			eventFrom: myId,
-			value: readyToFire.value,
+			value: sharedState.currentState.value.readyToFire,
 		};
 		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
@@ -114,12 +112,14 @@ export const useSyncedRoom = (
 		const roomUpdate: RoomUpdate = {
 			type: UpdateType.full,
 			eventFrom: myId,
-			readyToFire: readyToFire.value,
-			units: JSON.parse(JSON.stringify(unitMap.value)),
-			wind: JSON.parse(JSON.stringify(wind.value)),
+			readyToFire: sharedState.currentState.value.readyToFire,
+			units: JSON.parse(JSON.stringify(sharedState.currentState.value.unitMap)),
+			wind: JSON.parse(JSON.stringify(sharedState.currentState.value.wind)),
 		};
 		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
+
+	sharedState.emitter.on('updateRemoved', () => Promise.resolve().then(() => fullSync()));
 
 	return {
 		isReady,

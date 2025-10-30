@@ -47,7 +47,7 @@
 					:y="contextMenuPosition.y"
 				>
 					<ContextRadial
-						@submit="($event) => onContextMenuSubmit($event.value)"
+						@submit="($event) => artillery.sharedState.produceUpdate(() => onContextMenuSubmit($event.value))"
 						@cancel="() => (contextMenuPosition = null)"
 					/>
 				</PositionedElement>
@@ -221,7 +221,7 @@
 		if (artillery.selectedUnit.value != null) {
 			newUnitPosition = newUnitPosition.addVector(
 				getUnitResolvedVector(
-					artillery.unitMap.value,
+					artillery.sharedState.currentState.value.unitMap,
 					artillery.selectedUnit.value
 				).scale(-1)
 			);

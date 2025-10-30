@@ -1,16 +1,16 @@
 <template>
 	<div
 		class="OverlayWindMeasurement__container"
-		v-if="artillery.wind.value.distance"
+		v-if="artillery.sharedState.currentState.value.wind.distance"
 		@pointerdown.prevent="interfaceVisibility.windSettings = true"
 	>
 		<div class="OverlayWindMeasurement__row">
 			<span>Wind tier:</span
-			><span>{{ Math.round(artillery.wind.value.distance * 100) / 100 }}</span>
+			><span>{{ Math.round(artillery.sharedState.currentState.value.wind.distance * 100) / 100 }}</span>
 		</div>
 		<div class="OverlayWindMeasurement__row">
 			<span>Azimuth:</span
-			><span>{{ artillery.wind.value.azimuth.toFixed(1) }}°</span>
+			><span>{{ artillery.sharedState.currentState.value.wind.azimuth.toFixed(1) }}°</span>
 		</div>
 	</div>
 </template>

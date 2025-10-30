@@ -60,11 +60,11 @@ export class Vector {
 	}
 
 	public static fromAngularVector(angularVector: AngularVector): Vector {
-		return new Vector(angularVector);
+		return new Vector(JSON.parse(JSON.stringify(angularVector)));
 	}
 
 	public static fromCartesianVector(cartesianVector: CartesianVector): Vector {
-		return new Vector(undefined, cartesianVector);
+		return new Vector(undefined, JSON.parse(JSON.stringify(cartesianVector)));
 	}
 
 	public static zero(): Vector {

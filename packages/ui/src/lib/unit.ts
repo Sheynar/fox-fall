@@ -41,7 +41,7 @@ export const createUnit = (
 	return ref({
 		id: generateId(),
 		type,
-		vector,
+		vector: vector.value.angularVector,
 		canDrag: parentId == null,
 		parentId,
 		ammunition: specs?.ammunition,
@@ -61,9 +61,9 @@ export const getUnitResolvedVector = (
 	}
 
 	if (unit.parentId != null)
-		return unit.vector.addVector(getUnitResolvedVector(unitMap, unit.parentId));
+		return Vector.fromAngularVector(unit.vector).addVector(getUnitResolvedVector(unitMap, unit.parentId));
 
-	return unit.vector;
+	return Vector.fromAngularVector(unit.vector).addVector(Vector.zero());
 };
 
 export const getUnitDefaultLabel = (

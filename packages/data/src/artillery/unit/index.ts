@@ -1,4 +1,4 @@
-import type { Vector } from '../vector';
+import type { AngularVector } from '../vector';
 import type { AMMO_TYPE, Platform, SPOTTING_TYPE } from './constants';
 
 export enum UnitType {
@@ -21,7 +21,7 @@ export type Unit = {
 	id: string;
 	label?: string;
 	type: UnitType;
-	vector: Vector;
+	vector: AngularVector;
 	parentId?: string;
 	canDrag?: boolean;
 	selectUnitOnDeletion?: string;

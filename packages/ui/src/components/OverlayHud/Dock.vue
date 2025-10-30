@@ -7,7 +7,7 @@
 				raised
 				:severity="item.severity"
 				:disabled="item.disabled"
-				@click.stop="item.command()"
+				@click.stop="() => artillery.sharedState.produceUpdate(() => item.command())"
 				@pointerenter="(event) => (tooltip = { label: item.label, event })"
 				@pointerleave="tooltip = null"
 			>
@@ -127,11 +127,11 @@
 	const readyToFireItem = computed<Item>(() => ({
 		label: 'Ready to fire',
 		icons: [
-			`pi ${artillery.readyToFire.value ? 'pi-play-circle' : 'pi-pause-circle'}`,
+			`pi ${artillery.sharedState.currentState.value.readyToFire ? 'pi-play-circle' : 'pi-pause-circle'}`,
 		],
-		severity: artillery.readyToFire.value ? 'success' : 'danger',
+		severity: artillery.sharedState.currentState.value.readyToFire ? 'success' : 'danger',
 		command: () => {
-			artillery.readyToFire.value = !artillery.readyToFire.value;
+			artillery.sharedState.currentState.value.readyToFire = !artillery.sharedState.currentState.value.readyToFire;
 			syncedRoom.updateReadyToFire();
 		},
 	}));

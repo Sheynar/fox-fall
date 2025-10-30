@@ -22,13 +22,13 @@ export const useSelectUnitOptions = (options: Options = {}) => {
 			if (options.whiteList?.type != null && !options.whiteList.type.includes(unitType)) continue;
 			if (options.blackList?.type != null && options.blackList.type.includes(unitType)) continue;
 
-			for (const unit of Object.values(artillery.unitMap.value)) {
+			for (const unit of Object.values(artillery.sharedState.currentState.value.unitMap)) {
 				if (unit.type !== unitType) continue;
 				if (options.whiteList?.id != null && !options.whiteList.id.includes(unit.id)) continue;
 				if (options.blackList?.id != null && options.blackList.id.includes(unit.id)) continue;
 
 				output.set(unit.id, {
-					label: getUnitLabel(artillery.unitMap.value, unit.id),
+					label: getUnitLabel(artillery.sharedState.currentState.value.unitMap, unit.id),
 					searchKeys: [UnitType[unitType]],
 					icon: markRaw(UNIT_ICON_BY_TYPE[unitType]),
 				});
