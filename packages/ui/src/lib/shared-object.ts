@@ -219,15 +219,17 @@ export class SharedObject<T extends Record<string, unknown>> {
 	}
 
 	undo(author?: string) {
-		let lastUpdate = this.lastUpdate;
-		while (lastUpdate != null) {
-			const update = this.updates[lastUpdate];
+		let updateId = this.lastUpdate;
+		while (updateId != null) {
+			const update = this.updates[updateId];
 			if (update == null) break;
 			if (author == null || update.author === author) {
-				this.purgeUpdate(lastUpdate);
+				// TODO : remove this
+				if (updateId === this.firstUpdate && update.author === 'sync-system') return;
+				this.purgeUpdate(updateId);
 				return;
 			}
-			lastUpdate = update.lastUpdate;
+			updateId = update.lastUpdate;
 		}
 	}
 }
