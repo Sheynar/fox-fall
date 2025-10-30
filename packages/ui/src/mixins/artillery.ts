@@ -464,19 +464,20 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				throw new Error('No artillery found');
 			}
 
-			const windCorrection = getUnitResolvedVector(
+			const artilleryPosition = getUnitResolvedVector(
 				sharedState.currentState.value.unitMap,
 				selectedFiringPair.value.artillery
-			)
-				.addVector(firingSolution)
-				.addVector(getWindOffset(selectedFiringPair.value.artillery))
-				.scale(-1)
-				.addVector(
-					getUnitResolvedVector(sharedState.currentState.value.unitMap, unit.id)
-				);
-			sharedState.currentState.value.wind = Vector.fromAngularVector(
-				sharedState.currentState.value.wind
-			).addVector(windCorrection.scale(1 / _windMultiplier)).angularVector;
+			);
+			const predictedLandingPosition = artilleryPosition.addVector(firingSolution).addVector(getWindOffset(selectedFiringPair.value.artillery));
+			const actualLandingPosition = getUnitResolvedVector(
+				sharedState.currentState.value.unitMap,
+				unit.id
+			);
+
+			const windCorrection = predictedLandingPosition.scale(-1).addVector(actualLandingPosition);;
+
+			sharedState.currentState.value.wind = Vector.fromAngularVector(sharedState.currentState.value.wind).addVector(windCorrection.scale(1 / _windMultiplier)).angularVector;
+
 			options.onWindUpdated?.();
 
 			removeUnit(unitId);

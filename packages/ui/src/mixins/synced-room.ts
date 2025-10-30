@@ -35,7 +35,7 @@ export const useSyncedRoom = (
 				sharedState.currentState.value.unitMap = newValue;
 
 				if (roomUpdate.wind != null) {
-					sharedState.currentState.value.wind = parseVector(roomUpdate.wind);
+					sharedState.currentState.value.wind = parseVector(roomUpdate.wind).angularVector;
 				}
 
 				if (roomUpdate.readyToFire != null) {
@@ -55,7 +55,7 @@ export const useSyncedRoom = (
 					sharedState.currentState.value.unitMap[unitId] = roomUpdate.value as Unit;
 				}
 			} else if (roomUpdate.type === UpdateType.wind) {
-				sharedState.currentState.value.wind = parseVector(roomUpdate.value);
+				sharedState.currentState.value.wind = parseVector(roomUpdate.value).angularVector;
 			}
 		}, 'sync-system');
 	};
