@@ -5,6 +5,7 @@
 			'--_options-count': availableOptions.size,
 		}"
 		@pointerdown.stop
+		:key="id"
 	>
 		<li
 			v-for="(value, index) in finalValues"
@@ -48,6 +49,18 @@
 	@use '@/styles/constants' as constants;
 	@use '@/styles/mixins/border' as border;
 
+	@property --_radial-menu-inner-radius {
+		syntax: '<number>';
+		inherits: true;
+		initial-value: 0;
+	}
+
+	@property --_radial-menu-outer-radius {
+		syntax: '<number>';
+		inherits: true;
+		initial-value: 0;
+	}
+
 	@property --_segment-scale {
 		syntax: '<number>';
 		inherits: true;
@@ -55,7 +68,14 @@
 	}
 
 	.RadialMenu__container {
-		--_radial-menu-outer-radius: 20;
+		@starting-style {
+			--_radial-menu-outer-radius: 0;
+    }
+		transition: --_radial-menu-outer-radius 0.25s ease-in-out;
+
+		/* This one won't animate. It's used for the font-size calculation. */
+		--_radial-menu-outer-radius-eventual: 20;
+		--_radial-menu-outer-radius: var(--_radial-menu-outer-radius-eventual);
 		--_chord-width-outer: calc(
 			var(--_radial-menu-outer-radius) * sin(360deg / var(--_options-count) / 2) *
 				2
@@ -98,7 +118,7 @@
 		aspect-ratio: 1;
 		background: rgba(0, 0, 0, 0.5);
 
-		font-size: calc(var(--_radial-menu-outer-radius) * 1vmin / 10);
+		font-size: calc(var(--_radial-menu-outer-radius-eventual) * 1vmin / 10);
 		cursor: pointer;
 		user-select: none;
 
@@ -223,6 +243,7 @@
 		align-items: center;
 		justify-content: center;
 		text-align: center;
+		padding: 1em;
 		gap: 0.25em;
 
 		transform: scale(var(--_segment-scale));
@@ -269,6 +290,7 @@
 		(e: 'submit', payload: { value: any; path: any[] }): void;
 	}>();
 
+	const id = shallowRef(0);
 	const selections = shallowRef<any[]>([]);
 	const hoveredValue = shallowRef<any | null>(null);
 
@@ -310,6 +332,7 @@
 	const select = (value: any) => {
 		const option = availableOptions.value.get(value)!;
 		if (option.subOptions != null) {
+			id.value++;
 			selections.value = [...selections.value, value];
 			if (option.subOptions.size === 1) {
 				return select(option.subOptions.keys().next().value);
@@ -329,6 +352,7 @@
 			emit('cancel');
 			return;
 		}
+		id.value++;
 		selections.value = selections.value.slice(0, -1);
 	};
 </script>
