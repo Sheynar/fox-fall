@@ -98,7 +98,7 @@
 		stroke-dasharray: var(--_line-dash-size) var(--_line-gap-size);
 		animation: FiringArc__dash 1s linear infinite;
 		fill: transparent;
-		filter: url(#outline);
+		filter: url(#outline-black);
 
 		pointer-events: none;
 

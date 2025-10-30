@@ -12,7 +12,11 @@
 	--color-primary: #ededed;
 	--color-primary-contrast: #242424;
 
-	--color-selected: #646cff;
+	--color-selected: #6900cc;
+	--p-inputtext-focus-border-color: var(--color-selected) !important;
+
+	--border-color_darker: rgb(109, 109, 109);
+	--border-color_lighter: rgb(146, 146, 146);
 }
 
 body {

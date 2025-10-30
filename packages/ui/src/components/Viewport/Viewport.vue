@@ -16,6 +16,8 @@
 		<Units />
 
 		<FiringArcs />
+
+		<slot />
 	</div>
 </template>
 

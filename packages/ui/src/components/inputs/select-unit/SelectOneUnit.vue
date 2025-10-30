@@ -1,19 +1,17 @@
 <template>
-	<PrimeSelect
-		v-model="selectedUnit"
-		filter
-		showClear
+	<FoxSelect
+		v-model="modelValue"
+		enable-search
+		enable-clear
 		:options="selectUnitOptions"
-		:optionLabel="optionLabel"
-		:optionGroupLabel="optionGroupLabel"
-		:optionGroupChildren="optionGroupChildren"
 		:placeholder="props.placeholder"
-	/>
+	>
+		<template #placeholder>{{ props.placeholder }}</template>
+	</FoxSelect>
 </template>
 
 <script setup lang="ts">
-	import PrimeSelect from 'primevue/select';
-	import { computed } from 'vue';
+	import FoxSelect from '@/components/inputs/FoxSelect.vue';
 	import {
 		useSelectUnitOptions,
 		type Options as SelectUnitOptions,
@@ -34,24 +32,8 @@
 		}
 	);
 
-	const {
-		selectUnitOptions,
-		optionLabel,
-		optionGroupLabel,
-		optionGroupChildren,
-	} = useSelectUnitOptions({
+	const selectUnitOptions = useSelectUnitOptions({
 		whiteList: props.whiteList,
 		blackList: props.blackList,
-	});
-
-	const selectedUnit = computed({
-		get: () => {
-			for (const selectUnitOption of selectUnitOptions.value) {
-				for (const unit of selectUnitOption.units) {
-					if (unit.id === modelValue.value) return unit;
-				}
-			}
-		},
-		set: (value) => (modelValue.value = value?.id),
 	});
 </script>

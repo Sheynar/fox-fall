@@ -1,9 +1,13 @@
 import { type Ref, ref } from 'vue';
 import {
-	ARTILLERY_BY_SHELL,
+	ARTILLERY_BY_PLATFORM,
 	ArtilleryPlatform,
 } from '@packages/data/dist/artillery/unit/constants';
-import { type Unit, type UnitMap, UnitType } from '@packages/data/dist/artillery/unit';
+import {
+	type Unit,
+	type UnitMap,
+	UnitType,
+} from '@packages/data/dist/artillery/unit';
 import { Vector } from '@packages/data/dist/artillery/vector';
 import { generateId } from '@packages/data/dist/id';
 import { natoAlphabet } from '@/lib/names';
@@ -13,9 +17,9 @@ export const getAvailableUnitTypes = (): UnitType[] => {
 	if (settings.value.userMode === UserMode.Basic) {
 		return [
 			UnitType.Artillery,
+			UnitType.Location,
 			UnitType.Target,
 			UnitType.LandingZone,
-			UnitType.Location,
 		];
 	} else {
 		return [
@@ -31,13 +35,18 @@ export const getAvailableUnitTypes = (): UnitType[] => {
 export const createUnit = (
 	type: UnitType,
 	vector: Ref<Vector>,
-	parentId?: string
+	parentId?: string,
+	specs?: Pick<Unit, 'ammunition' | 'platform' | 'spottingType'>
 ): Ref<Unit> => {
 	return ref({
 		id: generateId(),
 		type,
 		vector: vector.value.angularVector,
+		canDrag: parentId == null,
 		parentId,
+		ammunition: specs?.ammunition,
+		platform: specs?.platform,
+		spottingType: specs?.spottingType,
 	});
 };
 
@@ -82,38 +91,11 @@ const _getUnitSpecs = (
 	unitMap: UnitMap,
 	unitId: string
 ): ArtilleryPlatform | null => {
-	const ammoType =
-		(settings.value.userMode === UserMode.Advanced
-			? unitMap[unitId].ammunition
-			: undefined) ?? settings.value.globalAmmo;
-	if (ammoType == null) {
+	if (unitMap[unitId].platform == null) {
 		return null;
 	}
 
-	const platform =
-		(settings.value.userMode === UserMode.Advanced
-			? unitMap[unitId].platform
-			: undefined) ?? settings.value.globalPlatform;
-	if (platform == null) {
-		return null;
-	}
-
-	return ARTILLERY_BY_SHELL[ammoType].PLATFORM[platform] ?? null;
-};
-
-const _getGlobalSpecs = (): ArtilleryPlatform | null => {
-	if (
-		settings.value.globalAmmo == null ||
-		settings.value.globalPlatform == null
-	) {
-		return null;
-	}
-
-	return (
-		ARTILLERY_BY_SHELL[settings.value.globalAmmo]?.PLATFORM[
-			settings.value.globalPlatform
-		] ?? null
-	);
+	return ARTILLERY_BY_PLATFORM[unitMap[unitId].platform] ?? null;
 };
 
 export const getUnitSpecs = (
@@ -127,8 +109,8 @@ export const getUnitSpecs = (
 	}
 
 	if (settings.value.userMode === UserMode.Advanced) {
-		return _getUnitSpecs(unitMap, unitId) ?? _getGlobalSpecs();
+		return _getUnitSpecs(unitMap, unitId);
 	}
 
-	return _getGlobalSpecs();
+	return null;
 };

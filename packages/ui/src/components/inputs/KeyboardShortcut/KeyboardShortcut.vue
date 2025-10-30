@@ -1,5 +1,5 @@
 <template>
-	<TextInput
+	<FoxText
 		:model-value="valueDisplay"
 		readonly
 		@keydown.stop.prevent="onKeypress"
@@ -11,7 +11,7 @@
 
 <script lang="ts" setup>
 	import { keyDefinitionByCode } from '@packages/data/dist/keyboard-config';
-	import TextInput from '@/components/inputs/TextInput.vue';
+	import FoxText from '@/components/inputs/FoxText.vue';
 	import { computed, ref } from 'vue';
 
 	const emit = defineEmits<{

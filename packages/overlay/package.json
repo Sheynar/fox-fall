@@ -1,6 +1,6 @@
 {
   "name": "@packages/overlay",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "main": "dist/index.js",
   "description": "Foxhole artillery overlay",
   "author": "Daniel Olivier <KaoSDlanor@gmail.com>",
@@ -33,7 +33,7 @@
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
-    "electron": "^32.0.2",
+    "electron": "^38.4.0",
     "electron-builder": "24.6.3",
     "prettier": "^3.0.3",
     "rimraf": "^6.0.1",

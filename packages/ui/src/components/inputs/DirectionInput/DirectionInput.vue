@@ -6,10 +6,15 @@
 		v-bind="$attrs"
 		:autofocus="props.autofocus"
 		:fractionDigits="1"
-	/>
+		@focusout.native="compassOpen = false"
+	>
+		<template #icons-after>
+			<i class="pi pi-compass" style="pointer-events: auto; cursor: pointer;" @pointerdown.stop.prevent="inputElement?.focus(); compassOpen = !compassOpen" />
+		</template>
+	</NumberInput>
 	<Teleport to="body">
 		<div
-			v-if="focused"
+			v-if="compassOpen"
 			class="DirectionInput__tooltip"
 			:style="tooltipStyle"
 			@focusin.prevent
@@ -48,26 +53,26 @@
 </style>
 
 <script setup lang="ts">
-	import { useElementBounding, useFocus, useWindowSize } from '@vueuse/core';
+	import { useElementBounding, useWindowSize } from '@vueuse/core';
 	import NumberInput from '../NumberInput.vue';
 	import {
 		StyleValue,
 		computed,
 		defineModel,
-		nextTick,
-		onMounted,
+		ref,
 		shallowRef,
 		watch,
 	} from 'vue';
 	import DirectionAlternateInput from './DirectionAlternateInput.vue';
 
 	const numberInput = shallowRef<InstanceType<typeof NumberInput>>(null!);
+	const numberInputContainer = computed(() => numberInput.value?.textInput?.containerElement);
 	const inputElement = computed(() => numberInput.value?.textInput?.inputElement);
-	const { focused } = useFocus(inputElement);
-	const inputBounding = useElementBounding(inputElement);
+	const inputBounding = useElementBounding(numberInputContainer);
 	const windowSize = useWindowSize();
+	const compassOpen = ref(false);
 
-	watch(focused, (isFocused) => {
+	watch(compassOpen, (isFocused) => {
 		if (!isFocused) return;
 		inputBounding.update();
 		setTimeout(() => inputBounding.update(), 100);
@@ -88,7 +93,7 @@
 	);
 
 	const tooltipStyle = computed<StyleValue | undefined>(() => {
-		if (!focused.value) return undefined;
+		if (!compassOpen.value) return undefined;
 
 		const output: StyleValue = {};
 
@@ -112,14 +117,6 @@
 	}>();
 
 	const modelValue = defineModel({ type: Number, required: true });
-
-	onMounted(() => {
-		if (props.autofocus) {
-			nextTick(() => {
-				inputElement.value.select();
-			});
-		}
-	});
 
 	defineExpose({
 		inputElement,

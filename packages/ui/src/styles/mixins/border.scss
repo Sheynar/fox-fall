@@ -1,0 +1,52 @@
+@use '@/styles/constants' as constants;
+
+@property --_background {
+	syntax: '*';
+	inherits: false;
+	initial-value: linear-gradient(constants.$default_background);
+}
+@property --_border-angle {
+	syntax: '<angle>';
+	inherits: false;
+	initial-value: 240deg;
+}
+@property --_border-color_1 {
+	syntax: '<color>';
+	inherits: false;
+	initial-value: constants.$border_color_1;
+}
+@property --_border-color_2 {
+	syntax: '<color>';
+	inherits: false;
+	initial-value: constants.$border_color_2;
+}
+
+@mixin border-gradient() {
+	border: 0.125em solid transparent !important;
+
+	background:
+		var(--_background, linear-gradient(#{constants.$default_background})) padding-box,
+		conic-gradient(
+				in oklch shorter hue from var(--_border-angle),
+				var(--_border-color_1),
+				var(--_border-color_2),
+				var(--_border-color_1)
+			)
+			border-box !important;
+}
+
+@mixin border-gradient-transition() {
+	transition:
+		--_background 0.1s ease-in-out,
+		--_border-angle 0.1s ease-in-out,
+		--_border-color_1 0.1s ease-in-out,
+		--_border-color_2 0.1s ease-in-out;
+}
+
+@mixin border-gradient-hovered() {
+	--_border-color_2: #{constants.$semilight};
+}
+
+@mixin border-gradient-focused() {
+	--_border-color_1: #{constants.$selected_foreground};
+}

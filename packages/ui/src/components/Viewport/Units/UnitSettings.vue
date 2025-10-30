@@ -1,32 +1,27 @@
 <template>
-	<PrimeDialog
-		append-to=".App__container"
+	<FoxDialog
 		class="UnitSettings__dialog"
 		v-model:visible="visible"
-		:header="'Unit: ' + unitLabel"
 		:style="{
-			minWidth: '30rem',
+			minWidth: '20rem',
 			'--ui-scale': settings.unitSettingsScale,
-			'--toggle-button-size': toggleButtonStore.sizeY + 'px',
-			animation: 'none',
-			transition: 'none',
 		}"
-		position="bottomright"
-		@pointerdown.stop
-		@wheel.stop
+		tabindex="-1"
 		@show="customPosition = false"
 		@dragend="customPosition = true"
 	>
+		<template #header>Unit: {{ unitLabel }}</template>
 		<div class="UnitSettings__container" @pointerdown.stop @touchstart.stop>
 			<div class="UnitSettings__table">
 				<div class="UnitSettings__row">
 					<span>Type:</span>
-					<IconSelect
+					<FoxSelect
 						class="UnitSettings__select"
-						v-model="selectedUnitType"
+						v-model="unit.type"
 						:disabled="props.readonly"
+						:autofocus="!parent"
+						enable-search
 						:options="unitTypeOptions"
-						optionLabel="label"
 					/>
 				</div>
 				<template v-if="settings.userMode === UserMode.Advanced">
@@ -40,8 +35,13 @@
 							:model-value="unit.ammunition"
 							@update:model-value="
 								artillery.sharedState.produceUpdate((draft) => {
-									draft.unitMap[unit.id].ammunition = $event;
-									draft.unitMap[unit.id].platform = undefined;
+									const draftUnit = draft.unitMap[unit.id];
+									draftUnit.ammunition = $event;
+									draftUnit.ammunition &&
+										!ARTILLERY_BY_SHELL[draftUnit.ammunition!]?.PLATFORM[
+											draftUnit.platform!
+										] &&
+										(draftUnit.platform = undefined);
 								});
 								emit('updated');
 							"
@@ -50,7 +50,7 @@
 					</div>
 					<div
 						class="UnitSettings__row"
-						v-if="unit.type === UnitType.Artillery && unit.ammunition != null"
+						v-if="unit.type === UnitType.Artillery"
 					>
 						<span>Platform:</span>
 						<PlatformSelect
@@ -68,16 +68,16 @@
 					</div>
 					<div class="UnitSettings__row" v-if="unit.type === UnitType.Spotter">
 						<span>Spotting type:</span>
-						<IconSelect
+						<FoxSelect
 							class="UnitSettings__select"
-							filter
-							showClear
-							v-model="selectedSpottingType"
-							placeholder="Select spotter type"
+							enable-search
+							enable-clear
+							v-model="unit.spottingType"
 							:disabled="props.readonly"
 							:options="spottingTypeOptions"
-							optionLabel="label"
-						/>
+						>
+							<template #placeholder>Select spotter type</template>
+						</FoxSelect>
 					</div>
 					<div class="UnitSettings__row">
 						<span>Positioned from:</span>
@@ -92,9 +92,10 @@
 				</template>
 				<div class="UnitSettings__row">
 					<label>Name:</label>
-					<PrimeInputText
+					<FoxText
 						:readonly="props.readonly"
-						v-model="unit.label"
+						:model-value="unit.label ?? ''"
+						@update:model-value="unit.label = $event ?? undefined"
 						@input="emit('updated')"
 					/>
 				</div>
@@ -144,7 +145,9 @@
 								:model-value="Vector.fromAngularVector(unit.vector).x"
 								@update:model-value="
 									artillery.sharedState.produceUpdate((draft) => {
-										const currentVector = Vector.fromAngularVector(draft.unitMap[unit.id].vector);
+										const currentVector = Vector.fromAngularVector(
+											draft.unitMap[unit.id].vector
+										);
 										currentVector.x = $event;
 										draft.unitMap[unit.id].vector = currentVector.angularVector;
 									});
@@ -158,7 +161,9 @@
 								:model-value="Vector.fromAngularVector(unit.vector).y"
 								@update:model-value="
 									artillery.sharedState.produceUpdate((draft) => {
-										const currentVector = Vector.fromAngularVector(draft.unitMap[unit.id].vector);
+										const currentVector = Vector.fromAngularVector(
+											draft.unitMap[unit.id].vector
+										);
 										currentVector.y = $event;
 										draft.unitMap[unit.id].vector = currentVector.angularVector;
 									});
@@ -221,7 +226,9 @@
 								:model-value="wrapDegrees(unit.vector.azimuth + 180)"
 								@update:model-value="
 									artillery.sharedState.produceUpdate((draft) => {
-										draft.unitMap[unit.id].vector.azimuth = wrapDegrees($event - 180);
+										draft.unitMap[unit.id].vector.azimuth = wrapDegrees(
+											$event - 180
+										);
 									});
 									emit('updated');
 								"
@@ -234,9 +241,12 @@
 									:model-value="-Vector.fromAngularVector(unit.vector).x"
 									@update:model-value="
 										artillery.sharedState.produceUpdate((draft) => {
-											const currentVector = Vector.fromAngularVector(draft.unitMap[unit.id].vector);
+											const currentVector = Vector.fromAngularVector(
+												draft.unitMap[unit.id].vector
+											);
 											currentVector.x = -$event;
-											draft.unitMap[unit.id].vector = currentVector.angularVector;
+											draft.unitMap[unit.id].vector =
+												currentVector.angularVector;
 										});
 										emit('updated');
 									"
@@ -248,9 +258,12 @@
 									:model-value="-Vector.fromAngularVector(unit.vector).y"
 									@update:model-value="
 										artillery.sharedState.produceUpdate((draft) => {
-											const currentVector = Vector.fromAngularVector(draft.unitMap[unit.id].vector);
+											const currentVector = Vector.fromAngularVector(
+												draft.unitMap[unit.id].vector
+											);
 											currentVector.y = -$event;
-											draft.unitMap[unit.id].vector = currentVector.angularVector;
+											draft.unitMap[unit.id].vector =
+												currentVector.angularVector;
 										});
 										emit('updated');
 									"
@@ -309,7 +322,10 @@
 			<div class="UnitSettings__actions">
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="canDrag = !canDrag"
+					@click.stop="
+						canDrag = !canDrag;
+						emit('updated');
+					"
 					:severity="canDrag ? 'success' : 'danger'"
 					title="Can drag"
 				>
@@ -356,22 +372,21 @@
 				</PrimeButton>
 			</div>
 		</div>
-	</PrimeDialog>
+	</FoxDialog>
 </template>
 
 <style lang="scss">
-	.UnitSettings__dialog {
-		font-size: calc(1em * var(--ui-scale) * 0.4);
-		margin-bottom: calc(0.75rem + var(--toggle-button-size)) !important;
-		margin-right: 0.75rem !important;
+	@use '@/styles/constants' as constants;
+	@use '@/styles/mixins/border' as border;
 
-		.p-dialog-title {
-			font-size: 2em;
-		}
-		.p-button-icon-only.p-button-rounded {
-			height: 2em;
-			width: 2em;
-		}
+	.UnitSettings__dialog {
+		display: grid;
+		grid-auto-rows: auto;
+		grid-template-columns: auto;
+		align-items: inherit;
+
+		top: auto;
+		left: auto;
 	}
 
 	.UnitSettings__container {
@@ -392,6 +407,7 @@
 			grid-auto-rows: min-content;
 			align-items: center;
 
+			font-size: 1.5em;
 			gap: 0.5em;
 
 			text-align: end;
@@ -448,11 +464,13 @@
 
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
-	import PrimeDialog from 'primevue/dialog';
-	import PrimeInputText from 'primevue/inputtext';
 	import { computed, markRaw, ref, shallowRef, watch } from 'vue';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
-	import { SPOTTING_BY_TYPE, SPOTTING_TYPE } from '@packages/data/dist/artillery/unit/constants';
+	import {
+		ARTILLERY_BY_SHELL,
+		SPOTTING_BY_TYPE,
+		SPOTTING_TYPE,
+	} from '@packages/data/dist/artillery/unit/constants';
 	import { UnitType } from '@packages/data/dist/artillery/unit';
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import DragIcon from '@/components/icons/DragIcon.vue';
@@ -461,9 +479,9 @@
 	import TrashIcon from '@/components/icons/TrashIcon.vue';
 	import WindIcon from '@/components/icons/WindIcon.vue';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
-	import IconSelect from '@/components/inputs/IconSelect.vue';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
+	import FoxSelect from '@/components/inputs/FoxSelect.vue';
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
 	import { injectUnit } from '@/contexts/unit';
@@ -472,7 +490,8 @@
 	import { artillery } from '@/lib/globals';
 	import { settings, UserMode } from '@/lib/settings';
 	import { getAvailableUnitTypes, getUnitLabel } from '@/lib/unit';
-	import { useToggleButtonStore } from '@/stores/toggle-button';
+	import FoxText from '@/components/inputs/FoxText.vue';
+	import FoxDialog from '@/components/FoxDialog.vue';
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
 	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
@@ -488,7 +507,7 @@
 		type: Boolean,
 		required: true,
 	});
-	const canDrag = defineModel('canDrag', { type: Boolean, required: true });
+	const canDrag = defineModel('canDrag', { type: Boolean });
 	const langingZoneFiringSolution = ref(
 		Vector.fromCartesianVector({ x: 0, y: 0 })
 	);
@@ -497,45 +516,43 @@
 		readonly?: boolean;
 	}>();
 
-	const toggleButtonStore = useToggleButtonStore();
 	const unit = injectUnit();
 
 	const unitLabel = computed(() =>
-		getUnitLabel(artillery.sharedState.currentState.value.unitMap, unit.value.id)
+		getUnitLabel(
+			artillery.sharedState.currentState.value.unitMap,
+			unit.value.id
+		)
 	);
 
 	const unitTypeOptions = computed(() => {
-		return getAvailableUnitTypes().map((type) => ({
-			label: UnitType[type],
-			icon: markRaw(UNIT_ICON_BY_TYPE[type]),
-			value: type,
-		}));
-	});
-	const selectedUnitType = computed({
-		get: () =>
-			unitTypeOptions.value.find((option) => option.value === unit.value.type),
-		set: (option) => {
-			unit.value.type = option?.value ?? UnitType.Artillery;
-			emit('updated');
-		},
+		const output: Map<UnitType, { label: string; icon?: any; order: number }> =
+			new Map();
+		for (const [index, type] of (
+			getAvailableUnitTypes() as UnitType[]
+		).entries()) {
+			output.set(type, {
+				label: UnitType[type],
+				icon: markRaw(UNIT_ICON_BY_TYPE[type]),
+				order: index,
+			});
+		}
+		return output;
 	});
 
 	const spottingTypeOptions = computed(() => {
-		return (Object.keys(SPOTTING_BY_TYPE) as SPOTTING_TYPE[]).map((type) => ({
-			label: type,
-			icon: ICONS[type],
-			value: type,
-		}));
-	});
-	const selectedSpottingType = computed({
-		get: () =>
-			spottingTypeOptions.value.find(
-				(option) => option.value === unit.value.spottingType
-			),
-		set: (option) => {
-			unit.value.spottingType = option?.value;
-			emit('updated');
-		},
+		const output: Map<
+			SPOTTING_TYPE,
+			{ label: string; icon?: any; order: number }
+		> = new Map();
+		for (const [index, type] of (
+			Object.keys(SPOTTING_BY_TYPE) as SPOTTING_TYPE[]
+		)
+			.sort()
+			.entries()) {
+			output.set(type, { label: type, icon: ICONS[type], order: index });
+		}
+		return output;
 	});
 
 	const parent = computed(() =>
@@ -546,7 +563,10 @@
 	const parentLabel = computed(() =>
 		parent.value == null
 			? 'Unknown'
-			: getUnitLabel(artillery.sharedState.currentState.value.unitMap, parent.value.id)
+			: getUnitLabel(
+					artillery.sharedState.currentState.value.unitMap,
+					parent.value.id
+				)
 	);
 
 	const onUnitTypeClicked = (e: MouseEvent, type: UnitType) => {

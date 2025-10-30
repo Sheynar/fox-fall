@@ -181,7 +181,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/osx-sign@npm:^1.0.4, @electron/osx-sign@npm:^1.0.5":
+"@electron/osx-sign@npm:^1.0.4":
+  version: 1.3.3
+  resolution: "@electron/osx-sign@npm:1.3.3"
+  dependencies:
+    compare-version: "npm:^0.1.2"
+    debug: "npm:^4.3.4"
+    fs-extra: "npm:^10.0.0"
+    isbinaryfile: "npm:^4.0.8"
+    minimist: "npm:^1.2.6"
+    plist: "npm:^3.0.5"
+  bin:
+    electron-osx-flat: bin/electron-osx-flat.js
+    electron-osx-sign: bin/electron-osx-sign.js
+  checksum: 10c0/f8156be879b1850465da8135398b9e58aa6db9f3310cd625c471e1080008b628846c3345a171e17509bcd3c1883cbc90f49a914e7486b1f41702cf2499c657d0
+  languageName: node
+  linkType: hard
+
+"@electron/osx-sign@npm:^1.0.5":
   version: 1.3.1
   resolution: "@electron/osx-sign@npm:1.3.1"
   dependencies:
@@ -656,7 +673,7 @@ __metadata:
     babel-plugin-transform-async-to-generator: "npm:^6.24.1"
     babel-preset-env: "npm:^1.7.0"
     babel-preset-react: "npm:^6.24.1"
-    electron: "npm:^32.0.2"
+    electron: "npm:^38.4.0"
     electron-builder: "npm:24.6.3"
     electron-log: "npm:^5.3.2"
     electron-updater: "npm:6.3.9"
@@ -1166,12 +1183,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.10.7, @types/node@npm:^20.12.7, @types/node@npm:^20.9.0":
+"@types/node@npm:^20.10.7, @types/node@npm:^20.12.7":
   version: 20.16.11
   resolution: "@types/node@npm:20.16.11"
   dependencies:
     undici-types: "npm:~6.19.2"
   checksum: 10c0/bba43f447c3c80548513954dae174e18132e9149d572c09df4a282772960d33e229d05680fb5364997c03489c22fe377d1dbcd018a3d4ff1cfbcfcdaa594a9c3
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^22.7.7":
+  version: 22.18.12
+  resolution: "@types/node@npm:22.18.12"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/13a4638f2baba3efba2b8bc369dd6f950dccbfca78f318f9c9f2c7adc11fce14fc119723c38567dada2d57a873c092b7356c024924d5974a08f3c1f93dc706c6
   languageName: node
   linkType: hard
 
@@ -3242,16 +3268,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^32.0.2":
-  version: 32.2.0
-  resolution: "electron@npm:32.2.0"
+"electron@npm:^38.4.0":
+  version: 38.4.0
+  resolution: "electron@npm:38.4.0"
   dependencies:
     "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^20.9.0"
+    "@types/node": "npm:^22.7.7"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/28d988a9d05c89e93d70cc790bd53ecc97135cc3fa9efe3617f10b87cdf85ada468d383afd7858bcf8f064aa189ea7f8987e32c7ebaac70bda64e8f9f85621e8
+  checksum: 10c0/3458409151d12f1fcd5e95374aa36e0d2f4aa0d3421c9f57dc521c606070294f33b24a681b3f93b49b02f4a3a07eb0070100ebda51b1198efd4b49dbf1260713
   languageName: node
   linkType: hard
 
@@ -5823,12 +5849,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.1.3, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.8, semver@npm:^7.5.3":
+"semver@npm:^7.1.3, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.5.3":
   version: 7.6.3
   resolution: "semver@npm:7.6.3"
   bin:
     semver: bin/semver.js
   checksum: 10c0/88f33e148b210c153873cb08cfe1e281d518aaa9a666d4d148add6560db5cd3c582f3a08ccb91f38d5f379ead256da9931234ed122057f40bb5766e65e58adaf
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.3.8":
+  version: 7.7.3
+  resolution: "semver@npm:7.7.3"
+  bin:
+    semver: bin/semver.js
+  checksum: 10c0/4afe5c986567db82f44c8c6faef8fe9df2a9b1d98098fc1721f57c696c4c21cebd572f297fc21002f81889492345b8470473bc6f4aff5fb032a6ea59ea2bc45e
   languageName: node
   linkType: hard
 
@@ -6339,7 +6374,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.2.2, typescript@npm:^5.3.3, typescript@npm:^5.4.5":
+"typescript@npm:^5.2.2, typescript@npm:^5.4.5":
   version: 5.6.3
   resolution: "typescript@npm:5.6.3"
   bin:
@@ -6349,13 +6384,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.2.2#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.4.5#optional!builtin<compat/typescript>":
+"typescript@npm:^5.3.3":
+  version: 5.9.3
+  resolution: "typescript@npm:5.9.3"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/6bd7552ce39f97e711db5aa048f6f9995b53f1c52f7d8667c1abdc1700c68a76a308f579cd309ce6b53646deb4e9a1be7c813a93baaf0a28ccd536a30270e1c5
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@npm%3A^5.2.2#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.4.5#optional!builtin<compat/typescript>":
   version: 5.6.3
   resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=5adc0c"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10c0/ac8307bb06bbfd08ae7137da740769b7d8c3ee5943188743bb622c621f8ad61d244767480f90fbd840277fbf152d8932aa20c33f867dea1bb5e79b187ca1a92f
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>":
+  version: 5.9.3
+  resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5adc0c"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/6f7e53bf0d9702350deeb6f35e08b69cbc8b958c33e0ec77bdc0ad6a6c8e280f3959dcbfde6f5b0848bece57810696489deaaa53d75de3578ff255d168c1efbd
   languageName: node
   linkType: hard
 
@@ -6373,6 +6428,13 @@ __metadata:
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.21.0":
+  version: 6.21.0
+  resolution: "undici-types@npm:6.21.0"
+  checksum: 10c0/c01ed51829b10aa72fc3ce64b747f8e74ae9b60eafa19a7b46ef624403508a54c526ffab06a14a26b3120d055e1104d7abe7c9017e83ced038ea5cf52f8d5e04
   languageName: node
   linkType: hard
 

@@ -17,13 +17,18 @@
 		class="App__container"
 		:class="{
 			App__transparent: isOverlay && settings.transparentOverlay,
-			App__hidden: !artillery.overlayOpen.value && !settings.overlayAlwaysVisible,
+			App__hidden:
+				!artillery.overlayOpen.value && !settings.overlayAlwaysVisible,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
 		@touchstart.prevent
-		@pointerdown.stop="($event.target as HTMLDivElement).focus()"
+		@pointerdown.stop="
+			($event.target as HTMLDivElement).focus();
+			contextMenuPosition = null;
+		"
 		@pointermove="onPointerMove"
 		@contextmenu.prevent="onContextMenu"
+		@pointerdown="contextMenuPosition = null"
 		tabindex="-1"
 	>
 		<template
@@ -32,42 +37,33 @@
 				!artillery.viewportControl.screenShotting.value
 			"
 		>
-			<Grid v-if="settings.backdropMode === BackdropMode.Grid" @contextMenu="onContextMenu" />
+			<Grid v-if="settings.backdropMode === BackdropMode.Grid" />
 
-			<Viewport />
+			<Viewport>
+				<PositionedElement
+					v-if="contextMenuPosition != null"
+					:layer="LAYER.HUD"
+					:x="contextMenuPosition.x"
+					:y="contextMenuPosition.y"
+				>
+					<ContextRadial
+						@submit="($event) => onContextMenuSubmit($event.value)"
+						@cancel="() => (contextMenuPosition = null)"
+					/>
+				</PositionedElement>
+			</Viewport>
 
 			<OverlayHud />
-
-			<ContextMenu
-				ref="contextMenu"
-				:model="contextMenuOptions"
-				@hide="() => (contextMenuPosition = null)"
-			>
-				<template #item="{ item, props }">
-					<a
-						class="p-contextmenu-item-link"
-						tabindex="-1"
-						v-bind="props.action"
-					>
-						<Component v-if="item.icon" :is="item.icon" />
-						<span class="p-contextmenu-item-label">{{ item.label }}</span>
-						<i
-							v-if="item.items"
-							class="pi pi-angle-right p-icon p-contextmenu-submenu-icon"
-						></i>
-					</a>
-				</template>
-			</ContextMenu>
 		</template>
 
 		<svg>
 			<defs>
-				<filter id="outline">
+				<filter id="outline-black">
 					<feMorphology
 						in="SourceGraphic"
 						result="DILATED"
 						operator="dilate"
-						radius="1"
+						radius="2"
 					/>
 					<feColorMatrix
 						in="DILATED"
@@ -86,11 +82,47 @@
 						<feMergeNode in="SourceGraphic" />
 					</feMerge>
 				</filter>
-				<filter id="outline-inset">
+				<filter id="outline-white">
+					<feMorphology
+						in="SourceGraphic"
+						result="DILATED"
+						operator="dilate"
+						radius="2"
+					/>
+					<feColorMatrix
+						in="DILATED"
+						result="OUTLINED"
+						type="matrix"
+						values="
+						1 1 1 0 0
+						1 1 1 0 0
+						1 1 1 0 0
+						0 0 0 1 0
+					"
+					/>
+
+					<feMerge>
+						<feMergeNode in="OUTLINED" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+				<filter id="outline-black-inset">
 					<feFlood flood-color="black" result="inside-color" />
 					<feComposite in2="SourceAlpha" operator="in" result="inside-stroke" />
 					<!--fill-area-->
-					<feMorphology in="SourceAlpha" operator="erode" radius="1" />
+					<feMorphology in="SourceAlpha" operator="erode" radius="2" />
+					<feComposite in="SourceGraphic" operator="in" result="fill-area" />
+
+					<feMerge>
+						<feMergeNode in="inside-stroke" />
+						<feMergeNode in="fill-area" />
+					</feMerge>
+				</filter>
+				<filter id="outline-white-inset">
+					<feFlood flood-color="white" result="inside-color" />
+					<feComposite in2="SourceAlpha" operator="in" result="inside-stroke" />
+					<!--fill-area-->
+					<feMorphology in="SourceAlpha" operator="erode" radius="2" />
 					<feComposite in="SourceGraphic" operator="in" result="fill-area" />
 
 					<feMerge>
@@ -146,23 +178,22 @@
 </style>
 
 <script setup lang="ts">
-	import ContextMenu from 'primevue/contextmenu';
-	import type { MenuItem } from 'primevue/menuitem';
-	import { computed, ref, shallowRef } from 'vue';
-	import { UnitType } from '@packages/data/dist/artillery/unit';
+	import { ref } from 'vue';
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Grid from '@/components/Grid.vue';
+	import ContextRadial, {
+		type Payload,
+	} from './components/inputs/ContextRadial.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
 	import OverlayToggle from '@/components/OverlayToggle/OverlayToggle.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
 	import { isOverlay } from '@/lib/constants';
-	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
-	import { BackdropMode, settings, UserMode } from '@/lib/settings';
-	import { getAvailableUnitTypes, getUnitResolvedVector } from '@/lib/unit';
-
-	const contextMenu = shallowRef<null | InstanceType<typeof ContextMenu>>(null);
+	import { BackdropMode, settings } from '@/lib/settings';
+	import { getUnitResolvedVector } from '@/lib/unit';
+	import PositionedElement from './components/Viewport/PositionedElement.vue';
+	import { LAYER } from './lib/constants/ui';
 
 	const onPointerMove = (event: PointerEvent) => {
 		artillery.cursor.value.cartesianVector = {
@@ -178,71 +209,32 @@
 			event.stopPropagation();
 			artillery.unitSelector.value.selectUnit(null);
 		} else if (!artillery.viewportControl.canRotate.value) {
-			contextMenuPosition.value = artillery.cursor.value.clone();
-			contextMenu.value?.show(event);
+			contextMenuPosition.value = artillery.viewport.value.toWorldPosition(
+				artillery.cursor.value.clone()
+			);
+			// contextMenu.value?.show(event);
 		}
 	};
-	const contextMenuOptions = computed(() => {
-		const standaloneOnly = settings.value.userMode === UserMode.Basic || artillery.selectedUnit.value == null;
+	const onContextMenuSubmit = (payload: Payload) => {
+		let newUnitPosition = contextMenuPosition.value!.clone();
 
-		const availableUnitTypes = getAvailableUnitTypes();
-
-		const output: MenuItem[] = [
-			{
-				label:
-					!standaloneOnly
-						? 'Add standalone unit'
-						: 'Add unit',
-				items: availableUnitTypes.map((unitType) => ({
-					label: `${UnitType[unitType]}`,
-					icon: UNIT_ICON_BY_TYPE[unitType],
-					command: () => {
-						artillery.addUnit(
-							unitType,
-							undefined,
-							ref(
-								artillery.viewport.value.toWorldPosition(
-									contextMenuPosition.value!
-								)
-							)
-						);
-					},
-				})),
-			},
-		];
-
-		if (!standaloneOnly) {
-			output.push({
-				label: 'Add linked unit',
-				items: [
-					UnitType.Artillery,
-					UnitType.Spotter,
-					UnitType.Location,
-					UnitType.Target,
-					UnitType.LandingZone,
-				].map((unitType) => ({
-					label: `${UnitType[unitType]}`,
-					command: () => {
-						artillery.addUnit(
-							unitType,
-							undefined,
-							ref(
-								artillery.viewport.value
-									.toWorldPosition(contextMenuPosition.value!)
-									.addVector(
-										getUnitResolvedVector(
-											artillery.sharedState.currentState.value.unitMap,
-											artillery.selectedUnit.value!
-										).scale(-1)
-									)
-							),
-							artillery.selectedUnit.value!
-						);
-					},
-				})),
-			});
+		if (artillery.selectedUnit.value != null) {
+			newUnitPosition = newUnitPosition.addVector(
+				getUnitResolvedVector(
+					artillery.sharedState.currentState.value.unitMap,
+					artillery.selectedUnit.value
+				).scale(-1)
+			);
 		}
 
-		return output;
-	});
+		artillery.addUnit(
+			payload.type,
+			undefined,
+			ref(newUnitPosition),
+			artillery.selectedUnit.value || undefined,
+			payload
+		);
+
+		contextMenuPosition.value = null;
+	};
 </script>

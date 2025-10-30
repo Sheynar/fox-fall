@@ -41,7 +41,10 @@ export const useServerConnection = () => {
 	const serverUrl = computed(() => {
 		const connectionDetails = getConnectionDetails();
 
-		const [_, protocol = 'ws', hostname, port = '81'] = /(?:([^\:]+)\:\/\/)?([^\:]+)?(?:\:(\d+))?/.exec(connectionDetails?.serverAddress ?? '') ?? [];
+		const [_, protocol = 'ws', hostname, port = '81'] =
+			/(?:([^\:]+)\:\/\/)?([^\:]+)?(?:\:(\d+))?/.exec(
+				connectionDetails?.serverAddress ?? ''
+			) ?? [];
 
 		return hostname
 			? `${protocol}://${hostname}:${port}/?code=${encodeURIComponent(connectionDetails?.code ?? '')}`
@@ -78,7 +81,8 @@ export const useServerConnection = () => {
 		});
 	};
 
-	const reconnect = async () => {
+	let reconnectChain: Promise<void> | undefined;
+	const _reconnect = async () => {
 		if (destroyed.value) return;
 		ready.value = Promise.resolve()
 			.then(
@@ -87,10 +91,13 @@ export const useServerConnection = () => {
 						setTimeout(() => resolve(), RECONNECT_INTERVAL);
 					})
 			)
-			.then(() => connect())
-			.catch(() => reconnect());
+			.then(() => connect());
 
 		await ready.value;
+	};
+	const reconnect = async (): Promise<void> => {
+		if (reconnectChain) return reconnectChain;
+		return reconnectChain = _reconnect().finally(() => reconnectChain = undefined).catch(() => reconnect());
 	};
 
 	const onConnect = () => {
@@ -128,7 +135,9 @@ export const useServerConnection = () => {
 		reconnect,
 
 		webSocket: computed(() => {
-			return connectionState.value === ServerConnectionState.connected ? webSocket.value : undefined;
+			return connectionState.value === ServerConnectionState.connected
+				? webSocket.value
+				: undefined;
 		}),
 	};
 };
