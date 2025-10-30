@@ -289,72 +289,6 @@
 					</template>
 				</template>
 			</div>
-			<template v-if="settings.userMode === UserMode.Advanced">
-				<div class="UnitSettings__actions">
-					<PrimeButton
-						class="UnitSettings__action"
-						@click.stop="
-							artillery.sharedState.produceUpdate(() => {
-								onUnitTypeClicked($event, UnitType.Artillery);
-							})
-						"
-						severity="secondary"
-						title="Create artillery"
-					>
-						<Component :is="UNIT_ICON_BY_TYPE[UnitType.Artillery]" />
-					</PrimeButton>
-					<PrimeButton
-						class="UnitSettings__action"
-						@click.stop="
-							artillery.sharedState.produceUpdate(() => {
-								onUnitTypeClicked($event, UnitType.Spotter);
-							})
-						"
-						severity="secondary"
-						title="Create spotter"
-					>
-						<Component :is="UNIT_ICON_BY_TYPE[UnitType.Spotter]" />
-					</PrimeButton>
-					<PrimeButton
-						class="UnitSettings__action"
-						@click.stop="
-							artillery.sharedState.produceUpdate(() => {
-								onUnitTypeClicked($event, UnitType.Location);
-							})
-						"
-						severity="secondary"
-						title="Create location"
-					>
-						<Component :is="UNIT_ICON_BY_TYPE[UnitType.Location]" />
-					</PrimeButton>
-				</div>
-				<div class="UnitSettings__actions">
-					<PrimeButton
-						class="UnitSettings__action"
-						@click.stop="
-							artillery.sharedState.produceUpdate(() => {
-								onUnitTypeClicked($event, UnitType.Target);
-							})
-						"
-						severity="secondary"
-						title="Create target"
-					>
-						<Component :is="UNIT_ICON_BY_TYPE[UnitType.Target]" />
-					</PrimeButton>
-					<PrimeButton
-						class="UnitSettings__action"
-						@click.stop="
-							artillery.sharedState.produceUpdate(() => {
-								onUnitTypeClicked($event, UnitType.LandingZone);
-							})
-						"
-						severity="secondary"
-						title="Create landing zone"
-					>
-						<Component :is="UNIT_ICON_BY_TYPE[UnitType.LandingZone]" />
-					</PrimeButton>
-				</div>
-			</template>
 			<div class="UnitSettings__actions">
 				<PrimeButton
 					class="UnitSettings__action"
@@ -603,15 +537,6 @@
 					parent.value.id
 				)
 	);
-
-	const onUnitTypeClicked = (e: MouseEvent, type: UnitType) => {
-		if (e.ctrlKey) {
-			unit.value.type = type;
-			emit('updated');
-		} else {
-			emit('create-child', type);
-		}
-	};
 
 	watch(
 		artillery.selectedFiringVector,
