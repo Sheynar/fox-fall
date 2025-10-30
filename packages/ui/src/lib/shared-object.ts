@@ -98,7 +98,7 @@ export class SharedObject<T extends Record<string, unknown>> {
 			applyPatch(newState, updateData.patch);
 			update = updateData.nextUpdate;
 		}
-		this._currentState.value = newState;
+		this._currentState.value = JSON.parse(JSON.stringify(newState));
 	}
 
 	protected _removeUpdate(id: string) {
