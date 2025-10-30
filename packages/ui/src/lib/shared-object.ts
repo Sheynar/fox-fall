@@ -64,6 +64,7 @@ const defaultUser = generateId();
 export class SharedObject<T extends Record<string, unknown>> {
 	readonly emitter = new EventEmitter<{
 		updateProduced: [SharedObjectUpdate];
+		updateReplaced: [SharedObjectUpdate];
 		updateRemoved: [SharedObjectUpdate];
 	}>();
 	updates: Record<string, SharedObjectUpdate> = {};
@@ -155,7 +156,7 @@ export class SharedObject<T extends Record<string, unknown>> {
 		return true;
 	}
 
-	addUpdate(update: SharedObjectUpdate, skipApplyPatch: boolean = false) {
+	importUpdate(update: SharedObjectUpdate, skipApplyPatch: boolean = false) {
 		if (!this.checkConflicts(update)) return false;
 
 		if (!skipApplyPatch) {
@@ -171,7 +172,7 @@ export class SharedObject<T extends Record<string, unknown>> {
 	}
 
 	protected _stateBeforeProduction: T | null = null;
-	produceUpdate(recipe: () => void, author: string = this.user) {
+	produceUpdate(recipe: () => void, author: string = this.user, mergeWithUpdate?: string) {
 		const hasParentProduction = this._stateBeforeProduction != null;
 		if (!hasParentProduction) {
 			this._stateBeforeProduction = JSON.parse(
@@ -187,6 +188,17 @@ export class SharedObject<T extends Record<string, unknown>> {
 		this._stateBeforeProduction = null;
 		if (patch.length === 0) return;
 
+		if (mergeWithUpdate != null) {
+			const update = this.updates[mergeWithUpdate];
+			if (update != null) {
+				update.patch.push(...patch);
+				this.emitter.emit('updateReplaced', update);
+				return update;
+			} else {
+				throw new Error(`Update not found for id: ${mergeWithUpdate}`);
+			}
+		}
+
 		const newUpdate = {
 			id: generateId(),
 			author,
@@ -195,8 +207,10 @@ export class SharedObject<T extends Record<string, unknown>> {
 			lastUpdate: this.lastUpdate,
 		};
 
-		this.addUpdate(newUpdate, true);
+		this.importUpdate(newUpdate, true);
 		this.emitter.emit('updateProduced', newUpdate);
+
+		return newUpdate;
 	}
 
 	undo(author?: string) {

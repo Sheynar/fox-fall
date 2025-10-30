@@ -17,9 +17,9 @@
 			}"
 			@mouseover="isHovered = true"
 			@mouseleave="isHovered = false"
-			@pointerdown="($event) => artillery.sharedState.produceUpdate(() => onPointerDown($event))"
-			@pointermove="($event) => artillery.sharedState.produceUpdate(() => onPointerMove($event))"
-			@pointerup="($event) => artillery.sharedState.produceUpdate(() => onPointerUp($event))"
+			@pointerdown="($event) => onPointerDown($event)"
+			@pointermove="($event) => onPointerMove($event)"
+			@pointerup="($event) => onPointerUp($event)"
 		>
 			<div class="Unit__border"></div>
 			<div class="Unit__label" v-if="unitLabel">
@@ -225,6 +225,7 @@
 	const unitSettingsHasCustomPosition = ref(false);
 
 	type MovingData = {
+		sharedStateId?: string;
 		startEvent: PointerEvent;
 		startCursorViewport: Vector;
 		startUnitPosition: Vector;
@@ -288,44 +289,53 @@
 		if (props.readonly) return;
 		const movingData = moving.value;
 		if (!movingData) return;
-		event.stopPropagation();
 
-		const currentCursorViewport = artillery.viewport.value.toWorldPosition(
-			Vector.fromCartesianVector({
-				x: event.clientX,
-				y: event.clientY,
-			})
-		);
+		movingData.sharedStateId = artillery.sharedState.produceUpdate(
+			() => {
+				event.stopPropagation();
 
-		const currentVector = Vector.fromAngularVector(
-			artillery.sharedState.currentState.value.unitMap[unit.value.id].vector
-		);
-		currentVector.cartesianVector = {
-			x:
-				movingData.startUnitPosition.x +
-				currentCursorViewport.x -
-				movingData.startCursorViewport.x,
-			y:
-				movingData.startUnitPosition.y +
-				currentCursorViewport.y -
-				movingData.startCursorViewport.y,
-		};
+				const currentCursorViewport = artillery.viewport.value.toWorldPosition(
+					Vector.fromCartesianVector({
+						x: event.clientX,
+						y: event.clientY,
+					})
+				);
 
-		// Round values
-		if (
-			artillery.sharedState.currentState.value.unitMap[unit.value.id]
-				.parentId != null
-		) {
-			currentVector.angularVector = {
-				distance: Number(currentVector.distance.toFixed(1)),
-				azimuth: Number(currentVector.azimuth.toFixed(1)),
-			};
-		}
+				const currentVector = Vector.fromAngularVector(
+					artillery.sharedState.currentState.value.unitMap[unit.value.id].vector
+				);
+				currentVector.cartesianVector = {
+					x:
+						movingData.startUnitPosition.x +
+						currentCursorViewport.x -
+						movingData.startCursorViewport.x,
+					y:
+						movingData.startUnitPosition.y +
+						currentCursorViewport.y -
+						movingData.startCursorViewport.y,
+				};
 
-		artillery.sharedState.currentState.value.unitMap[unit.value.id].vector =
-			currentVector.angularVector;
+				// Round values
+				if (
+					artillery.sharedState.currentState.value.unitMap[unit.value.id]
+						.parentId != null
+				) {
+					currentVector.angularVector = {
+						distance: Number(currentVector.distance.toFixed(1)),
+						azimuth: Number(currentVector.azimuth.toFixed(1)),
+					};
+				}
 
-		emit('updated');
+				artillery.sharedState.currentState.value.unitMap[unit.value.id].vector =
+					currentVector.angularVector;
+
+				emit('updated');
+			},
+			undefined,
+			movingData.sharedStateId === artillery.sharedState.lastUpdate
+				? movingData.sharedStateId
+				: undefined
+		)?.id;
 	};
 
 	watch(
