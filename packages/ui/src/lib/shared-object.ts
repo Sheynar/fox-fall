@@ -96,10 +96,10 @@ export class SharedObject<T extends Record<string, unknown>> {
 			const updateData = this.updates[update];
 			if (updateData == null)
 				throw new Error(`Update data not found for id: ${update}`);
-			applyPatch(newState, updateData.patch);
+			applyPatch(newState, JSON.parse(JSON.stringify(updateData.patch)));
 			update = updateData.nextUpdate;
 		}
-		this._currentState.value = JSON.parse(JSON.stringify(newState));
+		this._currentState.value = newState;
 	}
 
 	protected _removeUpdate(id: string) {
@@ -160,7 +160,7 @@ export class SharedObject<T extends Record<string, unknown>> {
 		if (!this.checkConflicts(update)) return false;
 
 		if (!skipApplyPatch) {
-			applyPatch(this._currentState.value, update.patch);
+			applyPatch(this._currentState.value, JSON.parse(JSON.stringify(update.patch)));
 		}
 		this.updates[update.id] = update;
 		if (this.firstUpdate == null) this.firstUpdate = update.id;
@@ -172,7 +172,11 @@ export class SharedObject<T extends Record<string, unknown>> {
 	}
 
 	protected _stateBeforeProduction: T | null = null;
-	produceUpdate(recipe: () => void, author: string = this.user, mergeWithUpdate?: string) {
+	produceUpdate(
+		recipe: () => void,
+		author: string = this.user,
+		mergeWithUpdate?: string
+	) {
 		const hasParentProduction = this._stateBeforeProduction != null;
 		if (!hasParentProduction) {
 			this._stateBeforeProduction = JSON.parse(
@@ -192,6 +196,7 @@ export class SharedObject<T extends Record<string, unknown>> {
 			const update = this.updates[mergeWithUpdate];
 			if (update != null) {
 				update.patch.push(...patch);
+				update.timestamp = Date.now();
 				this.emitter.emit('updateReplaced', update);
 				return update;
 			} else {
