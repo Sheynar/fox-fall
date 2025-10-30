@@ -181,6 +181,7 @@
 						(var(--_radial-menu-inner-radius) - var(--_chord-arc-height-inner)) *
 						1vmin
 				);
+			transition: transform 0.1s ease-in-out;
 		}
 	}
 
@@ -226,6 +227,7 @@
 
 		transform: scale(var(--_segment-scale));
 		transform-origin: 50% 50%;
+		transition: transform 0.1s ease-in-out;
 		pointer-events: auto;
 	}
 
@@ -236,7 +238,7 @@
 	}
 
 	.RadialMenu__option-outer:hover {
-		--_segment-scale: 1.1;
+		--_segment-scale: 1.2;
 	}
 
 	.RadialMenu__icon {
