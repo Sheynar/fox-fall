@@ -36,32 +36,22 @@
 		set: (newNumber: number) => {
 			if (props.min != null) newNumber = Math.max(props.min, newNumber);
 			if (props.max != null) newNumber = Math.min(props.max, newNumber);
-			_modelValue.value = Number(
-				props.fractionDigits != null
-					? newNumber.toFixed(props.fractionDigits)
-					: newNumber
-			);
+			_modelValue.value = newNumber;
 		},
 	});
 	const formattedValue = computed(() => {
 		return `${props.fractionDigits != null ? numberValue.value.toFixed(props.fractionDigits) : numberValue.value}`;
 	});
 
-	const stringValue = ref('');
-	watch(
-		stringValue,
-		() => {
-			let _stringValue = stringValue.value;
-			if (stringValue.value !== _stringValue) stringValue.value = _stringValue;
-		},
-		{ flush: 'sync' }
-	);
+	const stringValue = ref(formattedValue.value);
 	const parsedValue = computed(() => {
 		return Number(stringValue.value);
 	});
 
 	const valuesOutOfSync = computed(
-		() => numberValue.value !== parsedValue.value
+		() => {
+			return Number(formattedValue.value) !== parsedValue.value;
+		}
 	);
 
 	watch(
