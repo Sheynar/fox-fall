@@ -579,6 +579,12 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		) {
 			event.preventDefault();
 			sharedState.undo();
+		} else if (
+			event.key === 'y' &&
+			event.ctrlKey
+		) {
+			event.preventDefault();
+			sharedState.redo();
 		}
 	});
 

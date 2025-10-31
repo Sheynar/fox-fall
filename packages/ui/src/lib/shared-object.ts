@@ -87,6 +87,13 @@ export class SharedObject<T extends Record<string, unknown>> {
 		this._currentState = ref(
 			JSON.parse(JSON.stringify(initialState))
 		) as Ref<T>;
+
+		this.emitter.on('updateProduced', () => {
+			this._undoStack = [];
+		});
+		this.emitter.on('updateReplaced', () => {
+			this._undoStack = [];
+		});
 	}
 
 	protected recalculateCurrentState() {
@@ -218,6 +225,7 @@ export class SharedObject<T extends Record<string, unknown>> {
 		return newUpdate;
 	}
 
+	protected _undoStack: SharedObjectUpdate[][] = [];
 	undo(author?: string) {
 		let updateId = this.lastUpdate;
 		while (updateId != null) {
@@ -226,10 +234,19 @@ export class SharedObject<T extends Record<string, unknown>> {
 			if (author == null || update.author === author) {
 				// TODO : remove this
 				if (updateId === this.firstUpdate && update.author === 'sync-system') return;
-				this.purgeUpdate(updateId);
+				this._undoStack.push(this.purgeUpdate(updateId));
 				return;
 			}
 			updateId = update.lastUpdate;
+		}
+	}
+
+	redo() {
+		if (this._undoStack.length === 0) return;
+		const updates = this._undoStack.pop();
+		if (updates == null) return;
+		for (const update of updates) {
+			this.importUpdate(update);
 		}
 	}
 }
