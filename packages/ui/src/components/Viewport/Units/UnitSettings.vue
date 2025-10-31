@@ -17,7 +17,13 @@
 					<span>Type:</span>
 					<FoxSelect
 						class="UnitSettings__select"
-						v-model="unit.type"
+						:model-value="unit.type"
+						@update:model-value="
+							artillery.sharedState.produceUpdate(() => {
+								unit.type = $event;
+								emit('updated');
+							})
+						"
 						:disabled="props.readonly"
 						:autofocus="!parent"
 						enable-search
@@ -67,8 +73,9 @@
 							:model-value="unit.platform"
 							@update:model-value="
 								artillery.sharedState.produceUpdate(() => {
-									artillery.sharedState.currentState.value.unitMap[unit.id].platform =
-										$event;
+									artillery.sharedState.currentState.value.unitMap[
+										unit.id
+									].platform = $event;
 									emit('updated');
 								})
 							"
@@ -81,7 +88,13 @@
 							class="UnitSettings__select"
 							enable-search
 							enable-clear
-							v-model="unit.spottingType"
+							:model-value="unit.spottingType"
+							@update:model-value="
+								artillery.sharedState.produceUpdate(() => {
+									unit.spottingType = $event;
+									emit('updated');
+								})
+							"
 							:disabled="props.readonly"
 							:options="spottingTypeOptions"
 						>
@@ -296,7 +309,7 @@
 						artillery.sharedState.produceUpdate(() => {
 							unit.canDrag = !unit.canDrag;
 							emit('updated');
-						})
+						});
 						emit('updated');
 					"
 					:severity="unit.canDrag ? 'success' : 'danger'"
@@ -491,7 +504,10 @@
 	const unit = injectUnit();
 
 	const unitLabel = computed(() =>
-		getUnitLabel(artillery.sharedState.currentState.value.unitMap, unit.value.id)
+		getUnitLabel(
+			artillery.sharedState.currentState.value.unitMap,
+			unit.value.id
+		)
 	);
 
 	const unitTypeOptions = computed(() => {
