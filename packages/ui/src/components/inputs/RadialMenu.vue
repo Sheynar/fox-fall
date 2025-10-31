@@ -1,32 +1,47 @@
 <template>
-	<ul
+	<div
 		class="RadialMenu__container"
 		:style="{
-			'--_options-count': availableOptions.size,
+			'--_radial-menu-layer-count': Math.min(MAX_VISIBLE_LAYERS, layers.length),
 		}"
 		@pointerdown.stop
-		:key="id"
 	>
-		<li
-			v-for="(value, index) in finalValues"
-			:key="index"
-			class="RadialMenu__option-outer"
-			:style="{ '--_option-index': index }"
-			@pointerdown.stop.prevent="select(value)"
-			@pointerover="hover(value)"
-			@pointermove="hover(value)"
-			@pointerout="unhover(value)"
+		<ul
+			v-for="layer in layers"
+			:key="layer.id"
+			class="RadialMenu__layer"
+			:style="{
+				'--_radial-menu-layer-index': layers.length - layer.index - 1,
+				'--_options-count': layer.options.size,
+			}"
 		>
-			<div class="RadialMenu__option-intermediate">
-				<div class="RadialMenu__option-inner">
-					<Component
-						class="RadialMenu__icon"
-						v-if="availableOptions.get(value)!.icon"
-						:is="availableOptions.get(value)!.icon"
-					/>
+			<li
+				v-for="(value, index) in getSortedValues(layer.options)"
+				:key="index"
+				class="RadialMenu__option-outer"
+				:class="{
+					'RadialMenu__option--selected': layer.selection === value,
+				}"
+				:style="{
+					'--_option-index': index,
+					opacity: layers.length - layer.index <= MAX_VISIBLE_LAYERS ? 1 : 0,
+				}"
+				@pointerdown.stop.prevent="select(value, layer.index)"
+				@pointerover="hover(layer.options.get(value)!)"
+				@pointermove="hover(layer.options.get(value)!)"
+				@pointerout="unhover(layer.options.get(value)!)"
+			>
+				<div class="RadialMenu__option-intermediate">
+					<div class="RadialMenu__option-inner">
+						<Component
+							class="RadialMenu__icon"
+							v-if="layer.options.get(value)!.icon"
+							:is="layer.options.get(value)!.icon"
+						/>
+					</div>
 				</div>
-			</div>
-		</li>
+			</li>
+		</ul>
 		<li class="RadialMenu__center-outer" @pointerdown.stop.prevent="back()">
 			<div class="RadialMenu__center-inner">
 				<template v-if="hoveredOption">
@@ -34,7 +49,7 @@
 						{{ hoveredOption.label }}
 					</span>
 				</template>
-				<slot v-else-if="selections.length > 0" name="back-icon">
+				<slot v-else-if="layers.length > 1" name="back-icon">
 					<i class="RadialMenu__icon pi pi-arrow-circle-left" />
 				</slot>
 				<slot v-else name="cancel-icon">
@@ -42,7 +57,7 @@
 				</slot>
 			</div>
 		</li>
-	</ul>
+	</div>
 </template>
 
 <style lang="scss">
@@ -61,6 +76,24 @@
 		initial-value: 0;
 	}
 
+	@property --_radial-menu-layer-count {
+		syntax: '<number>';
+		inherits: true;
+		initial-value: 0;
+	}
+
+	@property --_radial-layer-inner-radius {
+		syntax: '<number>';
+		inherits: true;
+		initial-value: 0;
+	}
+
+	@property --_radial-layer-outer-radius {
+		syntax: '<number>';
+		inherits: true;
+		initial-value: 0;
+	}
+
 	@property --_segment-scale {
 		syntax: '<number>';
 		inherits: true;
@@ -68,45 +101,15 @@
 	}
 
 	.RadialMenu__container {
-		@starting-style {
-			--_radial-menu-outer-radius: var(--_radial-menu-inner-radius);
-		}
-		transition: --_radial-menu-outer-radius 0.2s ease-in-out;
+		transition: --_radial-menu-outer-radius 0.25s ease-in-out;
 
-		/* This one won't animate. It's used for the font-size calculation. */
-		--_radial-menu-outer-radius-eventual: 20;
-		--_radial-menu-outer-radius: var(--_radial-menu-outer-radius-eventual);
-		--_chord-width-outer: calc(
-			var(--_radial-menu-outer-radius) * sin(360deg / var(--_options-count) / 2) *
-				2
-		);
-		--_chord-arc-height-outer: calc(
-			(var(--_radial-menu-outer-radius)) - sqrt(
-					pow(var(--_radial-menu-outer-radius), 2) - pow(
-							var(--_chord-width-outer) / 2,
-							2
-						)
-				)
+		--_radial_menu_layer_height: 10;
+		--_radial-menu-outer-radius: calc(
+			var(--_radial-menu-inner-radius) + var(--_radial_menu_layer_height) *
+				var(--_radial-menu-layer-count) + 1
 		);
 
 		--_radial-menu-inner-radius: 10;
-		--_chord-width-inner: calc(
-			var(--_radial-menu-inner-radius) * sin(360deg / var(--_options-count) / 2) *
-				2
-		);
-		--_chord-arc-height-inner: calc(
-			(var(--_radial-menu-inner-radius)) - sqrt(
-					pow(var(--_radial-menu-inner-radius), 2) - pow(
-							var(--_chord-width-inner) / 2,
-							2
-						)
-				)
-		);
-
-		--_segment-height: calc(
-			var(--_radial-menu-outer-radius) - var(--_radial-menu-inner-radius) +
-				var(--_chord-arc-height-inner)
-		);
 
 		position: fixed;
 		inset: 0;
@@ -118,11 +121,61 @@
 		aspect-ratio: 1;
 		background: rgba(0, 0, 0, 0.5);
 
-		font-size: calc(var(--_radial-menu-outer-radius-eventual) * 1vmin / 10);
+		font-size: calc(var(--_radial_menu_layer_height) * 2vmin / 10);
 		cursor: pointer;
 		user-select: none;
 
 		transform: translate(-50%, -50%);
+	}
+
+	.RadialMenu__layer {
+		display: contents;
+
+		@starting-style {
+			--_radial-layer-inner-radius: calc(
+				var(--_radial-menu-inner-radius) + var(--_radial_menu_layer_height) *
+					(var(--_radial-menu-layer-index) - 1)
+			);
+		}
+		transition: --_radial-layer-inner-radius 0.25s ease-in-out;
+
+		--_radial-layer-inner-radius: calc(
+			var(--_radial-menu-inner-radius) + (var(--_radial_menu_layer_height) + 1) *
+				var(--_radial-menu-layer-index) + 1
+		);
+		--_chord-width-inner: calc(
+			var(--_radial-layer-inner-radius) *
+				sin(360deg / var(--_options-count) / 2) * 2
+		);
+		--_chord-arc-height-inner: calc(
+			(var(--_radial-layer-inner-radius)) - sqrt(
+					pow(var(--_radial-layer-inner-radius), 2) - pow(
+							var(--_chord-width-inner) / 2,
+							2
+						)
+				)
+		);
+
+		--_radial-layer-outer-radius: calc(
+			var(--_radial-layer-inner-radius) + var(--_radial_menu_layer_height)
+		);
+		--_chord-width-outer: calc(
+			var(--_radial-layer-outer-radius) *
+				sin(360deg / var(--_options-count) / 2) * 2
+		);
+		--_chord-arc-height-outer: calc(
+			(var(--_radial-layer-outer-radius)) - sqrt(
+					pow(var(--_radial-layer-outer-radius), 2) - pow(
+							var(--_chord-width-outer) / 2,
+							2
+						)
+				)
+		);
+
+		--_segment-height: calc(
+			var(--_radial-layer-outer-radius) - var(--_radial-layer-inner-radius) +
+				var(--_chord-arc-height-inner)
+		);
 	}
 
 	.RadialMenu__option-outer {
@@ -141,7 +194,7 @@
 				0,
 				calc(
 					-50% - (
-							var(--_radial-menu-inner-radius) - var(--_chord-arc-height-inner)
+							var(--_radial-layer-inner-radius) - var(--_chord-arc-height-inner)
 						) * 1vmin
 				)
 			);
@@ -149,27 +202,20 @@
 
 		display: block;
 		pointer-events: none;
+		opacity: 1;
+		transition: opacity 0.25s ease-in-out;
 
-		/*
-		clip-path: shape(
-			from 0% calc(var(--_chord-arc-height-outer) * 1vmin),
-			line to 0% 0%,
-			arc to 100% 0% of calc((var(--_radial-menu-outer-radius)) * 1vmin) cw,
-			line to 100% calc(var(--_chord-arc-height-outer) * 1vmin),
-			line to calc(50% + (var(--_chord-width-inner) * 1vmin / 2)) 100%,
-			arc to calc(50% - (var(--_chord-width-inner) * 1vmin / 2)) 100% of
-				calc((var(--_radial-menu-inner-radius)) * 1vmin) ccw,
-			close
-		);
-		*/
+		@starting-style {
+			opacity: 0;
+		}
 
 		--_clip-path: shape(
 			from 0% calc(var(--_chord-arc-height-outer) * 1vmin),
 			arc to 100% calc(var(--_chord-arc-height-outer) * 1vmin) of
-				calc((var(--_radial-menu-outer-radius)) * 1vmin) cw,
+				calc((var(--_radial-layer-outer-radius)) * 1vmin) cw,
 			line to calc(50% + (var(--_chord-width-inner) * 1vmin / 2)) 100%,
 			arc to calc(50% - (var(--_chord-width-inner) * 1vmin / 2)) 100% of
-				calc((var(--_radial-menu-inner-radius)) * 1vmin) ccw,
+				calc((var(--_radial-layer-inner-radius)) * 1vmin) ccw,
 			close
 		);
 
@@ -198,7 +244,7 @@
 			transform-origin: 50%
 				calc(
 					100% +
-						(var(--_radial-menu-inner-radius) - var(--_chord-arc-height-inner)) *
+						(var(--_radial-layer-inner-radius) - var(--_chord-arc-height-inner)) *
 						1vmin
 				);
 			transition: transform 0.1s ease-in-out;
@@ -209,7 +255,7 @@
 		transform: translateY(calc(-0.5vmin * var(--_chord-arc-height-inner)))
 			rotate(calc(var(--_option-angle) * -1));
 		transform-origin: 50% 50%;
-		margin-bottom: calc(var(--_radial-menu-outer-radius) / 5);
+		margin-bottom: calc(var(--_radial-layer-outer-radius) / 5);
 
 		width: 50%;
 
@@ -258,6 +304,10 @@
 			radial-gradient(canvas, #{constants.$dark});
 	}
 
+	.RadialMenu__option--selected .RadialMenu__option-intermediate {
+		background-image: linear-gradient(to bottom, #{constants.$selected_foreground}, #{constants.$dark});
+	}
+
 	.RadialMenu__option-outer:hover {
 		--_segment-scale: 1.2;
 	}
@@ -267,8 +317,13 @@
 	}
 </style>
 
+<script lang="ts">
+	const MAX_VISIBLE_LAYERS = 2;
+</script>
+
 <script setup lang="ts">
-	import { computed, markRaw, shallowRef } from 'vue';
+	import { generateId } from '@packages/data/dist/id';
+	import { ref, shallowRef } from 'vue';
 
 	export type Option<T> = {
 		label: string;
@@ -291,68 +346,81 @@
 	}>();
 
 	const id = shallowRef(0);
-	const selections = shallowRef<any[]>([]);
-	const hoveredValue = shallowRef<any | null>(null);
+	const hoveredOption = shallowRef<Option<any> | null>(null);
 
-	const availableOptions = computed(() => {
-		return selections.value.reduce(
-			(acc: Options<any>, selection): Options<any> => {
-				return acc.get(markRaw(selection))!.subOptions ?? new Map();
-			},
-			props.options
-		);
-	});
+	type Layer = {
+		id: string;
+		index: number;
+		options: Options<any>;
+		selection?: any;
+	};
+	const layers = ref<Layer[]>([
+		{
+			id: generateId(),
+			index: 0,
+			options: props.options,
+			selection: undefined,
+		},
+	]);
 
-	const hoveredOption = computed(() => {
-		return hoveredValue.value != null
-			? availableOptions.value.get(hoveredValue.value)
-			: null;
-	});
-
-	const finalValues = computed(() => {
-		return Array.from(availableOptions.value.entries())
+	const getSortedValues = <T,>(options: Options<T>): T[] => {
+		return Array.from(options.entries())
 			.sort(
 				([_valueA, optionA], [_valueB, optionB]) =>
 					(optionA.order ?? 0) - (optionB.order ?? 0) ||
 					optionA.label.localeCompare(optionB.label)
 			)
 			.map(([value]) => value);
-	});
-
-	const hover = (value: any) => {
-		hoveredValue.value = value;
 	};
 
-	const unhover = (value: any) => {
-		if (hoveredValue.value === value) {
-			hoveredValue.value = null;
+	const hover = (option: Option<any>) => {
+		hoveredOption.value = option;
+	};
+
+	const unhover = (option: Option<any>) => {
+		if (hoveredOption.value === option) {
+			hoveredOption.value = null;
 		}
 	};
 
-	const select = (value: any) => {
-		const option = availableOptions.value.get(value)!;
-		if (option.subOptions != null) {
-			id.value++;
-			selections.value = [...selections.value, value];
-			if (option.subOptions.size === 1) {
-				return select(option.subOptions.keys().next().value);
+	const select = (value: any, layerIndex: number) => {
+		const layer = layers.value[layerIndex];
+		layer.selection = value;
+		const newLayers: Layer[] = [
+			...layers.value.slice(0, layerIndex),
+			{
+				...layer,
+				selection: value,
+			},
+		];
+
+		const childOptions = layer.options.get(value)?.subOptions;
+		if (childOptions != null) {
+			newLayers.push({
+				id: generateId(),
+				index: layerIndex + 1,
+				options: childOptions,
+				selection: undefined,
+			});
+		} else {
+			emit('submit', { value, path: newLayers.map((layer) => layer.selection) });
+		}
+		layers.value = newLayers;
+
+		if (childOptions?.size === 1) {
+				select(childOptions.keys().next().value, layerIndex + 1);
 			}
-			return;
-		}
-
-		emit('submit', {
-			value,
-			path: JSON.parse(JSON.stringify(selections.value)),
-		});
-		selections.value = [];
 	};
 
 	const back = () => {
-		if (selections.value.length === 0) {
-			emit('cancel');
-			return;
+		for (let i = layers.value.length - 1; i >= 0; i--) {
+			if (layers.value[i].selection != null) {
+				id.value++;
+				layers.value[i].selection = undefined;
+				layers.value = layers.value.slice(0, i + 1);
+				return;
+			}
 		}
-		id.value++;
-		selections.value = selections.value.slice(0, -1);
+		emit('cancel');
 	};
 </script>
