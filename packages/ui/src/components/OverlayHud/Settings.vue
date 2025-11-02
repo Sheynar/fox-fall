@@ -2,7 +2,6 @@
 	<FoxDialog
 		class="Settings__dialog"
 		v-model:visible="visible"
-		:style="{ minWidth: '25vw', minHeight: '80vh' }"
 		@pointerdown.stop
 		@wheel.stop
 	>
@@ -328,8 +327,16 @@
 </template>
 
 <style lang="scss">
-	.Settings__dialog .p-tabpanels {
-		flex-grow: 1
+	.Settings__dialog {
+		min-width: 25vw;
+		bottom: auto;
+
+		&:not(.FoxDialog__container-rolled-up) {
+			min-height: 80vh;
+		}
+		.p-tabpanels {
+			flex-grow: 1;
+		}
 	}
 
 	.Settings__content {

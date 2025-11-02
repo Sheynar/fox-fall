@@ -72,7 +72,6 @@
 			@update:visible="!$event && (artillery.overridingFiringSolution.value = null);"
 			:unit-id-from="artillery.overridingFiringSolution.value?.unitIdFrom"
 			:unit-id-to="artillery.overridingFiringSolution.value?.unitIdTo"
-			v-model:custom-position="firingSolutionOverrideCustomPosition"
 		/>
 
 		<Dock />
@@ -146,7 +145,7 @@
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
 	import vPrimeTooltip from 'primevue/tooltip';
-	import { computed, ref } from 'vue';
+	import { computed } from 'vue';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import Dock from '@/components/OverlayHud/Dock.vue';
 	import FiringSolutionOverride from '@/components/OverlayHud/FiringSolutionOverride.vue';
@@ -173,6 +172,4 @@
 			artillery.resetViewport();
 		});
 	};
-
-	const firingSolutionOverrideCustomPosition = ref(false);
 </script>

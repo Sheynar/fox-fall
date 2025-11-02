@@ -55,8 +55,6 @@
 
 	<UnitSettings
 		v-model:visible="open"
-		v-model:can-drag="unit.canDrag"
-		v-model:custom-position="unitSettingsHasCustomPosition"
 		@create-child="emit('create-child', $event)"
 		@remove="emit('remove')"
 		@set-unit-source="emit('set-unit-source', $event)"
@@ -222,7 +220,6 @@
 			open.value
 		);
 	});
-	const unitSettingsHasCustomPosition = ref(false);
 
 	type MovingData = {
 		sharedStateId?: string;

@@ -24,8 +24,6 @@
 		position="top"
 		@pointerdown.stop
 		@wheel.stop
-		@show="customPosition = false"
-		@dragend="customPosition = true"
 	>
 		<div
 			class="FiringSolutionOverride__container"
@@ -184,10 +182,6 @@
 	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
-	const customPosition = defineModel('customPosition', {
-		type: Boolean,
-		required: true,
-	});
 
 	const props = defineProps<{
 		unitIdFrom: string;

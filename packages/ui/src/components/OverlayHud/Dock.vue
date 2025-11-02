@@ -29,17 +29,17 @@
 	</PrimePopover>
 
 	<Settings
-		:visible="interfaceVisibility.settings && artillery.overlayOpen.value"
+		:visible="interfaceVisibility.settings"
 		@update:visible="interfaceVisibility.settings = $event"
 	/>
 
 	<SyncSettings
-		:visible="interfaceVisibility.syncSettings && artillery.overlayOpen.value"
+		:visible="interfaceVisibility.syncSettings"
 		@update:visible="interfaceVisibility.syncSettings = $event"
 	/>
 
 	<WindSettings
-		:visible="interfaceVisibility.windSettings && artillery.overlayOpen.value"
+		:visible="interfaceVisibility.windSettings"
 		@update:visible="interfaceVisibility.windSettings = $event"
 	/>
 </template>
@@ -92,13 +92,13 @@
 		}
 	);
 
-	watch(artillery.overlayOpen, (value) => {
-		if (!value) {
-			interfaceVisibility.value.settings = false;
-			interfaceVisibility.value.syncSettings = false;
-			interfaceVisibility.value.windSettings = false;
-		}
-	});
+	// watch(artillery.overlayOpen, (value) => {
+	// 	if (!value) {
+	// 		interfaceVisibility.value.settings = false;
+	// 		interfaceVisibility.value.syncSettings = false;
+	// 		interfaceVisibility.value.windSettings = false;
+	// 	}
+	// });
 
 	const showHelp = async () => {
 		const version = await window.electronApi?.getRunningVersion();

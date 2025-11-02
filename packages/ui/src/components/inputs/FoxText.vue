@@ -24,6 +24,7 @@
 			v-model="modelValue"
 			@focus="inputElement?.select()"
 			@pointerdown.stop
+			@pointerup.stop.prevent
 		/>
 		<span
 			class="FoxText__icons FoxText__icons-after"

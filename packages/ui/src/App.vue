@@ -145,7 +145,6 @@
 		top: 0;
 		width: 100dvw;
 		height: 100dvh;
-		font-size: 2vmin;
 		cursor: initial;
 
 		color: var(--color-primary);

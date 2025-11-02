@@ -1,137 +1,33 @@
 <template>
 	<FoxDialog
+		persist-position-id="unit-settings"
 		class="UnitSettings__dialog"
 		v-model:visible="visible"
+		v-model:pinned="pinned"
 		:style="{
-			minWidth: '20rem',
 			'--ui-scale': settings.unitSettingsScale,
 		}"
 		tabindex="-1"
-		@show="customPosition = false"
-		@dragend="customPosition = true"
 	>
 		<template #header>Unit: {{ unitLabel }}</template>
+		<template #header-actions>
+			<PrimeButton
+				class="FoxDialog__header-action"
+				severity="secondary"
+				@pointerdown.stop="hideDetails = !hideDetails"
+			>
+				<i
+					class="pi"
+					:class="{
+						'pi-window-maximize': hideDetails,
+						'pi-window-minimize': !hideDetails,
+					}"
+				/>
+			</PrimeButton>
+		</template>
 		<div class="UnitSettings__container" @pointerdown.stop @touchstart.stop>
 			<div class="UnitSettings__table">
-				<div class="UnitSettings__row">
-					<span>Type:</span>
-					<FoxSelect
-						class="UnitSettings__select"
-						:model-value="unit.type"
-						@update:model-value="
-							artillery.sharedState.produceUpdate(() => {
-								unit.type = $event;
-								emit('updated');
-							})
-						"
-						:disabled="props.readonly"
-						:autofocus="!parent"
-						enable-search
-						:options="unitTypeOptions"
-					/>
-				</div>
-				<template v-if="settings.userMode === UserMode.Advanced">
-					<div
-						class="UnitSettings__row"
-						v-if="unit.type === UnitType.Artillery"
-					>
-						<span>Ammunition:</span>
-						<AmmoSelect
-							class="UnitSettings__select"
-							:model-value="unit.ammunition"
-							@update:model-value="
-								artillery.sharedState.produceUpdate(() => {
-									artillery.sharedState.currentState.value.unitMap[
-										unit.id
-									].ammunition = $event;
-									artillery.sharedState.currentState.value.unitMap[unit.id]
-										.ammunition &&
-										!ARTILLERY_BY_SHELL[
-											artillery.sharedState.currentState.value.unitMap[unit.id]
-												.ammunition!
-										]?.PLATFORM[
-											artillery.sharedState.currentState.value.unitMap[unit.id]
-												.platform!
-										] &&
-										(artillery.sharedState.currentState.value.unitMap[
-											unit.id
-										].platform = undefined);
-									emit('updated');
-								})
-							"
-							:disabled="props.readonly"
-						/>
-					</div>
-					<div
-						class="UnitSettings__row"
-						v-if="unit.type === UnitType.Artillery"
-					>
-						<span>Platform:</span>
-						<PlatformSelect
-							class="UnitSettings__select"
-							:ammo-type="unit.ammunition"
-							:model-value="unit.platform"
-							@update:model-value="
-								artillery.sharedState.produceUpdate(() => {
-									artillery.sharedState.currentState.value.unitMap[
-										unit.id
-									].platform = $event;
-									emit('updated');
-								})
-							"
-							:disabled="props.readonly"
-						/>
-					</div>
-					<div class="UnitSettings__row" v-if="unit.type === UnitType.Spotter">
-						<span>Spotting type:</span>
-						<FoxSelect
-							class="UnitSettings__select"
-							enable-search
-							enable-clear
-							:model-value="unit.spottingType"
-							@update:model-value="
-								artillery.sharedState.produceUpdate(() => {
-									unit.spottingType = $event;
-									emit('updated');
-								})
-							"
-							:disabled="props.readonly"
-							:options="spottingTypeOptions"
-						>
-							<template #placeholder>Select spotter type</template>
-						</FoxSelect>
-					</div>
-					<div class="UnitSettings__row">
-						<span>Positioned from:</span>
-						<SelectOneUnit
-							class="UnitSettings__select"
-							:black-list="{ id: [unit.id] }"
-							:model-value="unit.parentId"
-							:disabled="props.readonly"
-							@update:model-value="emit('set-unit-source', $event)"
-						/>
-					</div>
-				</template>
-				<div class="UnitSettings__row">
-					<label>Name:</label>
-					<FoxText
-						:readonly="props.readonly"
-						:model-value="unit.label ?? ''"
-						@update:model-value="
-							artillery.sharedState.produceUpdate(() => {
-								unit.label = $event ?? undefined;
-								emit('updated');
-							})
-						"
-						@input="emit('updated')"
-					/>
-				</div>
-				<template v-if="parent">
-					<div class="UnitSettings__row">
-						<span class="UnitSettings__span">
-							{{ parentLabel }} -> {{ unitLabel }}
-						</span>
-					</div>
+				<template v-if="hideDetails">
 					<div class="UnitSettings__row">
 						<span>Distance:</span>
 						<DistanceInput
@@ -163,107 +59,174 @@
 								})
 							"
 							@keydown.enter="
+								distanceInput?.inputElement?.select();
 								unit.type === UnitType.LandingZone &&
 									emit('update-wind', langingZoneFiringSolution);
 								visible = false;
 							"
 						/>
 					</div>
-					<template v-if="settings.showXYOffsets">
-						<div class="UnitSettings__row">
-							<span>X:</span>
-							<DistanceInput
-								:model-value="Vector.fromAngularVector(unit.vector).x"
+				</template>
+				<template v-else>
+					<div class="UnitSettings__row">
+						<span>Type:</span>
+						<FoxSelect
+							class="UnitSettings__select"
+							:model-value="unit.type"
+							@update:model-value="
+								artillery.sharedState.produceUpdate(() => {
+									unit.type = $event;
+									emit('updated');
+								})
+							"
+							:disabled="props.readonly"
+							:autofocus="!parent"
+							enable-search
+							:options="unitTypeOptions"
+						/>
+					</div>
+					<template v-if="settings.userMode === UserMode.Advanced">
+						<div
+							class="UnitSettings__row"
+							v-if="unit.type === UnitType.Artillery"
+						>
+							<span>Ammunition:</span>
+							<AmmoSelect
+								class="UnitSettings__select"
+								:model-value="unit.ammunition"
 								@update:model-value="
 									artillery.sharedState.produceUpdate(() => {
-										unit.vector = Object.assign(
-											Vector.fromAngularVector(unit.vector),
-											{ x: $event }
-										).angularVector;
+										artillery.sharedState.currentState.value.unitMap[
+											unit.id
+										].ammunition = $event;
+										artillery.sharedState.currentState.value.unitMap[unit.id]
+											.ammunition &&
+											!ARTILLERY_BY_SHELL[
+												artillery.sharedState.currentState.value.unitMap[
+													unit.id
+												].ammunition!
+											]?.PLATFORM[
+												artillery.sharedState.currentState.value.unitMap[
+													unit.id
+												].platform!
+											] &&
+											(artillery.sharedState.currentState.value.unitMap[
+												unit.id
+											].platform = undefined);
 										emit('updated');
 									})
 								"
+								:disabled="props.readonly"
 							/>
 						</div>
-						<div class="UnitSettings__row">
-							<span>Y:</span>
-							<DistanceInput
-								:model-value="Vector.fromAngularVector(unit.vector).y"
+						<div
+							class="UnitSettings__row"
+							v-if="unit.type === UnitType.Artillery"
+						>
+							<span>Platform:</span>
+							<PlatformSelect
+								class="UnitSettings__select"
+								:ammo-type="unit.ammunition"
+								:model-value="unit.platform"
 								@update:model-value="
 									artillery.sharedState.produceUpdate(() => {
-										unit.vector = Object.assign(
-											Vector.fromAngularVector(unit.vector),
-											{ y: $event }
-										).angularVector;
+										artillery.sharedState.currentState.value.unitMap[
+											unit.id
+										].platform = $event;
 										emit('updated');
 									})
 								"
+								:disabled="props.readonly"
+							/>
+						</div>
+						<div
+							class="UnitSettings__row"
+							v-if="unit.type === UnitType.Spotter"
+						>
+							<span>Spotting type:</span>
+							<FoxSelect
+								class="UnitSettings__select"
+								enable-search
+								enable-clear
+								:model-value="unit.spottingType"
+								@update:model-value="
+									artillery.sharedState.produceUpdate(() => {
+										unit.spottingType = $event;
+										emit('updated');
+									})
+								"
+								:disabled="props.readonly"
+								:options="spottingTypeOptions"
+							>
+								<template #placeholder>Select spotter type</template>
+							</FoxSelect>
+						</div>
+						<div class="UnitSettings__row">
+							<span>Positioned from:</span>
+							<SelectOneUnit
+								class="UnitSettings__select"
+								:black-list="{ id: [unit.id] }"
+								:model-value="unit.parentId"
+								:disabled="props.readonly"
+								@update:model-value="emit('set-unit-source', $event)"
 							/>
 						</div>
 					</template>
-					<template v-if="unit.type === UnitType.LandingZone">
+					<div class="UnitSettings__row">
+						<label>Name:</label>
+						<FoxText
+							:readonly="props.readonly"
+							:model-value="unit.label ?? ''"
+							@update:model-value="
+								artillery.sharedState.produceUpdate(() => {
+									unit.label = $event ?? undefined;
+									emit('updated');
+								})
+							"
+							@input="emit('updated')"
+						/>
+					</div>
+					<template v-if="parent">
 						<div class="UnitSettings__row">
-							<span class="UnitSettings__span">Gun measurement:</span>
+							<span class="UnitSettings__span">
+								{{ parentLabel }} -> {{ unitLabel }}
+							</span>
 						</div>
 						<div class="UnitSettings__row">
 							<span>Distance:</span>
 							<DistanceInput
-								ref="landingZoneFiringSolutionDistanceInput"
-								:model-value="langingZoneFiringSolution.distance"
-								@update:model-value="
-									langingZoneFiringSolution.distance = $event
-								"
-								@keydown.enter="
-									landingZoneFiringSolutionAzimuthInput?.inputElement?.select()
-								"
-							/>
-						</div>
-						<div class="UnitSettings__row">
-							<span>Azimuth:</span>
-							<DirectionInput
-								ref="landingZoneFiringSolutionAzimuthInput"
-								:model-value="wrapDegrees(langingZoneFiringSolution.azimuth)"
-								@update:model-value="
-									langingZoneFiringSolution.azimuth = wrapDegrees($event)
-								"
-								@keydown.enter="
-									emit('update-wind', langingZoneFiringSolution);
-									visible = false;
-								"
-							/>
-						</div>
-					</template>
-					<template v-else>
-						<span class="UnitSettings__span">
-							{{ unitLabel }} -> {{ parentLabel }}
-						</span>
-						<div class="UnitSettings__row">
-							<span>Distance:</span>
-							<DistanceInput
+								ref="distanceInput"
+								autofocus
 								:model-value="unit.vector.distance"
 								@update:model-value="
 									artillery.sharedState.produceUpdate(() => {
-										unit.vector = Object.assign(
-											Vector.fromAngularVector(unit.vector),
-											{ distance: $event }
-										).angularVector;
+										artillery.sharedState.currentState.value.unitMap[
+											unit.id
+										].vector.distance = $event;
 										emit('updated');
 									})
 								"
+								@keydown.enter="azimuthInput?.inputElement?.select()"
 							/>
 						</div>
 						<div class="UnitSettings__row">
 							<span>Azimuth:</span>
 							<DirectionInput
-								:model-value="wrapDegrees(unit.vector.azimuth + 180)"
+								ref="azimuthInput"
+								:model-value="wrapDegrees(unit.vector.azimuth)"
 								@update:model-value="
 									artillery.sharedState.produceUpdate(() => {
-										unit.vector = Object.assign(
-											Vector.fromAngularVector(unit.vector),
-											{ azimuth: wrapDegrees($event - 180) }
-										).angularVector;
+										artillery.sharedState.currentState.value.unitMap[
+											unit.id
+										].vector.azimuth = wrapDegrees($event);
 										emit('updated');
 									})
+								"
+								@keydown.enter="
+									distanceInput?.inputElement?.select();
+									unit.type === UnitType.LandingZone &&
+										emit('update-wind', langingZoneFiringSolution);
+									visible = false;
 								"
 							/>
 						</div>
@@ -271,12 +234,12 @@
 							<div class="UnitSettings__row">
 								<span>X:</span>
 								<DistanceInput
-									:model-value="-Vector.fromAngularVector(unit.vector).x"
+									:model-value="Vector.fromAngularVector(unit.vector).x"
 									@update:model-value="
 										artillery.sharedState.produceUpdate(() => {
 											unit.vector = Object.assign(
 												Vector.fromAngularVector(unit.vector),
-												{ x: -$event }
+												{ x: $event }
 											).angularVector;
 											emit('updated');
 										})
@@ -286,12 +249,12 @@
 							<div class="UnitSettings__row">
 								<span>Y:</span>
 								<DistanceInput
-									:model-value="-Vector.fromAngularVector(unit.vector).y"
+									:model-value="Vector.fromAngularVector(unit.vector).y"
 									@update:model-value="
 										artillery.sharedState.produceUpdate(() => {
 											unit.vector = Object.assign(
 												Vector.fromAngularVector(unit.vector),
-												{ y: -$event }
+												{ y: $event }
 											).angularVector;
 											emit('updated');
 										})
@@ -299,10 +262,110 @@
 								/>
 							</div>
 						</template>
+						<template v-if="unit.type === UnitType.LandingZone">
+							<div class="UnitSettings__row">
+								<span class="UnitSettings__span">Gun measurement:</span>
+							</div>
+							<div class="UnitSettings__row">
+								<span>Distance:</span>
+								<DistanceInput
+									ref="landingZoneFiringSolutionDistanceInput"
+									:model-value="langingZoneFiringSolution.distance"
+									@update:model-value="
+										langingZoneFiringSolution.distance = $event
+									"
+									@keydown.enter="
+										landingZoneFiringSolutionAzimuthInput?.inputElement?.select()
+									"
+								/>
+							</div>
+							<div class="UnitSettings__row">
+								<span>Azimuth:</span>
+								<DirectionInput
+									ref="landingZoneFiringSolutionAzimuthInput"
+									:model-value="wrapDegrees(langingZoneFiringSolution.azimuth)"
+									@update:model-value="
+										langingZoneFiringSolution.azimuth = wrapDegrees($event)
+									"
+									@keydown.enter="
+										landingZoneFiringSolutionDistanceInput?.inputElement?.select();
+										emit('update-wind', langingZoneFiringSolution);
+										visible = false;
+									"
+								/>
+							</div>
+						</template>
+						<template v-else>
+							<span class="UnitSettings__span">
+								{{ unitLabel }} -> {{ parentLabel }}
+							</span>
+							<div class="UnitSettings__row">
+								<span>Distance:</span>
+								<DistanceInput
+									:model-value="unit.vector.distance"
+									@update:model-value="
+										artillery.sharedState.produceUpdate(() => {
+											unit.vector = Object.assign(
+												Vector.fromAngularVector(unit.vector),
+												{ distance: $event }
+											).angularVector;
+											emit('updated');
+										})
+									"
+								/>
+							</div>
+							<div class="UnitSettings__row">
+								<span>Azimuth:</span>
+								<DirectionInput
+									:model-value="wrapDegrees(unit.vector.azimuth + 180)"
+									@update:model-value="
+										artillery.sharedState.produceUpdate(() => {
+											unit.vector = Object.assign(
+												Vector.fromAngularVector(unit.vector),
+												{ azimuth: wrapDegrees($event - 180) }
+											).angularVector;
+											emit('updated');
+										})
+									"
+								/>
+							</div>
+							<template v-if="settings.showXYOffsets">
+								<div class="UnitSettings__row">
+									<span>X:</span>
+									<DistanceInput
+										:model-value="-Vector.fromAngularVector(unit.vector).x"
+										@update:model-value="
+											artillery.sharedState.produceUpdate(() => {
+												unit.vector = Object.assign(
+													Vector.fromAngularVector(unit.vector),
+													{ x: -$event }
+												).angularVector;
+												emit('updated');
+											})
+										"
+									/>
+								</div>
+								<div class="UnitSettings__row">
+									<span>Y:</span>
+									<DistanceInput
+										:model-value="-Vector.fromAngularVector(unit.vector).y"
+										@update:model-value="
+											artillery.sharedState.produceUpdate(() => {
+												unit.vector = Object.assign(
+													Vector.fromAngularVector(unit.vector),
+													{ y: -$event }
+												).angularVector;
+												emit('updated');
+											})
+										"
+									/>
+								</div>
+							</template>
+						</template>
 					</template>
 				</template>
 			</div>
-			<div class="UnitSettings__actions">
+			<div class="UnitSettings__actions" v-if="!hideDetails">
 				<PrimeButton
 					class="UnitSettings__action"
 					@click.stop="
@@ -489,10 +552,8 @@
 	>(null);
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
-	const customPosition = defineModel('customPosition', {
-		type: Boolean,
-		required: true,
-	});
+	const pinned = defineModel('pinned', { type: Boolean });
+	const hideDetails = defineModel('hideDetails', { type: Boolean });
 	const langingZoneFiringSolution = ref(
 		Vector.fromCartesianVector({ x: 0, y: 0 })
 	);

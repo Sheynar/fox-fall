@@ -2,7 +2,7 @@
 	<div
 		class="OverlayWindMeasurement__container"
 		v-if="artillery.sharedState.currentState.value.wind.distance"
-		@pointerdown.prevent="interfaceVisibility.windSettings = true"
+		@pointerdown.prevent="interfaceVisibility.windSettings = !interfaceVisibility.windSettings"
 	>
 		<div class="OverlayWindMeasurement__row">
 			<span>Wind tier:</span

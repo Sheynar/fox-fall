@@ -633,6 +633,16 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		{ immediate: true }
 	);
 
+	watch(overlayOpen, (open) => {
+		if (open) {
+			(document.activeElement as HTMLElement)?.blur?.();
+		}
+	}, { immediate: true });
+
+	window.addEventListener('blur', () => {
+		(document.activeElement as HTMLElement)?.blur?.();
+	})
+
 	return {
 		addUnit,
 		removeUnit,

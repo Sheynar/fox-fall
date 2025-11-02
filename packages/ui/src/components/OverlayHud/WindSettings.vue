@@ -1,5 +1,6 @@
 <template>
 	<FoxDialog
+		persist-position-id="wind-settings"
 		v-model:visible="visible"
 		class="WindSettings__dialog"
 		@pointerdown.stop
