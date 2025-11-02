@@ -38,14 +38,21 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		prompt?: string;
 	} | null>(null);
 	const selectedUnit = ref<Unit['id'] | null>(null);
-	watch(() => selectedUnit.value != null ? sharedState.currentState.value.unitMap[selectedUnit.value] : null, (unit, prevUnit) => {
-		if (unit == null && selectedUnit.value != null) {
-			selectedUnit.value = prevUnit?.parentId ?? null;
+	watch(
+		() =>
+			selectedUnit.value != null
+				? sharedState.currentState.value.unitMap[selectedUnit.value]
+				: null,
+		(unit, prevUnit) => {
+			if (unit == null && selectedUnit.value != null) {
+				selectedUnit.value = prevUnit?.parentId ?? null;
+			}
+		},
+		{
+			immediate: true,
+			flush: 'sync',
 		}
-	}, {
-		immediate: true,
-		flush: 'sync',
-	});
+	);
 	const pinnedUnits = useUnitSet();
 	const highlightedUnits = useUnitSet();
 	const draggingUnits = useUnitSet();
@@ -468,15 +475,21 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				sharedState.currentState.value.unitMap,
 				selectedFiringPair.value.artillery
 			);
-			const predictedLandingPosition = artilleryPosition.addVector(firingSolution).addVector(getWindOffset(selectedFiringPair.value.artillery));
+			const predictedLandingPosition = artilleryPosition
+				.addVector(firingSolution)
+				.addVector(getWindOffset(selectedFiringPair.value.artillery));
 			const actualLandingPosition = getUnitResolvedVector(
 				sharedState.currentState.value.unitMap,
 				unit.id
 			);
 
-			const windCorrection = predictedLandingPosition.scale(-1).addVector(actualLandingPosition);;
+			const windCorrection = predictedLandingPosition
+				.scale(-1)
+				.addVector(actualLandingPosition);
 
-			sharedState.currentState.value.wind = Vector.fromAngularVector(sharedState.currentState.value.wind).addVector(windCorrection.scale(1 / _windMultiplier)).angularVector;
+			sharedState.currentState.value.wind = Vector.fromAngularVector(
+				sharedState.currentState.value.wind
+			).addVector(windCorrection.scale(1 / _windMultiplier)).angularVector;
 
 			options.onWindUpdated?.();
 
@@ -489,7 +502,10 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const resetWind = () => {
-		sharedState.currentState.value.wind = Vector.fromAngularVector({ azimuth: 0, distance: 0 }).angularVector;
+		sharedState.currentState.value.wind = Vector.fromAngularVector({
+			azimuth: 0,
+			distance: 0,
+		}).angularVector;
 		options.onWindUpdated?.();
 	};
 
@@ -578,11 +594,8 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			sharedState.lastUpdate != null
 		) {
 			event.preventDefault();
-			sharedState.undo();
-		} else if (
-			event.key === 'y' &&
-			event.ctrlKey
-		) {
+			sharedState.undo(sharedState.user);
+		} else if (event.key === 'y' && event.ctrlKey) {
 			event.preventDefault();
 			sharedState.redo();
 		}
