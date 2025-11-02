@@ -38,7 +38,7 @@
 			@pointerup.stop.prevent="onPointerUp"
 			@pointermove="onPointerMove"
 		>
-			<h1 class="FoxDialog__header">
+			<h1 class="FoxDialog__header" v-if="artillery.overlayOpen.value">
 				<slot name="header" />
 				<span class="FoxDialog__header-actions" @doubleclick.stop>
 					<slot name="header-actions" />
@@ -120,8 +120,7 @@
 		overflow: hidden;
 
 		font-size: calc(1em * var(--ui-scale) * 0.6);
-		margin: 0.75rem;
-		margin-bottom: calc(0.75rem + var(--toggle-button-size, 0px));
+		margin: 0.75em;
 
 		@include border.border-gradient();
 		&:focus,
@@ -203,8 +202,8 @@
 	}
 
 	.FoxDialog__move-zones {
-		min-width: 15rem;
-		min-height: 15rem;
+		min-width: 15em;
+		min-height: 15em;
 		aspect-ratio: 1;
 
 		display: grid;
@@ -224,6 +223,7 @@
 	import { useEventListener } from '@vueuse/core';
 	import PrimeButton from 'primevue/button';
 	import { ref, shallowRef, watch } from 'vue';
+	import { artillery } from '@/lib/globals';
 
 	const props = defineProps<{
 		persistPositionId?: string;

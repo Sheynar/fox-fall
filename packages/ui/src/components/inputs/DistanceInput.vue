@@ -5,6 +5,7 @@
 		:autofocus="props.autofocus"
 		:fractionDigits="props.fractionDigits"
 		:min="props.min"
+		:inputAttributes="{ size: 3 }"
 	/>
 </template>
 

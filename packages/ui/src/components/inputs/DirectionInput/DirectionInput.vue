@@ -7,8 +7,9 @@
 		:autofocus="props.autofocus"
 		:fractionDigits="1"
 		@focusout.native="compassOpen = false"
+		:inputAttributes="{ size: 3 }"
 	>
-		<template #icons-after>
+		<template #icons-after v-if="artillery.overlayOpen.value">
 			<i class="pi pi-compass" style="pointer-events: auto; cursor: pointer;" @pointerdown.stop.prevent="inputElement?.focus(); compassOpen = !compassOpen" />
 		</template>
 	</NumberInput>
@@ -63,6 +64,7 @@
 		shallowRef,
 		watch,
 	} from 'vue';
+	import { artillery } from '@/lib/globals';
 	import DirectionAlternateInput from './DirectionAlternateInput.vue';
 
 	const numberInput = shallowRef<InstanceType<typeof NumberInput>>(null!);

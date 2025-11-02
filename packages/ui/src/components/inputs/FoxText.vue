@@ -25,6 +25,7 @@
 			@focus="inputElement?.select()"
 			@pointerdown.stop
 			@pointerup.stop.prevent
+			v-bind="props.inputAttributes"
 		/>
 		<span
 			class="FoxText__icons FoxText__icons-after"
@@ -90,7 +91,7 @@
 </style>
 
 <script setup lang="ts">
-	import { onMounted, shallowRef } from 'vue';
+	import { type InputHTMLAttributes, onMounted, shallowRef } from 'vue';
 
 	const containerElement = shallowRef<HTMLLabelElement>(null!);
 	const inputElement = shallowRef<HTMLInputElement>(null!);
@@ -102,6 +103,7 @@
 		placeholder?: string;
 		readonly?: boolean;
 		disabled?: boolean;
+		inputAttributes?: Partial<InputHTMLAttributes>;
 	}>();
 
 	const focus = () => {

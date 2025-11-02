@@ -3,6 +3,7 @@
 		ref="textInput"
 		:autofocus="props.autofocus"
 		v-model="stringValue"
+		:input-attributes="props.inputAttributes"
 		@keydown="onKeyDown"
 	>
 		<template #icons-before v-if="$slots['icons-before']">
@@ -15,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, ref, shallowRef, watch } from 'vue';
+	import { type InputHTMLAttributes, computed, ref, shallowRef, watch } from 'vue';
 	import FoxText from './FoxText.vue';
 
 	const textInput = shallowRef<InstanceType<typeof FoxText>>(null!);
@@ -26,6 +27,7 @@
 		min?: number;
 		max?: number;
 		fractionDigits?: number;
+		inputAttributes?: Partial<InputHTMLAttributes>;
 	}>();
 
 	const _modelValue = defineModel({ type: Number, required: true });
