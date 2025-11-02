@@ -66,6 +66,8 @@ export class SharedObject<T extends Record<string, unknown>> {
 		updateProduced: [SharedObjectUpdate];
 		updateReplaced: [SharedObjectUpdate];
 		updateRemoved: [SharedObjectUpdate];
+		undo: [SharedObjectUpdate[]];
+		redo: [SharedObjectUpdate[]];
 	}>();
 	updates: Record<string, SharedObjectUpdate> = {};
 	firstUpdate: string | undefined;
@@ -234,7 +236,9 @@ export class SharedObject<T extends Record<string, unknown>> {
 			if (author == null || update.author === author) {
 				// TODO : remove this
 				if (updateId === this.firstUpdate && update.author === 'sync-system') return;
-				this._undoStack.push(this.purgeUpdate(updateId));
+				const purged = this.purgeUpdate(updateId);
+				this._undoStack.push(purged);
+				this.emitter.emit('undo', purged);
 				return;
 			}
 			updateId = update.lastUpdate;
@@ -247,6 +251,7 @@ export class SharedObject<T extends Record<string, unknown>> {
 		if (updates == null) return;
 		for (const update of updates) {
 			this.importUpdate(update);
+			this.emitter.emit('redo', updates);
 		}
 	}
 }

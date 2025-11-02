@@ -119,7 +119,8 @@ export const useSyncedRoom = (
 		webSocket.value?.send(JSON.stringify(roomUpdate));
 	};
 
-	sharedState.emitter.on('updateRemoved', () => Promise.resolve().then(() => fullSync()));
+	sharedState.emitter.on('undo', fullSync);
+	sharedState.emitter.on('redo', fullSync);
 
 	return {
 		isReady,
