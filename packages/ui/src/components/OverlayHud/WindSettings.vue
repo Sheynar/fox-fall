@@ -71,8 +71,8 @@
 	.Wind__information {
 		display: grid;
 		grid-template-columns: max-content 1fr;
-		gap: 1rem;
-		padding: 1rem;
+		gap: 0.5em;
+		padding: 0.5em;
 		align-items: center;
 	}
 

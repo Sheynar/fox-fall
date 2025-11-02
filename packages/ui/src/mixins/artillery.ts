@@ -639,9 +639,9 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		}
 	}, { immediate: true });
 
-	window.addEventListener('blur', () => {
+	useEventListener('blur', () => {
 		(document.activeElement as HTMLElement)?.blur?.();
-	})
+	});
 
 	return {
 		addUnit,

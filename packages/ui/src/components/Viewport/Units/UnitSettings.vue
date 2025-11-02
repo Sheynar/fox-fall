@@ -9,7 +9,7 @@
 		}"
 		tabindex="-1"
 	>
-		<template #header>Unit: {{ unitLabel }}</template>
+		<template #header>{{ unitLabel }}</template>
 		<template #header-actions>
 			<PrimeButton
 				class="FoxDialog__header-action"
@@ -434,8 +434,10 @@
 		grid-template-columns: auto;
 		align-items: inherit;
 
-		top: auto;
+		top: 50%;
 		left: auto;
+		bottom: auto;
+		transform: translateY(-50%);
 	}
 
 	.UnitSettings__container {

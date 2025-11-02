@@ -36,6 +36,9 @@ button {
 	cursor: pointer;
 	transition: border-color 0.25s;
 }
+button.p-button {
+	font-size: inherit;
+}
 button:hover {
 	border-color: var(--color-selected);
 }

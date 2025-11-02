@@ -10,9 +10,7 @@
 			}"
 			v-bind="$attrs"
 			:style="{
-				'--toggle-button-size': toggleButtonStore.sizeY + 'px',
-				'--_translate-x': positionOverride?.centerX ? `-50%` : '0',
-				'--_translate-y': positionOverride?.centerY ? `-50%` : '0',
+				transform: positionOverride?.centerX || positionOverride?.centerY ? `translate(${positionOverride?.centerX ? '-50%' : '0'}, ${positionOverride?.centerY ? '-50%' : '0'})` : positionOverride ? 'none' : undefined,
 				top: positionOverride?.top
 					? `${positionOverride.top}px`
 					: positionOverride
@@ -124,7 +122,6 @@
 		font-size: calc(1em * var(--ui-scale) * 0.6);
 		margin: 0.75rem;
 		margin-bottom: calc(0.75rem + var(--toggle-button-size, 0px));
-		transform: translate(var(--_translate-x, 0), var(--_translate-y, 0));
 
 		@include border.border-gradient();
 		&:focus,
@@ -177,8 +174,8 @@
 
 		.FoxDialog__header-action {
 			font-size: inherit;
-			--p-button-padding-x: 1em;
-			--p-button-padding-y: 1em;
+			--p-button-padding-x: 0.5em;
+			--p-button-padding-y: 0.5em;
 			.pi {
 				font-size: inherit;
 			}
@@ -227,7 +224,6 @@
 	import { useEventListener } from '@vueuse/core';
 	import PrimeButton from 'primevue/button';
 	import { ref, shallowRef, watch } from 'vue';
-	import { useToggleButtonStore } from '@/stores/toggle-button';
 
 	const props = defineProps<{
 		persistPositionId?: string;
@@ -241,7 +237,6 @@
 	const pinned = defineModel('pinned', { type: Boolean });
 	const moveMode = defineModel('moveMode', { type: Boolean });
 	const rolledUp = defineModel('rolledUp', { type: Boolean });
-	const toggleButtonStore = useToggleButtonStore();
 
 	const positionOverride = defineModel<
 		| {
