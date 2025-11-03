@@ -13,7 +13,6 @@ const { artillery, interfaceVisibility, serverConnection, syncedRoom } = runGlob
 	});
 
 	const interfaceVisibility = ref({
-		windSettings: false,
 		syncSettings: false,
 		settings: false,
 	});

@@ -25,7 +25,7 @@
 			<div class="Unit__label" v-if="unitLabel">
 				{{ unitLabel }}
 			</div>
-			<Component :is="unitIcon" ref="iconElement" class="Unit__icon" />
+			<Component :is="getUnitIcon(artillery.sharedState.currentState.value.unitMap, unit.id)" ref="iconElement" class="Unit__icon" />
 		</div>
 	</PositionedElement>
 
@@ -49,7 +49,7 @@
 			<div class="Unit__label" v-if="unitLabel">
 				{{ unitLabel }}
 			</div>
-			<Component :is="unitIcon" class="Unit__icon" />
+			<Component :is="getUnitIcon(artillery.sharedState.currentState.value.unitMap, unit.id)" class="Unit__icon" />
 		</div>
 	</PositionedElement>
 
@@ -147,15 +147,14 @@
 	import UnitSettings from '@/components/Viewport/Units/UnitSettings.vue';
 	import { injectUnit } from '@/contexts/unit';
 	import { LAYER } from '@/lib/constants/ui';
-	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import {
+		getUnitIcon,
 		getUnitLabel,
 		getUnitResolvedVector,
 		getUnitSpecs,
 	} from '@/lib/unit';
-	import { ICONS } from '@/lib/constants/icons';
 
 	const iconElement = shallowRef<InstanceType<typeof ArtilleryIcon>>(null!);
 
@@ -168,7 +167,7 @@
 		(event: 'remove'): void;
 		(event: 'set-unit-source', payload: string | undefined): void;
 		(event: 'updated'): void;
-		(event: 'update-wind', payload: Vector): void;
+		(event: 'update-wind', payload: { firingSolution: Vector, removeUnitAfter: boolean }): void;
 	}>();
 
 	const unit = injectUnit();
@@ -179,26 +178,6 @@
 			unit.value.id
 		)
 	);
-	const unitIcon = computed(() => {
-		if (unit.value.type === UnitType.Spotter) {
-			return unit.value.spottingType != null
-				? ICONS[unit.value.spottingType]
-				: UNIT_ICON_BY_TYPE[unit.value.type];
-		}
-		if (unit.value.type === UnitType.Artillery) {
-			const unitSpecs = getUnitSpecs(
-				artillery.sharedState.currentState.value.unitMap,
-				unit.value.id
-			);
-			return (
-				ICONS[unitSpecs?.PLATFORM!] ??
-				ICONS[unitSpecs?.AMMO_TYPE!] ??
-				UNIT_ICON_BY_TYPE[unit.value.type]
-			);
-		}
-
-		return UNIT_ICON_BY_TYPE[unit.value.type];
-	});
 
 	const isHovered = ref(false);
 	const open = computed({

@@ -70,6 +70,12 @@ export const initialise = async () => {
 	ipcMain.handle(ElectronApiCommand.GetRunningVersion, () => {
 		return packageJson.version;
 	});
+	ipcMain.handle(ElectronApiCommand.FocusOverlay, () => {
+		overlayManager?.setFocus("overlay");
+	});
+	ipcMain.handle(ElectronApiCommand.BlurOverlay, () => {
+		overlayManager?.setFocus("backdrop");
+	});
 	ipcMain.handle(ElectronApiCommand.ToggleOverlay, () => {
 		toggleOverlay();
 	});

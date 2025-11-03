@@ -12,6 +12,8 @@ import { Vector } from '@packages/data/dist/artillery/vector';
 import { generateId } from '@packages/data/dist/id';
 import { natoAlphabet } from '@/lib/names';
 import { settings, UserMode } from '@/lib/settings';
+import { ICONS } from './constants/icons';
+import { UNIT_ICON_BY_TYPE } from './constants/unit';
 
 export const getAvailableUnitTypes = (): UnitType[] => {
 	if (settings.value.userMode === UserMode.Basic) {
@@ -36,7 +38,7 @@ export const createUnit = (
 	type: UnitType,
 	vector: Ref<Vector>,
 	parentId?: string,
-	specs?: Pick<Unit, 'ammunition' | 'platform' | 'spottingType'>
+	specs?: Pick<Unit, 'ammunition' | 'platform' | 'spottingType' | 'targetId'>
 ): Ref<Unit> => {
 	return ref({
 		id: generateId(),
@@ -44,6 +46,7 @@ export const createUnit = (
 		vector: vector.value.angularVector,
 		canDrag: parentId == null,
 		parentId,
+		targetId: specs?.targetId,
 		ammunition: specs?.ammunition,
 		platform: specs?.platform,
 		spottingType: specs?.spottingType,
@@ -61,7 +64,9 @@ export const getUnitResolvedVector = (
 	}
 
 	if (unit.parentId != null)
-		return Vector.fromAngularVector(unit.vector).addVector(getUnitResolvedVector(unitMap, unit.parentId));
+		return Vector.fromAngularVector(unit.vector).addVector(
+			getUnitResolvedVector(unitMap, unit.parentId)
+		);
 
 	return Vector.fromAngularVector(unit.vector).addVector(Vector.zero());
 };
@@ -113,4 +118,45 @@ export const getUnitSpecs = (
 	}
 
 	return null;
+};
+
+export const getUnitIcon = (unitMap: UnitMap, unitId: string): any => {
+	if (unitMap[unitId].type === UnitType.Spotter) {
+		return unitMap[unitId].spottingType != null
+			? ICONS[unitMap[unitId].spottingType]
+			: UNIT_ICON_BY_TYPE[unitMap[unitId].type];
+	}
+	if (unitMap[unitId].type === UnitType.Artillery) {
+		const unitSpecs = getUnitSpecs(unitMap, unitMap[unitId].id);
+		return (
+			ICONS[unitSpecs?.PLATFORM!] ??
+			ICONS[unitSpecs?.AMMO_TYPE!] ??
+			UNIT_ICON_BY_TYPE[unitMap[unitId].type]
+		);
+	}
+
+	return UNIT_ICON_BY_TYPE[unitMap[unitId].type];
+};
+
+export const setUnitResolvedVector = (
+	unitMap: UnitMap,
+	unitId: string,
+	newPosition: Vector
+) => {
+	const unit = unitMap[unitId];
+
+	if (unit == null) {
+		return;
+	}
+
+	const currentVector = getUnitResolvedVector(unitMap, unitId);
+	const newVector = currentVector.getRelativeOffset(newPosition);
+
+	if (unit.parentId != null) {
+		unit.vector = Vector.fromAngularVector(unit.vector).addVector(
+			newVector
+		).angularVector;
+	} else {
+		unit.vector = newVector.angularVector;
+	}
 };

@@ -23,6 +23,7 @@ export type Unit = {
 	type: UnitType;
 	vector: AngularVector;
 	parentId?: string;
+	targetId?: string;
 	canDrag?: boolean;
 	selectUnitOnDeletion?: string;
 	ammunition?: AMMO_TYPE;

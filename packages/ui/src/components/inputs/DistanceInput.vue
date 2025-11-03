@@ -1,5 +1,6 @@
 <template>
 	<NumberInput
+		class="DistanceInput__container"
 		ref="numberInput"
 		v-model="modelValue"
 		:autofocus="props.autofocus"

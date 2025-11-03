@@ -10,7 +10,7 @@
 				@updated="() => artillery.sharedState.produceUpdate(() => syncedRoom.updateUnit(unitId))"
 				@remove="() => artillery.sharedState.produceUpdate(() => artillery.removeUnit(unitId))"
 				@set-unit-source="($event) => artillery.sharedState.produceUpdate(() => artillery.setUnitSource(unitId, $event))"
-				@update-wind="($event) => artillery.sharedState.produceUpdate(() => artillery.editWind(unitId, $event))"
+				@update-wind="($event) => artillery.sharedState.produceUpdate(() => artillery.editWind(unitId, $event.firingSolution, $event.removeUnitAfter))"
 			/>
 		</UnitProvider>
 		<UnitLink

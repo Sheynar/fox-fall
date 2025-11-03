@@ -1,46 +1,32 @@
 <template>
-	<Teleport :to="pinned ? 'body' : '.App__container'" v-if="visible || pinned">
+	<Teleport
+		:to="pinned ? 'body' : artillery.containerElement.value"
+		v-if="(visible && artillery.containerElement.value) || pinned"
+	>
 		<div
 			ref="containerElement"
 			class="FoxDialog__container"
 			:class="{
 				'FoxDialog__container-rolled-up': rolledUp,
 				'FoxDialog__container-move-mode': moveMode,
+				'FoxDialog__container-moving': moving != null,
 				MouseCapture: pinned,
 			}"
 			v-bind="$attrs"
-			:style="{
-				transform: positionOverride?.centerX || positionOverride?.centerY ? `translate(${positionOverride?.centerX ? '-50%' : '0'}, ${positionOverride?.centerY ? '-50%' : '0'})` : positionOverride ? 'none' : undefined,
-				top: positionOverride?.top
-					? `${positionOverride.top}px`
-					: positionOverride
-						? 'auto'
-						: undefined,
-				left: positionOverride?.left
-					? `${positionOverride.left}px`
-					: positionOverride
-						? 'auto'
-						: undefined,
-				bottom: positionOverride?.bottom
-					? `${positionOverride.bottom}px`
-					: positionOverride
-						? 'auto'
-						: undefined,
-				right: positionOverride?.right
-					? `${positionOverride.right}px`
-					: positionOverride
-						? 'auto'
-						: undefined,
-			}"
+			:style="containerStyle"
 			@pointerdown.stop
 			@contextmenu.stop
 			@wheel.stop
 			@pointerup.stop.prevent="onPointerUp"
 			@pointermove="onPointerMove"
 		>
-			<h1 class="FoxDialog__header" v-if="artillery.overlayOpen.value">
+			<h1
+				class="FoxDialog__header"
+				v-if="!settings.hidePinnedHeaders || artillery.overlayOpen.value"
+				@pointerdown.stop="(event) => onPointerDown(event, { x: -1, y: -1 })"
+			>
 				<slot name="header" />
-				<span class="FoxDialog__header-actions" @doubleclick.stop>
+				<span class="FoxDialog__header-actions" @doubleclick.stop @pointerdown.stop>
 					<slot name="header-actions" />
 					<PrimeButton
 						v-if="!props.disablePin"
@@ -51,10 +37,11 @@
 						<i class="pi pi-thumbtack" />
 					</PrimeButton>
 					<PrimeButton
-						v-if="!props.disableRollUp && !moveMode"
+						v-if="!props.disableRollUp"
+						:disabled="moveMode"
 						class="FoxDialog__header-action"
 						severity="secondary"
-						@pointerdown.stop.prevent="rolledUp = !rolledUp"
+						@pointerdown.stop.prevent="!moveMode && (rolledUp = !rolledUp)"
 					>
 						<i
 							class="pi"
@@ -65,15 +52,16 @@
 						/>
 					</PrimeButton>
 					<PrimeButton
-						v-if="!props.disableMove && !rolledUp"
+						v-if="!props.disableMove"
+						:disabled="rolledUp"
 						class="FoxDialog__header-action"
 						:severity="moveMode ? 'success' : 'secondary'"
-						@pointerdown.stop="moveMode = !moveMode"
+						@pointerdown.stop="!rolledUp && (moveMode = !moveMode)"
 					>
 						<i class="pi pi-arrows-alt" />
 					</PrimeButton>
 					<PrimeButton
-						v-if="!pinned"
+						v-if="!pinned && !props.disableClose"
 						class="FoxDialog__header-action"
 						severity="secondary"
 						@pointerdown.stop="visible = false"
@@ -87,13 +75,17 @@
 			</div>
 			<div class="FoxDialog__move-zones" v-if="moveMode">
 				<template v-for="y in 3">
-					<div
+					<PrimeButton
 						v-for="x in 3"
 						class="FoxDialog__move-zone"
+						:class="{
+							'FoxDialog__move-zone--active': moveZoneActive(x - 2, y - 2),
+						}"
+						:severity="moveZoneActive(x - 2, y - 2) ? 'success' : 'secondary'"
 						@pointerdown="
 							onPointerDown($event, { x: x - 2, y: y - 2 } as SnapPosition)
 						"
-					></div>
+					></PrimeButton>
 				</template>
 			</div>
 		</div>
@@ -112,15 +104,14 @@
 
 	.FoxDialog__container {
 		position: fixed;
-		inset: 0;
+		inset: auto;
 		display: grid;
 		grid-template-rows: auto 1fr;
 		grid-template-columns: auto;
 		align-items: inherit;
 		overflow: hidden;
 
-		font-size: calc(1em * var(--ui-scale) * 0.6);
-		margin: 0.75em;
+		font-size: calc(1em * var(--ui-scale, 1) * 0.6);
 
 		@include border.border-gradient();
 		&:focus,
@@ -133,6 +124,10 @@
 		--_background: 100% 75% / 200% 200% no-repeat
 			radial-gradient(canvas, #{constants.$dark}) !important;
 		border-radius: 1.25em;
+
+		&-moving {
+			cursor: grabbing !important;
+		}
 	}
 
 	.FoxDialog__header {
@@ -151,6 +146,7 @@
 		margin: 0;
 		padding: 0.5em;
 		gap: 0.5em;
+		cursor: grab;
 
 		font-size: 1.5em;
 		user-select: none;
@@ -210,23 +206,42 @@
 		grid-template-rows: repeat(3, minmax(0, 1fr));
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 2em;
-		padding: 2em;
+		padding: 0;
 	}
 
 	.FoxDialog__move-zone {
-		border: 1px dashed white;
-		cursor: grab;
+		cursor: grab !important;
+
+		&--active {
+			background-color: constants.$selected_foreground;
+		}
 	}
 </style>
 
 <script setup lang="ts">
-	import { useEventListener } from '@vueuse/core';
+	import {
+		useElementBounding,
+		useEventListener,
+		useWindowSize,
+	} from '@vueuse/core';
 	import PrimeButton from 'primevue/button';
-	import { ref, shallowRef, watch } from 'vue';
+	import { computed, CSSProperties, ref, shallowRef, watch } from 'vue';
 	import { artillery } from '@/lib/globals';
+	import { settings } from '@/lib/settings';
+
+	type PositionOverride = {
+		top?: number;
+		left?: number;
+		bottom?: number;
+		right?: number;
+		centerX?: boolean;
+		centerY?: boolean;
+	};
 
 	const props = defineProps<{
 		persistPositionId?: string;
+		defaultPositionOverride?: PositionOverride;
+		disableClose?: boolean;
 		disablePin?: boolean;
 		disableRollUp?: boolean;
 		disableMove?: boolean;
@@ -238,17 +253,41 @@
 	const moveMode = defineModel('moveMode', { type: Boolean });
 	const rolledUp = defineModel('rolledUp', { type: Boolean });
 
-	const positionOverride = defineModel<
-		| {
-				top?: number;
-				left?: number;
-				bottom?: number;
-				right?: number;
-				centerX?: boolean;
-				centerY?: boolean;
-		  }
-		| undefined
-	>('positionOverride');
+	const bounds = useElementBounding(containerElement);
+	const windowSize = useWindowSize();
+
+	const positionOverride = defineModel<PositionOverride | undefined>(
+		'positionOverride'
+	);
+
+	const position = computed(() => {
+		return positionOverride.value ?? props.defaultPositionOverride;
+	});
+
+	const containerStyle = computed(() => {
+		if (position.value == null) return {};
+
+		const output: CSSProperties = {};
+
+		const margin = '0.5em';
+		if (position.value.top != null) {
+			output.top = `clamp(${margin}, ${position.value.top}vh - ${position.value.centerY ? bounds.height.value / 2 : 0}px, 100vh - ${bounds.height.value}px - ${margin})`;
+		}
+
+		if (position.value.left != null) {
+			output.left = `clamp(${margin}, ${position.value.left}vw - ${position.value.centerX ? bounds.width.value / 2 : 0}px, 100vw - ${bounds.width.value}px - ${margin})`;
+		}
+
+		if (position.value.bottom != null) {
+			output.bottom = `clamp(${margin}, ${position.value.bottom}vh - ${position.value.centerY ? bounds.height.value / 2 : 0}px, 100vh - ${bounds.height.value}px - ${margin})`;
+		}
+
+		if (position.value.right != null) {
+			output.right = `clamp(${margin}, ${position.value.right}vw - ${position.value.centerX ? bounds.width.value / 2 : 0}px, 100vw - ${bounds.width.value}px - ${margin})`;
+		}
+
+		return output;
+	});
 
 	type SnapPosition = { x: number; y: number };
 
@@ -269,7 +308,7 @@
 	const moving = ref<null | MovingData>(null);
 
 	useEventListener('keydown', (event) => {
-		if (event.key === 'Escape' && !pinned.value) {
+		if (event.key === 'Escape' && !pinned.value && !props.disableClose) {
 			visible.value = false;
 		}
 	});
@@ -281,18 +320,24 @@
 		const bounding = containerElement.value!.getBoundingClientRect();
 		moving.value = {
 			startPosition: {
-				top: bounding.top,
-				left: bounding.left,
-				bottom: window.innerHeight - bounding.bottom,
-				right: window.innerWidth - bounding.right,
+				top: (bounding.top * 100) / windowSize.height.value,
+				left: (bounding.left * 100) / windowSize.width.value,
+				bottom:
+					((windowSize.height.value - bounding.bottom) * 100) /
+					windowSize.height.value,
+				right:
+					((windowSize.width.value - bounding.right) * 100) /
+					windowSize.width.value,
 			},
 			startSize: {
-				width: bounding.width,
-				height: bounding.height,
+				width: (bounding.width * 100) / windowSize.width.value,
+				height: (bounding.height * 100) / windowSize.height.value,
 			},
 			startEvent: event,
 			snapPosition,
 		};
+
+		onPointerMove(event);
 	};
 
 	const onPointerUp = (event: PointerEvent) => {
@@ -301,6 +346,8 @@
 		event.preventDefault();
 		containerElement.value!.releasePointerCapture(event.pointerId);
 		moving.value = null;
+		moveMode.value = false;
+		artillery.checkWindowFocus();
 	};
 
 	const onPointerMove = (event: PointerEvent) => {
@@ -319,84 +366,66 @@
 		};
 		if (moving.value.snapPosition.y === -1) {
 			const marginTop = Number(computedStyle.marginTop.replace('px', '')) || 0;
-			// containerElement.value!.style.top = `${event.clientY - moving.value.startEvent.clientY + moving.value.startPosition.top - marginTop}px`;
-			// containerElement.value!.style.bottom = 'auto';
-			// containerElement.value!.style.removeProperty('--_translate-y');
 
 			newPositionOverride.top =
-				event.clientY -
-				moving.value.startEvent.clientY +
+				(event.clientY * 100) / windowSize.height.value -
+				(moving.value.startEvent.clientY * 100) / windowSize.height.value +
 				moving.value.startPosition.top -
-				marginTop;
+				(marginTop * 100) / windowSize.height.value;
 		}
 		if (moving.value.snapPosition.y === 0) {
 			const marginTop = Number(computedStyle.marginTop.replace('px', '')) || 0;
-			// containerElement.value!.style.top = `${event.clientY - moving.value.startEvent.clientY + moving.value.startPosition.top - marginTop + moving.value.startSize.height / 2}px`;
-			// containerElement.value!.style.bottom = 'auto';
-			// containerElement.value!.style.setProperty('--_translate-y', `-50%`);
 
 			newPositionOverride.top =
-				event.clientY -
-				moving.value.startEvent.clientY +
+				(event.clientY * 100) / windowSize.height.value -
+				(moving.value.startEvent.clientY * 100) / windowSize.height.value +
 				moving.value.startPosition.top -
-				marginTop +
+				(marginTop * 100) / windowSize.height.value +
 				moving.value.startSize.height / 2;
 			newPositionOverride.centerY = true;
 		}
 		if (moving.value.snapPosition.y === 1) {
 			const marginBottom =
 				Number(computedStyle.marginBottom.replace('px', '')) || 0;
-			// containerElement.value!.style.bottom = `${moving.value.startEvent.clientY - event.clientY + moving.value.startPosition.bottom - marginBottom}px`;
-			// containerElement.value!.style.top = 'auto';
-			// containerElement.value!.style.removeProperty('--_translate-y');
 
 			newPositionOverride.bottom =
-				moving.value.startEvent.clientY -
-				event.clientY +
+				(moving.value.startEvent.clientY * 100) / windowSize.height.value -
+				(event.clientY * 100) / windowSize.height.value +
 				moving.value.startPosition.bottom -
-				marginBottom;
+				(marginBottom * 100) / windowSize.height.value;
 		}
 
 		if (moving.value.snapPosition.x === -1) {
 			const marginLeft =
 				Number(computedStyle.marginLeft.replace('px', '')) || 0;
-			// containerElement.value!.style.left = `${event.clientX - moving.value.startEvent.clientX + moving.value.startPosition.left - marginLeft}px`;
-			// containerElement.value!.style.right = 'auto';
-			// containerElement.value!.style.removeProperty('--_translate-x');
 
 			newPositionOverride.left =
-				event.clientX -
-				moving.value.startEvent.clientX +
+				(event.clientX * 100) / windowSize.width.value -
+				(moving.value.startEvent.clientX * 100) / windowSize.width.value +
 				moving.value.startPosition.left -
-				marginLeft;
+				(marginLeft * 100) / windowSize.width.value;
 		}
 		if (moving.value.snapPosition.x === 0) {
 			const marginLeft =
 				Number(computedStyle.marginLeft.replace('px', '')) || 0;
-			// containerElement.value!.style.left = `${event.clientX - moving.value.startEvent.clientX + moving.value.startPosition.left - marginLeft + moving.value.startSize.width / 2}px`;
-			// containerElement.value!.style.right = 'auto';
-			// containerElement.value!.style.setProperty('--_translate-x', `-50%`);
 
 			newPositionOverride.left =
-				event.clientX -
-				moving.value.startEvent.clientX +
+				(event.clientX * 100) / windowSize.width.value -
+				(moving.value.startEvent.clientX * 100) / windowSize.width.value +
 				moving.value.startPosition.left -
-				marginLeft +
+				(marginLeft * 100) / windowSize.width.value +
 				moving.value.startSize.width / 2;
 			newPositionOverride.centerX = true;
 		}
 		if (moving.value.snapPosition.x === 1) {
 			const marginRight =
 				Number(computedStyle.marginRight.replace('px', '')) || 0;
-			// containerElement.value!.style.right = `${moving.value.startEvent.clientX - event.clientX + moving.value.startPosition.right - marginRight}px`;
-			// containerElement.value!.style.left = 'auto';
-			// containerElement.value!.style.removeProperty('--_translate-x');
 
 			newPositionOverride.right =
-				moving.value.startEvent.clientX -
-				event.clientX +
+				(moving.value.startEvent.clientX * 100) / windowSize.width.value -
+				(event.clientX * 100) / windowSize.width.value +
 				moving.value.startPosition.right -
-				marginRight;
+				(marginRight * 100) / windowSize.width.value;
 			newPositionOverride.centerX = false;
 		}
 
@@ -407,6 +436,25 @@
 			);
 		}
 		positionOverride.value = newPositionOverride;
+	};
+
+	const moveZoneActive = (x: number, y: number) => {
+		if (position.value == null) return false;
+
+		const xMatched =
+			x === -1 && position.value.left != null && !position.value.centerX ||
+			x === 0 && position.value.centerX ||
+			x === 1 && position.value.right != null && !position.value.centerX;
+
+		if (!xMatched) return false;
+
+		const yMatched =
+			y === -1 && position.value.top != null && !position.value.centerY ||
+			y === 0 && position.value.centerY ||
+			y === 1 && position.value.bottom != null && !position.value.centerY;
+		if (!yMatched) return false;
+
+		return true;
 	};
 
 	watch(

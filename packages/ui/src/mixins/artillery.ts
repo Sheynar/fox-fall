@@ -85,7 +85,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		event?: PointerEvent,
 		vector?: Ref<Vector>,
 		parentUnitId?: string,
-		specs?: Pick<Unit, 'ammunition' | 'platform' | 'spottingType'>
+		specs?: Pick<Unit, 'ammunition' | 'platform' | 'spottingType' | 'targetId'>
 	) => {
 		if (vector == null) {
 			vector = ref(
@@ -238,6 +238,15 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const calibrateWind = async () => {
+		const visibleInput = document.querySelector(
+			`.UnitSettings__dialog--type-${UnitType.LandingZone} .DistanceInput__container input`
+		) as HTMLInputElement | null;
+		if (visibleInput != null) {
+			visibleInput.select();
+			window.electronApi?.focusOverlay();
+			return;
+		}
+
 		assertCanEditWind();
 		const availableUnits = Object.keys(
 			sharedState.currentState.value.unitMap
@@ -317,6 +326,15 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	};
 
 	const editTarget = async () => {
+		const visibleInput = document.querySelector(
+			`.UnitSettings__dialog--type-${UnitType.Target} .DistanceInput__container input`
+		) as HTMLInputElement | null;
+		if (visibleInput != null) {
+			visibleInput.select();
+			window.electronApi?.focusOverlay();
+			return;
+		}
+
 		const targets = Object.keys(sharedState.currentState.value.unitMap).filter(
 			(unitId) =>
 				sharedState.currentState.value.unitMap[unitId].type ===
@@ -458,7 +476,11 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 			throw new Error('No artillery unit with wind specs');
 		}
 	};
-	const editWind = async (unitId: string, firingSolution: Vector) => {
+	const editWind = async (
+		unitId: string,
+		firingSolution: Vector,
+		removeUnitAfter: boolean = true
+	) => {
 		assertCanEditWind();
 		const _windMultiplier = windMultiplier.value!;
 		try {
@@ -491,9 +513,11 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 				sharedState.currentState.value.wind
 			).addVector(windCorrection.scale(1 / _windMultiplier)).angularVector;
 
-			options.onWindUpdated?.();
+			if (removeUnitAfter) {
+				removeUnit(unitId);
+			}
 
-			removeUnit(unitId);
+			options.onWindUpdated?.();
 		} catch (e) {
 			new Notification('FoxFall error', {
 				body: `Failed to update wind: ${e}`,
@@ -588,16 +612,15 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		} else if (event.key === 'Delete' && event.ctrlKey && selectedUnit.value) {
 			event.preventDefault();
 			removeUnit(selectedUnit.value);
-		} else if (
-			event.key === 'z' &&
-			event.ctrlKey &&
-			sharedState.lastUpdate != null
-		) {
+		} else if (event.key === 'z' && event.ctrlKey) {
 			event.preventDefault();
 			sharedState.undo(sharedState.user);
 		} else if (event.key === 'y' && event.ctrlKey) {
 			event.preventDefault();
 			sharedState.redo();
+		} else if (event.key === 'Escape' && !overlayOpen.value) {
+			event.preventDefault();
+			checkWindowFocus();
 		}
 	});
 
@@ -621,6 +644,10 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 	useEventListener('pointermove', updateMouseActive);
 	updateMouseActive();
 
+	const checkWindowFocus = () => {
+		if (!overlayOpen.value) window.electronApi?.blurOverlay();
+	};
+
 	watch(
 		() => overlayOpen.value || mouseActive.value,
 		(active) => {
@@ -633,11 +660,15 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		{ immediate: true }
 	);
 
-	watch(overlayOpen, (open) => {
-		if (open) {
-			(document.activeElement as HTMLElement)?.blur?.();
-		}
-	}, { immediate: true });
+	watch(
+		overlayOpen,
+		(open) => {
+			if (open) {
+				(document.activeElement as HTMLElement)?.blur?.();
+			}
+		},
+		{ immediate: true }
+	);
 
 	useEventListener('blur', () => {
 		(document.activeElement as HTMLElement)?.blur?.();
@@ -653,6 +684,7 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		editWind,
 		resetWind,
 		resetViewport,
+		checkWindowFocus,
 
 		overlayOpen,
 		cursor,

@@ -1,8 +1,7 @@
 import { UnitType } from '@packages/data/dist/artillery/unit';
 import { artillery } from '@/lib/globals';
-import { getUnitLabel, getAvailableUnitTypes } from '@/lib/unit';
+import { getUnitLabel, getAvailableUnitTypes, getUnitIcon } from '@/lib/unit';
 import { computed, markRaw } from 'vue';
-import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 
 export type Options = {
 	blackList?: {
@@ -30,7 +29,7 @@ export const useSelectUnitOptions = (options: Options = {}) => {
 				output.set(unit.id, {
 					label: getUnitLabel(artillery.sharedState.currentState.value.unitMap, unit.id),
 					searchKeys: [UnitType[unitType]],
-					icon: markRaw(UNIT_ICON_BY_TYPE[unitType]),
+					icon: markRaw(getUnitIcon(artillery.sharedState.currentState.value.unitMap, unit.id)),
 				});
 
 			}

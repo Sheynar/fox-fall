@@ -22,7 +22,8 @@
 			:readonly="props.readonly"
 			:disabled="props.disabled"
 			v-model="modelValue"
-			@focus="inputElement?.select()"
+			@focus="inputElement?.select(); emit('focus')"
+			@blur="emit('blur')"
 			@pointerdown.stop
 			@pointerup.stop.prevent
 			v-bind="props.inputAttributes"
@@ -115,6 +116,11 @@
 			inputElement.value.focus();
 		}
 	});
+
+	const emit = defineEmits<{
+		(event: 'focus'): void;
+		(event: 'blur'): void;
+	}>();
 
 	defineExpose({
 		containerElement,

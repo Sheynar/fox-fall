@@ -3,6 +3,8 @@ import type { UpdateConfig } from "./update-config";
 
 export enum ElectronApiCommand {
 	GetRunningVersion = "get-running-version",
+	FocusOverlay = "focus-overlay",
+	BlurOverlay = "blur-overlay",
 	ToggleOverlay = "toggle-overlay",
 	GetOverlayOpen = "get-overlay-open",
 	OverlayToggled = "overlay-toggled",
@@ -21,6 +23,10 @@ export enum ElectronApiCommand {
 export type ElectronApi = {
 	/** Fetches the semver version string of the running overlay application */
 	getRunningVersion: () => Promise<string>;
+	/** Sends a message to the parent Electron process to focus the overlay window */
+	focusOverlay: () => Promise<void>;
+	/** Sends a message to the parent Electron process to blur the overlay window */
+	blurOverlay: () => Promise<void>;
 	/** Toggles the display between a full overlay covering the entire screen and a single button in the bottom right */
 	toggleOverlay: () => Promise<void>;
 	/** Returns whether the overlay is currently open */

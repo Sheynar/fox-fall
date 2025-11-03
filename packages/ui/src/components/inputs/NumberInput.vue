@@ -1,10 +1,13 @@
 <template>
 	<FoxText
+		class="NumberInput__container"
 		ref="textInput"
 		:autofocus="props.autofocus"
 		v-model="stringValue"
 		:input-attributes="props.inputAttributes"
 		@keydown="onKeyDown"
+		@focus="emit('focus')"
+		@blur="stringValue = formattedValue; emit('blur')"
 	>
 		<template #icons-before v-if="$slots['icons-before']">
 			<slot name="icons-before" />
@@ -38,7 +41,9 @@
 		set: (newNumber: number) => {
 			if (props.min != null) newNumber = Math.max(props.min, newNumber);
 			if (props.max != null) newNumber = Math.min(props.max, newNumber);
-			_modelValue.value = newNumber;
+			if (inputElement.value?.matches(':focus')) {
+				_modelValue.value = newNumber;
+			};
 		},
 	});
 	const formattedValue = computed(() => {
@@ -96,6 +101,11 @@
 				break;
 		}
 	};
+
+	const emit = defineEmits<{
+		(event: 'focus'): void;
+		(event: 'blur'): void;
+	}>();
 
 	defineExpose({
 		textInput,

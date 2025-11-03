@@ -7,7 +7,9 @@
 				raised
 				:severity="item.severity"
 				:disabled="item.disabled"
-				@click.stop="() => artillery.sharedState.produceUpdate(() => item.command())"
+				@click.stop="
+					() => artillery.sharedState.produceUpdate(() => item.command())
+				"
 				@pointerenter="(event) => (tooltip = { label: item.label, event })"
 				@pointerleave="tooltip = null"
 			>
@@ -37,11 +39,6 @@
 		:visible="interfaceVisibility.syncSettings"
 		@update:visible="interfaceVisibility.syncSettings = $event"
 	/>
-
-	<WindSettings
-		:visible="interfaceVisibility.windSettings"
-		@update:visible="interfaceVisibility.windSettings = $event"
-	/>
 </template>
 
 <style lang="scss">
@@ -63,8 +60,6 @@
 	import GridIcon from '@/components/icons/GridIcon.vue';
 	import Settings from '@/components/OverlayHud/Settings.vue';
 	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
-	import WindIndicator from '@/components/OverlayHud/WindIndicator.vue';
-	import WindSettings from '@/components/OverlayHud/WindSettings.vue';
 	import {
 		artillery,
 		interfaceVisibility,
@@ -129,9 +124,12 @@
 		icons: [
 			`pi ${artillery.sharedState.currentState.value.readyToFire ? 'pi-play-circle' : 'pi-pause-circle'}`,
 		],
-		severity: artillery.sharedState.currentState.value.readyToFire ? 'success' : 'danger',
+		severity: artillery.sharedState.currentState.value.readyToFire
+			? 'success'
+			: 'danger',
 		command: () => {
-			artillery.sharedState.currentState.value.readyToFire = !artillery.sharedState.currentState.value.readyToFire;
+			artillery.sharedState.currentState.value.readyToFire =
+				!artillery.sharedState.currentState.value.readyToFire;
 			syncedRoom.updateReadyToFire();
 		},
 	}));
@@ -167,14 +165,6 @@
 
 	const items = computed<Item[]>(() => {
 		const output = [
-			{
-				label: 'Wind',
-				iconComponents: [WindIndicator],
-				severity: 'secondary',
-				command: () =>
-					(interfaceVisibility.value.windSettings =
-						!interfaceVisibility.value.windSettings),
-			},
 			readyToFireItem.value,
 			{
 				label: 'Settings',

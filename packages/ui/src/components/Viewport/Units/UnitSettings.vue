@@ -1,15 +1,31 @@
 <template>
 	<FoxDialog
-		persist-position-id="unit-settings"
+		v-if="visible || pinned"
+		v-show="(visible && artillery.overlayOpen.value) || pinned"
 		class="UnitSettings__dialog"
+		:class="`UnitSettings__dialog--type-${unit.type}`"
 		v-model:visible="visible"
 		v-model:pinned="pinned"
+		:default-position-override="{ top: 50, right: 0, centerY: true }"
 		:style="{
 			'--ui-scale': settings.unitSettingsScale,
 		}"
 		tabindex="-1"
 	>
-		<template #header>{{ unitLabel }}</template>
+		<template #header>
+			<span class="UnitSettings__header-content">
+				<Component
+					:is="
+						getUnitIcon(
+							artillery.sharedState.currentState.value.unitMap,
+							unit.id
+						)
+					"
+					class="UnitSettings__icon"
+				/>
+				{{ unitLabel }}
+			</span>
+		</template>
 		<template #header-actions>
 			<PrimeButton
 				class="FoxDialog__header-action"
@@ -61,8 +77,9 @@
 							@keydown.enter="
 								distanceInput?.inputElement?.select();
 								unit.type === UnitType.LandingZone &&
-									emit('update-wind', langingZoneFiringSolution);
+									artillery.sharedState.produceUpdate(() => submitWind());
 								visible = false;
+								artillery.checkWindowFocus();
 							"
 						/>
 					</div>
@@ -225,8 +242,9 @@
 								@keydown.enter="
 									distanceInput?.inputElement?.select();
 									unit.type === UnitType.LandingZone &&
-										emit('update-wind', langingZoneFiringSolution);
+										artillery.sharedState.produceUpdate(() => submitWind());
 									visible = false;
+									artillery.checkWindowFocus();
 								"
 							/>
 						</div>
@@ -289,8 +307,9 @@
 									"
 									@keydown.enter="
 										landingZoneFiringSolutionDistanceInput?.inputElement?.select();
-										emit('update-wind', langingZoneFiringSolution);
+										artillery.sharedState.produceUpdate(() => submitWind());
 										visible = false;
+										artillery.checkWindowFocus();
 									"
 								/>
 							</div>
@@ -410,11 +429,11 @@
 			</div>
 			<div
 				class="UnitSettings__actions"
-				v-if="unit.type === UnitType.LandingZone"
+				v-if="unit.type === UnitType.LandingZone && artillery.overlayOpen.value"
 			>
 				<PrimeButton
 					class="UnitSettings__action"
-					@click.stop="emit('update-wind', langingZoneFiringSolution)"
+					@click.stop="artillery.sharedState.produceUpdate(() => submitWind())"
 					title="Update wind"
 				>
 					<WindIcon />
@@ -433,11 +452,18 @@
 		grid-auto-rows: auto;
 		grid-template-columns: auto;
 		align-items: inherit;
+	}
 
-		top: 50%;
-		left: auto;
-		bottom: auto;
-		transform: translateY(-50%);
+	.UnitSettings__header-content {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5em;
+
+		.UnitSettings__icon {
+			width: 1em;
+			height: 1em;
+		}
 	}
 
 	.UnitSettings__container {
@@ -458,7 +484,6 @@
 			grid-auto-rows: min-content;
 			align-items: center;
 
-			font-size: 1.5em;
 			gap: 0.5em;
 
 			text-align: end;
@@ -540,7 +565,13 @@
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery } from '@/lib/globals';
 	import { settings, UserMode } from '@/lib/settings';
-	import { getAvailableUnitTypes, getUnitLabel } from '@/lib/unit';
+	import {
+		getAvailableUnitTypes,
+		getUnitIcon,
+		getUnitLabel,
+		getUnitResolvedVector,
+		setUnitResolvedVector,
+	} from '@/lib/unit';
 	import FoxText from '@/components/inputs/FoxText.vue';
 	import FoxDialog from '@/components/FoxDialog.vue';
 
@@ -617,6 +648,30 @@
 				)
 	);
 
+	const submitWind = () => {
+		if (unit.value.targetId == null) {
+			unit.value.targetId = Object.values(
+				artillery.sharedState.currentState.value.unitMap
+			).find((unit) => unit.type === UnitType.Target)?.id;
+		}
+
+		emit('update-wind', {
+			firingSolution: langingZoneFiringSolution.value,
+			removeUnitAfter: !pinned.value,
+		});
+
+		if (unit.value.targetId != null) {
+			setUnitResolvedVector(
+				artillery.sharedState.currentState.value.unitMap,
+				unit.value.id,
+				getUnitResolvedVector(
+					artillery.sharedState.currentState.value.unitMap,
+					unit.value.targetId
+				)
+			);
+		}
+	};
+
 	watch(
 		artillery.selectedFiringVector,
 		(value) => {
@@ -626,12 +681,21 @@
 		{ immediate: true }
 	);
 
+	watch(() => visible.value || pinned.value, (value) => {
+		if (!value) {
+			hideDetails.value = false;
+		}
+	});
+
 	const emit = defineEmits<{
 		(event: 'create-child', payload: UnitType): void;
 		(event: 'remove'): void;
 		(event: 'set-unit-source', payload: string | undefined): void;
 		(event: 'set-unit-type', payload: UnitType): void;
 		(event: 'updated'): void;
-		(event: 'update-wind', payload: Vector): void;
+		(
+			event: 'update-wind',
+			payload: { firingSolution: Vector; removeUnitAfter: boolean }
+		): void;
 	}>();
 </script>

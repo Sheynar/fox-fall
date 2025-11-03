@@ -1,7 +1,9 @@
 <template>
 	<FoxDialog
 		persist-position-id="wind-settings"
-		v-model:visible="visible"
+		:default-position-override="{ bottom: 0, left: 0 }"
+		:disable-close="true"
+		:visible="true"
 		class="WindSettings__dialog"
 		@pointerdown.stop
 		@wheel.stop
@@ -10,7 +12,7 @@
 		<template #header>Wind</template>
 		<div class="Wind__information">
 			<div class="Wind__information__item">
-				<label>Wind direction:</label>
+				<label>Direction:</label>
 				<DirectionInput
 					:model-value="artillery.sharedState.currentState.value.wind.azimuth"
 					@update:model-value="
@@ -24,7 +26,7 @@
 				/>
 			</div>
 			<div class="Wind__information__item">
-				<label>Wind tier:</label>
+				<label>Tier:</label>
 				<NumberInput
 					:model-value="artillery.sharedState.currentState.value.wind.distance"
 					@update:model-value="
@@ -39,7 +41,7 @@
 				class="Wind__information__item"
 				v-if="windMultiplier && settings.showWindMeters"
 			>
-				<label>Wind distance:</label>
+				<label>Distance:</label>
 				<DistanceInput
 					:model-value="
 						artillery.sharedState.currentState.value.wind.distance * windMultiplier
@@ -54,6 +56,7 @@
 				/>
 			</div>
 			<PrimeButton
+				v-if="artillery.overlayOpen.value"
 				class="Wind__information__button"
 				label="Reset"
 				@pointerdown.stop="artillery.resetWind()"
@@ -102,8 +105,6 @@
 	import { settings } from '@/lib/settings';
 	import { getUnitSpecs } from '@/lib/unit';
 	import { computed } from 'vue';
-
-	const visible = defineModel('visible', { type: Boolean, required: true });
 
 	const windMultiplier = computed(() => {
 		const windOffsets = Object.keys(artillery.sharedState.currentState.value.unitMap)

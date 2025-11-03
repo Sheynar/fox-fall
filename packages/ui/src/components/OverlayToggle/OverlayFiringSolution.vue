@@ -9,11 +9,16 @@
 		@pointerdown.prevent
 	>
 		<div class="OverlayFiringSolution__row">
-			<span>Distance:</span
-			><span>{{ Math.round(artillery.selectedFiringVector.value.distance) }}m</span>
+			<span>Distance:</span>
+			<span
+				>{{ Math.round(artillery.selectedFiringVector.value.distance) }}m</span
+			>
 		</div>
 		<div class="OverlayFiringSolution__row">
-			<span>Azimuth:</span><span>{{ artillery.selectedFiringVector.value.azimuth.toFixed(1) }}°</span>
+			<span>Azimuth:</span>
+			<span
+				>{{ artillery.selectedFiringVector.value.azimuth.toFixed(1) }}°</span
+			>
 		</div>
 	</div>
 </template>
@@ -51,14 +56,14 @@
 	import { artillery } from '@/lib/globals';
 
 	const artilleryUnits = computed(() => {
-		return Object.values(artillery.sharedState.currentState.value.unitMap).filter(
-			(unit) => unit != null && unit.type === UnitType.Artillery
-		);
+		return Object.values(
+			artillery.sharedState.currentState.value.unitMap
+		).filter((unit) => unit != null && unit.type === UnitType.Artillery);
 	});
 
 	const targetUnits = computed(() => {
-		return Object.values(artillery.sharedState.currentState.value.unitMap).filter(
-			(unit) => unit != null && unit.type === UnitType.Target
-		);
+		return Object.values(
+			artillery.sharedState.currentState.value.unitMap
+		).filter((unit) => unit != null && unit.type === UnitType.Target);
 	});
 </script>

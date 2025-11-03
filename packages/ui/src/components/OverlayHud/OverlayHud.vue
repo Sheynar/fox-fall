@@ -74,6 +74,9 @@
 			:unit-id-to="artillery.overridingFiringSolution.value?.unitIdTo"
 		/>
 
+		<WindSettings />
+		<FiringSolution />
+
 		<Dock />
 	</div>
 </template>
@@ -148,7 +151,9 @@
 	import { computed } from 'vue';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import Dock from '@/components/OverlayHud/Dock.vue';
+	import FiringSolution from '@/components/OverlayHud/FiringSolution.vue';
 	import FiringSolutionOverride from '@/components/OverlayHud/FiringSolutionOverride.vue';
+	import WindSettings from '@/components/OverlayHud/WindSettings.vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';
 	// import RotateIcon from '@/components/icons/RotateIcon.vue';

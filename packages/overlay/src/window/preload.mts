@@ -10,6 +10,12 @@ const electronApi: ElectronApi = {
 	getRunningVersion: async () =>
 		ipcRenderer.invoke(ElectronApiCommand.GetRunningVersion),
 
+	focusOverlay: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.FocusOverlay),
+
+	blurOverlay: async () =>
+		ipcRenderer.invoke(ElectronApiCommand.BlurOverlay),
+
 	toggleOverlay: async () =>
 		ipcRenderer.invoke(ElectronApiCommand.ToggleOverlay),
 

@@ -173,6 +173,14 @@
 				<TabPanel value="interface">
 					<div class="Settings__content">
 						<div class="Settings__row">
+							<label>Hide pinned headers</label>
+							<PrimeCheckBox
+								binary
+								v-model="settings.hidePinnedHeaders"
+								@update:model-value="saveSettings"
+							/>
+						</div>
+						<div class="Settings__row">
 							<label>Show wind meters</label>
 							<PrimeCheckBox
 								binary

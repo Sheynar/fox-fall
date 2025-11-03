@@ -5,14 +5,6 @@
 		:style="{ '--_scale': settings.toggleButtonScale }"
 		@pointerdown.prevent="executeToggle"
 	>
-		<OverlayWindMeasurement
-			v-if="settings.showWindTooltip"
-			:style="{ gridArea: 'wind' }"
-		/>
-		<OverlayFiringSolution
-			v-if="settings.showTooltip"
-			:style="{ gridArea: 'tooltip' }"
-		/>
 		<button
 			v-if="overlayActive"
 			class="OverlayToggle__button"
@@ -28,8 +20,8 @@
 		--_scale: 1;
 
 		position: fixed;
-		bottom: 0;
-		right: 0;
+		bottom: 0.5em;
+		right: 0.5em;
 
 		display: grid;
 		grid-template-columns: repeat(2, auto);
@@ -71,8 +63,6 @@
 	import { useToggleButtonStore } from '@/stores/toggle-button';
 	import { useElementBounding } from '@vueuse/core';
 	import { ref, watchEffect } from 'vue';
-	import OverlayFiringSolution from './OverlayFiringSolution.vue';
-	import OverlayWindMeasurement from './OverlayWindMeasurement.vue';
 
 	const containerElement = ref<HTMLButtonElement | null>(null);
 	const overlayOpen = defineModel('overlayOpen', {

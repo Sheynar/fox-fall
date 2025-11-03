@@ -33,6 +33,7 @@ export const settings = ref({
 	showTooltip: true,
 	showWindTooltip: true,
 	showWindMeters: false,
+	hidePinnedHeaders: false,
 	toggleButtonScale: 1,
 	unitIconScale: 1,
 	unitSettingsScale: 1,
