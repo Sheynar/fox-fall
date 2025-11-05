@@ -37,7 +37,7 @@ export const useScopePerObjectKey = <K extends string | number>(
 ) => {
 	const scopeCollection = useScopeCollection<K>();
 
-	const checkKeys = (keys = Object.keys(input.value) as K[]) => {
+	const checkKeys = (keys: K[]) => {
 		const newKeys = new Set(keys) as Set<K>;
 
 		const addedKeys = [] as K[];
@@ -80,8 +80,8 @@ export const useScopePerSetEntry = <T>(
 ) => {
 	const scopeCollection = useScopeCollection<T>();
 
-	const checkEntries = (entries = Array.from(input.value) as T[]) => {
-		const newEntries = new Set(entries) as Set<T>;
+	const checkEntries = (entries: T[]) => {
+		const newEntries = new Set(entries);
 
 		const addedEntries = [] as T[];
 		const removedEntries = [] as T[];
@@ -123,7 +123,7 @@ export const useScopePerMapKey = <K>(
 ) => {
 	const scopeCollection = useScopeCollection<K>();
 
-	const checkKeys = (keys = Array.from(input.value.keys()) as K[]) => {
+	const checkKeys = (keys: K[]) => {
 		const newKeys = new Set(keys) as Set<K>;
 
 		const addedKeys = [] as K[];
@@ -152,6 +152,49 @@ export const useScopePerMapKey = <K>(
 	};
 
 	const stop = watch(() => Array.from(input.value.keys()) as K[], checkKeys, {
+		immediate: true,
+		flush,
+	});
+
+	return stop;
+};
+
+export const useScopePerArrayIndex = <T>(
+	input: Ref<T[]>,
+	onScopeCreated: (index: number) => unknown = () => {},
+	flush: 'pre' | 'post' | 'sync' = 'sync'
+) => {
+	const scopeCollection = useScopeCollection<string>();
+
+	const checkIndexes = (indexes: number[]) => {
+		const newIndexes = new Set(indexes);
+
+		const addedIndexes = [] as number[];
+		const removedIndexes = [] as number[];
+
+		for (const index of Array.from(scopeCollection.currentScopes.keys()).map(Number)) {
+			if (!newIndexes.has(index)) {
+				removedIndexes.push(index);
+			}
+		}
+
+		for (const index of newIndexes) {
+			if (!scopeCollection.currentScopes.has(String(index))) {
+				addedIndexes.push(index);
+			}
+		}
+
+		for (const index of removedIndexes) {
+			scopeCollection.removeScope(String(index));
+		}
+
+		for (const index of addedIndexes) {
+			const newScope = scopeCollection.addScope(String(index));
+			newScope.run(() => onScopeCreated(index));
+		}
+	};
+
+	const stop = watch(() => Array.from(input.value.keys()).map(Number), checkIndexes, {
 		immediate: true,
 		flush,
 	});

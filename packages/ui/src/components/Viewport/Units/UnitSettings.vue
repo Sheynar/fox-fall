@@ -58,7 +58,6 @@
 									emit('updated');
 								})
 							"
-							@keydown.enter="azimuthInput?.inputElement?.select()"
 						/>
 					</div>
 					<div class="UnitSettings__row">
@@ -73,13 +72,6 @@
 									].vector.azimuth = wrapDegrees($event);
 									emit('updated');
 								})
-							"
-							@keydown.enter="
-								distanceInput?.inputElement?.select();
-								unit.type === UnitType.LandingZone &&
-									artillery.sharedState.produceUpdate(() => submitWind());
-								visible = false;
-								artillery.checkWindowFocus();
 							"
 						/>
 					</div>
@@ -223,7 +215,6 @@
 										emit('updated');
 									})
 								"
-								@keydown.enter="azimuthInput?.inputElement?.select()"
 							/>
 						</div>
 						<div class="UnitSettings__row">
@@ -238,13 +229,6 @@
 										].vector.azimuth = wrapDegrees($event);
 										emit('updated');
 									})
-								"
-								@keydown.enter="
-									distanceInput?.inputElement?.select();
-									unit.type === UnitType.LandingZone &&
-										artillery.sharedState.produceUpdate(() => submitWind());
-									visible = false;
-									artillery.checkWindowFocus();
 								"
 							/>
 						</div>
@@ -292,9 +276,6 @@
 									@update:model-value="
 										langingZoneFiringSolution.distance = $event
 									"
-									@keydown.enter="
-										landingZoneFiringSolutionAzimuthInput?.inputElement?.select()
-									"
 								/>
 							</div>
 							<div class="UnitSettings__row">
@@ -304,12 +285,6 @@
 									:model-value="wrapDegrees(langingZoneFiringSolution.azimuth)"
 									@update:model-value="
 										langingZoneFiringSolution.azimuth = wrapDegrees($event)
-									"
-									@keydown.enter="
-										landingZoneFiringSolutionDistanceInput?.inputElement?.select();
-										artillery.sharedState.produceUpdate(() => submitWind());
-										visible = false;
-										artillery.checkWindowFocus();
 									"
 								/>
 							</div>
@@ -574,6 +549,7 @@
 	} from '@/lib/unit';
 	import FoxText from '@/components/inputs/FoxText.vue';
 	import FoxDialog from '@/components/FoxDialog.vue';
+	import { useFieldGroup } from '@/mixins/form';
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
 	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
@@ -681,10 +657,37 @@
 		{ immediate: true }
 	);
 
-	watch(() => visible.value || pinned.value, (value) => {
-		if (!value) {
-			hideDetails.value = false;
+	watch(
+		() => visible.value || pinned.value,
+		(value) => {
+			if (!value) {
+				hideDetails.value = false;
+			}
 		}
+	);
+
+	useFieldGroup({
+		inputs: computed(() => [distanceInput.value, azimuthInput.value]),
+		onLastSubmit() {
+			unit.value.type === UnitType.LandingZone &&
+				artillery.sharedState.produceUpdate(() => submitWind());
+			visible.value = false;
+			artillery.checkWindowFocus();
+		},
+	});
+
+	useFieldGroup({
+		inputs: computed(() =>
+			[
+				landingZoneFiringSolutionDistanceInput.value,
+				landingZoneFiringSolutionAzimuthInput.value,
+			].filter((input) => input != null)
+		),
+		onLastSubmit() {
+			artillery.sharedState.produceUpdate(() => submitWind());
+			visible.value = false;
+			artillery.checkWindowFocus();
+		},
 	});
 
 	const emit = defineEmits<{

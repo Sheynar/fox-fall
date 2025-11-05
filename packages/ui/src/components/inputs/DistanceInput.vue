@@ -1,7 +1,7 @@
 <template>
 	<NumberInput
-		class="DistanceInput__container"
 		ref="numberInput"
+		class="DistanceInput__container"
 		v-model="modelValue"
 		:autofocus="props.autofocus"
 		:fractionDigits="props.fractionDigits"
@@ -27,8 +27,13 @@
 
 	const modelValue = defineModel({ type: Number, required: true });
 
+	const focus = () => numberInput.value?.focus();
+	const blur = () => numberInput.value?.blur();
+
 	defineExpose({
 		numberInput,
 		inputElement,
-	})
+		focus,
+		blur,
+	});
 </script>

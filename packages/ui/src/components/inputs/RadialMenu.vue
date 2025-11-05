@@ -305,7 +305,11 @@
 	}
 
 	.RadialMenu__option--selected .RadialMenu__option-intermediate {
-		background-image: linear-gradient(to bottom, #{constants.$selected_foreground}, #{constants.$dark});
+		background-image: linear-gradient(
+			to bottom,
+			#{constants.$selected_foreground},
+			#{constants.$dark}
+		);
 	}
 
 	.RadialMenu__option-outer:hover {
@@ -403,13 +407,16 @@
 				selection: undefined,
 			});
 		} else {
-			emit('submit', { value, path: newLayers.map((layer) => layer.selection) });
+			emit('submit', {
+				value,
+				path: newLayers.map((layer) => layer.selection),
+			});
 		}
 		layers.value = newLayers;
 
 		if (childOptions?.size === 1) {
-				select(childOptions.keys().next().value, layerIndex + 1);
-			}
+			select(childOptions.keys().next().value, layerIndex + 1);
+		}
 	};
 
 	const back = () => {

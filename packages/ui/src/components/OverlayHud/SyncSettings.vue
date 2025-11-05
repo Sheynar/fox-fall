@@ -5,20 +5,16 @@
 			<div class="Sync__settings__item">
 				<label>Server address:</label>
 				<FoxText
+					type="addressInput"
 					v-model="connectionDetails.serverAddress"
 					autofocus
-					@keydown.enter="connect"
 				/>
 			</div>
 			<div class="Sync__settings__item">
 				<label>Sync code:</label>
-				<FoxText v-model="connectionDetails.code" @keydown.enter="connect" />
+				<FoxText ref="codeInput" v-model="connectionDetails.code" />
 			</div>
-			<PrimeButton
-				class="Sync__settings__button"
-				label="Connect"
-				@pointerdown.stop="connect"
-			/>
+			<PrimeButton class="Sync__settings__button" label="Connect" />
 		</div>
 	</FoxDialog>
 </template>
@@ -55,10 +51,14 @@
 
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
-	import { ref } from 'vue';
+	import { computed, ref, shallowRef } from 'vue';
 	import FoxDialog from '@/components/FoxDialog.vue';
 	import FoxText from '@/components/inputs/FoxText.vue';
+	import { useFieldGroup } from '@/mixins/form';
 	import { getConnectionDetails } from '@/mixins/server-connection';
+
+	const addressInput = shallowRef<InstanceType<typeof FoxText>>(null!);
+	const codeInput = shallowRef<InstanceType<typeof FoxText>>(null!);
 
 	const visible = defineModel('visible', { type: Boolean, required: true });
 
@@ -79,4 +79,11 @@
 			location.search = newUrl.search;
 		}
 	};
+
+	useFieldGroup({
+		inputs: computed(() => [addressInput.value, codeInput.value]),
+		onLastSubmit() {
+			connect();
+		},
+	});
 </script>

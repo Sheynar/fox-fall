@@ -388,6 +388,8 @@
 
 	const focus = () => containerElement.value!.focus();
 
+	const blur = () => containerElement.value!.blur();
+
 	watch([isOpen], () => {
 		focused.value = undefined;
 		checkFocused();
@@ -436,6 +438,7 @@
 		close,
 		toggle,
 		focus,
+		blur,
 		submit,
 	});
 </script>

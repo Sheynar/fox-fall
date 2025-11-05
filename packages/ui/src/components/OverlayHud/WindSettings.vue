@@ -14,6 +14,7 @@
 			<div class="Wind__information__item">
 				<label>Direction:</label>
 				<DirectionInput
+					ref="directionInput"
 					:model-value="artillery.sharedState.currentState.value.wind.azimuth"
 					@update:model-value="
 						artillery.sharedState.produceUpdate(() => {
@@ -28,6 +29,7 @@
 			<div class="Wind__information__item">
 				<label>Tier:</label>
 				<NumberInput
+					ref="tierInput"
 					:model-value="artillery.sharedState.currentState.value.wind.distance"
 					@update:model-value="
 						artillery.sharedState.produceUpdate(() => {
@@ -44,7 +46,8 @@
 				<label>Distance:</label>
 				<DistanceInput
 					:model-value="
-						artillery.sharedState.currentState.value.wind.distance * windMultiplier
+						artillery.sharedState.currentState.value.wind.distance *
+						windMultiplier
 					"
 					@update:model-value="
 						artillery.sharedState.produceUpdate(() => {
@@ -97,6 +100,7 @@
 
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
+	import { computed, shallowRef } from 'vue';
 	import FoxDialog from '@/components/FoxDialog.vue';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
@@ -104,10 +108,15 @@
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitSpecs } from '@/lib/unit';
-	import { computed } from 'vue';
+	import { useFieldGroup } from '@/mixins/form';
+
+	const directionInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
+	const tierInput = shallowRef<InstanceType<typeof NumberInput>>(null!);
 
 	const windMultiplier = computed(() => {
-		const windOffsets = Object.keys(artillery.sharedState.currentState.value.unitMap)
+		const windOffsets = Object.keys(
+			artillery.sharedState.currentState.value.unitMap
+		)
 			.map(
 				(unitId) =>
 					getUnitSpecs(artillery.sharedState.currentState.value.unitMap, unitId)
@@ -118,5 +127,12 @@
 			return windOffsets.reduce((a, b) => a + b, 0) / windOffsets.length;
 
 		return null;
+	});
+
+	useFieldGroup({
+		inputs: computed(() => [directionInput.value, tierInput.value]),
+		onLastSubmit() {
+			artillery.checkWindowFocus();
+		},
 	});
 </script>

@@ -111,6 +111,10 @@
 		inputElement.value.focus();
 	};
 
+	const blur = () => {
+		inputElement.value.blur();
+	};
+
 	onMounted(() => {
 		if (props.autofocus) {
 			inputElement.value.focus();
@@ -127,5 +131,6 @@
 		inputElement,
 
 		focus,
+		blur,
 	});
 </script>

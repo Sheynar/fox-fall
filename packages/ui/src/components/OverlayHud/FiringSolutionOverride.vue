@@ -38,7 +38,6 @@
 						autofocus
 						:model-value="vectorValue.distance"
 						@update:model-value="vectorValue.distance = $event"
-						@keydown.enter="azimuthInput?.inputElement?.select()"
 					/>
 				</div>
 				<div class="FiringSolutionOverride__row">
@@ -47,7 +46,6 @@
 						ref="azimuthInput"
 						:model-value="wrapDegrees(firingVectorWithWind.azimuth)"
 						@update:model-value="vectorValue.azimuth = wrapDegrees($event)"
-						@keydown.enter="() => artillery.sharedState.produceUpdate(() => submit())"
 					/>
 				</div>
 				<template v-if="settings.showXYOffsets">
@@ -70,7 +68,9 @@
 			<div class="FiringSolutionOverride__actions">
 				<PrimeButton
 					class="FiringSolutionOverride__action"
-					@click.stop="() => artillery.sharedState.produceUpdate(() => submit())"
+					@click.stop="
+						() => artillery.sharedState.produceUpdate(() => submit())
+					"
 				>
 					Submit
 				</PrimeButton>
@@ -169,6 +169,7 @@
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
 	import PrimeDialog from 'primevue/dialog';
+	import { computed, ref, shallowRef, watch } from 'vue';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
@@ -176,7 +177,7 @@
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, getUnitResolvedVector } from '@/lib/unit';
-	import { computed, ref, shallowRef, watch } from 'vue';
+	import { useFieldGroup } from '@/mixins/form';
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
 	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
@@ -216,7 +217,8 @@
 	});
 
 	const submit = () => {
-		const unitTo = artillery.sharedState.currentState.value.unitMap[props.unitIdTo];
+		const unitTo =
+			artillery.sharedState.currentState.value.unitMap[props.unitIdTo];
 		if (unitTo == null) return;
 		unitTo.vector = Vector.fromAngularVector(unitTo.vector).addVector(
 			vectorValue.value.addVector(firingVectorWithWind.value.scale(-1))
@@ -225,6 +227,13 @@
 		emit('updated');
 		visible.value = false;
 	};
+
+	useFieldGroup({
+		inputs: computed(() => [distanceInput.value, azimuthInput.value]),
+		onLastSubmit() {
+			artillery.sharedState.produceUpdate(() => submit());
+		},
+	});
 
 	const emit = defineEmits<{
 		(event: 'updated'): void;

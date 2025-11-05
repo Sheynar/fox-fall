@@ -102,6 +102,9 @@
 		}
 	};
 
+	const focus = () => textInput.value?.focus();
+	const blur = () => textInput.value?.blur();
+
 	const emit = defineEmits<{
 		(event: 'focus'): void;
 		(event: 'blur'): void;
@@ -115,5 +118,7 @@
 		stringValue,
 		parsedValue,
 		valuesOutOfSync,
+		focus,
+		blur,
 	});
 </script>

@@ -1,5 +1,6 @@
 <template>
 	<FoxSelect
+		ref="selectElement"
 		v-model="modelValue"
 		enable-search
 		enable-clear
@@ -11,11 +12,14 @@
 </template>
 
 <script setup lang="ts">
+	import { shallowRef } from 'vue';
 	import FoxSelect from '@/components/inputs/FoxSelect.vue';
 	import {
 		useSelectUnitOptions,
 		type Options as SelectUnitOptions,
 	} from './index';
+
+	const selectElement = shallowRef<InstanceType<typeof FoxSelect>>(null!);
 
 	const modelValue = defineModel<string | undefined>('modelValue', {
 		required: true,
@@ -35,5 +39,14 @@
 	const selectUnitOptions = useSelectUnitOptions({
 		whiteList: props.whiteList,
 		blackList: props.blackList,
+	});
+
+	const focus = () => selectElement.value?.focus();
+	const blur = () => selectElement.value?.blur();
+
+	defineExpose({
+		selectElement,
+		focus,
+		blur,
 	});
 </script>

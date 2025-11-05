@@ -1,7 +1,7 @@
 <template>
 	<NumberInput
-		class="DirectionInput__input"
 		ref="numberInput"
+		class="DirectionInput__input"
 		v-model="modelValue"
 		v-bind="$attrs"
 		:autofocus="props.autofocus"
@@ -120,7 +120,13 @@
 
 	const modelValue = defineModel({ type: Number, required: true });
 
+	const focus = () => numberInput.value?.focus();
+	const blur = () => numberInput.value?.blur();
+
 	defineExpose({
+		numberInput,
 		inputElement,
+		focus,
+		blur,
 	});
 </script>

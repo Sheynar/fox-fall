@@ -1,5 +1,6 @@
 <template>
 	<FoxSelect
+		ref="selectElement"
 		class="UnitSettings__select"
 		enable-search
 		enable-clear
@@ -11,10 +12,12 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, markRaw } from 'vue';
+	import { computed, markRaw, shallowRef } from 'vue';
 	import { AMMO_TYPE, ARTILLERY_BY_SHELL } from '@packages/data/dist/artillery/unit/constants';
 	import { ICONS } from '@/lib/constants/icons';
 	import FoxSelect from './FoxSelect.vue';
+
+	const selectElement = shallowRef<InstanceType<typeof FoxSelect>>(null!);
 
 	const modelValue = defineModel<AMMO_TYPE>('modelValue');
 
@@ -24,5 +27,14 @@
 			output.set(shell, { label: shell, icon: markRaw(ICONS[shell]), order: index });
 		}
 		return output;
+	});
+
+	const focus = () => selectElement.value?.focus();
+	const blur = () => selectElement.value?.blur();
+
+	defineExpose({
+		selectElement,
+		focus,
+		blur,
 	});
 </script>
