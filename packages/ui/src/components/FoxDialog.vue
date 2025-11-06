@@ -1,6 +1,6 @@
 <template>
 	<Teleport
-		:to="pinned ? 'body' : artillery.containerElement.value"
+		:to="pinned || moving ? 'body' : artillery.containerElement.value"
 		v-if="(visible && artillery.containerElement.value) || pinned"
 	>
 		<div
@@ -14,25 +14,31 @@
 			}"
 			v-bind="$attrs"
 			:style="containerStyle"
-			@pointerdown.stop
+			@pointerdown.stop="containerElement.focus()"
 			@contextmenu.stop
 			@wheel.stop
 			@pointerup.stop.prevent="onPointerUp"
 			@pointermove="onPointerMove"
+			tabindex="-1"
 		>
 			<h1
 				class="FoxDialog__header"
 				v-if="!settings.hidePinnedHeaders || artillery.overlayOpen.value"
-				@pointerdown.stop="(event) => onPointerDown(event, { x: -1, y: -1 })"
+				@pointerdown="(event) => onPointerDown(event, { x: -1, y: -1 })"
 			>
 				<slot name="header" />
-				<span class="FoxDialog__header-actions" @doubleclick.stop @pointerdown.stop>
+				<span
+					class="FoxDialog__header-actions"
+					@doubleclick.stop
+					@pointerdown.stop="containerElement.focus()"
+				>
 					<slot name="header-actions" />
 					<PrimeButton
 						v-if="!props.disablePin"
 						class="FoxDialog__header-action"
 						:severity="pinned ? 'success' : 'secondary'"
-						@pointerdown.stop="pinned = !pinned"
+						@pointerdown="pinned = !pinned"
+						:title="pinned ? 'Unpin' : 'Pin'"
 					>
 						<i class="pi pi-thumbtack" />
 					</PrimeButton>
@@ -41,7 +47,8 @@
 						:disabled="moveMode"
 						class="FoxDialog__header-action"
 						severity="secondary"
-						@pointerdown.stop.prevent="!moveMode && (rolledUp = !rolledUp)"
+						@pointerdown.prevent="!moveMode && (rolledUp = !rolledUp)"
+						:title="rolledUp ? 'Roll down' : 'Roll up'"
 					>
 						<i
 							class="pi"
@@ -56,21 +63,23 @@
 						:disabled="rolledUp"
 						class="FoxDialog__header-action"
 						:severity="moveMode ? 'success' : 'secondary'"
-						@pointerdown.stop="!rolledUp && (moveMode = !moveMode)"
+						@pointerdown="!rolledUp && (moveMode = !moveMode)"
+						title="Anchor position"
 					>
-						<i class="pi pi-arrows-alt" />
+						<AnchorIcon />
 					</PrimeButton>
 					<PrimeButton
 						v-if="!pinned && !props.disableClose"
 						class="FoxDialog__header-action"
 						severity="secondary"
 						@pointerdown.stop="visible = false"
+						title="Close"
 					>
 						<i class="pi pi-times" />
 					</PrimeButton>
 				</span>
 			</h1>
-			<div class="FoxDialog__body" v-if="!moveMode && !rolledUp">
+			<div class="FoxDialog__body">
 				<slot />
 			</div>
 			<div class="FoxDialog__move-zones" v-if="moveMode">
@@ -85,7 +94,53 @@
 						@pointerdown="
 							onPointerDown($event, { x: x - 2, y: y - 2 } as SnapPosition)
 						"
-					></PrimeButton>
+						:title="
+							x === 1 && y === 1
+								? 'Anchor top left'
+								: x === 2 && y === 1
+									? 'Anchor top center'
+									: x === 3 && y === 1
+										? 'Anchor top right'
+										: x === 1 && y === 2
+											? 'Anchor center left'
+											: x === 2 && y === 2
+												? 'Anchor center'
+												: x === 3 && y === 2
+													? 'Anchor center right'
+													: x === 1 && y === 3
+														? 'Anchor bottom left'
+														: x === 2 && y === 3
+															? 'Anchor bottom center'
+															: x === 3 && y === 3
+																? 'Anchor bottom right'
+																: undefined
+						"
+					>
+						<i
+							class="pi"
+							:class="
+								x === 1 && y === 1
+									? 'pi-arrow-up-left'
+									: x === 2 && y === 1
+										? 'pi-arrow-up'
+										: x === 3 && y === 1
+											? 'pi-arrow-up-right'
+											: x === 1 && y === 2
+												? 'pi-arrow-left'
+												: x === 2 && y === 2
+													? 'pi-arrow-up-right-and-arrow-down-left-from-center'
+													: x === 3 && y === 2
+														? 'pi-arrow-right'
+														: x === 1 && y === 3
+															? 'pi-arrow-down-left'
+															: x === 2 && y === 3
+																? 'pi-arrow-down'
+																: x === 3 && y === 3
+																	? 'pi-arrow-down-right'
+																	: undefined
+							"
+						/>
+					</PrimeButton>
 				</template>
 			</div>
 		</div>
@@ -117,6 +172,7 @@
 		&:focus,
 		&:focus-within {
 			@include border.border-gradient-focused();
+			outline: none;
 		}
 		&:hover {
 			@include border.border-gradient-hovered();
@@ -125,8 +181,27 @@
 			radial-gradient(canvas, #{constants.$dark}) !important;
 		border-radius: 1.25em;
 
-		&-moving {
+		&.FoxDialog__container-moving {
 			cursor: grabbing !important;
+
+			> * {
+				pointer-events: none;
+			}
+			&::after {
+				content: '';
+				position: fixed;
+				inset: 0;
+				z-index: 1;
+			}
+		}
+
+		z-index: 2;
+		&.FoxDialog__container-rolled-up {
+			z-index: 1;
+		}
+		&:focus,
+		&:focus-within {
+			z-index: 3;
 		}
 	}
 
@@ -155,6 +230,7 @@
 	.FoxDialog__container:focus .FoxDialog__header,
 	.FoxDialog__container:focus-within .FoxDialog__header {
 		@include border.border-gradient-focused();
+		outline: none;
 	}
 	.FoxDialog__container:hover .FoxDialog__header {
 		@include border.border-gradient-hovered();
@@ -171,7 +247,8 @@
 			font-size: inherit;
 			--p-button-padding-x: 0.5em;
 			--p-button-padding-y: 0.5em;
-			.pi {
+			.pi,
+			.icon {
 				font-size: inherit;
 			}
 		}
@@ -184,8 +261,19 @@
 			border-bottom-right-radius: inherit;
 		}
 
+		.FoxDialog__body,
+		.FoxDialog__move-zones {
+			visibility: hidden;
+			pointer-events: none;
+			height: 0;
+		}
+	}
+
+	.FoxDialog__container-move-mode {
 		.FoxDialog__body {
-			display: none;
+			visibility: hidden;
+			pointer-events: none;
+			height: 0;
 		}
 	}
 
@@ -226,10 +314,11 @@
 	} from '@vueuse/core';
 	import PrimeButton from 'primevue/button';
 	import { computed, CSSProperties, ref, shallowRef, watch } from 'vue';
+	import AnchorIcon from '@/components/icons/AnchorIcon.vue';
 	import { artillery } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 
-	type PositionOverride = {
+	export type PositionOverride = {
 		top?: number;
 		left?: number;
 		bottom?: number;
@@ -316,6 +405,7 @@
 	const onPointerDown = (event: PointerEvent, snapPosition: SnapPosition) => {
 		event.stopPropagation();
 		event.preventDefault();
+		containerElement.value!.focus();
 		containerElement.value!.setPointerCapture(event.pointerId);
 		const bounding = containerElement.value!.getBoundingClientRect();
 		moving.value = {
@@ -337,7 +427,7 @@
 			snapPosition,
 		};
 
-		onPointerMove(event);
+		// onPointerMove(event);
 	};
 
 	const onPointerUp = (event: PointerEvent) => {
@@ -442,16 +532,16 @@
 		if (position.value == null) return false;
 
 		const xMatched =
-			x === -1 && position.value.left != null && !position.value.centerX ||
-			x === 0 && position.value.centerX ||
-			x === 1 && position.value.right != null && !position.value.centerX;
+			(x === -1 && position.value.left != null && !position.value.centerX) ||
+			(x === 0 && position.value.centerX) ||
+			(x === 1 && position.value.right != null && !position.value.centerX);
 
 		if (!xMatched) return false;
 
 		const yMatched =
-			y === -1 && position.value.top != null && !position.value.centerY ||
-			y === 0 && position.value.centerY ||
-			y === 1 && position.value.bottom != null && !position.value.centerY;
+			(y === -1 && position.value.top != null && !position.value.centerY) ||
+			(y === 0 && position.value.centerY) ||
+			(y === 1 && position.value.bottom != null && !position.value.centerY);
 		if (!yMatched) return false;
 
 		return true;

@@ -58,7 +58,7 @@ This is an artillery helper for the game Foxhole
 - Prepare firing solutions for future targets by putting location units on friendly bases that are likely to fall. Later on you can convert them into target units and use them to take back the captured bases
 - Use the settings button in the bottom dock to reduce unit icon scales and adjust the grid line thickness and dash pattern so it is easier to line up with your in game map
 - Once you have lined up the overlay with the game you can use the buttons next to the compass to disable certain types of movement of the overlay map to prevent accidental movement
-- Change the "Positioned from" setting of a unit to make it automatically follow the movement of another unit and display its position relative to that unit. You can adjust the relative position information directly based on the measurements from in game binoculars
+- Change the "Sighted from" setting of a unit to make it automatically follow the movement of another unit and display its position relative to that unit. You can adjust the relative position information directly based on the measurements from in game binoculars
 - Pin artillery / target units to make their firing arcs always visible
 
 ## Development

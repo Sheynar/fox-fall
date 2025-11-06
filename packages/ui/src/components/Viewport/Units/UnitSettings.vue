@@ -7,10 +7,10 @@
 		v-model:visible="visible"
 		v-model:pinned="pinned"
 		:default-position-override="{ top: 50, right: 0, centerY: true }"
+		:disable-close="props.disableClose"
 		:style="{
 			'--ui-scale': settings.unitSettingsScale,
 		}"
-		tabindex="-1"
 	>
 		<template #header>
 			<span class="UnitSettings__header-content">
@@ -31,6 +31,7 @@
 				class="FoxDialog__header-action"
 				severity="secondary"
 				@pointerdown.stop="hideDetails = !hideDetails"
+				:title="hideDetails ? 'Show details' : 'Hide details'"
 			>
 				<i
 					class="pi"
@@ -41,7 +42,7 @@
 				/>
 			</PrimeButton>
 		</template>
-		<div class="UnitSettings__container" @pointerdown.stop @touchstart.stop>
+		<div class="UnitSettings__container">
 			<div class="UnitSettings__table">
 				<template v-if="hideDetails">
 					<div class="UnitSettings__row">
@@ -171,7 +172,7 @@
 							</FoxSelect>
 						</div>
 						<div class="UnitSettings__row">
-							<span>Positioned from:</span>
+							<span>Sighted from:</span>
 							<SelectOneUnit
 								class="UnitSettings__select"
 								:black-list="{ id: [unit.id] }"
@@ -232,64 +233,7 @@
 								"
 							/>
 						</div>
-						<template v-if="settings.showXYOffsets">
-							<div class="UnitSettings__row">
-								<span>X:</span>
-								<DistanceInput
-									:model-value="Vector.fromAngularVector(unit.vector).x"
-									@update:model-value="
-										artillery.sharedState.produceUpdate(() => {
-											unit.vector = Object.assign(
-												Vector.fromAngularVector(unit.vector),
-												{ x: $event }
-											).angularVector;
-											emit('updated');
-										})
-									"
-								/>
-							</div>
-							<div class="UnitSettings__row">
-								<span>Y:</span>
-								<DistanceInput
-									:model-value="Vector.fromAngularVector(unit.vector).y"
-									@update:model-value="
-										artillery.sharedState.produceUpdate(() => {
-											unit.vector = Object.assign(
-												Vector.fromAngularVector(unit.vector),
-												{ y: $event }
-											).angularVector;
-											emit('updated');
-										})
-									"
-								/>
-							</div>
-						</template>
-						<template v-if="unit.type === UnitType.LandingZone">
-							<div class="UnitSettings__row">
-								<span class="UnitSettings__span">Gun measurement:</span>
-							</div>
-							<div class="UnitSettings__row">
-								<span>Distance:</span>
-								<DistanceInput
-									ref="landingZoneFiringSolutionDistanceInput"
-									:model-value="langingZoneFiringSolution.distance"
-									@update:model-value="
-										langingZoneFiringSolution.distance = $event
-									"
-								/>
-							</div>
-							<div class="UnitSettings__row">
-								<span>Azimuth:</span>
-								<DirectionInput
-									ref="landingZoneFiringSolutionAzimuthInput"
-									:model-value="wrapDegrees(langingZoneFiringSolution.azimuth)"
-									@update:model-value="
-										langingZoneFiringSolution.azimuth = wrapDegrees($event)
-									"
-								/>
-							</div>
-						</template>
-						<template v-else>
+						<template v-if="unit.type !== UnitType.LandingZone">
 							<span class="UnitSettings__span">
 								{{ unitLabel }} -> {{ parentLabel }}
 							</span>
@@ -356,6 +300,63 @@
 								</div>
 							</template>
 						</template>
+					</template>
+					<template v-if="settings.showXYOffsets || !parent">
+						<div class="UnitSettings__row">
+							<span>X:</span>
+							<DistanceInput
+								:model-value="Vector.fromAngularVector(unit.vector).x"
+								@update:model-value="
+									artillery.sharedState.produceUpdate(() => {
+										unit.vector = Object.assign(
+											Vector.fromAngularVector(unit.vector),
+											{ x: $event }
+										).angularVector;
+										emit('updated');
+									})
+								"
+							/>
+						</div>
+						<div class="UnitSettings__row">
+							<span>Y:</span>
+							<DistanceInput
+								:model-value="Vector.fromAngularVector(unit.vector).y"
+								@update:model-value="
+									artillery.sharedState.produceUpdate(() => {
+										unit.vector = Object.assign(
+											Vector.fromAngularVector(unit.vector),
+											{ y: $event }
+										).angularVector;
+										emit('updated');
+									})
+								"
+							/>
+						</div>
+					</template>
+					<template v-if="unit.type === UnitType.LandingZone">
+						<div class="UnitSettings__row">
+							<span class="UnitSettings__span">Gun measurement:</span>
+						</div>
+						<div class="UnitSettings__row">
+							<span>Distance:</span>
+							<DistanceInput
+								ref="landingZoneFiringSolutionDistanceInput"
+								:model-value="langingZoneFiringSolution.distance"
+								@update:model-value="
+									langingZoneFiringSolution.distance = $event
+								"
+							/>
+						</div>
+						<div class="UnitSettings__row">
+							<span>Azimuth:</span>
+							<DirectionInput
+								ref="landingZoneFiringSolutionAzimuthInput"
+								:model-value="wrapDegrees(langingZoneFiringSolution.azimuth)"
+								@update:model-value="
+									langingZoneFiringSolution.azimuth = wrapDegrees($event)
+								"
+							/>
+						</div>
 					</template>
 				</template>
 			</div>
@@ -569,6 +570,7 @@
 
 	const props = defineProps<{
 		readonly?: boolean;
+		disableClose?: boolean;
 	}>();
 
 	const unit = injectUnit();

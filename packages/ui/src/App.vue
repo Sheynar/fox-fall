@@ -23,7 +23,8 @@
 		}"
 		@touchstart.prevent
 		@pointerdown.stop="
-			($event.target as HTMLDivElement).focus();
+			artillery.containerElement.value?.focus();
+			artillery.selectedUnit.value = null;
 			contextMenuPosition = null;
 		"
 		@pointermove="onPointerMove"

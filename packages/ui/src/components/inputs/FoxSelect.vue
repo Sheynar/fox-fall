@@ -28,7 +28,7 @@
 		@keydown.tab="isOpen && close()"
 		@keydown.shift.tab="isOpen && close()"
 	>
-		<span v-if="modelValue != null" class="FoxSelect__label">
+		<span v-if="modelValue != null && props.options.get(modelValue) != null" class="FoxSelect__label">
 			<slot name="label" :value="modelValue">
 				<Component
 					v-if="props.options.get(modelValue)!.icon"
@@ -236,6 +236,7 @@
 		.FoxSelect__option:hover,
 		.FoxSelect__option.FoxSelect__option--focused {
 			@include border.border-gradient-focused();
+			outline: none;
 			--_background: linear-gradient(#{constants.$dark});
 		}
 

@@ -66,10 +66,18 @@
 			<div>zoom: {{ Math.round(artillery.viewport.value.zoom * 100) }}%</div>
 		</div>
 
+		<UnitSettings
+			:unit-id="artillery.selectedUnit.value || undefined"
+			:persist-position-id="`unit-settings`"
+			:is-base-unit="true"
+		/>
+
 		<FiringSolutionOverride
 			v-if="artillery.overridingFiringSolution.value != null"
 			:visible="true"
-			@update:visible="!$event && (artillery.overridingFiringSolution.value = null);"
+			@update:visible="
+				!$event && (artillery.overridingFiringSolution.value = null)
+			"
 			:unit-id-from="artillery.overridingFiringSolution.value?.unitIdFrom"
 			:unit-id-to="artillery.overridingFiringSolution.value?.unitIdTo"
 		/>
@@ -153,6 +161,7 @@
 	import Dock from '@/components/OverlayHud/Dock.vue';
 	import FiringSolution from '@/components/OverlayHud/FiringSolution.vue';
 	import FiringSolutionOverride from '@/components/OverlayHud/FiringSolutionOverride.vue';
+	import UnitSettings from '@/components/OverlayHud/UnitSettings.vue';
 	import WindSettings from '@/components/OverlayHud/WindSettings.vue';
 	import CompassIcon from '@/components/icons/CompassIcon.vue';
 	import DragIcon from '@/components/icons/DragIcon.vue';

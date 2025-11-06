@@ -17,9 +17,9 @@
 			}"
 			@mouseover="isHovered = true"
 			@mouseleave="isHovered = false"
-			@pointerdown="($event) => onPointerDown($event)"
+			@pointerdown.stop="($event) => onPointerDown($event)"
 			@pointermove="($event) => onPointerMove($event)"
-			@pointerup="($event) => onPointerUp($event)"
+			@pointerup.stop="($event) => onPointerUp($event)"
 		>
 			<div class="Unit__border"></div>
 			<div class="Unit__label" v-if="unitLabel">
@@ -52,15 +52,6 @@
 			<Component :is="getUnitIcon(artillery.sharedState.currentState.value.unitMap, unit.id)" class="Unit__icon" />
 		</div>
 	</PositionedElement>
-
-	<UnitSettings
-		v-model:visible="open"
-		@create-child="emit('create-child', $event)"
-		@remove="emit('remove')"
-		@set-unit-source="emit('set-unit-source', $event)"
-		@updated="emit('updated')"
-		@update-wind="emit('update-wind', $event)"
-	/>
 </template>
 
 <style lang="scss">
@@ -144,7 +135,6 @@
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import type ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
 	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
-	import UnitSettings from '@/components/Viewport/Units/UnitSettings.vue';
 	import { injectUnit } from '@/contexts/unit';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
