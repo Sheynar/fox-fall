@@ -6,7 +6,7 @@
 		:class="
 			unit != null ? `UnitSettings__dialog--type-${unit.type}` : undefined
 		"
-		:visible="true"
+		v-model:visible="visible"
 		v-model:pinned="pinned"
 		:default-position-override="
 			props.defaultPositionOverride ?? { top: 50, right: 0, centerY: true }
@@ -479,6 +479,7 @@
 			v-if="artillery.sharedState.currentState.value.unitMap[unitId] != null"
 			:unit-id="unitId"
 			:default-position-override="positionOverride"
+			@update:visible="!$event && separatedUnits.delete(unitId)"
 		/>
 	</template>
 </template>
@@ -625,6 +626,7 @@
 		InstanceType<typeof DirectionInput> | null | undefined
 	>(null);
 
+	const visible = defineModel('visible', { type: Boolean, default: true });
 	const pinned = defineModel('pinned', { type: Boolean });
 	const hideDetails = defineModel('hideDetails', { type: Boolean });
 	const langingZoneFiringSolution = ref(
