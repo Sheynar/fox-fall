@@ -19,6 +19,7 @@
 			App__transparent: isOverlay && settings.transparentOverlay,
 			App__hidden:
 				!artillery.overlayOpen.value && !settings.overlayAlwaysVisible,
+			App__calibrating: artillery.viewportControl.calibrating.value,
 			App__screenshot: artillery.viewportControl.screenShotting.value,
 		}"
 		@touchstart.prevent
@@ -32,30 +33,28 @@
 		@pointerdown="contextMenuPosition = null"
 		tabindex="-1"
 	>
-		<template
-			v-if="
-				!artillery.viewportControl.calibrating.value &&
-				!artillery.viewportControl.screenShotting.value
-			"
-		>
-			<Grid v-if="settings.backdropMode === BackdropMode.Grid" />
+		<Grid v-if="settings.backdropMode === BackdropMode.Grid" />
 
-			<Viewport>
-				<PositionedElement
-					v-if="contextMenuPosition != null"
-					:layer="LAYER.HUD"
-					:x="contextMenuPosition.x"
-					:y="contextMenuPosition.y"
-				>
-					<ContextRadial
-						@submit="($event) => artillery.sharedState.produceUpdate(() => onContextMenuSubmit($event.value))"
-						@cancel="() => (contextMenuPosition = null)"
-					/>
-				</PositionedElement>
-			</Viewport>
+		<Viewport>
+			<PositionedElement
+				v-if="contextMenuPosition != null"
+				:layer="LAYER.HUD"
+				:x="contextMenuPosition.x"
+				:y="contextMenuPosition.y"
+			>
+				<ContextRadial
+					@submit="
+						($event) =>
+							artillery.sharedState.produceUpdate(() =>
+								onContextMenuSubmit($event.value)
+							)
+					"
+					@cancel="() => (contextMenuPosition = null)"
+				/>
+			</PositionedElement>
+		</Viewport>
 
-			<OverlayHud />
-		</template>
+		<OverlayHud />
 
 		<svg>
 			<defs>
@@ -165,6 +164,12 @@
 
 		&.App__screenshot {
 			cursor: none;
+		}
+
+		&.App__calibrating,
+		&.App__screenshot {
+			opacity: 0;
+			pointer-events: none;
 		}
 	}
 	.App__screen-canvas {

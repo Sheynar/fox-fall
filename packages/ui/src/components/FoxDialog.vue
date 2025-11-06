@@ -7,6 +7,8 @@
 			ref="containerElement"
 			class="FoxDialog__container"
 			:class="{
+				FoxDialog__calibrating: artillery.viewportControl.calibrating.value,
+				FoxDialog__screenshot: artillery.viewportControl.screenShotting.value,
 				'FoxDialog__container-rolled-up': rolledUp,
 				'FoxDialog__container-move-mode': moveMode,
 				'FoxDialog__container-moving': moving != null,
@@ -196,12 +198,18 @@
 		}
 
 		z-index: 2;
-		&.FoxDialog__container-rolled-up {
+		&.FoxDialog__container-rolled-up:not(:has(.FoxDialog__body:focus-within)) {
 			z-index: 1;
 		}
 		&:focus,
 		&:focus-within {
 			z-index: 3;
+		}
+
+		&.FoxDialog__container-calibrating,
+		&.FoxDialog__container-screenshot {
+			opacity: 0;
+			pointer-events: none;
 		}
 	}
 
@@ -254,7 +262,7 @@
 		}
 	}
 
-	.FoxDialog__container-rolled-up {
+	.FoxDialog__container-rolled-up:not(:has(.FoxDialog__body:focus-within)) {
 		.FoxDialog__header {
 			border-bottom-width: 0 !important;
 			border-bottom-left-radius: inherit;
@@ -263,7 +271,7 @@
 
 		.FoxDialog__body,
 		.FoxDialog__move-zones {
-			visibility: hidden;
+			opacity: 0;
 			pointer-events: none;
 			height: 0;
 		}
@@ -271,7 +279,7 @@
 
 	.FoxDialog__container-move-mode {
 		.FoxDialog__body {
-			visibility: hidden;
+			opacity: 0;
 			pointer-events: none;
 			height: 0;
 		}
