@@ -2,6 +2,7 @@
 	<FoxDialog
 		class="Settings__dialog"
 		v-model:visible="visible"
+		:default-position-override="{ top: 50, left: 50, centerX: true, centerY: true }"
 		@pointerdown.stop
 		@wheel.stop
 	>
