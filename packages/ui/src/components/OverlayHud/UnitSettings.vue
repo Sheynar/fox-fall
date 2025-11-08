@@ -14,9 +14,6 @@
 		v-model:position-override="positionOverride"
 		:disable-close="props.isBaseUnit"
 		:persist-position-id="props.persistPositionId"
-		:style="{
-			'--ui-scale': settings.unitSettingsScale,
-		}"
 	>
 		<template #header>
 			<span class="UnitSettings__header-content">

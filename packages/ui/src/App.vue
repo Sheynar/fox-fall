@@ -183,7 +183,7 @@
 </style>
 
 <script setup lang="ts">
-	import { ref } from 'vue';
+	import { ref, watch } from 'vue';
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import BitmapDisplay from '@/components/BitmapDisplay.vue';
 	import Grid from '@/components/Grid.vue';
@@ -242,4 +242,8 @@
 
 		contextMenuPosition.value = null;
 	};
+
+	watch(() => settings.value.fontScale, () => {
+		document.documentElement.style.setProperty('--_ui-scale', String(settings.value.fontScale));
+	}, { immediate: true });
 </script>

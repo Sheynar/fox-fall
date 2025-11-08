@@ -153,12 +153,6 @@
 	@use '@/styles/constants' as constants;
 	@use '@/styles/mixins/border' as border;
 
-	@property --ui-scale {
-		syntax: '<number>';
-		initial-value: 1;
-		inherits: false;
-	}
-
 	.FoxDialog__container {
 		position: fixed;
 		inset: auto;
@@ -168,7 +162,7 @@
 		align-items: inherit;
 		overflow: hidden;
 
-		font-size: calc(1em * var(--ui-scale, 1) * 0.6);
+		font-size: calc(0.7em);
 
 		@include border.border-gradient();
 		&:focus,
@@ -205,6 +199,9 @@
 		&:focus-within {
 			z-index: 3;
 		}
+		&.FoxDialog__container-moving {
+			z-index: 4;
+		}
 
 		&.FoxDialog__container-calibrating,
 		&.FoxDialog__container-screenshot {
@@ -231,7 +228,7 @@
 		gap: 0.5em;
 		cursor: grab;
 
-		font-size: 1.5em;
+		font-size: 1.3em;
 		user-select: none;
 	}
 
@@ -291,6 +288,7 @@
 		grid-template-rows: auto;
 		grid-template-columns: auto;
 		align-items: inherit;
+		overflow: auto;
 	}
 
 	.FoxDialog__move-zones {
@@ -382,6 +380,9 @@
 		if (position.value.right != null) {
 			output.right = `clamp(${margin}, ${position.value.right}vw - ${position.value.centerX ? bounds.width.value / 2 : 0}px, 100vw - ${bounds.width.value}px - ${margin})`;
 		}
+
+		output.maxHeight = `calc(100vh - ${margin} * 2)`;
+		output.maxWidth = `calc(100vw - ${margin} * 2)`;
 
 		return output;
 	});

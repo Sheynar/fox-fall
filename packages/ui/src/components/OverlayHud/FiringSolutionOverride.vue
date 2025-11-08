@@ -17,7 +17,6 @@
 		"
 		:style="{
 			minWidth: '30rem',
-			'--ui-scale': settings.unitSettingsScale,
 			animation: 'none',
 			transition: 'none',
 		}"
@@ -81,7 +80,6 @@
 
 <style lang="scss">
 	.FiringSolutionOverride__dialog {
-		font-size: calc(1em * var(--ui-scale) * 0.4);
 		margin-bottom: calc(0.75rem + var(--toggle-button-size)) !important;
 		margin-right: 0.75rem !important;
 

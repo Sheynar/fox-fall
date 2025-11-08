@@ -251,11 +251,11 @@
 							/>
 						</div>
 						<div class="Settings__row">
-							<label>Unit settings scale</label>
+							<label>Font scale</label>
 							<NumberInput
-								:model-value="settings.unitSettingsScale"
+								:model-value="settings.fontScale"
 								@update:model-value="
-									settings.unitSettingsScale = $event;
+									settings.fontScale = $event;
 									saveSettings();
 								"
 								:fraction-digits="2"

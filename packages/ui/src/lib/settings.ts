@@ -36,7 +36,7 @@ export const settings = ref({
 	hidePinnedHeaders: false,
 	toggleButtonScale: 1,
 	unitIconScale: 1,
-	unitSettingsScale: 1,
+	fontScale: 1,
 	gridDashLength: 3,
 	gridDashGap: 0,
 	gridLineWidth: 1,
