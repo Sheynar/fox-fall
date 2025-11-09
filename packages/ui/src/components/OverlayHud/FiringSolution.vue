@@ -38,14 +38,28 @@
 									(artillery.selectedFiringVector.value?.distance ?? 0)),
 					}"
 					:model-value="artillery.selectedFiringVector.value?.distance ?? 0"
-					readonly
+					@update:model-value="
+						artillery.sharedState.produceUpdate(() => {
+							artillery.selectedFiringVector.value = Vector.fromAngularVector({
+								distance: $event,
+								azimuth: artillery.selectedFiringVector.value?.azimuth ?? 0,
+							});
+						})
+					"
 				/>
 			</div>
 			<div class="FiringSolution__information__item">
 				<label>Azimuth:</label>
 				<DirectionInput
 					:model-value="artillery.selectedFiringVector.value?.azimuth ?? 0"
-					readonly
+					@update:model-value="
+						artillery.sharedState.produceUpdate(() => {
+							artillery.selectedFiringVector.value = Vector.fromAngularVector({
+								distance: artillery.selectedFiringVector.value?.distance ?? 0,
+								azimuth: $event,
+							});
+						})
+					"
 				/>
 			</div>
 		</div>
@@ -89,6 +103,7 @@
 	import DistanceInput from '@/components/inputs/DistanceInput.vue';
 	import { artillery } from '@/lib/globals';
 	import { getUnitLabel, getUnitSpecs } from '@/lib/unit';
+	import { Vector } from '@packages/data/dist/artillery/vector';
 
 	const specs = computed(() => {
 		const artilleryId = artillery.selectedFiringPair.value?.artillery;

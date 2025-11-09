@@ -13,7 +13,7 @@ import { Vector } from '@packages/data/dist/artillery/vector';
 import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
 import { settings } from '@/lib/settings';
 import { sharedState } from '@/lib/shared-state';
-import { createUnit, getUnitResolvedVector, getUnitSpecs } from '@/lib/unit';
+import { createUnit, getUnitResolvedVector, getUnitSpecs, setUnitResolvedVector } from '@/lib/unit';
 import { Viewport } from '@/lib/viewport';
 import { usePrimaryUnitsByType } from './focused-units';
 import { useViewportControl } from './viewport-control';
@@ -394,12 +394,21 @@ export const useArtillery = (options: ArtilleryOptions = {}) => {
 		};
 	});
 
-	const selectedFiringVector = computed(() => {
-		if (selectedFiringPair.value == null) return undefined;
-		return getFiringVector(
-			selectedFiringPair.value.artillery,
-			selectedFiringPair.value.target
-		);
+	const selectedFiringVector = computed({
+		get() {
+			if (selectedFiringPair.value == null) return undefined;
+			return getFiringVector(
+				selectedFiringPair.value.artillery,
+				selectedFiringPair.value.target
+			);
+		},
+		set(value: Vector) {
+			if (selectedFiringPair.value == null) return;
+			const artilleryPosition = getUnitResolvedVector(sharedState.currentState.value.unitMap, selectedFiringPair.value.artillery);
+			const windOffset = getWindOffset(selectedFiringPair.value.artillery);
+			setUnitResolvedVector(sharedState.currentState.value.unitMap, selectedFiringPair.value.target, artilleryPosition.addVector(value).addVector(windOffset));
+			options.onUnitUpdated?.(selectedFiringPair.value.target);
+		},
 	});
 
 	const overrideFiringSolution = async () => {
