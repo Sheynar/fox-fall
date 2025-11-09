@@ -12,7 +12,7 @@
 			props.defaultPositionOverride ?? { top: 50, right: 0, centerY: true }
 		"
 		v-model:position-override="positionOverride"
-		:disable-close="props.isBaseUnit"
+		:disable-close="props.isBaseUnit && !props.unitId"
 		:persist-position-id="props.persistPositionId"
 	>
 		<template #header>

@@ -69,6 +69,8 @@
 		<UnitSettings
 			:unit-id="artillery.selectedUnit.value || undefined"
 			:persist-position-id="`unit-settings`"
+			:visible="true"
+			@update:visible="!$event && (artillery.selectedUnit.value = null)"
 			:is-base-unit="true"
 		/>
 
