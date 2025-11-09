@@ -21,6 +21,7 @@
 			@wheel.stop
 			@pointerup.stop.prevent="onPointerUp"
 			@pointermove="onPointerMove"
+			@keydown.stop="onKeyDown"
 			tabindex="-1"
 		>
 			<h1
@@ -405,11 +406,18 @@
 	};
 	const moving = ref<null | MovingData>(null);
 
-	useEventListener('keydown', (event) => {
-		if (event.key === 'Escape' && !pinned.value && !props.disableClose) {
-			visible.value = false;
+	const onKeyDown = (event: KeyboardEvent) => {
+		if (event.key === 'Escape') {
+			if (!pinned.value && !props.disableClose) {
+				visible.value = false;
+			} else {
+				(containerElement.value!.querySelector(':focus') as HTMLElement)?.blur();
+				artillery.checkWindowFocus();
+			}
 		}
-	});
+	};
+
+	useEventListener('keydown', onKeyDown);
 
 	const onPointerDown = (event: PointerEvent, snapPosition: SnapPosition) => {
 		event.stopPropagation();
