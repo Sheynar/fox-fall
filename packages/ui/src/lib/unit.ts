@@ -60,7 +60,7 @@ export const getUnitResolvedVector = (
 	const unit = unitMap[unitId];
 
 	if (unit == null) {
-		return Vector.fromCartesianVector({ x: 0, y: 0 });
+		return Vector.zero();
 	}
 
 	if (unit.parentId != null)
@@ -68,7 +68,7 @@ export const getUnitResolvedVector = (
 			getUnitResolvedVector(unitMap, unit.parentId)
 		);
 
-	return Vector.fromAngularVector(unit.vector).addVector(Vector.zero());
+	return Vector.fromAngularVector(unit.vector);
 };
 
 export const getUnitDefaultLabel = (
@@ -152,11 +152,7 @@ export const setUnitResolvedVector = (
 	const currentVector = getUnitResolvedVector(unitMap, unitId);
 	const newVector = currentVector.getRelativeOffset(newPosition);
 
-	if (unit.parentId != null) {
-		unit.vector = Vector.fromAngularVector(unit.vector).addVector(
-			newVector
-		).angularVector;
-	} else {
-		unit.vector = newVector.angularVector;
-	}
+	unit.vector = Vector.fromAngularVector(unit.vector).addVector(
+		newVector
+	).angularVector;
 };
