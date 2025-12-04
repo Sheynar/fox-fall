@@ -98,38 +98,45 @@ export const calibrateGrid = async (viewport: Viewport) => {
 		event.preventDefault();
 		event.stopPropagation();
 
-		viewport.withSmoothing(() => {
-			viewport.resetRotation();
+		if (draggingData.endPosition.addVector(draggingData.startPosition.scale(-1)).distance > 10) {
 
-			const offset = viewport
-				.toWorldOffset(draggingData!.endPosition)
-				.addVector(
-					viewport.toWorldOffset(draggingData!.startPosition).scale(-1)
+			viewport.withSmoothing(() => {
+				viewport.resetRotation();
+
+				const offset = viewport
+					.toWorldOffset(draggingData!.endPosition)
+					.addVector(
+						viewport.toWorldOffset(draggingData!.startPosition).scale(-1)
+					);
+				viewport.zoomTo(
+					(viewport.zoom * (Math.abs(offset.x) + Math.abs(offset.y))) / 250
 				);
-			viewport.zoomTo(
-				(viewport.zoom * (Math.abs(offset.x) + Math.abs(offset.y))) / 250
-			);
 
-			const midpoint = viewport
-				.toWorldPosition(
-					draggingData!.endPosition.addVector(viewport.viewportSize.scale(-0.5))
-				)
-				.addVector(
-					viewport.toWorldPosition(
-						draggingData!.startPosition.addVector(
-							viewport.viewportSize.scale(-0.5)
+				const midpoint = viewport
+					.toWorldPosition(
+						draggingData!.endPosition.addVector(viewport.viewportSize.scale(-0.5))
+					)
+					.addVector(
+						viewport.toWorldPosition(
+							draggingData!.startPosition.addVector(
+								viewport.viewportSize.scale(-0.5)
+							)
 						)
 					)
-				)
-				.scale(0.5);
+					.scale(0.5);
 
-			viewport.panBy(
-				Vector.fromCartesianVector({
-					x: Math.round(midpoint.x / 125) * 125 - midpoint.x,
-					y: Math.round(midpoint.y / 125) * 125 - midpoint.y,
-				})
-			);
-		});
+				viewport.panBy(
+					Vector.fromCartesianVector({
+						x: Math.round(midpoint.x / 125) * 125 - midpoint.x,
+						y: Math.round(midpoint.y / 125) * 125 - midpoint.y,
+					})
+				);
+			});
+		} else {
+			new Notification('FoxFall error', {
+				body: 'Grid size too small',
+			});
+		}
 
 		draggingData.indicator.remove();
 		draggingData = null;
