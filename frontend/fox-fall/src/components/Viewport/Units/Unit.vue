@@ -133,8 +133,8 @@
 	import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 	import { UnitType } from '@packages/data/dist/artillery/unit';
 	import { Vector } from '@packages/data/dist/artillery/vector';
-	import type ArtilleryIcon from '@/components/icons/ArtilleryIcon.vue';
-	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
+	import type ArtilleryIcon from '@packages/frontend-libs/dist/icons/ArtilleryIcon.vue';
+	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { injectUnit } from '@/contexts/unit';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';

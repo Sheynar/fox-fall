@@ -17,8 +17,8 @@
 		ARTILLERY_BY_SHELL,
 		Platform,
 	} from '@packages/data/dist/artillery/unit/constants';
-	import FoxSelect from './FoxSelect.vue';
-	import { ICONS } from '@/lib/constants/icons';
+	import FoxSelect from '@packages/frontend-libs/dist/inputs/FoxSelect.vue';
+	import { ICONS } from '@packages/frontend-libs/dist/icons';
 	import { computed, markRaw, shallowRef } from 'vue';
 
 	const selectElement = shallowRef<InstanceType<typeof FoxSelect>>(null!);

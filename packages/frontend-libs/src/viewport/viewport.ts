@@ -1,9 +1,9 @@
-import { computed } from 'vue';
+import { computed, inject, provide, Ref } from 'vue';
 import KAnim from '@kaosdlanor/kanim';
 import { useWindowSize } from '@vueuse/core';
 import { toRadians, wrapDegrees } from '@packages/data/dist/artillery/angle';
 import { Vector } from '@packages/data/dist/artillery/vector';
-import { runGlobal } from '@/lib/globalScope';
+import { runGlobal } from '@/scope';
 
 const { distanceScale, viewportSize } = runGlobal(() => {
 	const { height, width } = useWindowSize();
@@ -165,3 +165,16 @@ export class Viewport {
 }
 
 export { distanceScale };
+
+const viewportSymbol = Symbol('viewport');
+export const injectViewport = () => {
+	const viewport = inject<Ref<Viewport>>(viewportSymbol);
+	if (viewport == null) {
+		throw new Error('No viewport provided');
+	}
+	return viewport;
+};
+
+export const provideViewport = (viewport: Ref<Viewport>) => {
+	provide(viewportSymbol, viewport);
+};

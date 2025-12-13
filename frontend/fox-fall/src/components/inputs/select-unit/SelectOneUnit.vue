@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 	import { shallowRef } from 'vue';
-	import FoxSelect from '@/components/inputs/FoxSelect.vue';
+	import FoxSelect from '@packages/frontend-libs/dist/inputs/FoxSelect.vue';
 	import {
 		useSelectUnitOptions,
 		type Options as SelectUnitOptions,

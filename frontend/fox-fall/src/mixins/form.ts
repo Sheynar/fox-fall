@@ -1,9 +1,9 @@
+import type DirectionInput from '@packages/frontend-libs/dist/inputs/DirectionInput/DirectionInput.vue';
+import type DistanceInput from '@packages/frontend-libs/dist/inputs/DistanceInput.vue';
+import type FoxSelect from '@packages/frontend-libs/dist/inputs/FoxSelect.vue';
+import type FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
+import type NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 import type AmmoSelect from '@/components/inputs/AmmoSelect.vue';
-import type DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
-import type DistanceInput from '@/components/inputs/DistanceInput.vue';
-import type FoxSelect from '@/components/inputs/FoxSelect.vue';
-import type FoxText from '@/components/inputs/FoxText.vue';
-import type NumberInput from '@/components/inputs/NumberInput.vue';
 import type PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 import type SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
 import { computed, type ShallowRef } from 'vue';

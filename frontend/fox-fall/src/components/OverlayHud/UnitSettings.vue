@@ -487,8 +487,8 @@
 </template>
 
 <style lang="scss">
-	@use '@/styles/constants' as constants;
-	@use '@/styles/mixins/border' as border;
+	@use '@packages/frontend-libs/src/styles/constants' as constants;
+	@use '@packages/frontend-libs/src/styles/mixins/border' as border;
 
 	.UnitSettings__dialog {
 		display: grid;
@@ -592,20 +592,20 @@
 	} from '@packages/data/dist/artillery/unit/constants';
 	import { UnitType } from '@packages/data/dist/artillery/unit';
 	import { Vector } from '@packages/data/dist/artillery/vector';
-	import FoxDialog, { type PositionOverride } from '@/components/FoxDialog.vue';
-	import DragIcon from '@/components/icons/DragIcon.vue';
-	import PinIcon from '@/components/icons/PinIcon.vue';
-	import PinOutlineIcon from '@/components/icons/PinOutlineIcon.vue';
-	import TrashIcon from '@/components/icons/TrashIcon.vue';
-	import WindIcon from '@/components/icons/WindIcon.vue';
+	import FoxDialog, { type PositionOverride } from '@packages/frontend-libs/dist/FoxDialog.vue';
+	import DragIcon from '@packages/frontend-libs/dist/icons/DragIcon.vue';
+	import PinIcon from '@packages/frontend-libs/dist/icons/PinIcon.vue';
+	import PinOutlineIcon from '@packages/frontend-libs/dist/icons/PinOutlineIcon.vue';
+	import TrashIcon from '@packages/frontend-libs/dist/icons/TrashIcon.vue';
+	import WindIcon from '@packages/frontend-libs/dist/icons/WindIcon.vue';
+	import DirectionInput from '@packages/frontend-libs/dist/inputs/DirectionInput/DirectionInput.vue';
+	import DistanceInput from '@packages/frontend-libs/dist/inputs/DistanceInput.vue';
+	import FoxSelect from '@packages/frontend-libs/dist/inputs/FoxSelect.vue';
+	import FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
+	import { ICONS } from '@packages/frontend-libs/dist/icons';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
-	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
-	import DistanceInput from '@/components/inputs/DistanceInput.vue';
-	import FoxSelect from '@/components/inputs/FoxSelect.vue';
-	import FoxText from '@/components/inputs/FoxText.vue';
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
-	import { ICONS } from '@/lib/constants/icons';
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings, UserMode } from '@/lib/settings';

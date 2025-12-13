@@ -22,7 +22,6 @@
 		>
 			<h1
 				class="FoxDialog__header"
-				v-if="!settings.hidePinnedHeaders || artillery.overlayOpen.value"
 				@pointerdown="(event) => onPointerDown(event, { x: -1, y: -1 })"
 			>
 				<slot name="header" />
@@ -147,8 +146,8 @@
 </template>
 
 <style lang="scss">
-	@use '@/styles/constants' as constants;
-	@use '@/styles/mixins/border' as border;
+	@use "@/styles/constants" as constants;
+	@use "@/styles/mixins/border" as border;
 
 	.FoxDialog__container {
 		position: fixed;
@@ -181,7 +180,7 @@
 				pointer-events: none;
 			}
 			&::after {
-				content: '';
+				content: "";
 				position: fixed;
 				inset: 0;
 				z-index: 1;
@@ -316,12 +315,11 @@
 		useFocus,
 		useFocusWithin,
 		useWindowSize,
-	} from '@vueuse/core';
-	import PrimeButton from 'primevue/button';
-	import { computed, CSSProperties, ref, shallowRef, watch } from 'vue';
-	import AnchorIcon from '@/components/icons/AnchorIcon.vue';
-	import { artillery } from '@/lib/globals';
-	import { settings } from '@/lib/settings';
+	} from "@vueuse/core";
+	import PrimeButton from "primevue/button";
+	import { computed, CSSProperties, ref, shallowRef, watch } from "vue";
+	import { uiDisabled } from "@/globals/ui-disabled";
+	import AnchorIcon from "@/icons/AnchorIcon.vue";
 
 	export type PositionOverride = {
 		top?: number;
@@ -341,17 +339,21 @@
 		disableMove?: boolean;
 	}>();
 
+	const emit = defineEmits<{
+		(event: "dialog-blur"): void;
+	}>();
+
 	const containerElement = shallowRef<HTMLDivElement>(null!);
-	const visible = defineModel('visible', { type: Boolean, required: true });
-	const pinned = defineModel('pinned', { type: Boolean });
-	const moveMode = defineModel('moveMode', { type: Boolean });
-	const rolledUp = defineModel('rolledUp', { type: Boolean });
+	const visible = defineModel("visible", { type: Boolean, required: true });
+	const pinned = defineModel("pinned", { type: Boolean });
+	const moveMode = defineModel("moveMode", { type: Boolean });
+	const rolledUp = defineModel("rolledUp", { type: Boolean });
 
 	const bounds = useElementBounding(containerElement);
 	const windowSize = useWindowSize();
 
 	const positionOverride = defineModel<PositionOverride | undefined>(
-		'positionOverride'
+		"positionOverride"
 	);
 
 	const { focused: hasFocusWithin } = useFocusWithin(containerElement);
@@ -374,16 +376,12 @@
 	});
 
 	const resolvedVisibility = computed(() => {
-		if (
-			artillery.viewportControl.calibrating.value ||
-			artillery.viewportControl.screenShotting.value
-		)
-			return false;
+		if (uiDisabled.value) return false;
 		return (
 			pinned.value ||
 			moving.value != null ||
 			focusedRecently.value ||
-			(artillery.overlayOpen.value && visible.value)
+			visible.value
 		);
 	});
 
@@ -396,7 +394,7 @@
 
 		const output: CSSProperties = {};
 
-		const margin = '0.5em';
+		const margin = "0.5em";
 		if (position.value.top != null) {
 			output.top = `clamp(${margin}, ${position.value.top}vh - ${position.value.centerY ? bounds.height.value / 2 : 0}px, 100vh - ${bounds.height.value}px - ${margin})`;
 		}
@@ -438,19 +436,19 @@
 	const moving = ref<null | MovingData>(null);
 
 	const onKeyDown = (event: KeyboardEvent) => {
-		if (event.key === 'Escape') {
+		if (event.key === "Escape") {
 			if (!pinned.value && !props.disableClose) {
 				visible.value = false;
 			} else {
 				(
-					containerElement.value!.querySelector(':focus') as HTMLElement
+					containerElement.value!.querySelector(":focus") as HTMLElement
 				)?.blur();
-				artillery.checkWindowFocus();
+				emit("dialog-blur");
 			}
 		}
 	};
 
-	useEventListener('keydown', onKeyDown);
+	useEventListener("keydown", onKeyDown);
 
 	const onPointerDown = (event: PointerEvent, snapPosition: SnapPosition) => {
 		event.stopPropagation();
@@ -504,7 +502,7 @@
 			centerY: undefined,
 		};
 		if (moving.value.snapPosition.y === -1) {
-			const marginTop = Number(computedStyle.marginTop.replace('px', '')) || 0;
+			const marginTop = Number(computedStyle.marginTop.replace("px", "")) || 0;
 
 			newPositionOverride.top =
 				(event.clientY * 100) / windowSize.height.value -
@@ -513,7 +511,7 @@
 				(marginTop * 100) / windowSize.height.value;
 		}
 		if (moving.value.snapPosition.y === 0) {
-			const marginTop = Number(computedStyle.marginTop.replace('px', '')) || 0;
+			const marginTop = Number(computedStyle.marginTop.replace("px", "")) || 0;
 
 			newPositionOverride.top =
 				(event.clientY * 100) / windowSize.height.value -
@@ -525,7 +523,7 @@
 		}
 		if (moving.value.snapPosition.y === 1) {
 			const marginBottom =
-				Number(computedStyle.marginBottom.replace('px', '')) || 0;
+				Number(computedStyle.marginBottom.replace("px", "")) || 0;
 
 			newPositionOverride.bottom =
 				(moving.value.startEvent.clientY * 100) / windowSize.height.value -
@@ -536,7 +534,7 @@
 
 		if (moving.value.snapPosition.x === -1) {
 			const marginLeft =
-				Number(computedStyle.marginLeft.replace('px', '')) || 0;
+				Number(computedStyle.marginLeft.replace("px", "")) || 0;
 
 			newPositionOverride.left =
 				(event.clientX * 100) / windowSize.width.value -
@@ -546,7 +544,7 @@
 		}
 		if (moving.value.snapPosition.x === 0) {
 			const marginLeft =
-				Number(computedStyle.marginLeft.replace('px', '')) || 0;
+				Number(computedStyle.marginLeft.replace("px", "")) || 0;
 
 			newPositionOverride.left =
 				(event.clientX * 100) / windowSize.width.value -
@@ -558,7 +556,7 @@
 		}
 		if (moving.value.snapPosition.x === 1) {
 			const marginRight =
-				Number(computedStyle.marginRight.replace('px', '')) || 0;
+				Number(computedStyle.marginRight.replace("px", "")) || 0;
 
 			newPositionOverride.right =
 				(moving.value.startEvent.clientX * 100) / windowSize.width.value -
@@ -613,7 +611,7 @@
 
 	watch(focusedRecently, (value) => {
 		if (!value) {
-			artillery.checkWindowFocus();
+			emit("dialog-blur");
 		}
 	});
 </script>

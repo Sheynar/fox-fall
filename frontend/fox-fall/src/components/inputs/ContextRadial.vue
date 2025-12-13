@@ -18,11 +18,11 @@
 	import RadialMenu, {
 		type Option,
 		type Options,
-	} from '@/components/inputs/RadialMenu.vue';
-	import { ICONS } from '@/lib/constants/icons';
+	} from '@packages/frontend-libs/dist/inputs/RadialMenu.vue';
+	import { ICONS } from '@packages/frontend-libs/dist/icons';
 	import { UNIT_ICON_BY_TYPE } from '@/lib/constants/unit';
-	import { getAvailableUnitTypes, getUnitIcon, getUnitLabel } from '@/lib/unit';
 	import { artillery } from '@/lib/globals';
+	import { getAvailableUnitTypes, getUnitIcon, getUnitLabel } from '@/lib/unit';
 
 	export type Payload = Pick<
 		Unit,

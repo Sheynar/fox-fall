@@ -9,7 +9,7 @@
 		@focusout.native="compassOpen = false"
 		:inputAttributes="{ size: 3 }"
 	>
-		<template #icons-after v-if="artillery.overlayOpen.value">
+		<template #icons-after>
 			<i class="pi pi-compass" style="pointer-events: auto; cursor: pointer;" @pointerdown.stop.prevent="inputElement?.focus(); compassOpen = !compassOpen" />
 		</template>
 	</NumberInput>
@@ -55,16 +55,14 @@
 
 <script setup lang="ts">
 	import { useElementBounding, useWindowSize } from '@vueuse/core';
-	import NumberInput from '../NumberInput.vue';
 	import {
 		StyleValue,
 		computed,
-		defineModel,
 		ref,
 		shallowRef,
 		watch,
 	} from 'vue';
-	import { artillery } from '@/lib/globals';
+	import NumberInput from '@/inputs/NumberInput.vue';
 	import DirectionAlternateInput from './DirectionAlternateInput.vue';
 
 	const numberInput = shallowRef<InstanceType<typeof NumberInput>>(null!);

@@ -6,10 +6,10 @@
 			'--viewport-y': screenPosition.y,
 			'--offset-x': screenOffset.x,
 			'--offset-y': screenOffset.y,
-			'--viewport-deg': artillery.viewport.value.rotation,
-			'--viewport-zoom': artillery.viewport.value.resolvedZoom,
-			'--grid-size': gridSize * artillery.viewport.value.resolvedZoom,
-			'z-index': LAYER.BACKDROP,
+			'--viewport-deg': viewport.rotation,
+			'--viewport-zoom': viewport.resolvedZoom,
+			'--grid-size': gridSize * viewport.resolvedZoom,
+			'z-index': props.layer,
 		}"
 		version="1.1"
 		xmlns="http://www.w3.org/2000/svg"
@@ -17,9 +17,9 @@
 		:viewBox="`0 0 ${gridSize} ${gridSize}`"
 		xml:space="preserve"
 		:stroke-width="
-			settings.gridLineWidth / artillery.viewport.value.resolvedZoom
+			props.gridLineWidth / viewport.resolvedZoom
 		"
-		:stroke-dasharray="`${settings.gridDashLength / artillery.viewport.value.resolvedZoom} ${settings.gridDashGap / artillery.viewport.value.resolvedZoom}`"
+		:stroke-dasharray="`${props.gridDashLength / viewport.resolvedZoom} ${props.gridDashGap / viewport.resolvedZoom}`"
 	>
 		<g class="Grid__vertical__container">
 			<line
@@ -74,17 +74,29 @@
 <script setup lang="ts">
 	import { computed } from 'vue';
 	import { Vector } from '@packages/data/dist/artillery/vector';
-	import { LAYER } from '@/lib/constants/ui';
-	import { artillery } from '@/lib/globals';
-	import { settings } from '@/lib/settings';
+	import { injectViewport } from './viewport/viewport';
+
+	const props = withDefaults(defineProps<{
+		layer: number;
+		gridLineWidth: number;
+		gridDashLength: number;
+		gridDashGap: number;
+	}>(), {
+		layer: 0,
+		gridLineWidth: 1,
+		gridDashLength: 10,
+		gridDashGap: 0,
+	});
+
+	const viewport = injectViewport();
 
 	const cellCount = computed(() => {
 		const hypot = Math.sqrt(
-			artillery.viewport.value.viewportSize.x ** 2 +
-				artillery.viewport.value.viewportSize.y ** 2
+			viewport.value.viewportSize.x ** 2 +
+				viewport.value.viewportSize.y ** 2
 		);
 		let minCells =
-			Math.ceil(hypot / (artillery.viewport.value.resolvedZoom * CELL_SIZE)) +
+			Math.ceil(hypot / (viewport.value.resolvedZoom * CELL_SIZE)) +
 			2;
 		if (minCells % 2 === 0) minCells += 1;
 		return minCells;
@@ -93,7 +105,7 @@
 	const gridSize = computed(() => cellCount.value * CELL_SIZE);
 
 	const screenPosition = computed(() => {
-		return artillery.viewport.value.toScreenPosition(
+		return viewport.value.toScreenPosition(
 			Vector.fromCartesianVector({
 				x: -gridSize.value / 2,
 				y: -gridSize.value / 2,
@@ -103,13 +115,13 @@
 
 	const screenOffset = computed(() => {
 		const position = computed(() =>
-			artillery.viewport.value
-				.toWorldOffset(artillery.viewport.value.position)
+			viewport.value
+				.toWorldOffset(viewport.value.position)
 				.scale(-1)
 		);
 		const CELL_VIEWPORT_SIZE = CELL_SIZE;
 
-		return artillery.viewport.value.toScreenOffset(
+		return viewport.value.toScreenOffset(
 			Vector.fromCartesianVector({
 				x:
 					Math.floor(position.value.x / CELL_VIEWPORT_SIZE) *

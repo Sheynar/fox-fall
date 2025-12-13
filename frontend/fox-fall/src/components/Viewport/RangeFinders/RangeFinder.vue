@@ -51,8 +51,8 @@
 
 <script setup lang="ts">
 	import { Vector } from '@packages/data/dist/artillery/vector';
-	import Disk from '@/components/svg/Disk.vue';
-	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
+	import Disk from '@packages/frontend-libs/dist/svg/Disk.vue';
+	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { LAYER } from '@/lib/constants/ui';
 	import { artillery } from '@/lib/globals';
 	import { RangeFinderStyle } from './enums';

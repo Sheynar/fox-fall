@@ -12,7 +12,7 @@ import { Vector } from '@packages/data/dist/artillery/vector';
 import { generateId } from '@packages/data/dist/id';
 import { natoAlphabet } from '@/lib/names';
 import { settings, UserMode } from '@/lib/settings';
-import { ICONS } from './constants/icons';
+import { ICONS } from '@packages/frontend-libs/dist/icons';
 import { UNIT_ICON_BY_TYPE } from './constants/unit';
 
 export const getAvailableUnitTypes = (): UnitType[] => {

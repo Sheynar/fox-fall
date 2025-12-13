@@ -57,7 +57,7 @@
 </style>
 
 <script setup lang="ts">
-	import ShellIcon from '@/components/icons/artillery/shell/300mm.vue';
+	import ShellIcon from '@packages/frontend-libs/dist/icons/artillery/shell/300mm.vue';
 	import { isOverlay } from '@/lib/constants';
 	import { settings } from '@/lib/settings';
 	import { useToggleButtonStore } from '@/stores/toggle-button';

@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 	import { ref } from 'vue';
-	import WindIcon from '@/components/icons/WindIcon.vue';
+	import WindIcon from '@packages/frontend-libs/dist/icons/WindIcon.vue';
 	import { artillery } from '@/lib/globals';
 
 	const open = ref(false);

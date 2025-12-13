@@ -1,5 +1,5 @@
 import { Vector } from '@packages/data/dist/artillery/vector';
-import { Viewport } from './viewport';
+import { Viewport } from '@packages/frontend-libs/dist/viewport/viewport';
 
 export const calibrateGrid = async (viewport: Viewport) => {
 	const calibrationPane = document.createElement('div');

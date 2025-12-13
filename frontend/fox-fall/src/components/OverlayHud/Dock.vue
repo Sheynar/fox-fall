@@ -57,7 +57,7 @@
 </style>
 
 <script setup lang="ts">
-	import GridIcon from '@/components/icons/GridIcon.vue';
+	import GridIcon from '@packages/frontend-libs/dist/icons/GridIcon.vue';
 	import Settings from '@/components/OverlayHud/Settings.vue';
 	import SyncSettings from '@/components/OverlayHud/SyncSettings.vue';
 	import {

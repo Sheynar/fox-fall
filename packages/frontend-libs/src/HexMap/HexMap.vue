@@ -1,42 +1,39 @@
 <template>
-	<PositionedElement :layer="LAYER.BACKDROP" :x="0" :y="0">
-		<div
-			class="HexMap__outer"
-			:style="{
-				'--hex-size': `${artillery.viewport.value.resolvedZoom * 2197}px`,
-				'--viewport-rotation': `${artillery.viewport.value.rotation}deg`,
-				opacity: settings.screenshotOpacity,
-			}"
-		>
-			<div class="HexMap__container">
+	<div
+		class="HexMap__outer"
+		:style="{
+			'--hex-size': `${viewport.resolvedZoom * 2197}px`,
+			'--viewport-rotation': `${viewport.rotation}deg`,
+		}"
+	>
+		<div class="HexMap__container">
+			<div
+				class="HexMap__row"
+				:class="{
+					'HexMap__row--even': y % 2 === 0,
+					'HexMap__row--odd': y % 2 !== 0,
+				}"
+				v-for="(row, y) in HEX_POSITIONS"
+				:key="y"
+			>
 				<div
-					class="HexMap__row"
-					:class="{
-						'HexMap__row--even': y % 2 === 0,
-						'HexMap__row--odd': y % 2 !== 0,
-					}"
-					v-for="(row, y) in HEX_POSITIONS"
-					:key="y"
+					class="HexMap__hex"
+					:class="{ 'HexMap__hex--blank': !hex }"
+					v-for="(hex, x) in row"
+					:key="x"
 				>
+					<img class="HexMap__hex-image" v-if="hex" :src="HEX_ASSETS[hex]" />
 					<div
-						class="HexMap__hex"
-						:class="{ 'HexMap__hex--blank': !hex }"
-						v-for="(hex, x) in row"
-						:key="x"
+						class="HexMap__hex-label"
+						v-show="viewport.resolvedZoom <= 0.1"
 					>
-						<img class="HexMap__hex-image" v-if="hex" :src="HEX_ASSETS[hex]" />
-						<div
-							class="HexMap__hex-label"
-							v-show="artillery.viewport.value.zoom <= 0.1"
-						>
-							{{ hex }}
-						</div>
+						{{ hex }}
 					</div>
 				</div>
-				<div class="HexMap__row"></div>
 			</div>
+			<div class="HexMap__row"></div>
 		</div>
-	</PositionedElement>
+	</div>
 </template>
 
 <style lang="scss">
@@ -105,13 +102,18 @@
 </style>
 
 <script setup lang="ts">
-	import { computed } from 'vue';
-	import { HEX_MAPS } from '@/assets/images/hex-maps';
-	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
-	import { HEX_POSITIONS } from '@/lib/constants/hexMap';
-	import { LAYER } from '@/lib/constants/ui';
-	import { artillery } from '@/lib/globals';
-	import { MapSource, settings } from '@/lib/settings';
+	import { computed } from "vue";
+	import { HEX_MAPS, MapSource } from "@/assets/images/hex-maps";
+	import { HEX_POSITIONS } from "@/hexMap";
+	import { injectViewport } from '@/viewport/viewport';
 
-	const HEX_ASSETS = computed(() => HEX_MAPS[settings.value.mapSource] ?? HEX_MAPS[MapSource.Vanilla]);
+	const viewport = injectViewport();
+
+	const props = defineProps<{
+			mapSource?: MapSource;
+		}>();
+
+	const HEX_ASSETS = computed(
+		() => props.mapSource && HEX_MAPS[props.mapSource] || HEX_MAPS[MapSource.Vanilla]
+	);
 </script>

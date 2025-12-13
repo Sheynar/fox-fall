@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { runGlobal } from '@/lib/globalScope';
+import { runGlobal } from '@packages/frontend-libs/dist/scope';
 import { useArtillery } from '@/mixins/artillery';
 import { useServerConnection } from '@/mixins/server-connection';
 import { useSyncedRoom } from '@/mixins/synced-room';

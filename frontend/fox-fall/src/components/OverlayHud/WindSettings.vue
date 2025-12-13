@@ -101,10 +101,10 @@
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
 	import { computed, shallowRef } from 'vue';
-	import FoxDialog from '@/components/FoxDialog.vue';
-	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
-	import DistanceInput from '@/components/inputs/DistanceInput.vue';
-	import NumberInput from '@/components/inputs/NumberInput.vue';
+	import FoxDialog from '@packages/frontend-libs/dist/FoxDialog.vue';
+	import DirectionInput from '@packages/frontend-libs/dist/inputs/DirectionInput/DirectionInput.vue';
+	import DistanceInput from '@packages/frontend-libs/dist/inputs/DistanceInput.vue';
+	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitSpecs } from '@/lib/unit';

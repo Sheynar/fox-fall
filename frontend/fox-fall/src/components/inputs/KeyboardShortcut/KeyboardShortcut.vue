@@ -11,7 +11,7 @@
 
 <script lang="ts" setup>
 	import { keyDefinitionByCode } from '@packages/data/dist/keyboard-config';
-	import FoxText from '@/components/inputs/FoxText.vue';
+	import FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
 	import { computed, ref } from 'vue';
 
 	const emit = defineEmits<{

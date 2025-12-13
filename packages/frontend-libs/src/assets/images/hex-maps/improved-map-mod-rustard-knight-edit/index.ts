@@ -1,4 +1,4 @@
-import { Hex } from '@/lib/constants/hexMap';
+import { Hex } from '@/hexMap';
 import BasinSionnachMap from './MapBasinSionnachHex.png';
 import SpeakingWoodsMap from './MapSpeakingWoodsHex.png';
 import HowlCountyMap from './MapHowlCountyHex.png';

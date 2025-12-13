@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { MapSource } from '@packages/frontend-libs/dist/assets/images/hex-maps';
 import { isOverlay } from './constants';
 
 export enum UserMode {
@@ -10,12 +11,6 @@ export enum BackdropMode {
 	None = 'none',
 	Map = 'map',
 	Grid = 'overlay',
-}
-
-export enum MapSource {
-	Vanilla = 'vanilla',
-	ImprovedMapModRustardKnightEdit = 'improved-map-mod-rustard-knight-edit',
-	ImprovedMapModRustardKnightEditHd = "improved-map-mod-rustard-knight-edit-hd"
 }
 
 export const settings = ref({

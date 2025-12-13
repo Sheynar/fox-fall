@@ -53,9 +53,9 @@
 
 <script setup lang="ts">
 	import { computed } from 'vue';
+	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { artillery } from '@/lib/globals';
 	import { getUnitResolvedVector } from '@/lib/unit';
-	import PositionedElement from './PositionedElement.vue';
 	import { LAYER } from '@/lib/constants/ui';
 
 	const props = defineProps<{

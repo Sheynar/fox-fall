@@ -98,9 +98,9 @@
 
 <script setup lang="ts">
 	import { computed } from 'vue';
-	import FoxDialog from '@/components/FoxDialog.vue';
-	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
-	import DistanceInput from '@/components/inputs/DistanceInput.vue';
+	import FoxDialog from '@packages/frontend-libs/dist/FoxDialog.vue';
+	import DirectionInput from '@packages/frontend-libs/dist/inputs/DirectionInput/DirectionInput.vue';
+	import DistanceInput from '@packages/frontend-libs/dist/inputs/DistanceInput.vue';
 	import { artillery } from '@/lib/globals';
 	import { getUnitLabel, getUnitSpecs } from '@/lib/unit';
 	import { Vector } from '@packages/data/dist/artillery/vector';

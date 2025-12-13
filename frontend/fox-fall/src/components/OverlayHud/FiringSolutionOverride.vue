@@ -170,8 +170,8 @@
 	import { computed, ref, shallowRef, watch } from 'vue';
 	import { wrapDegrees } from '@packages/data/dist/artillery/angle';
 	import { Vector } from '@packages/data/dist/artillery/vector';
-	import DirectionInput from '@/components/inputs/DirectionInput/DirectionInput.vue';
-	import DistanceInput from '@/components/inputs/DistanceInput.vue';
+	import DirectionInput from '@packages/frontend-libs/dist/inputs/DirectionInput/DirectionInput.vue';
+	import DistanceInput from '@packages/frontend-libs/dist/inputs/DistanceInput.vue';
 	import { artillery, syncedRoom } from '@/lib/globals';
 	import { settings } from '@/lib/settings';
 	import { getUnitLabel, getUnitResolvedVector } from '@/lib/unit';

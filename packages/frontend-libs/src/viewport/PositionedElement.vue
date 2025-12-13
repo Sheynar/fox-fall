@@ -6,8 +6,8 @@
 			'--positioned-x': props.x,
 			'--positioned-y': props.y,
 			'--positioned-rotation': props.rotation,
-			'--viewport-rotation': cancelViewportRotation ? artillery.viewport.value.rotation : 0,
-			'--viewport-zoom': artillery.viewport.value.resolvedZoom,
+			'--viewport-rotation': cancelViewportRotation ? viewport.rotation : 0,
+			'--viewport-zoom': viewport.resolvedZoom,
 		}"
 	>
 		<slot />
@@ -31,12 +31,13 @@
 </style>
 
 <script setup lang="ts">
-	import type { LAYER } from '@/lib/constants/ui';
-	import { artillery } from '@/lib/globals';
+	import { injectViewport } from './viewport';
+
+	const viewport = injectViewport();
 
 	const props = withDefaults(
 		defineProps<{
-			layer: LAYER;
+			layer: number;
 			x: number;
 			y: number;
 			cancelViewportRotation?: boolean;

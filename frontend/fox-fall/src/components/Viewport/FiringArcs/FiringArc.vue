@@ -149,7 +149,7 @@
 
 <script setup lang="ts">
 	import { Vector } from '@packages/data/dist/artillery/vector';
-	import PositionedElement from '@/components/Viewport/PositionedElement.vue';
+	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { RangeFinderStyle } from '@/components/Viewport/RangeFinders/enums';
 	import RangeFinder from '@/components/Viewport/RangeFinders/RangeFinder.vue';
 	import { LAYER } from '@/lib/constants/ui';

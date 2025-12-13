@@ -372,14 +372,14 @@
 	import TabPanels from 'primevue/tabpanels';
 	import { KeyboardCommand } from '@packages/data/dist/keyboard-config';
 	import type { UpdateConfig } from '@packages/data/dist/update-config';
-	import FoxDialog from '@/components/FoxDialog.vue';
-	import FoxSelect from '@/components/inputs/FoxSelect.vue';
+	import { MapSource } from '@packages/frontend-libs/dist/assets/images/hex-maps';
+	import FoxDialog from '@packages/frontend-libs/dist/FoxDialog.vue';
+	import FoxSelect from '@packages/frontend-libs/dist/inputs/FoxSelect.vue';
+	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import ElectronKeyboardShortcut from '@/components/inputs/KeyboardShortcut/ElectronKeyboardShortcut.vue';
-	import NumberInput from '@/components/inputs/NumberInput.vue';
 	import { isOverlay } from '@/lib/constants';
 	import {
 		BackdropMode,
-		MapSource,
 		saveSettings,
 		settings,
 		// UserMode,

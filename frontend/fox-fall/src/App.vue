@@ -33,7 +33,7 @@
 		@pointerdown="contextMenuPosition = null"
 		tabindex="-1"
 	>
-		<Grid v-if="settings.backdropMode === BackdropMode.Grid" />
+		<Grid v-if="settings.backdropMode === BackdropMode.Grid" :layer="LAYER.BACKDROP" :gridLineWidth="settings.gridLineWidth" :gridDashLength="settings.gridDashLength" :gridDashGap="settings.gridDashGap" />
 
 		<Viewport>
 			<PositionedElement
@@ -185,11 +185,12 @@
 <script setup lang="ts">
 	import { ref, watch } from 'vue';
 	import { Vector } from '@packages/data/dist/artillery/vector';
+	import Grid from '@packages/frontend-libs/dist/Grid.vue';
+	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import BitmapDisplay from '@/components/BitmapDisplay.vue';
-	import Grid from '@/components/Grid.vue';
 	import ContextRadial, {
 		type Payload,
-	} from './components/inputs/ContextRadial.vue';
+	} from '@/components/inputs/ContextRadial.vue';
 	import OverlayHud from '@/components/OverlayHud/OverlayHud.vue';
 	import OverlayToggle from '@/components/OverlayToggle/OverlayToggle.vue';
 	import Viewport from '@/components/Viewport/Viewport.vue';
@@ -197,7 +198,6 @@
 	import { artillery } from '@/lib/globals';
 	import { BackdropMode, settings } from '@/lib/settings';
 	import { getUnitResolvedVector } from '@/lib/unit';
-	import PositionedElement from './components/Viewport/PositionedElement.vue';
 	import { LAYER } from './lib/constants/ui';
 
 	const onPointerMove = (event: PointerEvent) => {

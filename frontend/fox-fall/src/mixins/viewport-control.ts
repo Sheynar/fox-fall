@@ -1,7 +1,7 @@
 import { type Ref, computed, nextTick, ref, shallowRef } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import { Vector } from '@packages/data/dist/artillery/vector';
-import type { Viewport } from '@/lib/viewport';
+import type { Viewport } from '@packages/frontend-libs/dist/viewport/viewport';
 import { useMultiPointerDrag } from '@/mixins/multi-pointer';
 import { artillery } from '@/lib/globals';
 import { calibrateGrid as _calibrateGrid } from '@/lib/grid-calibration';

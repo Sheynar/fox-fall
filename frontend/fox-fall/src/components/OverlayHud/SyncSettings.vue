@@ -52,8 +52,8 @@
 <script setup lang="ts">
 	import PrimeButton from 'primevue/button';
 	import { computed, ref, shallowRef } from 'vue';
-	import FoxDialog from '@/components/FoxDialog.vue';
-	import FoxText from '@/components/inputs/FoxText.vue';
+	import FoxDialog from '@packages/frontend-libs/dist/FoxDialog.vue';
+	import FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
 	import { useFieldGroup } from '@/mixins/form';
 	import { getConnectionDetails } from '@/mixins/server-connection';
 

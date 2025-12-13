@@ -14,8 +14,8 @@
 <script setup lang="ts">
 	import { computed, markRaw, shallowRef } from 'vue';
 	import { AMMO_TYPE, ARTILLERY_BY_SHELL } from '@packages/data/dist/artillery/unit/constants';
-	import { ICONS } from '@/lib/constants/icons';
-	import FoxSelect from './FoxSelect.vue';
+	import { ICONS } from '@packages/frontend-libs/dist/icons';
+	import FoxSelect from '@packages/frontend-libs/dist/inputs/FoxSelect.vue';
 
 	const selectElement = shallowRef<InstanceType<typeof FoxSelect>>(null!);
 

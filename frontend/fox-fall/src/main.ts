@@ -1,3 +1,4 @@
+import '@packages/frontend-libs/dist/frontend-libs.css';
 import Aura from '@primeuix/themes/aura';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
