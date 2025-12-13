@@ -1,5 +1,5 @@
 {
-  "name": "@packages/overlay",
+  "name": "fox-fall",
   "version": "2.5.3",
   "main": "dist/index.js",
   "description": "Foxhole artillery overlay",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@electron/packager": "18.1.1",
-    "@packages/ui": "workspace:*",
+    "@frontend/fox-fall": "workspace:*",
     "@types/node": "^20.12.7",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-preset-env": "^1.7.0",

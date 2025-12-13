@@ -17,7 +17,7 @@
 	"repository": "https://github.com/KaoSDlanor/fox-fall",
 	"author": "KaoSDlanor <KaoSDlanor@gmail.com>",
 	"devDependencies": {
-		"@packages/ui": "workspace:*",
+		"@frontend/fox-fall": "workspace:*",
 		"@types/node": "^20.12.7",
 		"@types/ws": "^8.5.10",
 		"prettier": "^3.0.3",

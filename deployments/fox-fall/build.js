@@ -1,4 +1,4 @@
-const { publicFiles } = require('@packages/ui');
+const { publicFiles } = require('@frontend/fox-fall');
 const { cpSync } = require('node:fs');
 const path = require('node:path');
 // const { fileURLToPath } = require('node:url');

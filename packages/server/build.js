@@ -1,4 +1,4 @@
-import { publicFiles } from '@packages/ui';
+import { publicFiles } from '@frontend/fox-fall';
 import { cpSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
