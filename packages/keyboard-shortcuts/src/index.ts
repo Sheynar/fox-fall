@@ -46,6 +46,8 @@ export const keystrokes = new Keystrokes({
 	},
 });
 
-export const initialise = () => {
+function initialiseKeyboardShortcuts() {
 	uIOhook.start();
 };
+
+export const initialise = initialiseKeyboardShortcuts;

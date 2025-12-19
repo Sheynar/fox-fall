@@ -13,7 +13,7 @@ export type Options = {
 		id?: string[];
 	};
 };
-export const useSelectUnitOptions = (options: Options = {}) => {
+export function useSelectUnitOptions(options: Options = {}) {
 	const selectUnitOptions = computed(() => {
 		const output: Map<string, { label: string; searchKeys?: string[]; icon?: any; }> = new Map();
 

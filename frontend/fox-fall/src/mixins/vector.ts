@@ -1,28 +1,28 @@
 import { type Ref, computed } from 'vue';
 import { Vector } from '@packages/data/dist/artillery/vector';
 
-export const useVectorSum = (
+export function useVectorSum(
 	vectorA: Ref<Vector>,
 	vectorB: Ref<Vector>
-): Ref<Vector> => {
+): Ref<Vector> {
 	return computed(() => {
 		return vectorA.value.addVector(vectorB.value);
 	});
 };
 
-export const useVectorDifference = (
+export function useVectorDifference(
 	vectorA: Ref<Vector>,
 	vectorB: Ref<Vector>
-): Ref<Vector> => {
+): Ref<Vector> {
 	return computed(() => {
 		return vectorA.value.getRelativeOffset(vectorB.value);
 	});
 };
 
-export const useVectorMidpoint = (
+export function useVectorMidpoint(
 	vectorA: Ref<Vector>,
 	vectorB: Ref<Vector>
-): Ref<Vector> => {
+): Ref<Vector> {
 	return computed(() => {
 		return vectorA.value.addVector(vectorB.value).scale(0.5);
 	});

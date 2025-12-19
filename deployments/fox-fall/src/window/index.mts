@@ -21,7 +21,7 @@ let managerWindow: BrowserWindow | null = null;
 let overlayManager: ReturnType<typeof setWindowAsOverlay> | null = null;
 
 let overlayOpen = false;
-export const toggleOverlay = (newState = !overlayOpen) => {
+export function toggleOverlay(newState = !overlayOpen) {
 	if (overlayOpen === newState) return;
 	overlayOpen = newState;
 
@@ -38,7 +38,7 @@ export const toggleOverlay = (newState = !overlayOpen) => {
 	);
 };
 
-export const initialise = async () => {
+export async function initialise() {
 	managerWindow = new BrowserWindow({
 		frame: false,
 		autoHideMenuBar: true,
@@ -58,7 +58,7 @@ export const initialise = async () => {
 
 	managerWindow.webContents.session.setDisplayMediaRequestHandler(
 		(request, callback) => {
-			(async () => {
+			(async function handleDisplayMediaRequest() {
 				const sources = await desktopCapturer.getSources({ types: ["screen"] });
 				callback({
 					video: sources[0],
@@ -67,36 +67,36 @@ export const initialise = async () => {
 		}
 	);
 
-	ipcMain.handle(ElectronApiCommand.GetRunningVersion, () => {
+	ipcMain.handle(ElectronApiCommand.GetRunningVersion, function getRunningVersion() {
 		return packageJson.version;
 	});
-	ipcMain.handle(ElectronApiCommand.FocusOverlay, () => {
+	ipcMain.handle(ElectronApiCommand.FocusOverlay, function focusOverlay() {
 		overlayManager?.setFocus("overlay");
 	});
-	ipcMain.handle(ElectronApiCommand.BlurOverlay, () => {
+	ipcMain.handle(ElectronApiCommand.BlurOverlay, function blurOverlay() {
 		overlayManager?.setFocus("backdrop");
 	});
 	ipcMain.handle(ElectronApiCommand.ToggleOverlay, () => {
 		toggleOverlay();
 	});
-	ipcMain.handle(ElectronApiCommand.GetOverlayOpen, () => {
+	ipcMain.handle(ElectronApiCommand.GetOverlayOpen, function getOverlayOpen() {
 		return overlayOpen;
 	});
-	ipcMain.handle(ElectronApiCommand.EnableMouse, (event) => {
+	ipcMain.handle(ElectronApiCommand.EnableMouse, function enableMouse(event) {
 		if (!managerWindow) return;
 		managerWindow.setIgnoreMouseEvents(false, { forward: true });
 	});
-	ipcMain.handle(ElectronApiCommand.DisableMouse, () => {
+	ipcMain.handle(ElectronApiCommand.DisableMouse, function disableMouse() {
 		if (!managerWindow) return;
 		managerWindow.setIgnoreMouseEvents(true, { forward: true });
 	});
-	ipcMain.handle(ElectronApiCommand.GetDisplaySize, () => {
+	ipcMain.handle(ElectronApiCommand.GetDisplaySize, function getDisplaySize() {
 		return {
 			width: display.bounds.width,
 			height: display.bounds.height,
 		};
 	});
-	ipcMain.handle(ElectronApiCommand.GetUpdateConfig, () => {
+	ipcMain.handle(ElectronApiCommand.GetUpdateConfig, function getUpdateConfig() {
 		return getUpdateConfig();
 	});
 	ipcMain.handle(
@@ -131,7 +131,7 @@ export const initialise = async () => {
 	managerWindow.setIgnoreMouseEvents(true, { forward: true });
 	overlayManager = setWindowAsOverlay(managerWindow, "War", true);
 
-	managerWindow.on("close", () => {
+	managerWindow.on("close", function onManagerWindowClose() {
 		app.quit();
 	});
 

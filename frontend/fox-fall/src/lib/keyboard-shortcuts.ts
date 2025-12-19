@@ -14,11 +14,11 @@ export const keyboardShortcuts = ref({
 	[KeyboardCommand.Undo]: 'CommandOrControl+Z',
 } satisfies Partial<Record<KeyboardCommand, string>>);
 
-export const saveKeyboardShortcuts = () => {
+export function saveKeyboardShortcuts() {
 	localStorage.setItem('keyboard-shortcuts', JSON.stringify(keyboardShortcuts.value));
 };
 
-export const loadKeyboardShortcuts = () => {
+export function loadKeyboardShortcuts() {
 	const savedSettings = localStorage.getItem('keyboard-shortcuts');
 	if (savedSettings != null) {
 		Object.assign(keyboardShortcuts.value, JSON.parse(savedSettings));

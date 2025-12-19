@@ -31,7 +31,7 @@ export type MultiPointerDragOptions = {
 	onUpdate?: (dragStatus: DragStatus) => void;
 	onDragEnd?: (e: PointerEvent) => void;
 };
-export const useMultiPointerDrag = (options: MultiPointerDragOptions) => {
+export function useMultiPointerDrag(options: MultiPointerDragOptions) {
 	const currentDrag = ref<{
 		pointers: PointerMap;
 		lastStatus?: DragStatus;

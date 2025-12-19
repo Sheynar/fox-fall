@@ -2,7 +2,7 @@ import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/data';
 import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
 
-export const initialiseWebsocket = async (port = 81) => {
+export async function initialiseWebsocket(port = 81) {
 	const wss = new WebSocketServer({ port });
 
 	class Room {

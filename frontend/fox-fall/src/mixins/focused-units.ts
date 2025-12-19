@@ -2,7 +2,7 @@ import { type Unit, UnitType } from '@packages/data/dist/artillery/unit';
 import { artillery } from '@/lib/globals';
 import { computed } from 'vue';
 
-export const useFocusedUnitIds = () => {
+export function useFocusedUnitIds() {
 	return computed(() => {
 		const focusedUnits = [...artillery.highlightedUnits.value];
 
@@ -26,7 +26,7 @@ export const useFocusedUnitIds = () => {
 	});
 };
 
-export const useUnitsByType = () => {
+export function useUnitsByType() {
 	return computed(() => {
 		const output: Record<UnitType, Unit[]> = {
 			[UnitType.Artillery]: [],
@@ -44,7 +44,7 @@ export const useUnitsByType = () => {
 	});
 };
 
-export const usePrimaryUnitsByType = () => {
+export function usePrimaryUnitsByType() {
 	const unitsByType = useUnitsByType();
 	const focusedUnitIds = useFocusedUnitIds();
 

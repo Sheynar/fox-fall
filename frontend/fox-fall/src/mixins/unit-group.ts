@@ -6,7 +6,7 @@ import { sharedState } from '@/lib/shared-state';
 import { getUnitResolvedVector } from '@/lib/unit';
 
 // TODO : abstract this into some helper methods which can then be called by the backdrop when resetting the viewport
-export const useUnitGroup = (unitMap: Ref<UnitMap>, unitIds: Ref<string[]>) => {
+export function useUnitGroup(unitMap: Ref<UnitMap>, unitIds: Ref<string[]>) {
 	const units = computed(() => unitIds.value.map((id) => unitMap.value[id]));
 
 	const unitVectors = computed(() => {
@@ -44,7 +44,7 @@ export const useUnitGroup = (unitMap: Ref<UnitMap>, unitIds: Ref<string[]>) => {
 	};
 };
 
-export const useUnitSet = () => {
+export function useUnitSet() {
 	const unitSet = ref<Set<Unit['id']>>(new Set());
 
 	useScopePerSetEntry(

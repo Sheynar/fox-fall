@@ -19,7 +19,7 @@ export type ViewportControlOptions = {
 	lockRotate?: Ref<number | null>;
 	lockZoom?: Ref<number | null>;
 };
-export const useViewportControl = (options: ViewportControlOptions) => {
+export function useViewportControl(options: ViewportControlOptions) {
 	const moving = ref<null | {
 		dragType: DragType;
 	}>(null);

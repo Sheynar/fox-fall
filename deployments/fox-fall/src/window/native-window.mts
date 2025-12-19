@@ -287,7 +287,7 @@ export function setWindowLongPointer(
 }
 
 export function enumWindows(callback: (hwnd: HWND) => boolean) {
-	EnumWindows((hwnd: HWND, lParam: number) => {
+	EnumWindows(function enumWindowsCallback(hwnd: HWND, lParam: number) {
 		return callback(hwnd);
 	}, 0);
 }
@@ -297,7 +297,7 @@ export function findWindow(
 	strictMatch: boolean
 ): HWND | null {
 	let hwnd: HWND | null = null;
-	enumWindows((h) => {
+	enumWindows(function enumWindowsCallback(h) {
 		const title = getWindowTitle(h);
 		if (titleMatches(title, windowTitle, strictMatch)) {
 			hwnd = h;
@@ -310,7 +310,7 @@ export function findWindow(
 
 export function onWindowPositionChange(callback: (hwnd: HWND) => void) {
 	const winEventProc = koffi.register(
-		(
+		function winEventProcCallback(
 			hWinEventHook: number,
 			event: number,
 			hwnd: HWND,
@@ -318,7 +318,7 @@ export function onWindowPositionChange(callback: (hwnd: HWND) => void) {
 			idChild: number,
 			idEventThread: number,
 			dwmsEventTime: number
-		) => {
+		) {
 			if (SIZE_EVENTS.includes(event) && hwnd && idObject === 0) {
 				callback(hwnd);
 			}
@@ -340,7 +340,7 @@ export function onWindowPositionChange(callback: (hwnd: HWND) => void) {
 		throw new Error("Failed to set event hook");
 	}
 
-	return () => {
+	return function unmonitorWindowPositionChange() {
 		UnhookWinEvent(hook);
 	};
 }
@@ -349,7 +349,7 @@ export function onWindowNameChange(
 	callback: (hwnd: HWND, newName: string | null) => void
 ) {
 	const winEventProc = koffi.register(
-		(
+		function winEventProcCallback(
 			hWinEventHook: number,
 			event: number,
 			hwnd: HWND,
@@ -357,7 +357,7 @@ export function onWindowNameChange(
 			idChild: number,
 			idEventThread: number,
 			dwmsEventTime: number
-		) => {
+		) {
 			if (event === EVENT_OBJECT_NAMECHANGE && hwnd && idObject === 0) {
 				const newName = getWindowTitle(hwnd);
 				callback(hwnd, newName);
@@ -397,7 +397,7 @@ export function onWindowFocusChange(callback: (hwnd: HWND_Pointer) => void) {
 	};
 
 	const winEventProc = koffi.register(
-		(
+		function winEventProcCallback(
 			hWinEventHook: number,
 			event: number,
 			hwnd: HWND,
@@ -405,7 +405,7 @@ export function onWindowFocusChange(callback: (hwnd: HWND_Pointer) => void) {
 			idChild: number,
 			idEventThread: number,
 			dwmsEventTime: number
-		) => {
+		) {
 			if (
 				(event === EVENT_SYSTEM_FOREGROUND ||
 					event === EVENT_SYSTEM_MINIMIZEEND) &&
@@ -476,7 +476,7 @@ export function monitorWindowClientRect(
 ) {
 	let hwnd: HWND_Value | null = null;
 
-	const onPositionUpdated = (h: HWND) => {
+	function onPositionUpdated (h: HWND) {
 		const newHwnd = koffi.address(h);
 		if (hwnd == null) {
 			const title = getWindowTitle(h);
@@ -504,16 +504,16 @@ export function monitorWindowClientRect(
 	});
 
 	return {
-		update: () => {
+		update: function updateMonitoredWindowPosition() {
 			if (!hwnd) return;
 			onPositionUpdated(hwnd);
 		},
-		reset: (newWindowTitle: string = windowTitle, newStrictMatch: boolean = strictMatch) => {
+		reset: function resetMonitoredWindowPosition(newWindowTitle: string = windowTitle, newStrictMatch: boolean = strictMatch) {
 			hwnd = null;
 			windowTitle = newWindowTitle;
 			strictMatch = newStrictMatch;
 		},
-		destroy: () => {
+		destroy: function destroyMonitoredWindow() {
 			unmonitor();
 		},
 	};
@@ -543,7 +543,7 @@ export function monitorWindowPosition(
 		callback(hwnd, position);
 	}
 
-	const unmonitor = onWindowPositionChange((h) => {
+	const unmonitor = onWindowPositionChange(function onPositionUpdated(h) {
 		const newHwnd = koffi.address(h);
 		if (hwnd == null) {
 			const title = getWindowTitle(h);
@@ -567,7 +567,7 @@ export function monitorWindowFocus(
 	callback: (focused: boolean) => void
 ) {
 	let wasFocused: boolean | null = null;
-	const unmonitor = onWindowFocusChange((h) => {
+	const unmonitor = onWindowFocusChange(function onFocusChanged(h) {
 		const isFocused = getHasFocusedWindow(windowTitle, strictMatch);
 		if (isFocused === null) return;
 		if (isFocused !== wasFocused) {
@@ -586,28 +586,28 @@ export function monitorWindowFocusHwnd(
 	let focusedHwnd: HWND_Value | null = null;
 	let lastFocusedState: boolean | null = null;
 
-	const update = () => {
+	function updateFocusedState() {
 		const isFocusedState = focusedHwnd != null && hwndList.includes(focusedHwnd);
 		if (isFocusedState !== lastFocusedState) {
 			lastFocusedState = isFocusedState;
 			callback(isFocusedState);
 		}
-	};
+	}
 
-	const reset = (newHwndList: HWND_Value[]) => {
+	function resetFocusedState(newHwndList: HWND_Value[]) {
 		hwndList = newHwndList;
-		update();
-	};
+		updateFocusedState();
+	}
 
-	const unmonitor = onWindowFocusChange((h) => {
+	const unmonitor = onWindowFocusChange(function onFocusChanged(h) {
 		focusedHwnd = koffi.address(h);
-		update();
+		updateFocusedState();
 	});
 
 	return {
-		reset,
-		update,
-		destroy: () => {
+		reset: resetFocusedState,
+		update: updateFocusedState,
+		destroy: function destroyFocusedMonitor() {
 			unmonitor();
 		},
 	};
@@ -700,7 +700,7 @@ export function setWindowAsOverlay(
 		}
 	}, minUpdateFrequency);
 
-	const reset = (newBackdropWindowTitle: string = backdropWindowTitle, newStrictMatch: boolean = strictMatch) => {
+	function reset(newBackdropWindowTitle: string = backdropWindowTitle, newStrictMatch: boolean = strictMatch) {
 		const wasLinked = lastBackdropPosition != null;
 
 		lastBackdropPosition = null;
@@ -715,7 +715,7 @@ export function setWindowAsOverlay(
 		update();
 	};
 
-	const setFocus = (target: 'backdrop' | 'overlay') => {
+	function setFocus(target: 'backdrop' | 'overlay') {
 		if (target === 'backdrop') {
 			if (!lastBackdropPosition) return;
 			setForegroundWindow(lastBackdropPosition.hwnd);
@@ -763,11 +763,11 @@ export function setWindowAsOverlay(
 	update();
 
 	return {
-		isLinked: () => lastBackdropPosition != null,
+		isLinked: function isLinked() { return lastBackdropPosition != null; },
 		events,
 		setFocus,
 		update,
-		destroy: () => {
+		destroy: function destroyOverlayMonitor() {
 			windowMonitor.destroy();
 			overlayWindow.off("focus", update);
 			overlayWindow.off("blur", update);

@@ -25,7 +25,7 @@ type ArtilleryOptions = {
 	onUnitUpdated?: (unitId: string) => unknown;
 	onWindUpdated?: () => unknown;
 };
-export const useArtillery = (options: ArtilleryOptions = {}) => {
+export function useArtillery(options: ArtilleryOptions = {}) {
 	const currentScope = getCurrentScope();
 	if (currentScope == null) {
 		throw new Error('useArtillery must be used within a Vue effect scope');

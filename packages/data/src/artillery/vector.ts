@@ -10,18 +10,18 @@ export type CartesianVector = {
 	y: number;
 };
 
-export const toCartesianVector = (
+export function toCartesianVector(
 	angularVector: AngularVector
-): CartesianVector => {
+): CartesianVector {
 	return {
 		x: angularVector.distance * Math.cos(toRadians(angularVector.azimuth - 90)),
 		y: angularVector.distance * Math.sin(toRadians(angularVector.azimuth - 90)),
 	};
 };
 
-export const toAngularVector = (
+export function toAngularVector(
 	cartesianVector: CartesianVector
-): AngularVector => {
+): AngularVector {
 	const azimuth = wrapDegrees(
 		toDegrees(Math.atan2(cartesianVector.y, cartesianVector.x)) + 90
 	);
@@ -35,10 +35,10 @@ export const toAngularVector = (
 	};
 };
 
-// export const getRelativeAngularOffset = (
+// export function getRelativeAngularOffset(
 // 	angularVectorA: AngularVector,
 // 	angularVectorB: AngularVector
-// ): AngularVector => {
+// ): AngularVector {
 // 	const cartesianVectorA = toCartesianVector(angularVectorA);
 // 	const cartesianVectorB = toCartesianVector(angularVectorB);
 // 	const cartesianVector: CartesianVector = {

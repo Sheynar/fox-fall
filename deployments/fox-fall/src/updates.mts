@@ -37,11 +37,11 @@ const saveConfig = () => {
 	);
 };
 
-export const getUpdateConfig = () => {
+export function getUpdateConfig() {
 	loadConfig();
 	return updateConfig;
 };
-export const setUpdateConfig = (config: UpdateConfig) => {
+export function setUpdateConfig(config: UpdateConfig) {
 	const wasDisabled = updateConfig.disableUpdates;
 	updateConfig = { ...updateConfig, ...config };
 	saveConfig();
@@ -140,7 +140,7 @@ const _runUpdate = async () => {
 };
 
 let updateRunning: ReturnType<typeof _runUpdate> | null = null;
-export const runUpdate = async () => {
+export async function runUpdate() {
 	if (updateRunning) return updateRunning;
 	if (updateTimeout != null) {
 		clearTimeout(updateTimeout);

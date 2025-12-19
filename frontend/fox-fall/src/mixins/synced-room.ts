@@ -17,10 +17,10 @@ const parseVector = (vector: any): Vector => {
 	throw new Error('Invalid vector');
 };
 
-export const useSyncedRoom = (
+export function useSyncedRoom(
 	sharedState: SharedObject<SharedState>,
 	webSocket: Ref<WebSocket | null | undefined>
-) => {
+) {
 	const isReady = ref(false);
 
 	const onMessage = (event: MessageEvent<any>) => {

@@ -15,7 +15,7 @@ import { settings, UserMode } from '@/lib/settings';
 import { ICONS } from '@packages/frontend-libs/dist/icons';
 import { UNIT_ICON_BY_TYPE } from './constants/unit';
 
-export const getAvailableUnitTypes = (): UnitType[] => {
+export function getAvailableUnitTypes(): UnitType[] {
 	if (settings.value.userMode === UserMode.Basic) {
 		return [
 			UnitType.Artillery,
@@ -34,12 +34,12 @@ export const getAvailableUnitTypes = (): UnitType[] => {
 	}
 };
 
-export const createUnit = (
+export function createUnit(
 	type: UnitType,
 	vector: Ref<Vector>,
 	parentId?: string,
 	specs?: Pick<Unit, 'ammunition' | 'platform' | 'spottingType' | 'targetId'>
-): Ref<Unit> => {
+): Ref<Unit> {
 	return ref({
 		id: generateId(),
 		type,
@@ -53,10 +53,10 @@ export const createUnit = (
 	});
 };
 
-export const getUnitResolvedVector = (
+export function getUnitResolvedVector(
 	unitMap: UnitMap,
 	unitId: string
-): Vector => {
+): Vector {
 	const unit = unitMap[unitId];
 
 	if (unit == null) {
@@ -71,10 +71,10 @@ export const getUnitResolvedVector = (
 	return Vector.fromAngularVector(unit.vector);
 };
 
-export const getUnitDefaultLabel = (
+export function getUnitDefaultLabel(
 	unitMap: UnitMap,
 	unitId: string
-): string => {
+): string {
 	const unitNumber = Object.keys(unitMap).indexOf(unitId);
 	const natoName = settings.value.useNatoAlphabet
 		? natoAlphabet[unitNumber]
@@ -82,7 +82,7 @@ export const getUnitDefaultLabel = (
 	return natoName || String(unitNumber + 1);
 };
 
-export const getUnitLabel = (unitMap: UnitMap, unitId: string): string => {
+export function getUnitLabel(unitMap: UnitMap, unitId: string): string {
 	const unit = unitMap[unitId];
 
 	if (unit == null) {
@@ -92,10 +92,10 @@ export const getUnitLabel = (unitMap: UnitMap, unitId: string): string => {
 	return unit.label || getUnitDefaultLabel(unitMap, unitId);
 };
 
-const _getUnitSpecs = (
+function _getUnitSpecs(
 	unitMap: UnitMap,
 	unitId: string
-): ArtilleryPlatform | null => {
+): ArtilleryPlatform | null {
 	if (unitMap[unitId].platform == null) {
 		return null;
 	}
@@ -103,10 +103,10 @@ const _getUnitSpecs = (
 	return ARTILLERY_BY_PLATFORM[unitMap[unitId].platform] ?? null;
 };
 
-export const getUnitSpecs = (
+export function getUnitSpecs(
 	unitMap: UnitMap,
 	unitId: string
-): ArtilleryPlatform | null => {
+): ArtilleryPlatform | null {
 	const unit = unitMap[unitId];
 
 	if (unit.type !== UnitType.Artillery) {
@@ -120,7 +120,7 @@ export const getUnitSpecs = (
 	return null;
 };
 
-export const getUnitIcon = (unitMap: UnitMap, unitId: string): any => {
+export function getUnitIcon(unitMap: UnitMap, unitId: string): any {
 	if (unitMap[unitId].type === UnitType.Spotter) {
 		return unitMap[unitId].spottingType != null
 			? ICONS[unitMap[unitId].spottingType]
@@ -138,11 +138,11 @@ export const getUnitIcon = (unitMap: UnitMap, unitId: string): any => {
 	return UNIT_ICON_BY_TYPE[unitMap[unitId].type];
 };
 
-export const setUnitResolvedVector = (
+export function setUnitResolvedVector(
 	unitMap: UnitMap,
 	unitId: string,
 	newPosition: Vector
-) => {
+) {
 	const unit = unitMap[unitId];
 
 	if (unit == null) {

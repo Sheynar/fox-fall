@@ -167,14 +167,18 @@ export class Viewport {
 export { distanceScale };
 
 const viewportSymbol = Symbol('viewport');
-export const injectViewport = () => {
-	const viewport = inject<Ref<Viewport>>(viewportSymbol);
+export function injectViewportOptional() {
+	return inject<Ref<Viewport>>(viewportSymbol);
+};
+
+export function injectViewport() {
+	const viewport = injectViewportOptional();
 	if (viewport == null) {
 		throw new Error('No viewport provided');
 	}
 	return viewport;
 };
 
-export const provideViewport = (viewport: Ref<Viewport>) => {
+export function provideViewport(viewport: Ref<Viewport>) {
 	provide(viewportSymbol, viewport);
 };

@@ -1,6 +1,6 @@
 import { effectScope, type EffectScope, type Ref, watch } from 'vue';
 
-export const useScopeCollection = <K>() => {
+export function useScopeCollection<K>() {
 	const mainScope = effectScope();
 	const currentScopes = new Map<K, EffectScope>();
 
@@ -30,11 +30,11 @@ export const useScopeCollection = <K>() => {
 	};
 };
 
-export const useScopePerObjectKey = <K extends string | number>(
+export function useScopePerObjectKey<K extends string | number>(
 	input: Ref<Record<K, unknown>>,
 	onScopeCreated: (key: K) => unknown = () => {},
 	flush: 'pre' | 'post' | 'sync' = 'sync'
-) => {
+) {
 	const scopeCollection = useScopeCollection<K>();
 
 	const checkKeys = (keys: K[]) => {
@@ -73,11 +73,11 @@ export const useScopePerObjectKey = <K extends string | number>(
 	return stop;
 };
 
-export const useScopePerSetEntry = <T>(
+export function useScopePerSetEntry<T>(
 	input: Ref<Set<T>>,
 	onScopeCreated: (entry: T) => unknown = () => {},
 	flush: 'pre' | 'post' | 'sync' = 'sync'
-) => {
+) {
 	const scopeCollection = useScopeCollection<T>();
 
 	const checkEntries = (entries: T[]) => {
@@ -116,11 +116,11 @@ export const useScopePerSetEntry = <T>(
 	return stop;
 };
 
-export const useScopePerMapKey = <K>(
+export function useScopePerMapKey<K>(
 	input: Ref<Map<K, unknown>>,
 	onScopeCreated: (entry: K) => unknown = () => {},
 	flush: 'pre' | 'post' | 'sync' = 'sync'
-) => {
+) {
 	const scopeCollection = useScopeCollection<K>();
 
 	const checkKeys = (keys: K[]) => {
@@ -159,11 +159,11 @@ export const useScopePerMapKey = <K>(
 	return stop;
 };
 
-export const useScopePerArrayIndex = <T>(
+export function useScopePerArrayIndex<T>(
 	input: Ref<T[]>,
 	onScopeCreated: (index: number) => unknown = () => {},
 	flush: 'pre' | 'post' | 'sync' = 'sync'
-) => {
+) {
 	const scopeCollection = useScopeCollection<string>();
 
 	const checkIndexes = (indexes: number[]) => {
@@ -204,6 +204,6 @@ export const useScopePerArrayIndex = <T>(
 
 export const globalScope = effectScope(true);
 
-export const runGlobal = <R>(callback: () => R): R => {
+export function runGlobal<R>(callback: () => R): R {
 	return globalScope.run(callback) as R;
 };

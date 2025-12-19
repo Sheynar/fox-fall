@@ -9,7 +9,7 @@ export enum ServerConnectionState {
 	connected = 'Connected',
 }
 
-export const getConnectionDetailsFromUrl = () => {
+export function getConnectionDetailsFromUrl() {
 	const url = new URL(window.location.href);
 	let serverAddress = url.searchParams.get('serverAddress') || url.hostname;
 	let code = url.searchParams.get('code');
@@ -19,7 +19,7 @@ export const getConnectionDetailsFromUrl = () => {
 	return { serverAddress, code };
 };
 
-export const getConnectionDetails = () => {
+export function getConnectionDetails() {
 	const connectionDetails = getConnectionDetailsFromUrl();
 	if (connectionDetails) {
 		settings.value.sync = { ...connectionDetails };
@@ -37,7 +37,7 @@ export const getConnectionDetails = () => {
 	return null;
 };
 
-export const useServerConnection = () => {
+export function useServerConnection() {
 	const serverUrl = computed(() => {
 		const connectionDetails = getConnectionDetails();
 

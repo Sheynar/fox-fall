@@ -48,19 +48,19 @@ const saveConfig = () => {
 	);
 };
 
-export const pauseKeyboardShortcuts = () => {
+export function pauseKeyboardShortcuts() {
 	paused = true;
 };
 
-export const resumeKeyboardShortcuts = () => {
+export function resumeKeyboardShortcuts() {
 	paused = false;
 };
 
-export const getKeyboardShortcut = (command: KeyboardCommand) => {
+export function getKeyboardShortcut(command: KeyboardCommand) {
 	return keyboardConfig[command];
 };
 
-export const runCommand = async (command: KeyboardCommand) => {
+export async function runCommand(command: KeyboardCommand) {
 	if (paused) return;
 	switch (command) {
 		case KeyboardCommand.ToggleOverlay:
@@ -73,11 +73,11 @@ export const runCommand = async (command: KeyboardCommand) => {
 	}
 };
 
-export const updateKeyboardShortcut = (
+export function updateKeyboardShortcut(
 	command: KeyboardCommand,
 	accelerator?: string[],
 	skipSaving = false
-) => {
+) {
 	if (keyboardConfig[command] && keyboardRunCommands[command]) {
 		keystrokes.unbindKeyCombo(
 			keyboardConfig[command].join(" > "),
@@ -103,7 +103,7 @@ export const updateKeyboardShortcut = (
 	if (!skipSaving) saveConfig();
 };
 
-export const initialise = () => {
+export function initialise() {
 	try {
 		initKeyboardShortcutsModule();
 		loadConfig();

@@ -26,7 +26,7 @@ export type UseFieldGroupOptions = {
 	onLastSubmit?: () => void;
 };
 
-export const useFieldGroup = (options: UseFieldGroupOptions) => {
+export function useFieldGroup(options: UseFieldGroupOptions) {
 	useScopePerArrayIndex(options.inputs, (index) => {
 		const relevantElement = computed(() => {
 			const instance = options.inputs.value[index];

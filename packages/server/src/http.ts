@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 
-export const initialiseHttp = async (port = Number(process.env.FOX_FALL_SYNC_PORT) || 80) => {
+export async function initialiseHttp(port = Number(process.env.FOX_FALL_SYNC_PORT) || 80) {
 	const app = new Hono();
 	app.use(
 		'/*',

@@ -46,11 +46,11 @@ export const settings = ref({
 	} | null,
 });
 
-export const saveSettings = () => {
+export function saveSettings() {
 	localStorage.setItem('settings', JSON.stringify(settings.value));
 };
 
-export const loadSettings = () => {
+export function loadSettings() {
 	const savedSettings = localStorage.getItem('settings');
 	if (savedSettings != null) {
 		Object.assign(settings.value, JSON.parse(savedSettings));

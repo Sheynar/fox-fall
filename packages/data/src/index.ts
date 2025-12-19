@@ -30,6 +30,6 @@ export type RoomUpdate =
 			value: unknown;
 	  };
 
-export const isRoomUpdate = (value: unknown): value is RoomUpdate => {
+export function isRoomUpdate(value: unknown): value is RoomUpdate {
 	return typeof value === "object" && value !== null && "type" in value && (<UpdateType>value.type) in UpdateType;
 };

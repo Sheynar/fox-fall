@@ -1,4 +1,4 @@
-export const debounceImmediate = <F extends (...args: any[]) => any>(func: F, wait: number) => {
+export function debounceImmediate<F extends (...args: any[]) => any>(func: F, wait: number) {
 	let timeout: ReturnType<typeof setTimeout>;
 	let lastRun = 0;
 	return ((...args: any[]) => {

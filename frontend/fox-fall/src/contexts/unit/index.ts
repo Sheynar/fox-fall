@@ -3,17 +3,17 @@ import { type Unit } from '@packages/data/dist/artillery/unit';
 
 export const unitSymbol = Symbol('unit');
 
-export const provideUnit = (unit: Ref<Unit>) => {
+export function provideUnit(unit: Ref<Unit>) {
 	provide(unitSymbol, unit);
 };
 
-export const injectUnitOptional = (): Ref<Unit> | undefined => {
+export function injectUnitOptional(): Ref<Unit> | undefined {
 	const unit = inject<Ref<Unit>>(unitSymbol);
 
 	return unit;
 };
 
-export const injectUnit = (): Ref<Unit> => {
+export function injectUnit(): Ref<Unit> {
 	const unit = injectUnitOptional();
 
 	if (unit == null) {
