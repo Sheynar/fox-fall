@@ -3,10 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "main": "./dist/index.mjs",
-	"type": "module",
-	"files": [
-		"./dist"
-	],
+  "type": "module",
+  "files": [
+    "./dist"
+  ],
   "scripts": {
     "build": "rimraf dist && vue-tsc --noEmit && vite build && vue-tsc -p tsconfig.build.json"
   },

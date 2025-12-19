@@ -7,7 +7,7 @@
 			'--positioned-y': props.y,
 			'--positioned-rotation': props.rotation,
 			'--viewport-rotation': cancelViewportRotation ? viewport.rotation : 0,
-			'--viewport-zoom': viewport.resolvedZoom,
+			'--viewport-zoom': cancelViewportZoom ? viewport.resolvedZoom : 1,
 		}"
 	>
 		<slot />
@@ -41,6 +41,7 @@
 			x: number;
 			y: number;
 			cancelViewportRotation?: boolean;
+			cancelViewportZoom?: boolean;
 			rotation?: number;
 		}>(),
 		{

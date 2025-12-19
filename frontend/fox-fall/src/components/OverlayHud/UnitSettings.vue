@@ -603,6 +603,7 @@
 	import FoxSelect from '@packages/frontend-libs/dist/inputs/FoxSelect.vue';
 	import FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
 	import { ICONS } from '@packages/frontend-libs/dist/icons';
+	import { useScopePerSetEntry } from '@packages/frontend-libs/dist/scope';
 	import AmmoSelect from '@/components/inputs/AmmoSelect.vue';
 	import PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 	import SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
@@ -617,7 +618,6 @@
 		setUnitResolvedVector,
 	} from '@/lib/unit';
 	import { useFieldGroup } from '@/mixins/form';
-	import { useScopePerSetEntry } from '@/mixins/scope';
 
 	const distanceInput = shallowRef<InstanceType<typeof DistanceInput>>(null!);
 	const azimuthInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);

@@ -1,7 +1,7 @@
 <template>
 	<Viewport>
 		<PositionedElement v-if="settings.backdropMode === BackdropMode.Map" :layer="LAYER.BACKDROP" :x="0" :y="0">
-			<HexMap :mapSource="settings.mapSource" :zoom="artillery.viewport.value.resolvedZoom" :rotation="artillery.viewport.value.rotation" />
+			<HexMap :mapSource="settings.mapSource" />
 		</PositionedElement>
 
 		<RangeFinders />

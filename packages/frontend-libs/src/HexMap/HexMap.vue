@@ -2,7 +2,7 @@
 	<div
 		class="HexMap__outer"
 		:style="{
-			'--hex-size': `${viewport.resolvedZoom * 2197}px`,
+			'--hex-size': `2197px`,
 			'--viewport-rotation': `${viewport.rotation}deg`,
 		}"
 	>

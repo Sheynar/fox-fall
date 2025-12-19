@@ -41,6 +41,8 @@
 				:layer="LAYER.HUD"
 				:x="contextMenuPosition.x"
 				:y="contextMenuPosition.y"
+				cancel-viewport-rotation
+				cancel-viewport-zoom
 			>
 				<ContextRadial
 					@submit="

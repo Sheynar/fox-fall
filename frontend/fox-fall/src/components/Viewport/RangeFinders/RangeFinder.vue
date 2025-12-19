@@ -3,6 +3,7 @@
 		:x="position.x"
 		:y="position.y"
 		:layer="LAYER.RANGE_FINDERS"
+		cancel-viewport-zoom
 	>
 		<svg
 			class="RangeFinder__indicator"

@@ -4,6 +4,7 @@
 		:y="resolvedVector.y"
 		:layer="moving || isHighlighted ? LAYER.UNITS_HIGHLIGHTED : LAYER.UNITS"
 		cancel-viewport-rotation
+		cancel-viewport-zoom
 	>
 		<div
 			class="Unit__container"
@@ -38,6 +39,7 @@
 		:y="firingPosition.y"
 		:layer="LAYER.UNITS"
 		cancel-viewport-rotation
+		cancel-viewport-zoom
 	>
 		<div
 			class="Unit__container Unit__firing-indicator"

@@ -3,6 +3,7 @@
 		:layer="LAYER.FIRING_ARC_LINES"
 		:x="resolvedVectorTo.x"
 		:y="resolvedVectorTo.y"
+		cancel-viewport-zoom
 	>
 		<svg
 			class="FiringArc__svg"
@@ -25,6 +26,7 @@
 		:x="labelPosition.x"
 		:y="labelPosition.y"
 		cancel-viewport-rotation
+		cancel-viewport-zoom
 	>
 		<div
 			class="FiringArc__label"

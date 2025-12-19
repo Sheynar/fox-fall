@@ -3,11 +3,11 @@ import type DistanceInput from '@packages/frontend-libs/dist/inputs/DistanceInpu
 import type FoxSelect from '@packages/frontend-libs/dist/inputs/FoxSelect.vue';
 import type FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
 import type NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
+import { useScopePerArrayIndex } from '@packages/frontend-libs/dist/scope';
 import type AmmoSelect from '@/components/inputs/AmmoSelect.vue';
 import type PlatformSelect from '@/components/inputs/PlatformSelect.vue';
 import type SelectOneUnit from '@/components/inputs/select-unit/SelectOneUnit.vue';
 import { computed, type ShallowRef } from 'vue';
-import { useScopePerArrayIndex } from './scope';
 import { useEventListener } from '@vueuse/core';
 
 export type Input =

@@ -1,9 +1,9 @@
 import { computed, ref, watch, type Ref } from 'vue';
 import { type Unit, type UnitMap } from '@packages/data/dist/artillery/unit';
 import { Vector } from '@packages/data/dist/artillery/vector';
+import { useScopePerSetEntry } from '@packages/frontend-libs/dist/scope';
 import { sharedState } from '@/lib/shared-state';
 import { getUnitResolvedVector } from '@/lib/unit';
-import { useScopePerSetEntry } from './scope';
 
 // TODO : abstract this into some helper methods which can then be called by the backdrop when resetting the viewport
 export const useUnitGroup = (unitMap: Ref<UnitMap>, unitIds: Ref<string[]>) => {

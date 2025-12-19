@@ -3,6 +3,7 @@
 		:layer="LAYER.LINKS"
 		:x="unitPositionFrom.x"
 		:y="unitPositionFrom.y"
+		cancel-viewport-zoom
 	>
 		<svg
 			class="UnitLink__container"
