@@ -3,7 +3,7 @@ import { isRoomUpdate, type RoomUpdate, UpdateType } from '@packages/data';
 import { generateId } from '@packages/data/dist/id';
 import { type UnitMap, type Unit } from '@packages/data/dist/artillery/unit';
 import { Vector } from '@packages/data/dist/artillery/vector';
-import type { SharedObject } from '@/lib/shared-object';
+import type { SharedObject } from '@packages/frontend-libs/dist/shared-object';
 import type { SharedState } from '@/lib/shared-state';
 
 const myId = generateId();

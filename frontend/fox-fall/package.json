@@ -16,7 +16,6 @@
     "@packages/frontend-libs": "workspace:*",
     "@primeuix/themes": "^1.0.0",
     "@vueuse/core": "^12.2.0",
-    "fast-json-patch": "^3.1.1",
     "pinia": "^2.3.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.3.1",

@@ -1,7 +1,7 @@
 import { generateId } from '@packages/data/dist/id';
 import { UnitMap } from "@packages/data/dist/artillery/unit";
 import { AngularVector } from "@packages/data/dist/artillery/vector";
-import { SharedObject } from "./shared-object";
+import { SharedObject } from "@packages/frontend-libs/dist/shared-object";
 
 export type SharedState = {
 	unitMap: UnitMap;
