@@ -1,0 +1,35 @@
+{
+  "name": "@frontend/fox-intel",
+  "private": true,
+  "version": "0.0.0",
+  "main": "./index.js",
+  "scripts": {
+    "serve": "vite --host 0.0.0.0 --port 8080",
+    "build": "rimraf dist && vue-tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 8080"
+  },
+  "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
+  "dependencies": {
+    "@kaosdlanor/kanim": "^1.0.1",
+    "@kaosdlanor/vue-reactivity": "^1.0.2",
+    "@packages/data": "workspace:*",
+    "@packages/frontend-libs": "workspace:*",
+    "@primeuix/themes": "^1.0.0",
+    "@vueuse/core": "^12.2.0",
+    "pinia": "^2.3.1",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.3.1",
+    "typescript-event-target": "^1.1.1",
+    "vue": "^3.5.13",
+    "vue-tsc": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@vitejs/plugin-vue": "^4.4.0",
+    "prettier": "^3.0.3",
+    "rimraf": "^5.0.7",
+    "sass": "^1.83.0",
+    "typescript": "^5.4.5",
+    "vite": "^6.0.6"
+  }
+}

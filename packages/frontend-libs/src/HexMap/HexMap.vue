@@ -2,7 +2,7 @@
 	<div
 		class="HexMap__outer"
 		:style="{
-			'--hex-size': `2197px`,
+			'--hex-size': `${HEX_SIZE.width}px`,
 			'--viewport-rotation': `${viewport.rotation}deg`,
 		}"
 	>
@@ -29,6 +29,7 @@
 					>
 						{{ hex }}
 					</div>
+					<slot v-if="hex" name="hex" :hex="hex" :x="x" :y="y" />
 				</div>
 			</div>
 			<div class="HexMap__row"></div>
@@ -102,6 +103,7 @@
 </style>
 
 <script setup lang="ts">
+	import { HEX_SIZE } from '@packages/data/dist/artillery/map';
 	import { computed } from "vue";
 	import { HEX_MAPS, MapSource } from "@/assets/images/hex-maps";
 	import { HEX_POSITIONS } from "@/hexMap";

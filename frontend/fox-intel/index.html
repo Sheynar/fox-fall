@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, user-scalable=no" />
+		<link rel="icon" type="image/webp" href="/300mm.webp" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>FoxFall</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+			}
+
+			:root {
+				--vmin: 1vmin;
+				font-size: calc((8px + var(--vmin) * 1.2) * var(--_ui-scale, 1));
+			}
+
+			#app {
+				position: fixed;
+				inset: 0;
+				cursor: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app"></div>
+
+		<script type="module" src="./src/main.ts"></script>
+	</body>
+</html>

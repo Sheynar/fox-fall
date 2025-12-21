@@ -30,6 +30,7 @@ export type MultiPointerDragOptions = {
 	onDragStart?: (e: PointerEvent) => void;
 	onUpdate?: (dragStatus: DragStatus) => void;
 	onDragEnd?: (e: PointerEvent) => void;
+	disabled?: Ref<boolean>;
 };
 export function useMultiPointerDrag(options: MultiPointerDragOptions) {
 	const currentDrag = ref<{
@@ -123,6 +124,7 @@ export function useMultiPointerDrag(options: MultiPointerDragOptions) {
 	};
 
 	const onPointerDown = (event: PointerEvent) => {
+		if (options.disabled?.value) return;
 		if (
 			options.onBeforePointerDown != null &&
 			!options.onBeforePointerDown(event)
