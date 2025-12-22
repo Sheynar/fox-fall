@@ -55,6 +55,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cyhnkckali/vue3-color-picker@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "@cyhnkckali/vue3-color-picker@npm:2.1.5"
+  peerDependencies:
+    vue: ^3.3.8
+  checksum: 10c0/d1e26968041aa986d99d8fecdc290e0c01ff39c4ea8e6b37bbf0a6e4227f0579819a746577bc371005706498c033a00543f3303cce8335c936de5545157e58a0
+  languageName: node
+  linkType: hard
+
 "@dabh/diagnostics@npm:^2.0.2":
   version: 2.0.3
   resolution: "@dabh/diagnostics@npm:2.0.3"
@@ -485,6 +494,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@frontend/fox-intel@workspace:frontend/fox-intel"
   dependencies:
+    "@cyhnkckali/vue3-color-picker": "npm:^2.1.5"
     "@kaosdlanor/kanim": "npm:^1.0.1"
     "@kaosdlanor/vue-reactivity": "npm:^1.0.2"
     "@packages/data": "workspace:*"

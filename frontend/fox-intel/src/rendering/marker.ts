@@ -228,6 +228,8 @@ export function useMarker(options: UseMarkerOptions) {
 		event.preventDefault();
 		event.stopPropagation();
 
+		options.eventElement.value!.focus();
+
 		placeMarker(eventToVector(event));
 		moveMarker(eventToVector(event));
 		options.eventElement.value!.setPointerCapture(event.pointerId);

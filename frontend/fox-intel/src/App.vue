@@ -11,7 +11,7 @@
 			</PositionedElement>
 		</Viewport>
 
-		<canvas ref="canvasElement" :width="width" :height="height" />
+		<canvas ref="canvasElement" :width="width" :height="height" tabindex="0" />
 
 		<MarkerControls />
 

@@ -42,9 +42,20 @@
 			<label>Size</label>
 			<NumberInput v-model="markerSize" />
 		</div>
-		<div class="MarkerControls__entry">
+		<div class="MarkerControls__entry" ref="colorPickerContainer" tabindex="0">
 			<label>Color</label>
-			<FoxText v-model="markerColor" />
+			<div class="MarkerControls__color-picker-container">
+				<div class="MarkerControls__color-indicator" :style="{ backgroundColor: markerColor, width: '2em', height: '2em', borderRadius: '0.5em' }"></div>
+				<Vue3ColorPicker
+					class="MarkerControls__color-picker"
+					v-model="markerColor"
+					theme="dark"
+					mode="solid"
+					:showPickerMode="false"
+					:show-color-list="false"
+					@pointerdown.stop="colorPickerContainer?.focus()"
+				/>
+			</div>
 		</div>
 	</div>
 </template>
@@ -84,9 +95,26 @@
 			color: var(--color-primary-contrast);
 		}
 	}
+
+	.MarkerControls__color-picker-container {
+		position: relative;
+
+		.MarkerControls__entry:not(:focus-within) & .MarkerControls__color-picker {
+			display: none;
+		}
+	}
+
+	.MarkerControls__color-picker {
+		position: absolute;
+		top: auto;
+		bottom: 110%;
+		left: 50%;
+		transform: translateX(-50%);
+	}
 </style>
 
 <script setup lang="ts">
+	import { Vue3ColorPicker } from '@cyhnkckali/vue3-color-picker';
 	import FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import { MarkerType } from './rendering/marker';
@@ -96,4 +124,11 @@
 		markerSize,
 		markerType,
 	} from './lib/globals';
+	import { shallowRef, watchEffect } from 'vue';
+
+	const colorPickerContainer = shallowRef<HTMLDivElement | null>(null);
+
+	watchEffect(() => {
+		console.log(markerColor.value);
+	});
 </script>
