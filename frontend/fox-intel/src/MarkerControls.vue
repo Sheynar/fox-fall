@@ -4,6 +4,15 @@
 			<button
 				class="MarkerControls__button"
 				:class="{
+					'MarkerControls__button-active': markerDisabled,
+				}"
+				@pointerdown.stop="markerDisabled = true"
+			>
+				<i class="pi pi-arrows-alt" />
+			</button>
+			<button
+				class="MarkerControls__button"
+				:class="{
 					'MarkerControls__button-active':
 						!markerDisabled && markerType === MarkerType.Pen,
 				}"
@@ -26,15 +35,6 @@
 				"
 			>
 				<i class="pi pi-eraser" />
-			</button>
-			<button
-				class="MarkerControls__button"
-				:class="{
-					'MarkerControls__button-active': markerDisabled,
-				}"
-				@pointerdown.stop="markerDisabled = true"
-			>
-				<i class="pi pi-arrows-alt" />
 			</button>
 		</div>
 
@@ -89,7 +89,7 @@
 <script setup lang="ts">
 	import FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
-	import { MarkerType } from '@packages/frontend-libs/dist/marker';
+	import { MarkerType } from './rendering/marker';
 	import {
 		markerColor,
 		markerDisabled,

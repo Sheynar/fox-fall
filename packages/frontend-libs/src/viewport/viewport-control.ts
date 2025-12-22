@@ -12,9 +12,9 @@ export enum DragType {
 export type ViewportControlOptions = {
 	containerElement: Ref<HTMLElement | null>;
 	viewport: Ref<Viewport>;
-	lockPan?: Ref<Vector | null>;
-	lockRotate?: Ref<number | null>;
-	lockZoom?: Ref<number | null>;
+	lockPan?: Ref<boolean | null>;
+	lockRotate?: Ref<boolean | null>;
+	lockZoom?: Ref<boolean | null>;
 	disableKeyboardControls?: Ref<boolean>;
 	disableMouseControls?: Ref<boolean>;
 };

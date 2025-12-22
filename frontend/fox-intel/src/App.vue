@@ -6,24 +6,12 @@
 		ref="containerElement"
 	>
 		<Viewport>
-			<PositionedElement :layer="1" :x="0" :y="0">
-				<HexMap :mapSource="MapSource.ImprovedMapModRustardKnightEdit">
-					<template #hex>
-						<Marker
-							class="App__marker"
-							:canvasWidth="HEX_SIZE.width"
-							:canvasHeight="HEX_SIZE.height"
-							:size="markerSize"
-							:color="markerColor"
-							:type="markerType"
-							:disabled="markerDisabled"
-						/>
-					</template>
-				</HexMap>
+			<PositionedElement v-if="false" :layer="1" :x="0" :y="0">
+				<HexMap :mapSource="MapSource.ImprovedMapModRustardKnightEdit" />
 			</PositionedElement>
 		</Viewport>
 
-		<Hud />
+		<canvas ref="canvasElement" :width="width" :height="height" />
 
 		<MarkerControls />
 
@@ -142,18 +130,26 @@
 		}
 	}
 
-	.App__marker {
-		z-index: 1000;
+	.App__hexMapCanvas {
+		pointer-events: none;
+	}
+
+	.App__markerCanvas {
 		pointer-events: initial;
-		clip-path: polygon(0 50%, 25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%);
+	}
+
+	.App__hexMapCanvas,
+	.App__markerCanvas {
+		position: fixed;
+		inset: 0;
+		width: 100dvw;
+		height: 100dvh;
 	}
 </style>
 
 <script setup lang="ts">
 	import { Vector } from '@packages/data/dist/artillery/vector';
-	import { HEX_SIZE } from '@packages/data/dist/artillery/map';
 	import { MapSource } from '@packages/frontend-libs/dist/assets/images/hex-maps';
-	import Marker from '@packages/frontend-libs/dist/marker/Marker.vue';
 	import {
 		provideViewport,
 		Viewport as ViewportClass,
@@ -162,7 +158,7 @@
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { useViewportControl } from '@packages/frontend-libs/dist/viewport/viewport-control';
 	import HexMap from '@packages/frontend-libs/dist/HexMap/HexMap.vue';
-	import { ref } from 'vue';
+	import { computed, onMounted, onUnmounted, ref } from 'vue';
 	import {
 		markerSize,
 		markerColor,
@@ -170,8 +166,15 @@
 		markerDisabled,
 	} from './lib/globals';
 	import MarkerControls from './MarkerControls.vue';
+	import { useHexMap } from './rendering/hex-map';
+	import { useMarker } from './rendering/marker';
+	import { useElementBounding } from '@vueuse/core';
+	import { MAP_SIZE } from '@packages/data/dist/artillery/map';
 
 	const containerElement = ref<HTMLDivElement | null>(null);
+	const canvasElement = ref<HTMLCanvasElement | null>(null);
+
+	const { width, height } = useElementBounding(containerElement);
 
 	const viewport = ref(
 		new ViewportClass(
@@ -184,10 +187,79 @@
 		)
 	);
 
-	useViewportControl({
+	const { moving } = useViewportControl({
 		containerElement,
 		viewport,
+		lockRotate: ref(true),
+		disableMouseControls: computed(
+			() => activeMarker.value != null
+		),
 	});
 
 	provideViewport(viewport);
+
+	const {
+		backdropCanvas: hexMapCanvasElement,
+		foregroundCanvas: hexMapForegroundCanvasElement,
+		start: startHexMap,
+		stop: stopHexMap,
+	} = useHexMap({
+		mapSource: MapSource.ImprovedMapModRustardKnightEdit,
+		position: computed(() => viewport.value.position),
+		zoom: computed(() => viewport.value.resolvedZoom),
+		width,
+		height,
+	});
+
+	const { start: startMarker, stop: stopMarker, canvasElement: markerCanvasElement, activeMarker } = useMarker({
+		eventElement: canvasElement,
+		zoom: computed(() => viewport.value.resolvedZoom),
+		position: computed(() => viewport.value.position),
+		width,
+		height,
+		maxWidth: MAP_SIZE.width,
+		maxHeight: MAP_SIZE.height,
+		markerType,
+		markerColor,
+		markerSize,
+		markerDisabled: computed(() => markerDisabled.value || moving.value != null),
+	});
+
+	const context = computed(() => canvasElement.value?.getContext('2d'));
+	let frameRequest: ReturnType<typeof requestAnimationFrame> | null = null;
+	const cancelFrame = () => {
+		if (frameRequest != null) {
+			cancelAnimationFrame(frameRequest);
+			frameRequest = null;
+		}
+	};
+	const requestFrame = () => {
+		cancelFrame();
+		frameRequest = requestAnimationFrame(render);
+	};
+	const render = () => {
+		cancelFrame();
+		try {
+			if (!context.value) return;
+			context.value.clearRect(0, 0, width.value, height.value);
+			context.value.drawImage(hexMapCanvasElement, 0, 0, width.value, height.value);
+			context.value.drawImage(markerCanvasElement, 0, 0, width.value, height.value);
+			context.value.drawImage(hexMapForegroundCanvasElement, 0, 0, width.value, height.value);
+		} finally {
+			requestFrame();
+		}
+	};
+
+	onMounted(() => {
+		if (!canvasElement.value) return;
+		startHexMap();
+		startMarker();
+		requestFrame();
+	});
+
+	onUnmounted(() => {
+		stopHexMap();
+		stopMarker();
+		cancelFrame();
+	});
 </script>
