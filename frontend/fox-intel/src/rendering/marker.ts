@@ -1,15 +1,29 @@
 import { Vector } from '@packages/data/dist/artillery/vector';
 import { useEventListener } from '@vueuse/core';
-import { computed, onScopeDispose, Ref, shallowRef, watch } from 'vue';
+import { computed, onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
+import { useCanvasStorage } from './canvas-storage';
 
 export enum MarkerType {
 	Pen = 'pen',
 	Erase = 'erase',
 }
 
+export type MarkerStroke = {
+	type: MarkerType;
+	color: string;
+	size: number;
+	viewportPosition: Vector['cartesianVector'];
+	viewportZoom: number;
+	points: Vector['cartesianVector'][];
+};
+
+export type MarkerExport = {
+	base?: string;
+	strokes: MarkerStroke[];
+};
+
 export type UseMarkerOptions = {
-	eventElement?: Ref<HTMLElement | null>;
-	canvasElement?: HTMLCanvasElement;
+	eventElement: Ref<HTMLElement | null>;
 
 	zoom: Ref<number>;
 	position: Ref<Vector>;
@@ -18,18 +32,18 @@ export type UseMarkerOptions = {
 
 	maxWidth: number;
 	maxHeight: number;
-	imageData?: ImageData;
 
 	markerType: Ref<MarkerType>;
 	markerColor: Ref<string>;
 	markerSize: Ref<number>;
 	markerDisabled: Ref<boolean>;
 
+	markerId: string;
+
 	onDispose?: () => void;
 };
 export function useMarker(options: UseMarkerOptions) {
-	const canvasElement =
-		options.canvasElement ?? document.createElement('canvas');
+	const canvasElement = new OffscreenCanvas(options.width.value, options.height.value);
 	const context = canvasElement.getContext('2d')!;
 	if (context == null) {
 		throw new Error('Failed to get context');
@@ -40,7 +54,7 @@ export function useMarker(options: UseMarkerOptions) {
 		(newWidth) => {
 			canvasElement.width = newWidth;
 		},
-		{ immediate: true }
+		{ immediate: true, flush: 'sync' }
 	);
 
 	watch(
@@ -48,80 +62,132 @@ export function useMarker(options: UseMarkerOptions) {
 		(newHeight) => {
 			canvasElement.height = newHeight;
 		},
-		{ immediate: true }
+		{ immediate: true, flush: 'sync' }
 	);
 
-	const eventElement = computed(() => options.eventElement?.value ?? canvasElement);
-
-	const storageCanvas = document.createElement('canvas');
+	const storageCanvas = new OffscreenCanvas(options.maxWidth, options.maxHeight);
 	storageCanvas.width = options.maxWidth;
 	storageCanvas.height = options.maxHeight;
 	const storageContext = storageCanvas.getContext('2d')!;
 	if (storageContext == null) {
 		throw new Error('Failed to get context');
 	}
-	if (options.imageData != null) {
-		storageContext.putImageData(options.imageData, 0, 0);
-	}
 
 	const activeMarker = shallowRef<{
-		position: Vector;
-		tempCanvas: HTMLCanvasElement;
-		tempContext: CanvasRenderingContext2D;
+		type: MarkerType;
+		color: string;
+		size: number;
+		viewportPosition: Vector;
+		viewportZoom: number;
+		position?: Vector;
+		tempCanvas: OffscreenCanvas;
+		tempContext: OffscreenCanvasRenderingContext2D;
+		minX: number;
+		minY: number;
+		maxX: number;
+		maxY: number;
+		noSave: boolean;
 	} | null>(null);
 	function dumpMarkerCanvas() {
 		if (activeMarker.value == null) return;
 		storageContext.globalCompositeOperation =
-			options.markerType.value === MarkerType.Pen
+			activeMarker.value.type === MarkerType.Pen
 				? 'source-over'
 				: 'destination-out';
 		storageContext.drawImage(
 			activeMarker.value.tempCanvas,
-			-options.position.value.x / options.zoom.value +
+			-activeMarker.value.viewportPosition.x / activeMarker.value.viewportZoom +
 				options.maxWidth / 2 -
-				options.width.value / options.zoom.value / 2,
-			-options.position.value.y / options.zoom.value +
+				options.width.value / activeMarker.value.viewportZoom / 2,
+			-activeMarker.value.viewportPosition.y / activeMarker.value.viewportZoom +
 				options.maxHeight / 2 -
-				options.height.value / options.zoom.value / 2,
-			options.width.value / options.zoom.value,
-			options.height.value / options.zoom.value
+				options.height.value / activeMarker.value.viewportZoom / 2,
+			options.width.value / activeMarker.value.viewportZoom,
+			options.height.value / activeMarker.value.viewportZoom
 		);
 	}
 
-	function placeMarker(position: Vector) {
+	function placeMarker(
+		position: Vector,
+		type: MarkerType = options.markerType.value,
+		color: string = options.markerColor.value,
+		size: number = options.markerSize.value,
+		viewportPosition: Vector = options.position.value.clone(),
+		viewportZoom: number = options.zoom.value,
+		isLoading = false
+	) {
 		if (activeMarker.value != null) removeMarker();
-		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = canvasElement.width;
-		tempCanvas.height = canvasElement.height;
+		const tempCanvas = new OffscreenCanvas(canvasElement.width, canvasElement.height);
 		const tempContext = tempCanvas.getContext('2d');
 		if (tempContext == null) {
 			throw new Error('Failed to get context');
 		}
-		tempContext.lineWidth = options.markerSize.value * options.zoom.value;
-		tempContext.strokeStyle =
-			options.markerType.value === MarkerType.Erase
-				? 'white'
-				: options.markerColor.value;
+		tempContext.lineWidth = size * viewportZoom;
+		tempContext.strokeStyle = type === MarkerType.Erase ? 'white' : color;
 		tempContext.lineCap = 'round';
 		tempContext.lineJoin = 'round';
 		tempContext.beginPath();
 		tempContext.moveTo(position.x, position.y);
 		activeMarker.value = {
-			position,
+			type,
+			color,
+			size,
 			tempCanvas,
 			tempContext,
+			viewportPosition,
+			viewportZoom,
+			minX: position.x,
+			minY: position.y,
+			maxX: position.x,
+			maxY: position.y,
+			noSave: isLoading,
 		};
 	}
 	function removeMarker() {
 		if (activeMarker.value == null) return;
 
 		dumpMarkerCanvas();
-		activeMarker.value.tempCanvas.remove();
+
+		const tempCanvasBounds = {
+			x:
+				-activeMarker.value.viewportPosition.x /
+					activeMarker.value.viewportZoom +
+				options.maxWidth / 2 -
+				options.width.value / activeMarker.value.viewportZoom / 2,
+			y:
+				-activeMarker.value.viewportPosition.y /
+					activeMarker.value.viewportZoom +
+				options.maxHeight / 2 -
+				options.height.value / activeMarker.value.viewportZoom / 2,
+			width: options.width.value / activeMarker.value.viewportZoom,
+			height: options.height.value / activeMarker.value.viewportZoom,
+		};
+		canvasStorage
+			.saveArea(
+				tempCanvasBounds.x +
+					activeMarker.value.minX / activeMarker.value.viewportZoom -
+					activeMarker.value.size / 2,
+				tempCanvasBounds.y +
+					activeMarker.value.minY / activeMarker.value.viewportZoom -
+					activeMarker.value.size / 2,
+				tempCanvasBounds.x +
+					activeMarker.value.maxX / activeMarker.value.viewportZoom +
+					activeMarker.value.size / 2,
+				tempCanvasBounds.y +
+					activeMarker.value.maxY / activeMarker.value.viewportZoom +
+					activeMarker.value.size / 2
+			)
+			.catch(console.error);
 
 		activeMarker.value = null;
 	}
 	function moveMarker(position: Vector) {
-		if (activeMarker.value == null) return;
+		if (
+			activeMarker.value == null ||
+			(activeMarker.value.position?.x === position.x &&
+				activeMarker.value.position?.y === position.y)
+		)
+			return;
 		activeMarker.value.tempContext.globalCompositeOperation = 'source-over';
 		activeMarker.value.tempContext.lineTo(position.x, position.y);
 		activeMarker.value.position = position;
@@ -137,21 +203,18 @@ export function useMarker(options: UseMarkerOptions) {
 			activeMarker.value.tempCanvas.height
 		);
 
-		if (options.markerType.value === MarkerType.Erase) {
+		activeMarker.value.minX = Math.min(activeMarker.value.minX, position.x);
+		activeMarker.value.minY = Math.min(activeMarker.value.minY, position.y);
+		activeMarker.value.maxX = Math.max(activeMarker.value.maxX, position.x);
+		activeMarker.value.maxY = Math.max(activeMarker.value.maxY, position.y);
+
+		if (activeMarker.value.type === MarkerType.Erase) {
 			dumpMarkerCanvas();
 		}
 	}
 
-	watch(
-		() => options.markerDisabled?.value && activeMarker.value != null,
-		(disabled) => {
-			if (disabled) removeMarker();
-		},
-		{ immediate: true, flush: 'sync' }
-	);
-
 	const eventToVector = (event: PointerEvent) => {
-		const bounds = eventElement.value.getBoundingClientRect();
+		const bounds = options.eventElement.value!.getBoundingClientRect();
 		if (bounds == null) return Vector.fromCartesianVector({ x: 0, y: 0 });
 
 		return Vector.fromCartesianVector({
@@ -167,7 +230,7 @@ export function useMarker(options: UseMarkerOptions) {
 
 		placeMarker(eventToVector(event));
 		moveMarker(eventToVector(event));
-		eventElement.value.setPointerCapture(event.pointerId);
+		options.eventElement.value!.setPointerCapture(event.pointerId);
 	}
 
 	let lastPointerMoveEvent: PointerEvent | null = null;
@@ -184,13 +247,13 @@ export function useMarker(options: UseMarkerOptions) {
 		event.stopPropagation();
 
 		moveMarker(eventToVector(event));
-		eventElement.value.releasePointerCapture(event.pointerId);
+		options.eventElement.value!.releasePointerCapture(event.pointerId);
 		removeMarker();
 	}
 
-	useEventListener(eventElement, 'pointerdown', onPointerDown);
-	useEventListener(eventElement, 'pointermove', onPointerMove);
-	useEventListener(eventElement, 'pointerup', onPointerUp);
+	useEventListener(options.eventElement, 'pointerdown', onPointerDown);
+	useEventListener(options.eventElement, 'pointermove', onPointerMove);
+	useEventListener(options.eventElement, 'pointerup', onPointerUp);
 
 	let frameRequest: ReturnType<typeof requestAnimationFrame> | null = null;
 	const cancelFrame = () => {
@@ -221,7 +284,10 @@ export function useMarker(options: UseMarkerOptions) {
 				options.maxWidth * options.zoom.value,
 				options.maxHeight * options.zoom.value
 			);
-			if (activeMarker.value != null && options.markerType.value === MarkerType.Pen) {
+			if (
+				activeMarker.value != null &&
+				options.markerType.value === MarkerType.Pen
+			) {
 				context.drawImage(
 					activeMarker.value.tempCanvas,
 					0,
@@ -255,6 +321,21 @@ export function useMarker(options: UseMarkerOptions) {
 		cancelFrame();
 	}
 
+	const canvasStorage = useCanvasStorage({
+		canvas: storageCanvas,
+		context: storageContext,
+		regionWidth: ref(100),
+		regionHeight: ref(100),
+		storageId: computed(() => options.markerId),
+	});
+	console.log('Loading canvas storage');
+	canvasStorage
+		.loadArea(0, 0, options.maxWidth, options.maxHeight)
+		.then(() => {
+			console.log('Loaded canvas storage');
+		})
+		.catch(console.error);
+
 	let isDisposed = false;
 	onScopeDispose(() => {
 		isDisposed = true;
@@ -263,7 +344,6 @@ export function useMarker(options: UseMarkerOptions) {
 
 	return {
 		activeMarker,
-		eventElement,
 		canvasElement,
 		start,
 		stop,

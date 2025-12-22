@@ -191,9 +191,7 @@
 		containerElement,
 		viewport,
 		lockRotate: ref(true),
-		disableMouseControls: computed(
-			() => activeMarker.value != null
-		),
+		disableMouseControls: computed(() => activeMarker.value != null),
 	});
 
 	provideViewport(viewport);
@@ -211,7 +209,12 @@
 		height,
 	});
 
-	const { start: startMarker, stop: stopMarker, canvasElement: markerCanvasElement, activeMarker } = useMarker({
+	const {
+		start: startMarker,
+		stop: stopMarker,
+		canvasElement: markerCanvasElement,
+		activeMarker,
+	} = useMarker({
 		eventElement: canvasElement,
 		zoom: computed(() => viewport.value.resolvedZoom),
 		position: computed(() => viewport.value.position),
@@ -222,7 +225,10 @@
 		markerType,
 		markerColor,
 		markerSize,
-		markerDisabled: computed(() => markerDisabled.value || moving.value != null),
+		markerDisabled: computed(
+			() => markerDisabled.value || moving.value != null
+		),
+		markerId: 'marker-export',
 	});
 
 	const context = computed(() => canvasElement.value?.getContext('2d'));
@@ -242,9 +248,27 @@
 		try {
 			if (!context.value) return;
 			context.value.clearRect(0, 0, width.value, height.value);
-			context.value.drawImage(hexMapCanvasElement, 0, 0, width.value, height.value);
-			context.value.drawImage(markerCanvasElement, 0, 0, width.value, height.value);
-			context.value.drawImage(hexMapForegroundCanvasElement, 0, 0, width.value, height.value);
+			context.value.drawImage(
+				hexMapCanvasElement,
+				0,
+				0,
+				width.value,
+				height.value
+			);
+			context.value.drawImage(
+				markerCanvasElement,
+				0,
+				0,
+				width.value,
+				height.value
+			);
+			context.value.drawImage(
+				hexMapForegroundCanvasElement,
+				0,
+				0,
+				width.value,
+				height.value
+			);
 		} finally {
 			requestFrame();
 		}
