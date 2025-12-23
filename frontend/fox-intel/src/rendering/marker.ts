@@ -43,7 +43,10 @@ export type UseMarkerOptions = {
 	onDispose?: () => void;
 };
 export function useMarker(options: UseMarkerOptions) {
-	const canvasElement = new OffscreenCanvas(options.width.value, options.height.value);
+	const canvasElement = new OffscreenCanvas(
+		options.width.value,
+		options.height.value
+	);
 	const context = canvasElement.getContext('2d')!;
 	if (context == null) {
 		throw new Error('Failed to get context');
@@ -65,7 +68,10 @@ export function useMarker(options: UseMarkerOptions) {
 		{ immediate: true, flush: 'sync' }
 	);
 
-	const storageCanvas = new OffscreenCanvas(options.maxWidth, options.maxHeight);
+	const storageCanvas = new OffscreenCanvas(
+		options.maxWidth,
+		options.maxHeight
+	);
 	storageCanvas.width = options.maxWidth;
 	storageCanvas.height = options.maxHeight;
 	const storageContext = storageCanvas.getContext('2d')!;
@@ -88,6 +94,56 @@ export function useMarker(options: UseMarkerOptions) {
 		maxY: number;
 		noSave: boolean;
 	} | null>(null);
+
+	const getActiveMarkerBounds = () => {
+		if (activeMarker.value == null) return null;
+
+		const tempCanvasBounds = {
+			x:
+				-activeMarker.value.viewportPosition.x /
+					activeMarker.value.viewportZoom +
+				options.maxWidth / 2 -
+				options.width.value / activeMarker.value.viewportZoom / 2,
+			y:
+				-activeMarker.value.viewportPosition.y /
+					activeMarker.value.viewportZoom +
+				options.maxHeight / 2 -
+				options.height.value / activeMarker.value.viewportZoom / 2,
+			width: options.width.value / activeMarker.value.viewportZoom,
+			height: options.height.value / activeMarker.value.viewportZoom,
+		};
+
+		return {
+			x1:
+				tempCanvasBounds.x +
+				activeMarker.value.minX / activeMarker.value.viewportZoom -
+				activeMarker.value.size / 2,
+			y1:
+				tempCanvasBounds.y +
+				activeMarker.value.minY / activeMarker.value.viewportZoom -
+				activeMarker.value.size / 2,
+			x2:
+				tempCanvasBounds.x +
+				activeMarker.value.maxX / activeMarker.value.viewportZoom +
+				activeMarker.value.size / 2,
+			y2:
+				tempCanvasBounds.y +
+				activeMarker.value.maxY / activeMarker.value.viewportZoom +
+				activeMarker.value.size / 2,
+		};
+	};
+
+	const getActiveMarkerRegionCount = () => {
+		const activeMarkerBounds = getActiveMarkerBounds();
+		if (activeMarkerBounds == null) return 0;
+		return canvasStorage.getRegionCount(
+			activeMarkerBounds.x1,
+			activeMarkerBounds.y1,
+			activeMarkerBounds.x2,
+			activeMarkerBounds.y2
+		);
+	};
+
 	function dumpMarkerCanvas() {
 		if (activeMarker.value == null) return;
 		storageContext.globalCompositeOperation =
@@ -117,7 +173,10 @@ export function useMarker(options: UseMarkerOptions) {
 		isLoading = false
 	) {
 		if (activeMarker.value != null) removeMarker();
-		const tempCanvas = new OffscreenCanvas(canvasElement.width, canvasElement.height);
+		const tempCanvas = new OffscreenCanvas(
+			canvasElement.width,
+			canvasElement.height
+		);
 		const tempContext = tempCanvas.getContext('2d');
 		if (tempContext == null) {
 			throw new Error('Failed to get context');
@@ -147,37 +206,17 @@ export function useMarker(options: UseMarkerOptions) {
 		if (activeMarker.value == null) return;
 
 		dumpMarkerCanvas();
-
-		const tempCanvasBounds = {
-			x:
-				-activeMarker.value.viewportPosition.x /
-					activeMarker.value.viewportZoom +
-				options.maxWidth / 2 -
-				options.width.value / activeMarker.value.viewportZoom / 2,
-			y:
-				-activeMarker.value.viewportPosition.y /
-					activeMarker.value.viewportZoom +
-				options.maxHeight / 2 -
-				options.height.value / activeMarker.value.viewportZoom / 2,
-			width: options.width.value / activeMarker.value.viewportZoom,
-			height: options.height.value / activeMarker.value.viewportZoom,
-		};
-		canvasStorage
-			.saveArea(
-				tempCanvasBounds.x +
-					activeMarker.value.minX / activeMarker.value.viewportZoom -
-					activeMarker.value.size / 2,
-				tempCanvasBounds.y +
-					activeMarker.value.minY / activeMarker.value.viewportZoom -
-					activeMarker.value.size / 2,
-				tempCanvasBounds.x +
-					activeMarker.value.maxX / activeMarker.value.viewportZoom +
-					activeMarker.value.size / 2,
-				tempCanvasBounds.y +
-					activeMarker.value.maxY / activeMarker.value.viewportZoom +
-					activeMarker.value.size / 2
-			)
-			.catch(console.error);
+		const activeMarkerBounds = getActiveMarkerBounds();
+		if (activeMarkerBounds != null) {
+			canvasStorage
+				.saveArea(
+					activeMarkerBounds.x1,
+					activeMarkerBounds.y1,
+					activeMarkerBounds.x2,
+					activeMarkerBounds.y2
+				)
+				.catch(console.error);
+		}
 
 		activeMarker.value = null;
 	}
@@ -241,15 +280,21 @@ export function useMarker(options: UseMarkerOptions) {
 		if (options.markerDisabled?.value || !activeMarker.value) return;
 
 		moveMarker(eventToVector(event));
+		if (getActiveMarkerRegionCount() > 500) {
+			removeMarker();
+			alert(
+				'You are modifying too much of the map at once. Please split your modifications into smaller areas.'
+			);
+		}
 	}
 
 	function onPointerUp(event: PointerEvent) {
+		options.eventElement.value!.releasePointerCapture(event.pointerId);
 		if (options.markerDisabled?.value || !activeMarker.value) return;
 		event.preventDefault();
 		event.stopPropagation();
 
 		moveMarker(eventToVector(event));
-		options.eventElement.value!.releasePointerCapture(event.pointerId);
 		removeMarker();
 	}
 
@@ -328,11 +373,14 @@ export function useMarker(options: UseMarkerOptions) {
 		context: storageContext,
 		regionWidth: ref(100),
 		regionHeight: ref(100),
-		storageId: computed(() => options.markerId),
+		intelInstance: computed(() => ({
+			id: options.markerId,
+			password: options.markerId,
+		})),
 	});
 	console.log('Loading canvas storage');
 	canvasStorage
-		.loadArea(0, 0, options.maxWidth, options.maxHeight)
+		.loadAll()
 		.then(() => {
 			console.log('Loaded canvas storage');
 		})

@@ -1,5 +1,5 @@
 {
-	"name": "@packages/server",
+	"name": "@packages/fox-intel-server",
 	"version": "1.0.0",
 	"main": "dist/index.js",
 	"type": "module",
@@ -10,15 +10,15 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "node .",
 		"serve": "yarn run build && yarn run start",
-		"build": "rimraf dist && tsc && rimraf www && node build.js",
+		"build": "rimraf dist && tsc",
 		"prepublishOnly": "npm run build"
 	},
 	"private": true,
 	"repository": "https://github.com/KaoSDlanor/fox-fall",
 	"author": "KaoSDlanor <KaoSDlanor@gmail.com>",
 	"devDependencies": {
-		"@frontend/fox-fall": "workspace:*",
-		"@types/node": "^20.12.7",
+		"@types/better-sqlite3": "^7.6.13",
+		"@types/node": "^22.7.4",
 		"@types/ws": "^8.5.10",
 		"prettier": "^3.0.3",
 		"rimraf": "^6.0.1",
@@ -28,7 +28,9 @@
 	"dependencies": {
 		"@hono/node-server": "^1.11.1",
 		"@packages/data": "workspace:*",
+		"better-sqlite3": "^12.5.0",
 		"hono": "^4.2.8",
+		"sqlite3": "^5.1.7",
 		"ws": "^8.16.0"
 	}
 }

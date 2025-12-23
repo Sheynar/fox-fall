@@ -228,7 +228,7 @@
 		markerDisabled: computed(
 			() => markerDisabled.value || moving.value != null
 		),
-		markerId: 'marker-export',
+		markerId: '69',
 	});
 
 	const context = computed(() => canvasElement.value?.getContext('2d'));
