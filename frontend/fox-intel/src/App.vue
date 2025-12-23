@@ -191,7 +191,9 @@
 		containerElement,
 		viewport,
 		lockRotate: ref(true),
-		disableMouseControls: computed(() => activeMarker.value != null),
+		disableMouseControls: computed(
+			() => activeMarker.value != null || !markerReady.value
+		),
 	});
 
 	provideViewport(viewport);
@@ -214,6 +216,7 @@
 		stop: stopMarker,
 		canvasElement: markerCanvasElement,
 		activeMarker,
+		ready: markerReady,
 	} = useMarker({
 		eventElement: canvasElement,
 		zoom: computed(() => viewport.value.resolvedZoom),

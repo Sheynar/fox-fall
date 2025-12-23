@@ -263,7 +263,7 @@ export function useMarker(options: UseMarkerOptions) {
 	};
 
 	function onPointerDown(event: PointerEvent) {
-		if (options.markerDisabled?.value || event.button !== 0) return;
+		if (options.markerDisabled?.value || event.button !== 0 || !ready.value) return;
 		event.preventDefault();
 		event.stopPropagation();
 
@@ -277,7 +277,7 @@ export function useMarker(options: UseMarkerOptions) {
 	let lastPointerMoveEvent: PointerEvent | null = null;
 	function onPointerMove(event: PointerEvent) {
 		lastPointerMoveEvent = event;
-		if (options.markerDisabled?.value || !activeMarker.value) return;
+		if (!activeMarker.value) return;
 
 		moveMarker(eventToVector(event));
 		if (getActiveMarkerRegionCount() > 500) {
@@ -290,7 +290,7 @@ export function useMarker(options: UseMarkerOptions) {
 
 	function onPointerUp(event: PointerEvent) {
 		options.eventElement.value!.releasePointerCapture(event.pointerId);
-		if (options.markerDisabled?.value || !activeMarker.value) return;
+		if (!activeMarker.value) return;
 		event.preventDefault();
 		event.stopPropagation();
 
@@ -344,7 +344,7 @@ export function useMarker(options: UseMarkerOptions) {
 				);
 			}
 
-			if (lastPointerMoveEvent != null && !options.markerDisabled?.value) {
+			if (lastPointerMoveEvent != null && !options.markerDisabled?.value && ready.value) {
 				context.strokeStyle = 'white';
 				context.beginPath();
 				context.arc(
@@ -378,11 +378,12 @@ export function useMarker(options: UseMarkerOptions) {
 			password: options.markerId,
 		})),
 	});
-	console.log('Loading canvas storage');
-	canvasStorage
+
+	const ready = ref(false);
+	const readyPromise = canvasStorage
 		.loadAll()
-		.then(() => {
-			console.log('Loaded canvas storage');
+		.finally(() => {
+			ready.value = true;
 		})
 		.catch(console.error);
 
@@ -397,5 +398,7 @@ export function useMarker(options: UseMarkerOptions) {
 		canvasElement,
 		start,
 		stop,
+		ready,
+		readyPromise,
 	};
 }
