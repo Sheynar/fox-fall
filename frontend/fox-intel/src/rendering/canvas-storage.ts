@@ -50,6 +50,24 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 			}));
 	}
 
+	async function authenticatedFetch(url: string, options: RequestInit) {
+		const sessionId = await getSessionId();
+		const response = await fetch(url, {
+			...options,
+			headers: {
+				...(options.headers ?? {}),
+				'X-Session-Id': sessionId,
+			},
+		});
+
+		if (response.status === 401) {
+			session.value = null;
+			return authenticatedFetch(url, options);
+		}
+
+		return response;
+	}
+
 	const regionCountX = computed(() =>
 		Math.ceil(options.canvas.width / options.regionWidth.value)
 	);
@@ -136,29 +154,21 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		// options.context.fillStyle = prevFillStyle;
 
 		const blob = await regionCanvas.convertToBlob({ type: 'image/webp' });
-		const sessionId = await getSessionId();
-		await fetch(
+		await authenticatedFetch(
 			`/api/v1/instance/${options.intelInstance.value.id}/markers/${x}/${y}`,
 			{
 				method: 'POST',
 				body: blob,
-				headers: {
-					'X-Session-Id': sessionId,
-				},
 			}
 		);
 		// await storeBlob(blob, options.intelInstance.value.id + '-' + regionId);
 	}
 
 	async function loadAll() {
-		const sessionId = await getSessionId();
-		const response = await fetch(
+		const response = await authenticatedFetch(
 			`/api/v1/instance/${options.intelInstance.value.id}/markers`,
 			{
 				method: 'GET',
-				headers: {
-					'X-Session-Id': sessionId,
-				},
 			}
 		);
 		if (!response.ok) {
@@ -222,14 +232,10 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		if (x < 0 || x > regionCountX.value) throw new Error('x is out of range');
 		if (y < 0 || y > regionCountY.value) throw new Error('y is out of range');
 
-		const sessionId = await getSessionId();
-		const response = await fetch(
+		const response = await authenticatedFetch(
 			`/api/v1/instance/${options.intelInstance.value.id}/markers/${x}/${y}`,
 			{
 				method: 'GET',
-				headers: {
-					'X-Session-Id': sessionId,
-				},
 			}
 		);
 		if (!response.ok) {
@@ -270,14 +276,10 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
-		const sessionId = await getSessionId();
-		const response = await fetch(
+		const response = await authenticatedFetch(
 			`/api/v1/instance/${options.intelInstance.value.id}/since?timestamp=${timestamp}&timeout=${timeout}`,
 			{
 				method: 'GET',
-				headers: {
-					'X-Session-Id': sessionId,
-				},
 			}
 		);
 		if (!response.ok) {
