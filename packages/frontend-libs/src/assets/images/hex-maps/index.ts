@@ -1,7 +1,3 @@
-import { HEX_ASSETS as VANILLA } from './vanilla';
-import { HEX_ASSETS as IMPROVED_MAP_MOD_RUSTARD_KNIGHT_EDIT } from './improved-map-mod-rustard-knight-edit';
-import { HEX_ASSETS as IMPROVED_MAP_MOD_RUSTARD_KNIGHT_EDIT_HD } from './improved-map-mod-rustard-knight-edit-hd';
-
 export enum MapSource {
 	Vanilla = 'vanilla',
 	ImprovedMapModRustardKnightEdit = 'improved-map-mod-rustard-knight-edit',
@@ -9,8 +5,8 @@ export enum MapSource {
 }
 
 export const HEX_MAPS = {
-	[MapSource.Vanilla]: VANILLA,
+	[MapSource.Vanilla]: () => import('./vanilla').then(module => module.HEX_ASSETS),
 	[MapSource.ImprovedMapModRustardKnightEdit]:
-		IMPROVED_MAP_MOD_RUSTARD_KNIGHT_EDIT,
-	[MapSource.ImprovedMapModRustardKnightEditHd]: IMPROVED_MAP_MOD_RUSTARD_KNIGHT_EDIT_HD
+		() => import('./improved-map-mod-rustard-knight-edit').then(module => module.HEX_ASSETS),
+	[MapSource.ImprovedMapModRustardKnightEditHd]: () => import('./improved-map-mod-rustard-knight-edit-hd').then(module => module.HEX_ASSETS),
 };

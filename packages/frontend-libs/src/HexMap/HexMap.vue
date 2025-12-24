@@ -22,7 +22,7 @@
 					v-for="(hex, x) in row"
 					:key="x"
 				>
-					<img class="HexMap__hex-image" v-if="hex" :src="HEX_ASSETS[hex]" />
+					<img class="HexMap__hex-image" v-if="hex && hexAssets" :src="hexAssets[hex]" />
 					<div
 						class="HexMap__hex-label"
 						v-show="viewport.resolvedZoom <= 0.1"
@@ -104,9 +104,9 @@
 
 <script setup lang="ts">
 	import { HEX_SIZE } from '@packages/data/dist/artillery/map';
-	import { computed } from "vue";
+	import { shallowRef, watch } from "vue";
 	import { HEX_MAPS, MapSource } from "@/assets/images/hex-maps";
-	import { HEX_POSITIONS } from "@/hexMap";
+	import { Hex, HEX_POSITIONS } from "@/hexMap";
 	import { injectViewport } from '@/viewport/viewport';
 
 	const viewport = injectViewport();
@@ -115,7 +115,12 @@
 			mapSource?: MapSource;
 		}>();
 
-	const HEX_ASSETS = computed(
-		() => props.mapSource && HEX_MAPS[props.mapSource] || HEX_MAPS[MapSource.Vanilla]
-	);
+	const hexAssets = shallowRef<Record<Hex, string> | null>(null);
+
+	watch(() => props.mapSource, async (newMapSource) => {
+		const newAssets = await (newMapSource && HEX_MAPS[newMapSource] || HEX_MAPS[MapSource.Vanilla])();
+		if (newMapSource === props.mapSource) {
+			hexAssets.value = newAssets;
+		}
+	}, { immediate: true });
 </script>

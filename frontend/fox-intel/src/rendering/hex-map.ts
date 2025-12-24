@@ -56,9 +56,10 @@ export function useHexMap(options: HexMapOptions) {
 
 	let hexImages: Partial<Record<Hex, HTMLCanvasElement>> = {};
 	watch(
-		() => HEX_MAPS[options.mapSource],
-		(newHexMap) => {
+		() => options.mapSource,
+		async (newMapSource) => {
 			const newHexImages: Partial<Record<Hex, HTMLCanvasElement>> = {};
+			const newHexMap = await (newMapSource && HEX_MAPS[newMapSource] || HEX_MAPS[MapSource.Vanilla])();
 			for (const [hex, imageSrc] of Object.entries(newHexMap) as [
 				Hex,
 				string,
@@ -75,7 +76,9 @@ export function useHexMap(options: HexMapOptions) {
 					newHexImages[hex] = canvas;
 				};
 			}
-			hexImages = newHexImages;
+			if (newMapSource === options.mapSource) {
+				hexImages = newHexImages;
+			}
 		},
 		{ immediate: true }
 	);
