@@ -490,7 +490,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@frontend/fox-intel@workspace:frontend/fox-intel":
+"@frontend/fox-intel@workspace:*, @frontend/fox-intel@workspace:frontend/fox-intel":
   version: 0.0.0-use.local
   resolution: "@frontend/fox-intel@workspace:frontend/fox-intel"
   dependencies:
@@ -816,6 +816,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@packages/fox-intel-server@workspace:packages/fox-intel-server"
   dependencies:
+    "@frontend/fox-intel": "workspace:*"
     "@hono/node-server": "npm:^1.11.1"
     "@packages/data": "workspace:*"
     "@types/better-sqlite3": "npm:^7.6.13"

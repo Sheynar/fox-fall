@@ -1,17 +1,18 @@
 import { serve } from '@hono/node-server';
-// import { serveStatic } from '@hono/node-server/serve-static';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { generateId } from '@packages/data/dist/id.js';
 import { Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
 import {
 	createIntelInstance,
 	createIntelMarkerRegion,
-	createIntelMarkerRegions,
 	getAllIntelInstances,
 	getAllIntelMarkerRegions,
 	getIntelInstance,
 	getIntelMarkerRegion,
 	getIntelMarkerRegions,
+	getIntelMarkerRegionsByTimestamp,
+	type IntelMarkerRegion,
 } from './data-store.js';
 import crypto from 'crypto';
 
@@ -95,7 +96,7 @@ export async function initialiseHttp(
 	function validateSession(c: Context, instanceId: string) {
 		const sessionId = c.req.header('X-Session-Id');
 		if (!sessionId) {
-			return c.json({ error: 'Session ID is required' }, 400);
+			return c.json({ error: 'Session ID is required' }, 401);
 		}
 
 		const session = activeSessions.get(sessionId);
@@ -106,7 +107,7 @@ export async function initialiseHttp(
 					code: 'SESSION_EXPIRED',
 					sessionId: sessionId,
 				},
-				400
+				401
 			);
 		}
 		if (session.instanceId !== instanceId) {
@@ -122,6 +123,45 @@ export async function initialiseHttp(
 		}
 		return;
 	}
+
+	const pendingRequests = new Map<string, Set<() => void>>();
+	app.get('/api/v1/instance/:instanceId/since', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		validateSession(c, instanceId);
+		const timestamp = parseInt(c.req.query('timestamp') ?? '');
+		if (isNaN(timestamp)) {
+			return c.json({ error: 'Invalid timestamp' }, 400);
+		}
+		const timeout = parseInt(c.req.query('timeout') ?? '');
+		if (isNaN(timeout)) {
+			return c.json({ error: 'Invalid timeout' }, 400);
+		}
+
+		let regions = getIntelMarkerRegionsByTimestamp(instanceId, timestamp);
+		if (regions.length === 0) {
+			regions = await new Promise<IntelMarkerRegion[]>((resolve) => {
+				if (!pendingRequests.has(instanceId)) {
+					pendingRequests.set(instanceId, new Set());
+				}
+
+				const onRegions = () => {
+					pendingRequests.get(instanceId)?.delete(onRegions);
+					resolve(getIntelMarkerRegionsByTimestamp(instanceId, timestamp));
+				}
+
+				pendingRequests.get(instanceId)!.add(onRegions);
+				setTimeout(onRegions, timeout);
+			});
+		}
+
+		return c.json({
+			regions: regions.map((region) => ({
+				...region,
+				region_data: `data:${region.mime_type};base64,${region.region_data.toString('base64')}`
+			})),
+			timestamp: Math.max(...regions.map((region) => region.timestamp), timestamp),
+		});
+	});
 
 	app.get(
 		'/api/v1/instance/:instanceId/markers/:regionX/:regionY',
@@ -243,20 +283,25 @@ export async function initialiseHttp(
 				c.req.header('Content-Type') ?? 'image/png',
 				Buffer.from(regionData)
 			);
+
+			for (const listener of pendingRequests.get(instanceId) ?? []) {
+				listener();
+			}
+
 			return c.json({ id: regionId });
 		}
 	);
 
-	// app.use(
-	// 	'/*',
-	// 	serveStatic({
-	// 		root: './www/',
-	// 		index: 'index.html',
-	// 		onNotFound: (path, c) => {
-	// 			console.log(`${path} is not found, request to ${c.req.path}`);
-	// 		},
-	// 	})
-	// );
+	app.use(
+		'/*',
+		serveStatic({
+			root: './www/',
+			index: 'index.html',
+			onNotFound: (path, c) => {
+				console.log(`${path} is not found, request to ${c.req.path}`);
+			},
+		})
+	);
 
 	await new Promise<void>((resolve) => {
 		serve(

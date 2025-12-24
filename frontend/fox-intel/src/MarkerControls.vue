@@ -115,7 +115,6 @@
 
 <script setup lang="ts">
 	import { Vue3ColorPicker } from '@cyhnkckali/vue3-color-picker';
-	import FoxText from '@packages/frontend-libs/dist/inputs/FoxText.vue';
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import { MarkerType } from './rendering/marker';
 	import {

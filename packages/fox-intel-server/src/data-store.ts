@@ -18,6 +18,7 @@ export interface IntelMarkerRegion {
 	instance_id: string;
 	region_x: number;
 	region_y: number;
+	timestamp: number;
 	mime_type: string;
 	region_data: Buffer;
 }
@@ -34,6 +35,7 @@ db.exec(`
 		instance_id INTEGER NOT NULL,
 		region_x INTEGER NOT NULL,
 		region_y INTEGER NOT NULL,
+		timestamp INTEGER NOT NULL,
 		mime_type TEXT NOT NULL,
 		region_data BLOB NOT NULL,
 		FOREIGN KEY (instance_id) REFERENCES IntelInstance(id)
@@ -114,6 +116,19 @@ export function getIntelMarkerRegions(
 	return regions;
 }
 
+export function getIntelMarkerRegionsByTimestamp(
+	instanceId: string,
+	timestamp: number
+) {
+	const regions = db
+		.prepare<
+			[string, number],
+			IntelMarkerRegion
+		>('SELECT * FROM IntelMarkerRegion WHERE instance_id = ? AND timestamp > ?')
+		.all(instanceId, timestamp);
+	return regions;
+}
+
 export function createIntelMarkerRegion(
 	instanceId: string,
 	regionX: number,
@@ -123,9 +138,9 @@ export function createIntelMarkerRegion(
 ) {
 	const insertResult = db
 		.prepare(
-			'INSERT INTO IntelMarkerRegion (instance_id, region_x, region_y, mime_type, region_data) VALUES (?, ?, ?, ?, ?) ON CONFLICT (instance_id, region_x, region_y) DO UPDATE SET mime_type = excluded.mime_type, region_data = excluded.region_data'
+			'INSERT INTO IntelMarkerRegion (instance_id, region_x, region_y, timestamp, mime_type, region_data) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (instance_id, region_x, region_y) DO UPDATE SET timestamp = excluded.timestamp, mime_type = excluded.mime_type, region_data = excluded.region_data'
 		)
-		.run(instanceId, regionX, regionY, mimeType, regionData);
+		.run(instanceId, regionX, regionY, Date.now(), mimeType, regionData);
 	return insertResult.lastInsertRowid;
 }
 
@@ -135,7 +150,7 @@ export function createIntelMarkerRegions(
 ) {
 	const insertResult = db
 		.prepare(
-			`INSERT INTO IntelMarkerRegion (instance_id, region_x, region_y, mime_type, region_data) VALUES ${regions.map(() => '(?, ?, ?, ?, ?)').join(', ')} ON CONFLICT (instance_id, region_x, region_y) DO UPDATE SET mime_type = excluded.mime_type, region_data = excluded.region_data`
+			`INSERT INTO IntelMarkerRegion (instance_id, region_x, region_y, timestamp, mime_type, region_data) VALUES ${regions.map(() => '(?, ?, ?, ?, ?, ?)').join(', ')} ON CONFLICT (instance_id, region_x, region_y) DO UPDATE SET mime_type = excluded.mime_type, region_data = excluded.region_data`
 		)
 		.run(
 			...regions
@@ -143,6 +158,7 @@ export function createIntelMarkerRegions(
 					instanceId,
 					region.regionX,
 					region.regionY,
+					Date.now(),
 					region.mimeType,
 					region.regionData,
 				])

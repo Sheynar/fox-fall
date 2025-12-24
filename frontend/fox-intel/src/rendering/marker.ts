@@ -263,7 +263,8 @@ export function useMarker(options: UseMarkerOptions) {
 	};
 
 	function onPointerDown(event: PointerEvent) {
-		if (options.markerDisabled?.value || event.button !== 0 || !ready.value) return;
+		if (options.markerDisabled?.value || event.button !== 0 || !ready.value)
+			return;
 		event.preventDefault();
 		event.stopPropagation();
 
@@ -320,6 +321,7 @@ export function useMarker(options: UseMarkerOptions) {
 
 		try {
 			context.clearRect(0, 0, options.width.value, options.height.value);
+			context.globalCompositeOperation = 'source-over';
 			context.drawImage(
 				storageCanvas,
 				options.position.value.x +
@@ -344,7 +346,11 @@ export function useMarker(options: UseMarkerOptions) {
 				);
 			}
 
-			if (lastPointerMoveEvent != null && !options.markerDisabled?.value && ready.value) {
+			if (
+				lastPointerMoveEvent != null &&
+				!options.markerDisabled?.value &&
+				ready.value
+			) {
 				context.strokeStyle = 'white';
 				context.beginPath();
 				context.arc(
@@ -380,8 +386,7 @@ export function useMarker(options: UseMarkerOptions) {
 	});
 
 	const ready = ref(false);
-	const readyPromise = canvasStorage
-		.loadAll()
+	const readyPromise = canvasStorage.ready
 		.finally(() => {
 			ready.value = true;
 		})

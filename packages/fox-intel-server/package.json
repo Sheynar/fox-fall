@@ -10,13 +10,14 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "node .",
 		"serve": "yarn run build && yarn run start",
-		"build": "rimraf dist && tsc",
+		"build": "rimraf dist && tsc && rimraf www && node build.js",
 		"prepublishOnly": "npm run build"
 	},
 	"private": true,
 	"repository": "https://github.com/KaoSDlanor/fox-fall",
 	"author": "KaoSDlanor <KaoSDlanor@gmail.com>",
 	"devDependencies": {
+		"@frontend/fox-intel": "workspace:*",
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/node": "^22.7.4",
 		"@types/ws": "^8.5.10",

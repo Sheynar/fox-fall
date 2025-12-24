@@ -1,5 +1,5 @@
 // import { retrieveBlob, storeBlob } from '@/lib/store';
-import { computed, Ref, shallowRef, watch } from 'vue';
+import { computed, onScopeDispose, Ref, shallowRef, watch } from 'vue';
 
 export type UseCanvasStorageOptions = {
 	canvas: OffscreenCanvas;
@@ -34,7 +34,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 				) {
 					return session.value.sessionId;
 				}
-				const response = await fetch('http://localhost:80/api/v1/instance', {
+				const response = await fetch('/api/v1/instance', {
 					method: 'POST',
 					body: JSON.stringify(options.intelInstance.value),
 				});
@@ -91,7 +91,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		const BATCH_SIZE = 100;
 		let batch = [] as typeof saveFunctions;
 		while ((batch = saveFunctions.splice(0, BATCH_SIZE)).length) {
-			await Promise.all(batch.map(fn => fn()));
+			await Promise.all(batch.map((fn) => fn()));
 		}
 	}
 
@@ -116,6 +116,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 			options.regionWidth.value,
 			options.regionHeight.value
 		);
+		regionContext.globalCompositeOperation = 'source-over';
 		regionContext.drawImage(
 			options.canvas,
 			x * options.regionWidth.value,
@@ -137,7 +138,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		const blob = await regionCanvas.convertToBlob({ type: 'image/webp' });
 		const sessionId = await getSessionId();
 		await fetch(
-			`http://localhost:80/api/v1/instance/${options.intelInstance.value.id}/markers/${x}/${y}`,
+			`/api/v1/instance/${options.intelInstance.value.id}/markers/${x}/${y}`,
 			{
 				method: 'POST',
 				body: blob,
@@ -152,7 +153,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 	async function loadAll() {
 		const sessionId = await getSessionId();
 		const response = await fetch(
-			`http://localhost:80/api/v1/instance/${options.intelInstance.value.id}/markers`,
+			`/api/v1/instance/${options.intelInstance.value.id}/markers`,
 			{
 				method: 'GET',
 				headers: {
@@ -161,16 +162,30 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 			}
 		);
 		if (!response.ok) {
-			throw new Error('Failed to load regions. ' + await response.text());
+			throw new Error('Failed to load regions. ' + (await response.text()));
 		}
-		for (const region of await response.json() as { id: number; instance_id: number; region_x: number; region_y: number; mime_type: string; region_data: string }[]) {
+		for (const region of (await response.json()) as {
+			id: number;
+			instance_id: number;
+			region_x: number;
+			region_y: number;
+			mime_type: string;
+			region_data: string;
+		}[]) {
 			const image = new Image();
 			image.src = region.region_data;
 			await new Promise((resolve, reject) => {
 				image.onload = resolve;
 				image.onerror = reject;
 			});
-			options.context.drawImage(image, region.region_x * options.regionWidth.value, region.region_y * options.regionHeight.value, options.regionWidth.value, options.regionHeight.value);
+			options.context.globalCompositeOperation = 'source-over';
+			options.context.drawImage(
+				image,
+				region.region_x * options.regionWidth.value,
+				region.region_y * options.regionHeight.value,
+				options.regionWidth.value,
+				options.regionHeight.value
+			);
 		}
 	}
 
@@ -199,7 +214,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		const BATCH_SIZE = 100;
 		let batch = [] as typeof loadFunctions;
 		while ((batch = loadFunctions.splice(0, BATCH_SIZE)).length) {
-			await Promise.all(batch.map(fn => fn()));
+			await Promise.all(batch.map((fn) => fn()));
 		}
 	}
 
@@ -209,7 +224,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 
 		const sessionId = await getSessionId();
 		const response = await fetch(
-			`http://localhost:80/api/v1/instance/${options.intelInstance.value.id}/markers/${x}/${y}`,
+			`/api/v1/instance/${options.intelInstance.value.id}/markers/${x}/${y}`,
 			{
 				method: 'GET',
 				headers: {
@@ -218,7 +233,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 			}
 		);
 		if (!response.ok) {
-			throw new Error('Failed to load region. ' + await response.text());
+			throw new Error('Failed to load region. ' + (await response.text()));
 		}
 		if (response.status === 204) {
 			// Region is empty, nothing to load
@@ -242,6 +257,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 			options.regionWidth.value,
 			options.regionHeight.value
 		);
+		options.context.globalCompositeOperation = 'source-over';
 		options.context.drawImage(
 			image,
 			x * options.regionWidth.value,
@@ -252,7 +268,80 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		image.close();
 	}
 
+	let lastLoadedTimestamp = 0;
+	async function loadSince(timestamp: number, timeout: number = 10000) {
+		const sessionId = await getSessionId();
+		const response = await fetch(
+			`/api/v1/instance/${options.intelInstance.value.id}/since?timestamp=${timestamp}&timeout=${timeout}`,
+			{
+				method: 'GET',
+				headers: {
+					'X-Session-Id': sessionId,
+				},
+			}
+		);
+		if (!response.ok) {
+			throw new Error('Failed to load regions. ' + (await response.text()));
+		}
+		const data: {
+			regions: {
+				id: number;
+				instance_id: number;
+				region_x: number;
+				region_y: number;
+				mime_type: string;
+				region_data: string;
+			}[];
+			timestamp: number;
+		} = await response.json();
+		lastLoadedTimestamp = data.timestamp;
+		for (const region of data.regions) {
+			const image = new Image();
+			image.src = region.region_data;
+			await new Promise((resolve, reject) => {
+				image.onload = resolve;
+				image.onerror = reject;
+			});
+			options.context.clearRect(
+				region.region_x * options.regionWidth.value,
+				region.region_y * options.regionHeight.value,
+				options.regionWidth.value,
+				options.regionHeight.value
+			);
+			options.context.globalCompositeOperation = 'source-over';
+			options.context.drawImage(
+				image,
+				region.region_x * options.regionWidth.value,
+				region.region_y * options.regionHeight.value,
+				options.regionWidth.value,
+				options.regionHeight.value
+			);
+		}
+	}
+
+	let scopeDestroyed = false;
+	onScopeDispose(() => {
+		scopeDestroyed = true;
+	});
+
+	async function loop(backoff: number = 1_000) {
+		if (scopeDestroyed) return;
+		await loadSince(lastLoadedTimestamp)
+			.then(() => {
+				if (scopeDestroyed) return;
+				loop();
+			})
+			.catch((err) => {
+				console.error(err);
+				if (scopeDestroyed) return;
+				setTimeout(() => loop(Math.min(backoff * 2, 60_000)), backoff);
+			});
+	}
+	const ready = loop();
+
 	return {
+		ready,
+
 		getRegionCount,
 		saveArea,
 		saveRegions,
