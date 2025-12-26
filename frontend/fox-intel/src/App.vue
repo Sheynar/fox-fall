@@ -1,17 +1,38 @@
 <template>
 	<div
 		class="App__container"
-		@touchstart.prevent
 		tabindex="-1"
 		ref="containerElement"
+		@touchstart.prevent
+		@pointerdown.stop="
+			containerElement?.focus();
+			contextMenuPosition = null;
+		"
+		@contextmenu.prevent="($event) => withHandling(() => onContextMenu($event))"
 	>
+		<canvas ref="canvasElement" :width="width" :height="height" tabindex="0" />
+
 		<Viewport>
-			<PositionedElement v-if="false" :layer="1" :x="0" :y="0">
-				<HexMap :mapSource="MapSource.ImprovedMapModRustardKnightEdit" />
+			<DocumentInstance
+				v-for="document in documents"
+				:key="document.id"
+				:document="document"
+			/>
+
+			<PositionedElement
+				v-if="contextMenuPosition != null"
+				:layer="1"
+				:x="contextMenuPosition.x"
+				:y="contextMenuPosition.y"
+				cancel-viewport-rotation
+				cancel-viewport-zoom
+			>
+				<ContextRadial
+					@submit="($event) => withHandlingAsync(() => onContextMenuSubmit($event))"
+					@cancel="() => (contextMenuPosition = null)"
+				/>
 			</PositionedElement>
 		</Viewport>
-
-		<canvas ref="canvasElement" :width="width" :height="height" tabindex="0" />
 
 		<MarkerControls />
 
@@ -148,8 +169,10 @@
 </style>
 
 <script setup lang="ts">
+	import { MAP_SIZE } from '@packages/data/dist/artillery/map';
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import { MapSource } from '@packages/frontend-libs/dist/assets/images/hex-maps';
+	import { withHandling, withHandlingAsync } from '@packages/frontend-libs/dist/error';
 	import {
 		provideViewport,
 		Viewport as ViewportClass,
@@ -157,8 +180,9 @@
 	import Viewport from '@packages/frontend-libs/dist/viewport/Viewport.vue';
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { useViewportControl } from '@packages/frontend-libs/dist/viewport/viewport-control';
-	import HexMap from '@packages/frontend-libs/dist/HexMap/HexMap.vue';
-	import { computed, onMounted, onUnmounted, ref } from 'vue';
+	import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+	import { AddType, ContextRadial } from './context-menu';
+	import { useDocuments, DocumentInstance } from './document';
 	import {
 		markerSize,
 		markerColor,
@@ -169,7 +193,6 @@
 	import { useHexMap } from './rendering/hex-map';
 	import { useMarker } from './rendering/marker';
 	import { useElementBounding } from '@vueuse/core';
-	import { MAP_SIZE } from '@packages/data/dist/artillery/map';
 
 	const containerElement = ref<HTMLDivElement | null>(null);
 	const canvasElement = ref<HTMLCanvasElement | null>(null);
@@ -186,6 +209,8 @@
 			1
 		)
 	);
+
+	const { addDocument, documents } = useDocuments();
 
 	const { moving } = useViewportControl({
 		containerElement,
@@ -231,7 +256,6 @@
 		markerDisabled: computed(
 			() => markerDisabled.value || moving.value != null
 		),
-		markerId: '69',
 	});
 
 	const context = computed(() => canvasElement.value?.getContext('2d'));
@@ -244,7 +268,7 @@
 	};
 	const requestFrame = () => {
 		cancelFrame();
-		frameRequest = requestAnimationFrame(render);
+		frameRequest = requestAnimationFrame(() => withHandling(() => render()));
 	};
 	const render = () => {
 		cancelFrame();
@@ -289,4 +313,42 @@
 		stopMarker();
 		cancelFrame();
 	});
+
+	const contextMenuPosition = ref<Vector | null>(null);
+	const onContextMenu = (event: MouseEvent) => {
+		contextMenuPosition.value = viewport.value.toWorldPosition(
+			Vector.fromCartesianVector({
+				x: event.clientX - viewport.value.viewportSize.x / 2,
+				y: event.clientY - viewport.value.viewportSize.y / 2,
+			})
+		);
+	};
+	const onContextMenuSubmit = async (event: {
+		value: AddType;
+		path: any[];
+	}) => {
+		if (event.value === AddType.Document) {
+			const documentId = await addDocument(
+				contextMenuPosition.value!.x,
+				contextMenuPosition.value!.y,
+				1,
+				'New Document',
+				''
+			);
+			nextTick(() => {
+				const element = document.querySelector(
+					`div[data-document-id="${documentId}"]`
+				);
+				console.log(`div[data-document-id="${documentId}"]`, element);
+				if (element == null) return;
+				(element as HTMLElement).dispatchEvent(
+					new Event('openDocument', {
+						bubbles: false,
+						cancelable: true,
+					})
+				);
+			});
+		}
+		contextMenuPosition.value = null;
+	};
 </script>

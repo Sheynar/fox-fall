@@ -1,6 +1,6 @@
 import { Vector } from '@packages/data/dist/artillery/vector';
 import { useEventListener } from '@vueuse/core';
-import { computed, onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
+import { onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
 import { useCanvasStorage } from './canvas-storage';
 
 export enum MarkerType {
@@ -37,8 +37,6 @@ export type UseMarkerOptions = {
 	markerColor: Ref<string>;
 	markerSize: Ref<number>;
 	markerDisabled: Ref<boolean>;
-
-	markerId: string;
 
 	onDispose?: () => void;
 };
@@ -299,9 +297,21 @@ export function useMarker(options: UseMarkerOptions) {
 		removeMarker();
 	}
 
+	function onWheel(event: WheelEvent) {
+		if (options.markerDisabled?.value || !event.ctrlKey) return;
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		options.markerSize.value = Math.max(
+			1,
+			options.markerSize.value + (event.deltaY > 0 ? -1 : 1) * (event.shiftKey ? 1 : 5)
+		);
+	}
+
 	useEventListener(options.eventElement, 'pointerdown', onPointerDown);
 	useEventListener(options.eventElement, 'pointermove', onPointerMove);
+	useEventListener('pointermove', onPointerMove);
 	useEventListener(options.eventElement, 'pointerup', onPointerUp);
+	useEventListener(options.eventElement, 'wheel', onWheel);
 
 	let frameRequest: ReturnType<typeof requestAnimationFrame> | null = null;
 	const cancelFrame = () => {
@@ -379,10 +389,6 @@ export function useMarker(options: UseMarkerOptions) {
 		context: storageContext,
 		regionWidth: ref(100),
 		regionHeight: ref(100),
-		intelInstance: computed(() => ({
-			id: options.markerId,
-			password: options.markerId,
-		})),
 	});
 
 	const ready = ref(false);

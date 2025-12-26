@@ -1,5 +1,6 @@
 import '@cyhnkckali/vue3-color-picker/dist/style.css'
 import '@packages/frontend-libs/dist/frontend-libs.css';
+import { addErrorHandler } from '@packages/frontend-libs/dist/error';
 import Aura from '@primeuix/themes/aura';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
@@ -7,6 +8,10 @@ import 'primeicons/primeicons.css';
 import PrimeVue from 'primevue/config';
 import './style.css';
 import App from '@/App.vue';
+
+addErrorHandler((error) => {
+	alert(`Error: ${error}`);
+});
 
 const pinia = createPinia();
 const app = createApp(App);

@@ -1,18 +1,11 @@
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { generateId } from '@packages/data/dist/id.js';
+import type { BasicIntelDocument, IntelDocument, IntelMarkerRegion } from '@packages/data/dist/intel.js';
 import { Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
 import {
-	createIntelInstance,
-	createIntelMarkerRegion,
-	getAllIntelInstances,
-	getAllIntelMarkerRegions,
-	getIntelInstance,
-	getIntelMarkerRegion,
-	getIntelMarkerRegions,
-	getIntelMarkerRegionsByTimestamp,
-	type IntelMarkerRegion,
+	models,
 } from './data-store.js';
 import crypto from 'crypto';
 
@@ -37,14 +30,15 @@ export async function initialiseHttp(
 	const app = new Hono();
 	app.use(cors());
 
+	/* Instance API */
 	app.get('/api/v1/instance', (c) => {
-		const instances = getAllIntelInstances();
+		const instances = models.intelInstance.getAll();
 		return c.json(instances);
 	});
 
 	app.get('/api/v1/instance/:instanceId', (c) => {
 		const instanceId = c.req.param('instanceId');
-		const instance = getIntelInstance(instanceId);
+		const instance = models.intelInstance.get(instanceId);
 		return c.json(instance);
 	});
 
@@ -62,7 +56,7 @@ export async function initialiseHttp(
 			return c.json({ error: 'Invalid password' }, 400);
 		}
 
-		const existingInstance = getIntelInstance(instanceId);
+		const existingInstance = models.intelInstance.get(instanceId);
 		const passSalt = existingInstance?.passSalt ?? generateId();
 		const passHash = hashPassword(password, passSalt);
 
@@ -71,7 +65,7 @@ export async function initialiseHttp(
 				return c.json({ error: 'Invalid password' }, 400);
 			}
 		} else {
-			createIntelInstance(instanceId, passSalt, passHash);
+			models.intelInstance.create(instanceId, passSalt, passHash);
 		}
 
 		const sessionId = generateId();
@@ -124,8 +118,9 @@ export async function initialiseHttp(
 		return;
 	}
 
-	const pendingRequests = new Map<string, Set<() => void>>();
-	app.get('/api/v1/instance/:instanceId/since', async (c) => {
+	/* Marker Region API */
+	const pendingMarkerRegionRequests = new Map<string, Set<() => void>>();
+	app.get('/api/v1/instance/:instanceId/marker/since', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		validateSession(c, instanceId);
 		const timestamp = parseInt(c.req.query('timestamp') ?? '');
@@ -137,19 +132,19 @@ export async function initialiseHttp(
 			return c.json({ error: 'Invalid timeout' }, 400);
 		}
 
-		let regions = getIntelMarkerRegionsByTimestamp(instanceId, timestamp);
+		let regions = models.intelMarkerRegion.getByTimestamp(instanceId, timestamp);
 		if (regions.length === 0) {
 			regions = await new Promise<IntelMarkerRegion[]>((resolve) => {
-				if (!pendingRequests.has(instanceId)) {
-					pendingRequests.set(instanceId, new Set());
+				if (!pendingMarkerRegionRequests.has(instanceId)) {
+					pendingMarkerRegionRequests.set(instanceId, new Set());
 				}
 
 				const onRegions = () => {
-					pendingRequests.get(instanceId)?.delete(onRegions);
-					resolve(getIntelMarkerRegionsByTimestamp(instanceId, timestamp));
+					pendingMarkerRegionRequests.get(instanceId)?.delete(onRegions);
+					resolve(models.intelMarkerRegion.getByTimestamp(instanceId, timestamp));
 				}
 
-				pendingRequests.get(instanceId)!.add(onRegions);
+				pendingMarkerRegionRequests.get(instanceId)!.add(onRegions);
 				setTimeout(onRegions, timeout);
 			});
 		}
@@ -164,7 +159,7 @@ export async function initialiseHttp(
 	});
 
 	app.get(
-		'/api/v1/instance/:instanceId/markers/:regionX/:regionY',
+		'/api/v1/instance/:instanceId/marker/:regionX/:regionY',
 		async (c) => {
 			const instanceId = c.req.param('instanceId');
 			const sessionOutput = validateSession(c, instanceId);
@@ -179,7 +174,7 @@ export async function initialiseHttp(
 				return c.json({ error: 'Invalid region Y' }, 400);
 			}
 
-			const region = getIntelMarkerRegion(instanceId, regionX, regionY);
+			const region = models.intelMarkerRegion.get(instanceId, regionX, regionY);
 			if (!region) {
 				return c.body(null, 204);
 			}
@@ -193,13 +188,13 @@ export async function initialiseHttp(
 	);
 
 	app.get(
-		'/api/v1/instance/:instanceId/markers',
+		'/api/v1/instance/:instanceId/marker',
 		async (c) => {
 			const instanceId = c.req.param('instanceId');
 			const sessionOutput = validateSession(c, instanceId);
 			if (sessionOutput) return sessionOutput;
 
-			const regions = getAllIntelMarkerRegions(instanceId);
+			const regions = models.intelMarkerRegion.getAll(instanceId);
 			return c.json(regions.map((region) => ({
 				...region,
 				region_data: `data:${region.mime_type};base64,${region.region_data.toString('base64')}`
@@ -208,7 +203,7 @@ export async function initialiseHttp(
 	);
 
 	app.get(
-		'/api/v1/instance/:instanceId/markers/area/:regionX1/:regionY1/:regionX2/:regionY2',
+		'/api/v1/instance/:instanceId/marker/area/:regionX1/:regionY1/:regionX2/:regionY2',
 		async (c) => {
 			const instanceId = c.req.param('instanceId');
 			const sessionOutput = validateSession(c, instanceId);
@@ -238,7 +233,7 @@ export async function initialiseHttp(
 				}
 			}
 
-			const regions = getIntelMarkerRegions(instanceId, regionLocations);
+			const regions = models.intelMarkerRegion.getList(instanceId, regionLocations);
 			return c.json(regions.map((region) => ({
 				...region,
 				region_data: `data:${region.mime_type};base64,${region.region_data.toString('base64')}`
@@ -247,7 +242,7 @@ export async function initialiseHttp(
 	);
 
 	app.post(
-		'/api/v1/instance/:instanceId/markers/:regionX/:regionY',
+		'/api/v1/instance/:instanceId/marker/:regionX/:regionY',
 		async (c) => {
 			const instanceId = c.req.param('instanceId');
 			const sessionOutput = validateSession(c, instanceId);
@@ -276,7 +271,7 @@ export async function initialiseHttp(
 				);
 			}
 			const regionData = await c.req.arrayBuffer();
-			const regionId = createIntelMarkerRegion(
+			const regionId = models.intelMarkerRegion.create(
 				instanceId,
 				regionX,
 				regionY,
@@ -284,11 +279,240 @@ export async function initialiseHttp(
 				Buffer.from(regionData)
 			);
 
-			for (const listener of pendingRequests.get(instanceId) ?? []) {
+			for (const listener of pendingMarkerRegionRequests.get(instanceId) ?? []) {
 				listener();
 			}
 
 			return c.json({ id: regionId });
+		}
+	);
+
+	/* Document API */
+	const pendingDocumentRequests = new Map<string, Set<() => void>>();
+	app.get('/api/v1/instance/:instanceId/document/since', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId);
+		if (sessionOutput) return sessionOutput;
+
+		const timestamp = parseInt(c.req.query('timestamp') ?? '');
+		if (isNaN(timestamp)) {
+			return c.json({ error: 'Invalid timestamp' }, 400);
+		}
+		const timeout = parseInt(c.req.query('timeout') ?? '');
+		if (isNaN(timeout)) {
+			return c.json({ error: 'Invalid timeout' }, 400);
+		}
+		const skipDeleted = c.req.query('skipDeleted') === 'true';
+
+		let documents = models.intelDocument.getByTimestamp(instanceId, timestamp, skipDeleted);
+		if (documents.length === 0) {
+			documents = await new Promise<BasicIntelDocument[]>((resolve) => {
+				if (!pendingDocumentRequests.has(instanceId)) {
+					pendingDocumentRequests.set(instanceId, new Set());
+				}
+
+				const onDocuments = () => {
+					pendingDocumentRequests.get(instanceId)?.delete(onDocuments);
+					resolve(models.intelDocument.getByTimestamp(instanceId, timestamp, skipDeleted));
+				}
+
+				pendingDocumentRequests.get(instanceId)!.add(onDocuments);
+				setTimeout(onDocuments, timeout);
+			});
+		}
+
+		return c.json({
+			documents,
+			timestamp: Math.max(...documents.map((document) => document.timestamp), timestamp),
+		});
+	});
+	app.post('/api/v1/instance/:instanceId/document', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId);
+		if (sessionOutput) return sessionOutput;
+
+		const body = await c.req.json();
+
+		const documentX = parseInt(body.documentX);
+		if (isNaN(documentX)) {
+			return c.json({ error: 'Invalid document X' }, 400);
+		}
+		const documentY = parseInt(body.documentY);
+		if (isNaN(documentY)) {
+			return c.json({ error: 'Invalid document Y' }, 400);
+		}
+		const uiSize = parseFloat(body.uiSize);
+		if (isNaN(uiSize)) {
+			return c.json({ error: 'Invalid UI size' }, 400);
+		}
+		const documentName = body.documentName;
+		if (typeof documentName !== 'string') {
+			return c.json({ error: 'Invalid document name' }, 400);
+		}
+		const documentContent = body.documentContent;
+		if (typeof documentContent !== 'string') {
+			return c.json({ error: 'Invalid document content' }, 400);
+		}
+
+		const documentId = models.intelDocument.create(instanceId, documentX, documentY, uiSize, documentName, documentContent);
+
+		for (const listener of pendingDocumentRequests.get(instanceId) ?? []) {
+			listener();
+		}
+
+		return c.json({ id: documentId });
+	});
+
+	app.post(
+		'/api/v1/instance/:instanceId/document/:documentId',
+		async (c) => {
+			const instanceId = c.req.param('instanceId');
+			const sessionOutput = validateSession(c, instanceId);
+			if (sessionOutput) return sessionOutput;
+
+			const documentId = parseInt(c.req.param('documentId'));
+			if (isNaN(documentId)) {
+				return c.json({ error: 'Invalid document ID' }, 400);
+			}
+
+			const existingDocument = models.intelDocument.get(instanceId, documentId);
+			const body = await c.req.json() as Partial<IntelDocument>;
+
+			const documentX = parseInt(String(body.document_x ?? existingDocument?.document_x));
+			if (isNaN(documentX)) {
+				return c.json({ error: 'Invalid document X' }, 400);
+			}
+			const documentY = parseInt(String(body.document_y ?? existingDocument?.document_y));
+			if (isNaN(documentY)) {
+				return c.json({ error: 'Invalid document Y' }, 400);
+			}
+			const uiSize = parseFloat(String(body.ui_size ?? existingDocument?.ui_size));
+			if (isNaN(uiSize)) {
+				return c.json({ error: 'Invalid UI size' }, 400);
+			}
+			const documentName = body.document_name ?? existingDocument?.document_name;
+			if (typeof documentName !== 'string') {
+				return c.json({ error: 'Invalid document name' }, 400);
+			}
+			const documentContent = body.document_content ?? existingDocument?.document_content;
+			if (typeof documentContent !== 'string') {
+				return c.json({ error: 'Invalid document content' }, 400);
+			}
+
+			models.intelDocument.update(documentId, documentX, documentY, uiSize, documentName, documentContent);
+
+			for (const listener of pendingDocumentRequests.get(instanceId) ?? []) {
+				listener();
+			}
+
+			return c.json({ success: true });
+		}
+	);
+
+	app.delete(
+		'/api/v1/instance/:instanceId/document/:documentId',
+		async (c) => {
+			const instanceId = c.req.param('instanceId');
+			const sessionOutput = validateSession(c, instanceId);
+			if (sessionOutput) return sessionOutput;
+
+			const documentId = parseInt(c.req.param('documentId'));
+			if (isNaN(documentId)) {
+				return c.json({ error: 'Invalid document ID' }, 400);
+			}
+
+			models.intelDocument.delete(instanceId, documentId);
+
+			for (const listener of pendingDocumentRequests.get(instanceId) ?? []) {
+				listener();
+			}
+
+			return c.json({ success: true });
+		}
+	);
+
+	app.get(
+		'/api/v1/instance/:instanceId/document/:documentId',
+		async (c) => {
+			const instanceId = c.req.param('instanceId');
+			const sessionOutput = validateSession(c, instanceId);
+			if (sessionOutput) return sessionOutput;
+
+			const documentId = parseInt(c.req.param('documentId'));
+			if (isNaN(documentId)) {
+				return c.json({ error: 'Invalid document ID' }, 400);
+			}
+
+			const document = models.intelDocument.get(instanceId, documentId);
+			if (!document) {
+				return c.json({ error: 'Document not found' }, 404);
+			}
+
+			return c.json({
+				...document,
+				document_content: document.document_content,
+			});
+		},
+	);
+
+	/* Document Attachment API */
+	app.post(
+		'/api/v1/instance/:instanceId/document/:documentId/attachment',
+		async (c) => {
+			const instanceId = c.req.param('instanceId');
+			const sessionOutput = validateSession(c, instanceId);
+			if (sessionOutput) return sessionOutput;
+
+			const documentId = parseInt(c.req.param('documentId'));
+			if (isNaN(documentId)) {
+				return c.json({ error: 'Invalid document ID' }, 400);
+			}
+
+			const attachment = await c.req.arrayBuffer();
+			const attachmentId = models.intelDocumentAttachment.create(instanceId, documentId, c.req.header('Content-Type') ?? 'image/png', Buffer.from(attachment));
+			return c.json({ id: attachmentId });
+		}
+	);
+
+	app.delete(
+		'/api/v1/instance/:instanceId/document/:documentId/attachment/:attachmentId',
+		async (c) => {
+			const instanceId = c.req.param('instanceId');
+			const sessionOutput = validateSession(c, instanceId);
+			if (sessionOutput) return sessionOutput;
+
+			const documentId = parseInt(c.req.param('documentId'));
+			if (isNaN(documentId)) {
+				return c.json({ error: 'Invalid document ID' }, 400);
+			}
+
+			const attachmentId = parseInt(c.req.param('attachmentId'));
+			if (isNaN(attachmentId)) {
+				return c.json({ error: 'Invalid attachment ID' }, 400);
+			}
+
+			models.intelDocumentAttachment.delete(instanceId, documentId, attachmentId);
+			return c.json({ success: true });
+		}
+	);
+
+	app.get(
+		'/api/v1/instance/:instanceId/document/:documentId/attachment',
+		async (c) => {
+			const instanceId = c.req.param('instanceId');
+			const sessionOutput = validateSession(c, instanceId);
+			if (sessionOutput) return sessionOutput;
+
+			const documentId = parseInt(c.req.param('documentId'));
+			if (isNaN(documentId)) {
+				return c.json({ error: 'Invalid document ID' }, 400);
+			}
+
+			const attachments = models.intelDocumentAttachment.getByDocumentId(instanceId, documentId);
+			return c.json(attachments.map((attachment) => ({
+				...attachment,
+				attachment_content: `data:${attachment.mime_type};base64,${attachment.attachment_content.toString('base64')}`
+			})));
 		}
 	);
 

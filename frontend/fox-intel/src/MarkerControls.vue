@@ -98,6 +98,7 @@
 
 	.MarkerControls__color-picker-container {
 		position: relative;
+		cursor: pointer;
 
 		.MarkerControls__entry:not(:focus-within) & .MarkerControls__color-picker {
 			display: none;

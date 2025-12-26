@@ -1,73 +1,15 @@
 // import { retrieveBlob, storeBlob } from '@/lib/store';
-import { computed, onScopeDispose, Ref, shallowRef, watch } from 'vue';
+import { computed, onScopeDispose, Ref } from 'vue';
+import { intelInstance } from '@/lib/globals';
 
 export type UseCanvasStorageOptions = {
 	canvas: OffscreenCanvas;
 	context: OffscreenCanvasRenderingContext2D;
 	regionWidth: Ref<number>;
 	regionHeight: Ref<number>;
-	intelInstance: Ref<{ id: string; password: string }>;
 };
 
 export function useCanvasStorage(options: UseCanvasStorageOptions) {
-	const session = shallowRef<{
-		sessionId: string;
-		issuedAt: number;
-		expiresAt: number;
-	} | null>(null);
-	watch(
-		options.intelInstance,
-		() => {
-			session.value = null;
-		},
-		{ immediate: true, flush: 'sync', deep: true }
-	);
-
-	let getSessionIdPromise: Promise<string> = Promise.resolve('');
-	async function getSessionId() {
-		return (getSessionIdPromise = getSessionIdPromise
-			.catch(() => {})
-			.then(async () => {
-				if (
-					session.value != null &&
-					session.value.expiresAt > Date.now() + 10_000
-				) {
-					return session.value.sessionId;
-				}
-				const response = await fetch('/api/v1/instance', {
-					method: 'POST',
-					body: JSON.stringify(options.intelInstance.value),
-				});
-				if (!response.ok) {
-					throw new Error(
-						'Failed to create instance. ' + (await response.text())
-					);
-				}
-				const data: { sessionId: string; issuedAt: number; expiresAt: number } =
-					await response.json();
-				session.value = data;
-				return data.sessionId;
-			}));
-	}
-
-	async function authenticatedFetch(url: string, options: RequestInit) {
-		const sessionId = await getSessionId();
-		const response = await fetch(url, {
-			...options,
-			headers: {
-				...(options.headers ?? {}),
-				'X-Session-Id': sessionId,
-			},
-		});
-
-		if (response.status === 401) {
-			session.value = null;
-			return authenticatedFetch(url, options);
-		}
-
-		return response;
-	}
-
 	const regionCountX = computed(() =>
 		Math.ceil(options.canvas.width / options.regionWidth.value)
 	);
@@ -154,19 +96,19 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		// options.context.fillStyle = prevFillStyle;
 
 		const blob = await regionCanvas.convertToBlob({ type: 'image/webp' });
-		await authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.value.id}/markers/${x}/${y}`,
+		await intelInstance.authenticatedFetch(
+			`/api/v1/instance/${intelInstance.instanceId.value}/marker/${x}/${y}`,
 			{
 				method: 'POST',
 				body: blob,
 			}
 		);
-		// await storeBlob(blob, options.intelInstance.value.id + '-' + regionId);
+		// await storeBlob(blob, intelInstance.instanceId.value + '-' + regionId);
 	}
 
 	async function loadAll() {
-		const response = await authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.value.id}/markers`,
+		const response = await intelInstance.authenticatedFetch(
+			`/api/v1/instance/${intelInstance.instanceId.value}/marker`,
 			{
 				method: 'GET',
 			}
@@ -232,8 +174,8 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		if (x < 0 || x > regionCountX.value) throw new Error('x is out of range');
 		if (y < 0 || y > regionCountY.value) throw new Error('y is out of range');
 
-		const response = await authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.value.id}/markers/${x}/${y}`,
+		const response = await intelInstance.authenticatedFetch(
+			`/api/v1/instance/${intelInstance.instanceId.value}/marker/${x}/${y}`,
 			{
 				method: 'GET',
 			}
@@ -248,7 +190,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		const blob = await response.blob();
 		// const regionId = `${x}-${y}`;
 		// const blob = await retrieveBlob(
-		// 	options.intelInstance.value.id + '-' + regionId
+		// 	intelInstance.instanceId.value + '-' + regionId
 		// );
 		if (blob == null) {
 			// console.log(`Region ${regionId} not found, skipping load`);
@@ -276,8 +218,8 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
-		const response = await authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.value.id}/since?timestamp=${timestamp}&timeout=${timeout}`,
+		const response = await intelInstance.authenticatedFetch(
+			`/api/v1/instance/${intelInstance.instanceId.value}/marker/since?timestamp=${timestamp}&timeout=${timeout}`,
 			{
 				method: 'GET',
 			}

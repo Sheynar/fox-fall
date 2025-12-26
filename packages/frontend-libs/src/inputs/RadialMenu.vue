@@ -327,11 +327,11 @@
 
 <script setup lang="ts">
 	import { generateId } from '@packages/data/dist/id';
-	import { ref, shallowRef } from 'vue';
+	import { Component, ref, shallowRef } from 'vue';
 
 	export type Option<T> = {
 		label: string;
-		icon?: string;
+		icon?: Component<any>;
 		disabled?: boolean;
 		order?: number;
 
