@@ -1,15 +1,18 @@
-import { intelInstance } from '@/lib/globals';
+import { injectIntelInstance } from '@/lib/intel-instance';
 import { BasicIntelDocument } from '@packages/data/dist/intel';
 import { onScopeDispose, ref } from 'vue';
 
-export function useDocuments() {
+export type UseDocumentsOptions = {
+	intelInstance: ReturnType<typeof injectIntelInstance>;
+};
+export function useDocuments(options: UseDocumentsOptions) {
 	const documents = ref<{ [id: BasicIntelDocument['id']]: BasicIntelDocument }>(
 		{}
 	);
 
 	async function addDocument(documentX: number, documentY: number, uiSize: number, documentName: string, documentContent: string) {
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/document`,
+		const response = await options.intelInstance.authenticatedFetch(
+			`/api/v1/instance/${options.intelInstance.instanceId.value}/document`,
 			{
 				method: 'POST',
 				body: JSON.stringify({
@@ -29,7 +32,7 @@ export function useDocuments() {
 		// Optimistically update the documents list
 		documents.value[data.id] = {
 			id: data.id,
-			instance_id: intelInstance.instanceId.value,
+			instance_id: options.intelInstance.instanceId.value,
 			document_x: documentX,
 			document_y: documentY,
 			ui_size: uiSize,
@@ -43,8 +46,8 @@ export function useDocuments() {
 
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/document/since?timestamp=${timestamp}&timeout=${timeout}&skipDeleted=${Object.keys(documents.value).length === 0}`,
+		const response = await options.intelInstance.authenticatedFetch(
+			`/api/v1/instance/${options.intelInstance.instanceId.value}/document/since?timestamp=${timestamp}&timeout=${timeout}&skipDeleted=${Object.keys(documents.value).length === 0}`,
 			{
 				method: 'GET',
 			}
@@ -71,9 +74,9 @@ export function useDocuments() {
 		scopeDestroyed = true;
 	});
 
-	async function loop(backoff: number = 1_000) {
+	async function loop(backoff: number = 1_000, isFirst: boolean = false) {
 		if (scopeDestroyed) return;
-		await loadSince(lastLoadedTimestamp)
+		await loadSince(lastLoadedTimestamp, isFirst ? 0 : undefined)
 			.then(() => {
 				if (scopeDestroyed) return;
 				loop();
@@ -84,7 +87,7 @@ export function useDocuments() {
 				setTimeout(() => loop(Math.min(backoff * 2, 60_000)), backoff);
 			});
 	}
-	const ready = loop();
+	const ready = loop(undefined, true);
 
 	return {
 		addDocument,

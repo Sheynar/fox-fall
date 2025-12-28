@@ -1,6 +1,7 @@
 import { Vector } from '@packages/data/dist/artillery/vector';
 import { useEventListener } from '@vueuse/core';
 import { onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
+import { injectIntelInstance } from '@/lib/intel-instance';
 import { useCanvasStorage } from './canvas-storage';
 
 export enum MarkerType {
@@ -23,6 +24,7 @@ export type MarkerExport = {
 };
 
 export type UseMarkerOptions = {
+	intelInstance: ReturnType<typeof injectIntelInstance>;
 	eventElement: Ref<HTMLElement | null>;
 
 	zoom: Ref<number>;
@@ -386,6 +388,7 @@ export function useMarker(options: UseMarkerOptions) {
 	}
 
 	const canvasStorage = useCanvasStorage({
+		intelInstance: options.intelInstance,
 		canvas: storageCanvas,
 		context: storageContext,
 		regionWidth: ref(100),

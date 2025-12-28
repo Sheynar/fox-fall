@@ -124,7 +124,7 @@
 		markerDisabled,
 		markerSize,
 		markerType,
-	} from './lib/globals';
+	} from '../lib/globals';
 	import { shallowRef, watchEffect } from 'vue';
 
 	const colorPickerContainer = shallowRef<HTMLDivElement | null>(null);

@@ -1,8 +1,9 @@
 // import { retrieveBlob, storeBlob } from '@/lib/store';
 import { computed, onScopeDispose, Ref } from 'vue';
-import { intelInstance } from '@/lib/globals';
+import { injectIntelInstance } from '@/lib/intel-instance';
 
 export type UseCanvasStorageOptions = {
+	intelInstance: ReturnType<typeof injectIntelInstance>;
 	canvas: OffscreenCanvas;
 	context: OffscreenCanvasRenderingContext2D;
 	regionWidth: Ref<number>;
@@ -96,19 +97,19 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		// options.context.fillStyle = prevFillStyle;
 
 		const blob = await regionCanvas.convertToBlob({ type: 'image/webp' });
-		await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/marker/${x}/${y}`,
+		await options.intelInstance.authenticatedFetch(
+			`/api/v1/instance/${options.intelInstance.instanceId.value}/marker/${x}/${y}`,
 			{
 				method: 'POST',
 				body: blob,
 			}
 		);
-		// await storeBlob(blob, intelInstance.instanceId.value + '-' + regionId);
+		// await storeBlob(blob, options.intelInstance.instanceId.value + '-' + regionId);
 	}
 
 	async function loadAll() {
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/marker`,
+		const response = await options.intelInstance.authenticatedFetch(
+			`/api/v1/instance/${options.intelInstance.instanceId.value}/marker`,
 			{
 				method: 'GET',
 			}
@@ -174,8 +175,8 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		if (x < 0 || x > regionCountX.value) throw new Error('x is out of range');
 		if (y < 0 || y > regionCountY.value) throw new Error('y is out of range');
 
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/marker/${x}/${y}`,
+		const response = await options.intelInstance.authenticatedFetch(
+			`/api/v1/instance/${options.intelInstance.instanceId.value}/marker/${x}/${y}`,
 			{
 				method: 'GET',
 			}
@@ -190,7 +191,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		const blob = await response.blob();
 		// const regionId = `${x}-${y}`;
 		// const blob = await retrieveBlob(
-		// 	intelInstance.instanceId.value + '-' + regionId
+		// 	options.intelInstance.instanceId.value + '-' + regionId
 		// );
 		if (blob == null) {
 			// console.log(`Region ${regionId} not found, skipping load`);
@@ -218,8 +219,8 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/marker/since?timestamp=${timestamp}&timeout=${timeout}`,
+		const response = await options.intelInstance.authenticatedFetch(
+			`/api/v1/instance/${options.intelInstance.instanceId.value}/marker/since?timestamp=${timestamp}&timeout=${timeout}`,
 			{
 				method: 'GET',
 			}
@@ -268,9 +269,9 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		scopeDestroyed = true;
 	});
 
-	async function loop(backoff: number = 1_000) {
+	async function loop(backoff: number = 1_000, isFirst: boolean = false) {
 		if (scopeDestroyed) return;
-		await loadSince(lastLoadedTimestamp)
+		await loadSince(lastLoadedTimestamp, isFirst ? 0 : undefined)
 			.then(() => {
 				if (scopeDestroyed) return;
 				loop();
@@ -281,7 +282,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 				setTimeout(() => loop(Math.min(backoff * 2, 60_000)), backoff);
 			});
 	}
-	const ready = loop();
+	const ready = loop(undefined, true);
 
 	return {
 		ready,

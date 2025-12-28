@@ -1,7 +1,15 @@
-import type { IntelInstance, IntelMarkerRegion, IntelTag, BasicIntelDocument, IntelDocument, BasicIntelDocumentAttachment, IntelDocumentAttachment } from '@packages/data/dist/intel.js';
+import type { DiscordAccessToken } from '@packages/data/dist/discord.js';
+import type {
+	IntelInstance,
+	IntelMarkerRegion,
+	IntelTag,
+	BasicIntelDocument,
+	IntelDocument,
+	IntelDocumentAttachment,
+} from '@packages/data/dist/intel.js';
 import Database from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
-
+import { getUserGuildMember, getUserGuilds } from './discord.js';
 
 mkdirSync('data', { recursive: true });
 
@@ -12,8 +20,15 @@ process.on('exit', () => db.close());
 db.exec(`
 	CREATE TABLE IF NOT EXISTS IntelInstance (
 		id TEXT PRIMARY KEY,
-		passSalt TEXT NOT NULL,
-		passHash TEXT NOT NULL
+		discord_guild_id TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS IntelInstanceDiscordPermissions (
+		instance_id TEXT NOT NULL,
+		access_type TEXT NOT NULL,
+		role_id TEXT NOT NULL,
+		FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE,
+		PRIMARY KEY (instance_id, access_type, role_id)
 	);
 
 	CREATE TABLE IF NOT EXISTS IntelMarkerRegion (
@@ -80,15 +95,28 @@ export const models = {
 	intelInstance: {
 		create: function createIntelInstance(
 			name: string,
-			passSalt: string,
-			passHash: string
+			discordGuildId: string,
+			discordGuildRoles: { accessType: string; roleId: string }[]
 		) {
-			const instance = db
-				.prepare(
-					'INSERT INTO IntelInstance (id, passSalt, passHash) VALUES (?, ?, ?)'
-				)
-				.run(name, passSalt, passHash);
-			return instance.lastInsertRowid;
+			db.transaction(() => {
+				db.prepare(
+					`
+					INSERT INTO IntelInstance (id, discord_guild_id) VALUES (?, ?)
+					`
+				).run(name, discordGuildId);
+				if (discordGuildRoles.length > 0) {
+					db.prepare(
+						`
+					INSERT INTO IntelInstanceDiscordPermissions (instance_id, access_type, role_id) VALUES ${discordGuildRoles.map(() => '(?, ?, ?)').join(',')}
+				`
+					).run(
+						...discordGuildRoles
+							.map((role) => [name, role.accessType, role.roleId])
+							.flat()
+					);
+				}
+			})();
+			return name;
 		},
 
 		getAll: function getAllIntelInstances() {
@@ -106,6 +134,56 @@ export const models = {
 				>('SELECT * FROM IntelInstance WHERE id = ?')
 				.get(instanceId);
 			return instance;
+		},
+
+		userHasAccess: async function userHasAccess(
+			accessToken: DiscordAccessToken,
+			instance: IntelInstance
+		) {
+			const allowedRoles = db
+				.prepare<
+					[string],
+					{ role_id: string }
+				>('SELECT role_id FROM IntelInstanceDiscordPermissions WHERE instance_id = ?')
+				.all(instance.id);
+
+			const member = await getUserGuildMember(
+				accessToken,
+				instance.discord_guild_id
+			);
+
+			if (allowedRoles.length === 0) {
+				return true;
+			}
+			const memberRoleMap = member.roles.reduce(
+				(acc, roleId) => {
+					acc[roleId] = true;
+					return acc;
+				},
+				{} as Record<string, boolean>
+			);
+
+			return allowedRoles.some((role) => memberRoleMap[role.role_id]);
+		},
+
+		getAvailableInstances: async function getAvailableInstances(
+			accessToken: DiscordAccessToken
+		) {
+			const guilds = await getUserGuilds(accessToken);
+			const instances = db
+				.prepare<
+					string[],
+					IntelInstance
+				>(`SELECT * FROM IntelInstance WHERE discord_guild_id IN (${guilds.map(() => '?').join(', ')})`)
+				.all(...guilds.map((guild) => guild.id));
+
+			const output: typeof instances = [];
+			for (const instance of instances) {
+				if (await this.userHasAccess(accessToken, instance)) {
+					output.push(instance);
+				}
+			}
+			return output;
 		},
 	},
 
@@ -234,7 +312,10 @@ export const models = {
 			return insertResult.lastInsertRowid;
 		},
 
-		delete: function deleteIntelDocument(instanceId: string, documentId: number) {
+		delete: function deleteIntelDocument(
+			instanceId: string,
+			documentId: number
+		) {
 			const deleteResult = db
 				.prepare(
 					'UPDATE IntelDocument SET deleted = TRUE, timestamp = ? WHERE instance_id = ? AND id = ?'
@@ -279,7 +360,15 @@ export const models = {
 				.prepare(
 					'UPDATE IntelDocument SET document_x = ?, document_y = ?, ui_size = ?, timestamp = ?, document_name = ?, document_content = ? WHERE id = ?'
 				)
-				.run(documentX, documentY, uiSize, Date.now(), documentName, documentContent, documentId);
+				.run(
+					documentX,
+					documentY,
+					uiSize,
+					Date.now(),
+					documentName,
+					documentContent,
+					documentId
+				);
 			return updateResult.changes;
 		},
 	},
@@ -368,7 +457,11 @@ export const models = {
 			return insertResult.lastInsertRowid;
 		},
 
-		delete: function deleteIntelDocumentAttachment(instanceId: string, documentId: number, attachmentId: number) {
+		delete: function deleteIntelDocumentAttachment(
+			instanceId: string,
+			documentId: number,
+			attachmentId: number
+		) {
 			const deleteResult = db
 				.prepare(
 					'DELETE FROM IntelDocumentAttachment WHERE instance_id = ? AND document_id = ? AND id = ?'

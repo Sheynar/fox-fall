@@ -78,12 +78,14 @@
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import DocumentIcon from '@packages/frontend-libs/dist/icons/DocumentIcon.vue';
 	import { ref } from 'vue';
-	import { intelInstance } from '@/lib/globals';
+	import { injectIntelInstance } from '@/lib/intel-instance';
 	import DocumentEditor from './DocumentEditor.vue';
 
 	const props = defineProps<{
 		document: BasicIntelDocument;
 	}>();
+
+	const intelInstance = injectIntelInstance();
 
 	async function getAttachments() {
 		const attachmentsResponse = await intelInstance.authenticatedFetch(

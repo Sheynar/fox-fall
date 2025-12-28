@@ -1,7 +1,6 @@
 export type IntelInstance = {
 	id: string;
-	passSalt: string;
-	passHash: string;
+	discord_guild_id: string;
 };
 
 export type IntelMarkerRegion = {

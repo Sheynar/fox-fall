@@ -8,6 +8,7 @@ import { cors } from 'hono/cors';
 import {
 	models,
 } from './data-store.js';
+import { getAccessToken, getUserGuilds } from './discord.js';
 
 const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 export type Session = {
@@ -30,44 +31,51 @@ export async function initialiseHttp(
 	const app = new Hono();
 	app.use(cors());
 
+	/* Discord API */
+	app.get('/api/v1/discord/access-token', async (c) => {
+		const discordAccessCode = c.req.header('X-Discord-Access-Code');
+		if (!discordAccessCode) {
+			return c.json({ error: 'Discord access code is required' }, 401);
+		}
+		const discordRedirectUri = c.req.header('X-Discord-Redirect-Uri');
+		if (!discordRedirectUri) {
+			return c.json({ error: 'Discord redirect URI is required' }, 401);
+		}
+		await getAccessToken(discordAccessCode, discordRedirectUri);
+
+		return c.json({ success: true });
+	});
+
+	app.get('/api/v1/discord/guild', async (c) => {
+		const discordAccessCode = c.req.header('X-Discord-Access-Code');
+		if (!discordAccessCode) {
+			return c.json({ error: 'Discord access code is required' }, 401);
+		}
+		const discordRedirectUri = c.req.header('X-Discord-Redirect-Uri');
+		if (!discordRedirectUri) {
+			return c.json({ error: 'Discord redirect URI is required' }, 401);
+		}
+		const accessToken = await getAccessToken(discordAccessCode, discordRedirectUri);
+		const guilds = await getUserGuilds(accessToken);
+		return c.json(guilds);
+	});
+
 	/* Instance API */
-	app.get('/api/v1/instance', (c) => {
-		const instances = models.intelInstance.getAll();
+	app.get('/api/v1/instance', async (c) => {
+		const discordAccessCode = c.req.header('X-Discord-Access-Code');
+		if (!discordAccessCode) {
+			return c.json({ error: 'Discord access code is required' }, 401);
+		}
+		const discordRedirectUri = c.req.header('X-Discord-Redirect-Uri');
+		if (!discordRedirectUri) {
+			return c.json({ error: 'Discord redirect URI is required' }, 401);
+		}
+		const accessToken = await getAccessToken(discordAccessCode, discordRedirectUri);
+		const instances = await models.intelInstance.getAvailableInstances(accessToken);
 		return c.json(instances);
 	});
 
-	app.get('/api/v1/instance/:instanceId', (c) => {
-		const instanceId = c.req.param('instanceId');
-		const instance = models.intelInstance.get(instanceId);
-		return c.json(instance);
-	});
-
-	app.post('/api/v1/instance', async (c) => {
-		const instance = await c.req.json();
-		if (typeof instance.id !== 'string') {
-			return c.json({ error: 'Invalid instance id' }, 400);
-		}
-		const instanceId = instance.id;
-		if (typeof instanceId !== 'string') {
-			return c.json({ error: 'Invalid instance id' }, 400);
-		}
-		const password = instance.password;
-		if (typeof password !== 'string') {
-			return c.json({ error: 'Invalid password' }, 400);
-		}
-
-		const existingInstance = models.intelInstance.get(instanceId);
-		const passSalt = existingInstance?.passSalt ?? generateId();
-		const passHash = hashPassword(password, passSalt);
-
-		if (existingInstance) {
-			if (existingInstance.passHash !== passHash) {
-				return c.json({ error: 'Invalid password' }, 400);
-			}
-		} else {
-			models.intelInstance.create(instanceId, passSalt, passHash);
-		}
-
+	function generateSession(c: Context, instanceId: string) {
 		const sessionId = generateId();
 		const session: Session = {
 			instanceId,
@@ -85,6 +93,65 @@ export async function initialiseHttp(
 			issuedAt: session.issuedAt,
 			expiresAt: session.expiresAt,
 		});
+	}
+
+	app.post('/api/v1/instance', async (c) => {
+		const instance = await c.req.json();
+		if (typeof instance.id !== 'string') {
+			return c.json({ error: 'Invalid instance id' }, 400);
+		}
+		const instanceId = instance.id;
+		if (typeof instanceId !== 'string') {
+			return c.json({ error: 'Invalid instance id' }, 400);
+		}
+
+		const existingInstance = models.intelInstance.get(instanceId);
+
+		if (existingInstance) {
+			return c.json({ error: 'Instance already exists' }, 400);
+		}
+
+		const discordGuildId = instance.discordGuildId;
+		if (typeof discordGuildId !== 'string') {
+			return c.json({ error: 'Invalid discord guild id' }, 400);
+		}
+		const discordGuildRoles = instance.discordGuildRoles;
+		if (!Array.isArray(discordGuildRoles)) {
+			return c.json({ error: 'Invalid discord guild roles' }, 400);
+		}
+		for (const role of discordGuildRoles) {
+			if (typeof role.accessType !== 'string' || typeof role.roleId !== 'string') {
+				return c.json({ error: 'Invalid discord guild role' }, 400);
+			}
+		}
+
+		models.intelInstance.create(instanceId, discordGuildId, discordGuildRoles);
+
+		return generateSession(c, instanceId);
+	});
+
+	app.get('/api/v1/instance/:instanceId', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const discordAccessCode = c.req.header('X-Discord-Access-Code');
+		if (!discordAccessCode) {
+			return c.json({ error: 'Discord access code is required' }, 401);
+		}
+		const discordRedirectUri = c.req.header('X-Discord-Redirect-Uri');
+		if (!discordRedirectUri) {
+			return c.json({ error: 'Discord redirect URI is required' }, 401);
+		}
+		const accessToken = await getAccessToken(discordAccessCode, discordRedirectUri);
+
+		const instance = models.intelInstance.get(instanceId);
+		if (!instance) {
+			return c.json({ error: 'Instance not found' }, 404);
+		}
+
+		if (!await models.intelInstance.userHasAccess(accessToken, instance)) {
+			return c.json({ error: 'Unauthorized' }, 401);
+		}
+
+		return generateSession(c, instanceId);
 	});
 
 	function validateSession(c: Context, instanceId: string) {
