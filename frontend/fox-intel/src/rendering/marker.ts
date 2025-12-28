@@ -312,6 +312,7 @@ export function useMarker(options: UseMarkerOptions) {
 	useEventListener('pointermove', onPointerMove);
 	useEventListener(options.eventElement, 'pointerup', onPointerUp);
 	useEventListener(options.eventElement, 'wheel', onWheel);
+	useEventListener('wheel', onWheel);
 
 	let frameRequest: ReturnType<typeof requestAnimationFrame> | null = null;
 	const cancelFrame = () => {

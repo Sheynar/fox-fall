@@ -2,12 +2,12 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { generateId } from '@packages/data/dist/id.js';
 import type { BasicIntelDocument, IntelDocument, IntelMarkerRegion } from '@packages/data/dist/intel.js';
+import crypto from 'crypto';
 import { Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
 import {
 	models,
 } from './data-store.js';
-import crypto from 'crypto';
 
 const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 export type Session = {

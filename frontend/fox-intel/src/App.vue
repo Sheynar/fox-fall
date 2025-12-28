@@ -28,7 +28,9 @@
 				cancel-viewport-zoom
 			>
 				<ContextRadial
-					@submit="($event) => withHandlingAsync(() => onContextMenuSubmit($event))"
+					@submit="
+						($event) => withHandlingAsync(() => onContextMenuSubmit($event))
+					"
 					@cancel="() => (contextMenuPosition = null)"
 				/>
 			</PositionedElement>
@@ -172,7 +174,10 @@
 	import { MAP_SIZE } from '@packages/data/dist/artillery/map';
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import { MapSource } from '@packages/frontend-libs/dist/assets/images/hex-maps';
-	import { withHandling, withHandlingAsync } from '@packages/frontend-libs/dist/error';
+	import {
+		withHandling,
+		withHandlingAsync,
+	} from '@packages/frontend-libs/dist/error';
 	import {
 		provideViewport,
 		Viewport as ViewportClass,
@@ -212,15 +217,6 @@
 
 	const { addDocument, documents } = useDocuments();
 
-	const { moving } = useViewportControl({
-		containerElement,
-		viewport,
-		lockRotate: ref(true),
-		disableMouseControls: computed(
-			() => activeMarker.value != null || !markerReady.value
-		),
-	});
-
 	provideViewport(viewport);
 
 	const {
@@ -255,6 +251,15 @@
 		markerSize,
 		markerDisabled: computed(
 			() => markerDisabled.value || moving.value != null
+		),
+	});
+
+	const { moving } = useViewportControl({
+		containerElement,
+		viewport,
+		lockRotate: ref(true),
+		disableMouseControls: computed(
+			() => activeMarker.value != null || !markerReady.value
 		),
 	});
 

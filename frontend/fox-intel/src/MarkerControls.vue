@@ -1,5 +1,5 @@
 <template>
-	<div class="MarkerControls__container" @pointerdown.stop @keydown.stop>
+	<div class="MarkerControls__container" @pointerdown.stop @keydown.stop @wheel.stop.prevent>
 		<div class="MarkerControls__entry">
 			<button
 				class="MarkerControls__button"
@@ -53,6 +53,7 @@
 					mode="solid"
 					:showPickerMode="false"
 					:show-color-list="false"
+					:show-eye-drop="true"
 					@pointerdown.stop="colorPickerContainer?.focus()"
 				/>
 			</div>
