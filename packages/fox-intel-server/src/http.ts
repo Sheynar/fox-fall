@@ -2,7 +2,6 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { generateId } from '@packages/data/dist/id.js';
 import type { BasicIntelDocument, IntelDocument, IntelMarkerRegion } from '@packages/data/dist/intel.js';
-import crypto from 'crypto';
 import { Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
 import fs from 'node:fs';
@@ -19,13 +18,6 @@ export type Session = {
 	expiresAt: number;
 };
 const activeSessions = new Map<string, Session>();
-
-function hashPassword(password: string, salt: string) {
-	return crypto
-		.createHash('sha256')
-		.update(password + salt)
-		.digest('hex');
-}
 
 export async function initialiseHttp(
 	port = Number(process.env.FOX_INFO_SYNC_PORT) || 443
