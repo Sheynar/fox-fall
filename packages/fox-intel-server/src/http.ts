@@ -5,6 +5,8 @@ import type { BasicIntelDocument, IntelDocument, IntelMarkerRegion } from '@pack
 import crypto from 'crypto';
 import { Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
+import fs from 'node:fs';
+import { createSecureServer } from 'node:http2';
 import {
 	models,
 } from './data-store.js';
@@ -26,7 +28,7 @@ function hashPassword(password: string, salt: string) {
 }
 
 export async function initialiseHttp(
-	port = Number(process.env.FOX_INFO_SYNC_PORT) || 80
+	port = Number(process.env.FOX_INFO_SYNC_PORT) || 443
 ) {
 	const app = new Hono();
 	app.use(cors());
@@ -599,6 +601,11 @@ export async function initialiseHttp(
 			{
 				fetch: app.fetch,
 				port,
+				createServer: createSecureServer,
+				serverOptions: {
+					cert: fs.readFileSync(process.env.FOX_INTEL_SERVER_CERT_PATH ?? './foxintel.kaosdlanor.dev.pem'),
+					key: fs.readFileSync(process.env.FOX_INTEL_SERVER_KEY_PATH ?? './foxintel.kaosdlanor.dev.key'),
+				}
 			},
 			(info) => {
 				console.log(`HTTP server running on ${info.address}:${info.port}`);
