@@ -177,13 +177,16 @@ export const models = {
 				>(`SELECT * FROM IntelInstance WHERE discord_guild_id IN (${guilds.map(() => '?').join(', ')})`)
 				.all(...guilds.map((guild) => guild.id));
 
-			const output: typeof instances = [];
-			for (const instance of instances) {
-				if (await this.userHasAccess(accessToken, instance)) {
-					output.push(instance);
-				}
-			}
-			return output;
+			return instances;
+
+			// This would check the roles of the user, I have decided to show the user all instances they are in the required guilds for. Access will be checked when they try to open the instance.
+			// const output: typeof instances = [];
+			// for (const instance of instances) {
+			// 	if (await this.userHasAccess(accessToken, instance)) {
+			// 		output.push(instance);
+			// 	}
+			// }
+			// return output;
 		},
 	},
 
