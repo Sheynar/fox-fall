@@ -6,10 +6,13 @@
 		cancel-viewport-rotation
 	>
 		<div
+			ref="documentElement"
 			class="DocumentInstance__container"
 			:data-document-id="props.document.id"
 			:style="{ '--_document-ui-size': String(props.document.ui_size) }"
-			@pointerdown.stop="() => withHandlingAsync(() => openDocument())"
+			@pointerdown.stop="onPointerDown"
+			@pointermove.stop="onPointerMove"
+			@pointerup.stop="onPointerUp"
 			@openDocument="() => withHandlingAsync(() => openDocument())"
 			:title="props.document.document_name"
 		>
@@ -65,6 +68,7 @@
 </style>
 
 <script setup lang="ts">
+	import { Vector } from '@packages/data/dist/artillery/vector';
 	import { debounce } from '@packages/data/dist/helpers';
 	import type {
 		BasicIntelDocument,
@@ -76,10 +80,13 @@
 		withHandlingAsync,
 	} from '@packages/frontend-libs/dist/error';
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
+	import { injectViewport } from '@packages/frontend-libs/dist/viewport/viewport';
 	import DocumentIcon from '@packages/frontend-libs/dist/icons/DocumentIcon.vue';
-	import { ref } from 'vue';
+	import { ref, shallowRef } from 'vue';
 	import { injectIntelInstance } from '@/lib/intel-instance';
 	import DocumentEditor from './DocumentEditor.vue';
+
+	const documentElement = shallowRef<HTMLDivElement | null>(null);
 
 	const props = defineProps<{
 		document: BasicIntelDocument;
@@ -123,6 +130,19 @@
 		editing.value = { document: data, attachments: getAttachments() };
 	}
 
+	async function updatePartialDocument(updateData: Partial<IntelDocument>) {
+		const response = await intelInstance.authenticatedFetch(
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
+			{
+				method: 'POST',
+				body: JSON.stringify(updateData),
+			}
+		);
+		if (!response.ok) {
+			throw new Error('Failed to update document. ' + (await response.text()));
+		}
+	}
+
 	async function updateDocument(
 		newDocument: IntelDocument,
 		oldDocument: IntelDocument
@@ -144,16 +164,7 @@
 		}
 		oldDocument = newDocument;
 
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
-			{
-				method: 'POST',
-				body: JSON.stringify(updateData),
-			}
-		);
-		if (!response.ok) {
-			throw new Error('Failed to update document. ' + (await response.text()));
-		}
+		await updatePartialDocument(updateData);
 	}
 
 	const updateDocumentDebounced = debounce(updateDocument, 1000);
@@ -240,5 +251,78 @@
 				return attachments;
 			}
 		);
+	}
+
+	const MOVE_ACTIVATION_DISTANCE = 5;
+	const viewport = injectViewport();
+	type MovingData = {
+		sharedStateId?: string;
+		startEvent: PointerEvent;
+		startCursorViewport: Vector;
+		startDocumentPosition: Vector;
+		moveActivated: boolean;
+	};
+	const moving = ref<null | MovingData>(null);
+	function onPointerDown(event: PointerEvent) {
+		if (event.button !== 0 || documentElement.value == null) return;
+		event.preventDefault();
+		event.stopPropagation();
+
+		moving.value = {
+			startEvent: event,
+			startCursorViewport: viewport.value.toWorldPosition(
+				Vector.fromCartesianVector({
+					x: event.clientX,
+					y: event.clientY,
+				})
+			),
+			startDocumentPosition: Vector.fromCartesianVector({
+				x: props.document.document_x,
+				y: props.document.document_y,
+			}),
+			moveActivated: false,
+		};
+		documentElement.value.setPointerCapture(event.pointerId);
+	}
+
+	function onPointerMove(event: PointerEvent) {
+		if (moving.value == null || documentElement.value == null) return;
+		event.preventDefault();
+		event.stopPropagation();
+
+		const distanceMoved = Vector.fromCartesianVector({
+			x: event.clientX - moving.value.startEvent.clientX,
+			y: event.clientY - moving.value.startEvent.clientY,
+		});
+		if (distanceMoved.distance >= MOVE_ACTIVATION_DISTANCE) {
+			moving.value.moveActivated = true;
+		}
+
+		if (moving.value.moveActivated) {
+			props.document.document_x =
+				moving.value.startDocumentPosition.x +
+				distanceMoved.x / viewport.value.resolvedZoom;
+			props.document.document_y =
+				moving.value.startDocumentPosition.y +
+				distanceMoved.y / viewport.value.resolvedZoom;
+		}
+	}
+
+	function onPointerUp(event: PointerEvent) {
+		if (moving.value == null || documentElement.value == null) return;
+		event.preventDefault();
+		event.stopPropagation();
+
+		if (!moving.value.moveActivated) {
+			withHandlingAsync(openDocument);
+		} else {
+			withHandlingAsync(() => updatePartialDocument({
+				document_x: props.document.document_x,
+				document_y: props.document.document_y,
+			}));
+		}
+
+		moving.value = null;
+		documentElement.value.releasePointerCapture(event.pointerId);
 	}
 </script>
