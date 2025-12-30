@@ -1,4 +1,3 @@
-// import { retrieveBlob, storeBlob } from '@/lib/store';
 import { computed, onScopeDispose, Ref } from 'vue';
 import { injectIntelInstance } from '@/lib/intel-instance';
 
@@ -60,8 +59,6 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		if (x < 0 || x > regionCountX.value) throw new Error('x is out of range');
 		if (y < 0 || y > regionCountY.value) throw new Error('y is out of range');
 
-		// const regionId = `${x}-${y}`;
-
 		const regionCanvas = new OffscreenCanvas(
 			options.regionWidth.value,
 			options.regionHeight.value
@@ -90,12 +87,6 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 			options.regionHeight.value
 		);
 
-		// Debugging: fill the region with a green color
-		// const prevFillStyle = options.context.fillStyle;
-		// options.context.fillStyle = 'rgb(0 255 0 / 0.5)';
-		// options.context.fillRect(x * options.regionWidth.value, y * options.regionHeight.value, options.regionWidth.value, options.regionHeight.value);
-		// options.context.fillStyle = prevFillStyle;
-
 		const blob = await regionCanvas.convertToBlob({ type: 'image/webp' });
 		await options.intelInstance.authenticatedFetch(
 			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/marker/${x}/${y}`,
@@ -104,7 +95,6 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 				body: blob,
 			}
 		);
-		// await storeBlob(blob, options.intelInstance.instanceId.value + '-' + regionId);
 	}
 
 	async function loadAll() {
@@ -189,15 +179,10 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 			return;
 		}
 		const blob = await response.blob();
-		// const regionId = `${x}-${y}`;
-		// const blob = await retrieveBlob(
-		// 	options.intelInstance.instanceId.value + '-' + regionId
-		// );
 		if (blob == null) {
-			// console.log(`Region ${regionId} not found, skipping load`);
+			// console.debug(`Region ${regionId} not found, skipping load`);
 			return;
 		}
-		// console.log(`Loading region ${regionId}`);
 		const image = await createImageBitmap(blob);
 
 		options.context.clearRect(
@@ -261,6 +246,12 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 				options.regionWidth.value,
 				options.regionHeight.value
 			);
+
+			// Debugging: fill the region with a green color
+			// const prevFillStyle = options.context.fillStyle;
+			// options.context.fillStyle = 'rgb(0 255 0 / 0.5)';
+			// options.context.fillRect(region.region_x * options.regionWidth.value, region.region_y * options.regionHeight.value, options.regionWidth.value, options.regionHeight.value);
+			// options.context.fillStyle = prevFillStyle;
 		}
 	}
 

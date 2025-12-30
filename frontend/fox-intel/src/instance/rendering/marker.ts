@@ -141,19 +141,19 @@ export function useMarker(options: UseMarkerOptions) {
 		return {
 			x1:
 				tempCanvasBounds.x +
-				activeMarker.value.minX / activeMarker.value.viewportZoom -
+				activeMarker.value.minX * markerZoom.value / activeMarker.value.viewportZoom -
 				activeMarker.value.size / 2,
 			y1:
 				tempCanvasBounds.y +
-				activeMarker.value.minY / activeMarker.value.viewportZoom -
+				activeMarker.value.minY * markerZoom.value / activeMarker.value.viewportZoom -
 				activeMarker.value.size / 2,
 			x2:
 				tempCanvasBounds.x +
-				activeMarker.value.maxX / activeMarker.value.viewportZoom +
+				activeMarker.value.maxX * markerZoom.value / activeMarker.value.viewportZoom +
 				activeMarker.value.size / 2,
 			y2:
 				tempCanvasBounds.y +
-				activeMarker.value.maxY / activeMarker.value.viewportZoom +
+				activeMarker.value.maxY * markerZoom.value / activeMarker.value.viewportZoom +
 				activeMarker.value.size / 2,
 		};
 	};
