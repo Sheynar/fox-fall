@@ -216,10 +216,15 @@
 			overflow-x: auto;
 
 			&.DocumentEditor__attachments--loading::after {
-				content: '';
+				content: 'Loading attachments...';
 				position: absolute;
 				inset: 0;
 				background: rgb(0 0 0 / 0.5);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 2em;
+				font-weight: bold;
 			}
 
 			.DocumentEditor__attachment-container {

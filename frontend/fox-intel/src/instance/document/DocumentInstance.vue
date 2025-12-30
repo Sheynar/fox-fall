@@ -179,54 +179,66 @@
 
 	async function addAttachment(blob: Blob) {
 		if (editing.value == null) return;
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
-			{
-				method: 'POST',
-				body: blob,
+		editing.value.attachments = editing.value.attachments.then(
+			async (attachments) => {
+				const response = await intelInstance.authenticatedFetch(
+					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
+					{
+						method: 'POST',
+						body: blob,
+					}
+				);
+				if (!response.ok) {
+					throw new Error(
+						'Failed to add attachment. ' + (await response.text())
+					);
+				}
+				const data: { id: number } = await response.json();
+
+				const reader = new FileReader();
+				const attachment_content = await new Promise<string>(
+					(resolve, reject) => {
+						reader.onload = () => resolve(reader.result as string);
+						reader.onerror = () =>
+							reject(new Error('Failed to read attachment content'));
+						reader.readAsDataURL(blob);
+					}
+				);
+				attachments.push({
+					id: data.id,
+					instance_id: props.document.instance_id,
+					document_id: props.document.id,
+					mime_type: blob.type,
+					attachment_content,
+				});
+				return attachments;
 			}
 		);
-		if (!response.ok) {
-			throw new Error('Failed to add attachment. ' + (await response.text()));
-		}
-		const data: { id: number } = await response.json();
-
-		const reader = new FileReader();
-		const attachment_content = await new Promise<string>((resolve, reject) => {
-			reader.onload = () => resolve(reader.result as string);
-			reader.onerror = () =>
-				reject(new Error('Failed to read attachment content'));
-			reader.readAsDataURL(blob);
-		});
-		const attachments = ref(await editing.value.attachments);
-		attachments.value.push({
-			id: data.id,
-			instance_id: props.document.instance_id,
-			document_id: props.document.id,
-			mime_type: blob.type,
-			attachment_content,
-		});
 	}
 
 	async function deleteAttachment(attachmentId: number) {
 		if (editing.value == null) return;
 		if (!confirm('Are you sure you want to delete this attachment?')) return;
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment/${encodeURIComponent(attachmentId)}`,
-			{
-				method: 'DELETE',
+		editing.value.attachments = editing.value.attachments.then(
+			async (attachments) => {
+				const response = await intelInstance.authenticatedFetch(
+					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment/${encodeURIComponent(attachmentId)}`,
+					{
+						method: 'DELETE',
+					}
+				);
+				if (!response.ok) {
+					throw new Error(
+						'Failed to delete attachment. ' + (await response.text())
+					);
+				}
+				const index = attachments.findIndex(
+					(attachment) => attachment.id === attachmentId
+				);
+				if (index === -1) return attachments;
+				attachments.splice(index, 1);
+				return attachments;
 			}
 		);
-		if (!response.ok) {
-			throw new Error(
-				'Failed to delete attachment. ' + (await response.text())
-			);
-		}
-		const attachments = ref(await editing.value.attachments);
-		const index = attachments.value.findIndex(
-			(attachment) => attachment.id === attachmentId
-		);
-		if (index === -1) return;
-		attachments.value.splice(index, 1);
 	}
 </script>
