@@ -45,28 +45,25 @@
 					</div>
 				</div>
 				<div ref="editorContainer" class="DocumentEditor__editor" />
-				<div class="DocumentEditor__attachments" :class="{ 'DocumentEditor__attachments--loading': attachmentsLoading }">
+				<div
+					class="DocumentEditor__attachments"
+					:class="{
+						'DocumentEditor__attachments--loading': attachmentsLoading,
+					}"
+				>
 					<div
 						class="DocumentEditor__attachment-container"
 						v-for="attachment in attachments"
 						:key="attachment.id"
-						@pointerdown.stop="previewingAttachment = attachment"
 					>
 						<img
 							class="DocumentEditor__attachment-thumbnail"
 							v-if="attachment.mime_type.startsWith('image/')"
 							:src="attachment.attachment_content"
+							@pointerdown.stop.prevent="previewingAttachment = attachment"
 						/>
 						<div class="DocumentEditor__attachment-thumbnail" v-else>
 							UNKNOWN ATTACHMENT TYPE
-						</div>
-						<div class="DocumentEditor__attachment-actions-container">
-							<button
-								class="DocumentEditor__attachment-action"
-								@pointerdown.stop="emit('deleteAttachment', attachment.id)"
-							>
-								<i class="pi pi-trash" />
-							</button>
 						</div>
 					</div>
 					<button
@@ -78,16 +75,33 @@
 				</div>
 				<Teleport to="body" v-if="previewingAttachment != null">
 					<div
-						class="DocumentEditor__attachment-preview-container"
+						class="DocumentEditor__attachment-preview-backdrop"
 						@pointerdown.stop="previewingAttachment = null"
 					>
-						<img
-							class="DocumentEditor__attachment-preview"
-							v-if="previewingAttachment.mime_type.startsWith('image/')"
-							:src="previewingAttachment.attachment_content"
-						/>
-						<div class="DocumentEditor__attachment-thumbnail" v-else>
-							UNKNOWN ATTACHMENT TYPE
+						<div class="DocumentEditor__attachment-preview-container" @pointerdown.stop>
+							<div class="DocumentEditor__attachment-preview-header">
+								<button @pointerdown.stop="previewingAttachment = null">
+									<i class="pi pi-arrow-left" />
+								</button>
+								<button
+									@pointerdown.stop="
+										emit('deleteAttachment', previewingAttachment.id);
+										previewingAttachment = null;
+									"
+								>
+									<i class="pi pi-trash" />
+								</button>
+							</div>
+							<div class="DocumentEditor__attachment-preview-content">
+								<img
+									class="DocumentEditor__attachment-preview"
+									v-if="previewingAttachment.mime_type.startsWith('image/')"
+									:src="previewingAttachment.attachment_content"
+								/>
+								<div class="DocumentEditor__attachment-preview" v-else>
+									UNKNOWN ATTACHMENT TYPE
+								</div>
+							</div>
 						</div>
 					</div>
 				</Teleport>
@@ -229,36 +243,16 @@
 
 			.DocumentEditor__attachment-container {
 				display: grid;
-				grid-template-rows:
-					[thumbnail-start actions-start] auto [actions-end] minmax(0, 1fr)
-					[thumbnail-end];
-				grid-template-columns: [thumbnail-start] auto [actions-start] auto [thumbnail-end actions-end];
+				grid-template-rows: minmax(0, 1fr);
+				grid-template-columns: auto;
 
 				> .DocumentEditor__attachment-thumbnail {
-					grid-row: thumbnail-start / thumbnail-end;
-					grid-column: thumbnail-start / thumbnail-end;
-
 					align-self: center;
+					justify-self: center;
 					max-height: 100%;
 					max-width: 15em;
 
 					cursor: pointer;
-				}
-
-				> .DocumentEditor__attachment-actions-container {
-					grid-row: actions-start / actions-end;
-					grid-column: actions-start / actions-end;
-
-					display: flex;
-					flex-direction: row;
-					padding: 0.25em;
-					gap: 0.25em;
-				}
-				&:not(:hover) {
-					> .DocumentEditor__attachment-actions-container {
-						opacity: 0;
-						pointer-events: none;
-					}
 				}
 			}
 
@@ -268,7 +262,7 @@
 		}
 	}
 
-	.DocumentEditor__attachment-preview-container {
+	.DocumentEditor__attachment-preview-backdrop {
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.5);
@@ -276,11 +270,49 @@
 		justify-content: center;
 		align-items: center;
 
-		> .DocumentEditor__attachment-preview {
+		> .DocumentEditor__attachment-preview-container {
 			max-height: 90%;
 			max-width: 90%;
-			object-fit: contain;
 			margin: auto;
+
+			display: grid;
+			grid-template-rows: auto auto;
+			grid-template-columns: auto;
+			grid-template-areas:
+				'header'
+				'content';
+
+			background: var(--color-primary-contrast);
+			border-radius: 0.5em;
+			border: 0.125em solid var(--color-primary);
+			overflow: hidden;
+
+			> .DocumentEditor__attachment-preview-header {
+				grid-area: header;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: start;
+				padding: 0.25em;
+				gap: 0.25em;
+
+				border-bottom: 0.125em solid var(--color-primary);
+			}
+
+			> .DocumentEditor__attachment-preview-content {
+				grid-area: content;
+				align-self: center;
+				justify-self: center;
+				max-height: 100%;
+				max-width: 100%;
+				padding: 0.5em;
+
+				> .DocumentEditor__attachment-preview {
+					max-height: 100%;
+					max-width: 100%;
+					object-fit: contain;
+				}
+			}
 		}
 	}
 </style>
@@ -391,15 +423,17 @@
 		input.click();
 	}
 
-	onMounted(() => withHandling(() => {
-		editor = new EditorView({
-			state: EditorState.create({
-				doc: props.document.document_content,
-				extensions,
-			}),
-			parent: editorContainer.value!,
-		});
-	}));
+	onMounted(() =>
+		withHandling(() => {
+			editor = new EditorView({
+				state: EditorState.create({
+					doc: props.document.document_content,
+					extensions,
+				}),
+				parent: editorContainer.value!,
+			});
+		})
+	);
 
 	onUnmounted(() => {
 		editor?.destroy();
