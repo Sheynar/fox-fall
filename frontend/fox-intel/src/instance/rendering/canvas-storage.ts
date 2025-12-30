@@ -98,7 +98,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 
 		const blob = await regionCanvas.convertToBlob({ type: 'image/webp' });
 		await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.instanceId.value}/marker/${x}/${y}`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/marker/${x}/${y}`,
 			{
 				method: 'POST',
 				body: blob,
@@ -109,7 +109,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 
 	async function loadAll() {
 		const response = await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.instanceId.value}/marker`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/marker`,
 			{
 				method: 'GET',
 			}
@@ -176,7 +176,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 		if (y < 0 || y > regionCountY.value) throw new Error('y is out of range');
 
 		const response = await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.instanceId.value}/marker/${x}/${y}`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/marker/${x}/${y}`,
 			{
 				method: 'GET',
 			}
@@ -220,7 +220,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
 		const response = await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.instanceId.value}/marker/since?timestamp=${timestamp}&timeout=${timeout}`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/marker/since?timestamp=${timestamp}&timeout=${timeout}`,
 			{
 				method: 'GET',
 			}

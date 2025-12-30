@@ -3,6 +3,12 @@ export type IntelInstance = {
 	discord_guild_id: string;
 };
 
+export type IntelInstanceDiscordPermissions = {
+	instance_id: string;
+	access_type: 'read' | 'write' | 'admin';
+	role_id: string;
+};
+
 export type IntelMarkerRegion = {
 	id: number;
 	instance_id: string;

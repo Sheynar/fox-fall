@@ -16,16 +16,50 @@
 						:key="instance.id"
 					>
 						{{ instance.id }}
-						<button @click="emit('selectInstance', instance.id)">Select</button>
+						<div class="InstanceSelector__instance__buttons">
+							<button @click="withHandlingAsync(() => editInstance(instance))">
+								Edit
+							</button>
+							<button @click="withHandlingAsync(() => deleteInstance(instance))">
+								Delete
+							</button>
+							<button
+								@click="withHandlingAsync(() => selectInstance(instance.id))"
+							>
+								Select
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</Teleport>
-	<InstanceCreator
+	<InstanceEditor
 		v-if="addingInstance"
-		@create-instance="emit('selectInstance', $event)"
+		@submit="emit('selectInstance', $event)"
 		@cancel="addingInstance = false"
+	/>
+	<InstanceEditor
+		v-if="editingInstance"
+		:instance-id="editingInstance.instance.id"
+		:guild-id="editingInstance.instance.discord_guild_id"
+		:guild-admin-role-ids="
+			editingInstance.discordPermissions
+				.filter((role) => role.access_type === 'admin')
+				.map((role) => role.role_id)
+		"
+		:guild-write-role-ids="
+			editingInstance.discordPermissions
+				.filter((role) => role.access_type === 'write')
+				.map((role) => role.role_id)
+		"
+		:guild-read-role-ids="
+			editingInstance.discordPermissions
+				.filter((role) => role.access_type === 'read')
+				.map((role) => role.role_id)
+		"
+		@submit="editingInstance = null"
+		@cancel="editingInstance = null"
 	/>
 </template>
 
@@ -84,6 +118,12 @@
 			grid-column: 1 / -1;
 			display: grid;
 			grid-template-columns: subgrid;
+
+			.InstanceSelector__instance__buttons {
+				display: flex;
+				flex-direction: row;
+				gap: 0.5em;
+			}
 		}
 
 		&.InstanceSelector__content--loading {
@@ -106,10 +146,13 @@
 </style>
 
 <script setup lang="ts">
-	import type { IntelInstance } from '@packages/data/dist/intel';
+	import type {
+		IntelInstance,
+		IntelInstanceDiscordPermissions,
+	} from '@packages/data/dist/intel';
 	import { onMounted, ref } from 'vue';
 	import { useDiscordAccess } from '@/lib/discord';
-	import InstanceCreator from './InstanceCreator.vue';
+	import InstanceEditor from './InstanceEditor.vue';
 	import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
 
 	const emit = defineEmits<{
@@ -121,6 +164,10 @@
 	const instances = ref<IntelInstance[]>([]);
 	const ready = ref(false);
 	const addingInstance = ref(false);
+	const editingInstance = ref<{
+		instance: IntelInstance;
+		discordPermissions: IntelInstanceDiscordPermissions[];
+	} | null>(null);
 
 	async function initialise() {
 		ready.value = false;
@@ -141,6 +188,60 @@
 		} finally {
 			ready.value = true;
 		}
+	}
+
+	async function editInstance(instance: IntelInstance) {
+		const response = await fetch(
+			`/api/v1/instance/${encodeURIComponent(instance.id)}/permissions`,
+			{
+				method: 'GET',
+				headers: {
+					'X-Discord-Access-Code': discordAccess.code.value,
+					'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+				},
+			}
+		);
+		if (!response.ok) {
+			throw new Error('Failed to get permissions: ' + (await response.text()));
+		}
+		const discordPermissions: IntelInstanceDiscordPermissions[] =
+			await response.json();
+		editingInstance.value = { instance, discordPermissions };
+	}
+
+	async function deleteInstance(instance: IntelInstance) {
+		if (!confirm('Are you sure you want to delete this instance?')) return;
+		const response = await fetch(
+			`/api/v1/instance/${encodeURIComponent(instance.id)}`,
+			{
+				method: 'DELETE',
+				headers: {
+					'X-Discord-Access-Code': discordAccess.code.value,
+					'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+				},
+			}
+		);
+		if (!response.ok) {
+			throw new Error('Failed to delete instance: ' + (await response.text()));
+		}
+		instances.value = instances.value.filter((i) => i.id !== instance.id);
+	}
+
+	async function selectInstance(instanceId: string) {
+		const response = await fetch(
+			`/api/v1/instance/${encodeURIComponent(instanceId)}`,
+			{
+				method: 'GET',
+				headers: {
+					'X-Discord-Access-Code': discordAccess.code.value,
+					'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+				},
+			}
+		);
+		if (!response.ok) {
+			throw new Error('Failed to select instance: ' + (await response.text()));
+		}
+		emit('selectInstance', instanceId);
 	}
 
 	onMounted(() => {

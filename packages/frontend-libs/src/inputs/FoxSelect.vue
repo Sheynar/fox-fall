@@ -14,28 +14,28 @@
 		@keydown.space="toggle()"
 		@keydown.escape="isOpen && close()"
 		@keydown.delete="
-			props.enableClear &&
-				modelValue != null &&
-				(submit(null), $event.stopPropagation())
+			props.enableClear && hasValue && (submit(null), $event.stopPropagation())
 		"
 		@keydown.backspace="
-			props.enableClear &&
-				modelValue != null &&
-				(submit(null), $event.stopPropagation())
+			props.enableClear && hasValue && (submit(null), $event.stopPropagation())
 		"
 		@keydown.arrow-up="toggle()"
 		@keydown.arrow-down="toggle()"
 		@keydown.tab="isOpen && close()"
 		@keydown.shift.tab="isOpen && close()"
 	>
-		<span v-if="modelValue != null && props.options.get(modelValue) != null" class="FoxSelect__label">
+		<span v-if="hasValue" class="FoxSelect__label">
 			<slot name="label" :value="modelValue">
-				<Component
-					v-if="props.options.get(modelValue)!.icon"
-					:is="props.options.get(modelValue)!.icon"
-					class="FoxSelect__icon"
-				/>
-				{{ props.options.get(modelValue)!.label }}
+				<template
+					v-for="value in props.enableMultiple ? modelValue : [modelValue].filter((value) => value != null)"
+				>
+					<Component
+						v-if="props.options.get(value)?.icon"
+						:is="props.options.get(value)!.icon"
+						class="FoxSelect__icon"
+					/>
+					{{ props.options.get(value)?.label }}
+				</template>
 			</slot>
 		</span>
 		<span v-else class="FoxSelect__placeholder">
@@ -44,7 +44,7 @@
 
 		<span class="FoxSelect__icons">
 			<i
-				v-if="modelValue != null && props.enableClear"
+				v-if="hasValue && props.enableClear"
 				class="pi pi-times"
 				@click.stop.prevent="submit(null)"
 			/>
@@ -108,7 +108,7 @@
 			class="FoxSelect__option"
 			v-for="value in finalValues"
 			:class="{
-				'FoxSelect__option--selected': modelValue === value,
+				'FoxSelect__option--selected': valueIsSelected(value),
 				'FoxSelect__option--focused': focused?.value === value,
 			}"
 			@pointerdown.stop.prevent="submit(value)"
@@ -117,22 +117,22 @@
 				name="option-label"
 				:value="value"
 				:data="props.options.get(value)!"
-				:selected="modelValue === value"
+				:selected="valueIsSelected(value)"
 			>
 				<Component
-					v-if="props.options.get(value)!.icon"
+					v-if="props.options.get(value)?.icon"
 					:is="props.options.get(value)!.icon"
 					class="FoxSelect__icon"
 				/>
-				{{ props.options.get(value)!.label }}
+				{{ props.options.get(value)?.label }}
 			</slot>
 		</li>
 	</ul>
 </template>
 
 <style lang="scss">
-	@use '@/styles/constants' as constants;
-	@use '@/styles/mixins/border' as border;
+	@use "@/styles/constants" as constants;
+	@use "@/styles/mixins/border" as border;
 
 	.FoxSelect__container {
 		position: relative;
@@ -268,8 +268,8 @@
 </style>
 
 <script setup lang="ts">
-	import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue';
-	import FoxText from './FoxText.vue';
+	import { computed, nextTick, onMounted, ref, shallowRef, watch } from "vue";
+	import FoxText from "./FoxText.vue";
 
 	const containerElement = shallowRef<HTMLSpanElement>(null!);
 	const optionsElement = shallowRef<HTMLDivElement>(null!);
@@ -277,8 +277,8 @@
 		undefined
 	);
 
-	const modelValue = defineModel<any>('modelValue', { required: true });
-	const searchString = ref('');
+	const modelValue = defineModel<any>("modelValue", { required: true });
+	const searchString = ref("");
 	const isOpen = ref(false);
 
 	const props = defineProps<{
@@ -290,7 +290,18 @@
 		autofocus?: boolean;
 		enableSearch?: boolean;
 		enableClear?: boolean;
+		enableMultiple?: boolean;
 	}>();
+
+	watch(
+		() => props.enableMultiple,
+		() => {
+			if (props.enableMultiple && !Array.isArray(modelValue.value)) {
+				modelValue.value = [];
+			}
+		},
+		{ immediate: true, flush: "sync" }
+	);
 
 	// TODO : optimize this
 	const filteredValues = computed(() => {
@@ -317,19 +328,39 @@
 			.map(([value]) => value);
 	});
 
+	const hasValue = computed(() => {
+		return props.enableMultiple
+			? modelValue.value?.length > 0
+			: modelValue.value != null;
+	});
+
+	const valueIsSelected = (value: any) => {
+		return props.enableMultiple
+			? modelValue.value?.includes(value)
+			: modelValue.value === value;
+	};
+
 	const focused = shallowRef<{ index: number; value: any } | undefined>(
 		undefined
 	);
 	const checkFocused = () => {
-		const focusedValue = focused.value?.value ?? modelValue.value;
-		if (!filteredValues.value.has(focusedValue)) {
+		const focusedValues: any[] = [];
+		if (focused.value?.value) focusedValues.push(focused.value.value);
+		if (props.enableMultiple && Array.isArray(modelValue.value))
+			focusedValues.push(...modelValue.value);
+		else if (modelValue.value != null) focusedValues.push(modelValue.value);
+
+		const foundValue = focusedValues.find((value) =>
+			filteredValues.value.has(value)
+		);
+		if (!foundValue) {
 			focused.value = undefined;
 		} else {
-			const newIndex = finalValues.value.indexOf(focusedValue);
+			const newIndex = finalValues.value.indexOf(foundValue);
 			if (newIndex !== focused.value?.index) {
 				focused.value = {
 					index: newIndex,
-					value: focusedValue,
+					value: foundValue,
 				};
 			}
 		}
@@ -383,8 +414,23 @@
 	};
 
 	const submit = (value?: any) => {
-		modelValue.value = value;
-		close();
+		if (props.enableMultiple) {
+			if (value == null) {
+				modelValue.value = [];
+			} else if (Array.isArray(modelValue.value)) {
+				const index = modelValue.value.indexOf(value);
+				if (index === -1) {
+					modelValue.value.push(value);
+				} else {
+					modelValue.value.splice(index, 1);
+				}
+			} else {
+				modelValue.value = [value];
+			}
+		} else {
+			modelValue.value = value;
+			close();
+		}
 	};
 
 	const focus = () => containerElement.value!.focus();
@@ -397,7 +443,10 @@
 	});
 
 	watch(
-		[modelValue, () => finalValues.value.length],
+		() => {
+			finalValues.value.length;
+			props.enableMultiple ? modelValue.value?.length : modelValue.value;
+		},
 		() => {
 			checkFocused();
 		},

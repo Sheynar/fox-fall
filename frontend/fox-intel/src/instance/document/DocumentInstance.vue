@@ -89,7 +89,7 @@
 
 	async function getAttachments() {
 		const attachmentsResponse = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/document/${props.document.id}/attachment`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
 			{
 				method: 'GET',
 			}
@@ -111,7 +111,7 @@
 	} | null>(null);
 	async function openDocument() {
 		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/document/${props.document.id}`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
 			{
 				method: 'GET',
 			}
@@ -145,7 +145,7 @@
 		oldDocument = newDocument;
 
 		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/document/${props.document.id}`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
 			{
 				method: 'POST',
 				body: JSON.stringify(updateData),
@@ -166,7 +166,7 @@
 		if (editing.value == null) return;
 		if (!confirm('Are you sure you want to delete this document?')) return;
 		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/document/${props.document.id}`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
 			{
 				method: 'DELETE',
 			}
@@ -180,7 +180,7 @@
 	async function addAttachment(blob: Blob) {
 		if (editing.value == null) return;
 		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/document/${props.document.id}/attachment`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
 			{
 				method: 'POST',
 				body: blob,
@@ -212,7 +212,7 @@
 		if (editing.value == null) return;
 		if (!confirm('Are you sure you want to delete this attachment?')) return;
 		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${intelInstance.instanceId.value}/document/${props.document.id}/attachment/${attachmentId}`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment/${encodeURIComponent(attachmentId)}`,
 			{
 				method: 'DELETE',
 			}

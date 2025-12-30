@@ -169,28 +169,27 @@ export async function getUserGuildMember(
 
 const guildRolesCache = new Map<string, DiscordRole[]>();
 export async function getGuildRoles(
-	accessToken: DiscordAccessToken,
 	guildId: string
 ) {
 	const cachedRoles = guildRolesCache.get(
-		`${accessToken.access_token}-${guildId}`
+		guildId
 	);
 	if (cachedRoles) {
 		return cachedRoles;
 	}
 	let response = await fetch(`${DISCORD_API_URL}/guilds/${guildId}/roles`, {
 		headers: {
-			Authorization: `Bearer ${accessToken.access_token}`,
+			Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN!}`,
 		},
 	});
 	if (!response.ok) {
 		throw new Error(`Failed to get guild roles: ${await response.text()}`);
 	}
 	const roles: DiscordRole[] = await response.json();
-	guildRolesCache.set(`${accessToken.access_token}-${guildId}`, roles);
+	guildRolesCache.set(guildId, roles);
 	setTimeout(
 		() => {
-			guildRolesCache.delete(`${accessToken.access_token}-${guildId}`);
+			guildRolesCache.delete(guildId);
 		},
 		5 * 60 * 1000
 	);
@@ -245,7 +244,7 @@ export async function getUserRoles(
 		}
 		const [member, guildRoles] = await Promise.all([
 			getUserGuildMember(accessToken, guild.id),
-			getGuildRoles(accessToken, guild.id),
+			getGuildRoles(guild.id),
 		]);
 		const roleMap = new Map<string, DiscordRole>();
 		for (const role of guildRoles) {

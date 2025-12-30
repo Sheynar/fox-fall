@@ -3,6 +3,7 @@ import { useEventListener } from '@vueuse/core';
 import { onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
 import { injectIntelInstance } from '@/lib/intel-instance';
 import { useCanvasStorage } from './canvas-storage';
+import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
 
 export enum MarkerType {
 	Pen = 'pen',
@@ -208,14 +209,14 @@ export function useMarker(options: UseMarkerOptions) {
 		dumpMarkerCanvas();
 		const activeMarkerBounds = getActiveMarkerBounds();
 		if (activeMarkerBounds != null) {
-			canvasStorage
-				.saveArea(
+			withHandlingAsync(() =>
+				canvasStorage.saveArea(
 					activeMarkerBounds.x1,
 					activeMarkerBounds.y1,
 					activeMarkerBounds.x2,
 					activeMarkerBounds.y2
 				)
-				.catch(console.error);
+			);
 		}
 
 		activeMarker.value = null;
@@ -305,7 +306,8 @@ export function useMarker(options: UseMarkerOptions) {
 		event.stopImmediatePropagation();
 		options.markerSize.value = Math.max(
 			1,
-			options.markerSize.value + (event.deltaY > 0 ? -1 : 1) * (event.shiftKey ? 1 : 5)
+			options.markerSize.value +
+				(event.deltaY > 0 ? -1 : 1) * (event.shiftKey ? 1 : 5)
 		);
 	}
 
@@ -396,7 +398,7 @@ export function useMarker(options: UseMarkerOptions) {
 	});
 
 	const ready = ref(false);
-	const readyPromise = canvasStorage.ready
+	const readyPromise = withHandlingAsync(() => canvasStorage.ready)
 		.finally(() => {
 			ready.value = true;
 		})

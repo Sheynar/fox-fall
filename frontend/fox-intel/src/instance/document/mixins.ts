@@ -12,7 +12,7 @@ export function useDocuments(options: UseDocumentsOptions) {
 
 	async function addDocument(documentX: number, documentY: number, uiSize: number, documentName: string, documentContent: string) {
 		const response = await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.instanceId.value}/document`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document`,
 			{
 				method: 'POST',
 				body: JSON.stringify({
@@ -47,7 +47,7 @@ export function useDocuments(options: UseDocumentsOptions) {
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
 		const response = await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${options.intelInstance.instanceId.value}/document/since?timestamp=${timestamp}&timeout=${timeout}&skipDeleted=${Object.keys(documents.value).length === 0}`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/since?timestamp=${timestamp}&timeout=${timeout}&skipDeleted=${Object.keys(documents.value).length === 0}`,
 			{
 				method: 'GET',
 			}

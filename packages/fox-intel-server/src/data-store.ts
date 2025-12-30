@@ -6,6 +6,7 @@ import type {
 	BasicIntelDocument,
 	IntelDocument,
 	IntelDocumentAttachment,
+	IntelInstanceDiscordPermissions,
 } from '@packages/data/dist/intel.js';
 import Database from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
@@ -119,6 +120,42 @@ export const models = {
 			return name;
 		},
 
+		update: function updateIntelInstance(
+			oldInstanceId: string,
+			newInstanceId: string,
+			discordGuildId: string,
+			discordGuildRoles: { accessType: string; roleId: string }[]
+		) {
+			db.transaction(() => {
+				db.prepare(
+					`
+					DELETE FROM IntelInstanceDiscordPermissions WHERE instance_id = ?`
+				).run(oldInstanceId);
+				db.prepare(
+					`
+					UPDATE IntelInstance SET id = ?, discord_guild_id = ? WHERE id = ?`
+				).run(newInstanceId, discordGuildId, oldInstanceId);
+				if (discordGuildRoles.length > 0) {
+					db.prepare(
+						`
+					INSERT INTO IntelInstanceDiscordPermissions (instance_id, access_type, role_id) VALUES ${discordGuildRoles.map(() => '(?, ?, ?)').join(',')}
+					`
+					).run(
+						...discordGuildRoles
+							.map((role) => [newInstanceId, role.accessType, role.roleId])
+							.flat()
+					);
+				}
+			})();
+		},
+
+		delete: function deleteIntelInstance(instanceId: string) {
+			db.prepare(
+				`
+				DELETE FROM IntelInstance WHERE id = ?`
+			).run(instanceId);
+		},
+
 		getAll: function getAllIntelInstances() {
 			const instances = db
 				.prepare<[], IntelInstance>('SELECT * FROM IntelInstance')
@@ -136,16 +173,21 @@ export const models = {
 			return instance;
 		},
 
+		getDiscordPermissions: function getDiscordPermissions(instanceId: string) {
+			const permissions = db
+				.prepare<
+					[string],
+					IntelInstanceDiscordPermissions
+				>('SELECT * FROM IntelInstanceDiscordPermissions WHERE instance_id = ?')
+				.all(instanceId);
+			return permissions;
+		},
+
 		userHasAccess: async function userHasAccess(
 			accessToken: DiscordAccessToken,
 			instance: IntelInstance
 		) {
-			const allowedRoles = db
-				.prepare<
-					[string],
-					{ role_id: string }
-				>('SELECT role_id FROM IntelInstanceDiscordPermissions WHERE instance_id = ?')
-				.all(instance.id);
+			const allowedRoles = models.intelInstance.getDiscordPermissions(instance.id);
 
 			const member = await getUserGuildMember(
 				accessToken,
@@ -153,7 +195,11 @@ export const models = {
 			);
 
 			if (allowedRoles.length === 0) {
-				return true;
+				return {
+					read: true,
+					write: true,
+					admin: true,
+				};
 			}
 			const memberRoleMap = member.roles.reduce(
 				(acc, roleId) => {
@@ -163,7 +209,33 @@ export const models = {
 				{} as Record<string, boolean>
 			);
 
-			return allowedRoles.some((role) => memberRoleMap[role.role_id]);
+			let read = false;
+			let write = false;
+			let admin = false;
+
+			for (const allowedRole of allowedRoles) {
+				if (!memberRoleMap[allowedRole.role_id]) {
+					continue;
+				}
+				if (allowedRole.access_type === 'read') {
+					read = true;
+				} else if (allowedRole.access_type === 'write') {
+					write = true;
+					read = true;
+				} else if (allowedRole.access_type === 'admin') {
+					admin = true;
+					write = true;
+					read = true;
+					break;
+				} else {
+					console.error('Invalid access type', allowedRole.access_type);
+				}
+			}
+			return {
+				read,
+				write,
+				admin,
+			};
 		},
 
 		getAvailableInstances: async function getAvailableInstances(
