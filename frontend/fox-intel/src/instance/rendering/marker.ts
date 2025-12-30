@@ -1,6 +1,6 @@
 import { Vector } from '@packages/data/dist/artillery/vector';
 import { useEventListener } from '@vueuse/core';
-import { onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
+import { computed, onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
 import { injectIntelInstance } from '@/lib/intel-instance';
 import { useCanvasStorage } from './canvas-storage';
 import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
@@ -80,6 +80,32 @@ export function useMarker(options: UseMarkerOptions) {
 		throw new Error('Failed to get context');
 	}
 
+	const markingCanvas = new OffscreenCanvas(
+		canvasElement.width,
+		canvasElement.height
+	);
+	const markingContext = markingCanvas.getContext('2d')!;
+	if (markingContext == null) {
+		throw new Error('Failed to get context');
+	}
+
+	const markerZoom = computed(() => Math.max(1, options.zoom.value));
+
+	watch(
+		() => options.width.value / markerZoom.value,
+		(newWidth) => {
+			markingCanvas.width = newWidth;
+		},
+		{ immediate: true, flush: 'sync' }
+	);
+	watch(
+		() => options.height.value / markerZoom.value,
+		(newHeight) => {
+			markingCanvas.height = newHeight;
+		},
+		{ immediate: true, flush: 'sync' }
+	);
+
 	const activeMarker = shallowRef<{
 		type: MarkerType;
 		color: string;
@@ -87,8 +113,6 @@ export function useMarker(options: UseMarkerOptions) {
 		viewportPosition: Vector;
 		viewportZoom: number;
 		position?: Vector;
-		tempCanvas: OffscreenCanvas;
-		tempContext: OffscreenCanvasRenderingContext2D;
 		minX: number;
 		minY: number;
 		maxX: number;
@@ -152,7 +176,7 @@ export function useMarker(options: UseMarkerOptions) {
 				? 'source-over'
 				: 'destination-out';
 		storageContext.drawImage(
-			activeMarker.value.tempCanvas,
+			markingCanvas,
 			-activeMarker.value.viewportPosition.x / activeMarker.value.viewportZoom +
 				options.maxWidth / 2 -
 				options.width.value / activeMarker.value.viewportZoom / 2,
@@ -174,26 +198,17 @@ export function useMarker(options: UseMarkerOptions) {
 		isLoading = false
 	) {
 		if (activeMarker.value != null) removeMarker();
-		const tempCanvas = new OffscreenCanvas(
-			canvasElement.width,
-			canvasElement.height
-		);
-		const tempContext = tempCanvas.getContext('2d');
-		if (tempContext == null) {
-			throw new Error('Failed to get context');
-		}
-		tempContext.lineWidth = size * viewportZoom;
-		tempContext.strokeStyle = type === MarkerType.Erase ? 'white' : color;
-		tempContext.lineCap = 'round';
-		tempContext.lineJoin = 'round';
-		tempContext.beginPath();
-		tempContext.moveTo(position.x, position.y);
+		markingContext.clearRect(0, 0, markingCanvas.width, markingCanvas.height);
+		markingContext.lineWidth = (size * options.zoom.value) / markerZoom.value;
+		markingContext.strokeStyle = type === MarkerType.Erase ? 'white' : color;
+		markingContext.lineCap = 'round';
+		markingContext.lineJoin = 'round';
+		markingContext.beginPath();
+		markingContext.moveTo(position.x, position.y);
 		activeMarker.value = {
 			type,
 			color,
 			size,
-			tempCanvas,
-			tempContext,
 			viewportPosition,
 			viewportZoom,
 			minX: position.x,
@@ -207,6 +222,7 @@ export function useMarker(options: UseMarkerOptions) {
 		if (activeMarker.value == null) return;
 
 		dumpMarkerCanvas();
+		markingContext.clearRect(0, 0, markingCanvas.width, markingCanvas.height);
 		const activeMarkerBounds = getActiveMarkerBounds();
 		if (activeMarkerBounds != null) {
 			withHandlingAsync(() =>
@@ -228,20 +244,14 @@ export function useMarker(options: UseMarkerOptions) {
 				activeMarker.value.position?.y === position.y)
 		)
 			return;
-		activeMarker.value.tempContext.globalCompositeOperation = 'source-over';
-		activeMarker.value.tempContext.lineTo(position.x, position.y);
+		markingContext.globalCompositeOperation = 'source-over';
+		markingContext.lineTo(position.x, position.y);
 		activeMarker.value.position = position;
-		activeMarker.value.tempContext.stroke();
+		markingContext.stroke();
 
-		activeMarker.value.tempContext.globalCompositeOperation = 'source-in';
-		activeMarker.value.tempContext.fillStyle =
-			activeMarker.value.tempContext.strokeStyle;
-		activeMarker.value.tempContext.fillRect(
-			0,
-			0,
-			activeMarker.value.tempCanvas.width,
-			activeMarker.value.tempCanvas.height
-		);
+		markingContext.globalCompositeOperation = 'source-in';
+		markingContext.fillStyle = markingContext.strokeStyle;
+		markingContext.fillRect(0, 0, markingCanvas.width, markingCanvas.height);
 
 		activeMarker.value.minX = Math.min(activeMarker.value.minX, position.x);
 		activeMarker.value.minY = Math.min(activeMarker.value.minY, position.y);
@@ -258,8 +268,8 @@ export function useMarker(options: UseMarkerOptions) {
 		if (bounds == null) return Vector.fromCartesianVector({ x: 0, y: 0 });
 
 		return Vector.fromCartesianVector({
-			x: ((event.clientX - bounds.left) * bounds.width) / bounds.width,
-			y: ((event.clientY - bounds.top) * bounds.height) / bounds.height,
+			x: (event.clientX * markingCanvas.width) / options.width.value,
+			y: (event.clientY * markingCanvas.height) / options.height.value,
 		});
 	};
 
@@ -348,16 +358,13 @@ export function useMarker(options: UseMarkerOptions) {
 				options.maxWidth * options.zoom.value,
 				options.maxHeight * options.zoom.value
 			);
-			if (
-				activeMarker.value != null &&
-				options.markerType.value === MarkerType.Pen
-			) {
+			if (options.markerType.value !== MarkerType.Erase) {
 				context.drawImage(
-					activeMarker.value.tempCanvas,
+					markingCanvas,
 					0,
 					0,
-					activeMarker.value.tempCanvas.width,
-					activeMarker.value.tempCanvas.height
+					canvasElement.width,
+					canvasElement.height
 				);
 			}
 
@@ -413,6 +420,8 @@ export function useMarker(options: UseMarkerOptions) {
 	return {
 		activeMarker,
 		canvasElement,
+		markingCanvas,
+		storageCanvas,
 		start,
 		stop,
 		ready,
