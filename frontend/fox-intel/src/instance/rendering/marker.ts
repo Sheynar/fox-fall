@@ -374,11 +374,12 @@ export function useMarker(options: UseMarkerOptions) {
 				ready.value
 			) {
 				context.strokeStyle = 'white';
+				context.lineWidth = Math.max(1, 1 * options.zoom.value);
 				context.beginPath();
 				context.arc(
 					lastPointerMoveEvent.clientX,
 					lastPointerMoveEvent.clientY,
-					(options.markerSize.value * options.zoom.value) / 2,
+					((options.markerSize.value + 1) * options.zoom.value) / 2,
 					0,
 					2 * Math.PI
 				);
