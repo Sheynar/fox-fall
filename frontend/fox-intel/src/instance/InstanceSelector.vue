@@ -26,7 +26,7 @@
 							<button
 								@click="withHandlingAsync(() => selectInstance(instance.id))"
 							>
-								Select
+								Open
 							</button>
 						</div>
 					</div>
@@ -210,7 +210,7 @@
 	}
 
 	async function deleteInstance(instance: IntelInstance) {
-		if (!confirm('Are you sure you want to delete this instance?')) return;
+		if (!confirm(`Are you sure you want to delete instance ${instance.id}?`)) return;
 		const response = await fetch(
 			`/api/v1/instance/${encodeURIComponent(instance.id)}`,
 			{
