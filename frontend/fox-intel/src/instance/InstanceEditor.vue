@@ -323,10 +323,14 @@
 						roleId: string;
 					}[],
 				}),
+				headers: {
+					'X-Discord-Access-Code': discordAccess.code.value,
+					'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+				},
 			}
 		);
 		if (!response.ok) {
-			throw new Error('Failed to create instance: ' + (await response.text()));
+			throw new Error('Failed to submit instance: ' + (await response.text()));
 		}
 		// const data: { sessionId: string; issuedAt: number; expiresAt: number } =
 		// 	await response.json();
