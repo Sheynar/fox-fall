@@ -299,12 +299,14 @@
 		}
 
 		if (moving.value.moveActivated) {
-			props.document.document_x =
+			props.document.document_x = Math.round(
 				moving.value.startDocumentPosition.x +
-				distanceMoved.x / viewport.value.resolvedZoom;
-			props.document.document_y =
+					distanceMoved.x / viewport.value.resolvedZoom
+			);
+			props.document.document_y = Math.round(
 				moving.value.startDocumentPosition.y +
-				distanceMoved.y / viewport.value.resolvedZoom;
+					distanceMoved.y / viewport.value.resolvedZoom
+			);
 		}
 	}
 
@@ -316,10 +318,12 @@
 		if (!moving.value.moveActivated) {
 			withHandlingAsync(openDocument);
 		} else {
-			withHandlingAsync(() => updatePartialDocument({
-				document_x: props.document.document_x,
-				document_y: props.document.document_y,
-			}));
+			withHandlingAsync(() =>
+				updatePartialDocument({
+					document_x: props.document.document_x,
+					document_y: props.document.document_y,
+				})
+			);
 		}
 
 		moving.value = null;
