@@ -1,6 +1,7 @@
 <template>
 	<Teleport to="body">
 		<div
+			v-show="documentRef != null"
 			class="DocumentEditor__backdrop"
 			@pointerdown.stop="emit('close')"
 			@wheel.stop
@@ -10,15 +11,20 @@
 					<input
 						class="DocumentEditor__header-bar-input"
 						type="text"
-						:value="props.document.document_name"
+						:value="documentRef?.document_name ?? ''"
 						@input="
-							emit('update:document', {
-								...props.document,
-								document_name: ($event.target! as HTMLInputElement).value,
-							})
+							withHandlingAsync(() =>
+								updateDocumentDebounced(
+									{
+										...documentRef!,
+										document_name: ($event.target! as HTMLInputElement).value,
+									},
+									documentRef!
+								)
+							)
 						"
 					/>
-					<button @pointerdown.stop="emit('delete')">
+					<button @pointerdown.stop="withHandlingAsync(() => deleteDocument())">
 						<i class="pi pi-trash" />
 					</button>
 					<button @pointerdown.stop="emit('close')">
@@ -29,19 +35,19 @@
 					<label class="DocumentEditor__metadata-entry">
 						UI Size
 						<NumberInput
-							:model-value="props.document.ui_size"
+							:model-value="documentRef?.ui_size ?? 0"
 							@update:model-value="
-								emit('update:document', {
-									...props.document,
+								withHandlingAsync(() => updateDocumentDebounced({
+									...documentRef!,
 									ui_size: $event,
-								})
+								}, documentRef!))
 							"
 							:fraction-digits="2"
 							:min="0.1"
 						/>
 					</label>
 					<div>
-						Updated {{ new Date(props.document.timestamp).toLocaleString() }}
+						Updated {{ new Date(documentRef?.timestamp ?? 0).toLocaleString() }}
 					</div>
 				</div>
 				<div ref="editorContainer" class="DocumentEditor__editor" />
@@ -78,14 +84,19 @@
 						class="DocumentEditor__attachment-preview-backdrop"
 						@pointerdown.stop="previewingAttachment = null"
 					>
-						<div class="DocumentEditor__attachment-preview-container" @pointerdown.stop>
+						<div
+							class="DocumentEditor__attachment-preview-container"
+							@pointerdown.stop
+						>
 							<div class="DocumentEditor__attachment-preview-header">
 								<button @pointerdown.stop="previewingAttachment = null">
 									<i class="pi pi-arrow-left" />
 								</button>
 								<button
 									@pointerdown.stop="
-										emit('deleteAttachment', previewingAttachment.id);
+										withHandlingAsync(() =>
+											deleteAttachment(previewingAttachment!.id)
+										);
 										previewingAttachment = null;
 									"
 								>
@@ -322,8 +333,12 @@
 	import { EditorState, EditorStateConfig } from '@codemirror/state';
 	import { markdown } from '@codemirror/lang-markdown';
 	import { GFM } from '@lezer/markdown';
-	import { withHandling } from '@packages/frontend-libs/dist/error';
+	import {
+		withHandling,
+		withHandlingAsync,
+	} from '@packages/frontend-libs/dist/error';
 	import type {
+		BasicIntelDocument,
 		IntelDocument,
 		IntelDocumentAttachmentFrontend,
 	} from '@packages/data/dist/intel';
@@ -335,19 +350,26 @@
 	} from '@prosemark/core';
 	import { htmlBlockExtension } from '@prosemark/render-html';
 	import { onMounted, onUnmounted, ref, watch } from 'vue';
+	import { injectIntelInstance } from '@/lib/intel-instance';
+	import { useDocument } from './mixins';
+	import { debounce } from '@packages/data/dist/helpers';
+	import { updatePartialDocument } from './helpers';
 
 	const props = defineProps<{
-		document: IntelDocument;
-		attachments: Promise<IntelDocumentAttachmentFrontend[]>;
+		document: BasicIntelDocument;
 	}>();
 
 	const emit = defineEmits<{
 		(event: 'update:document', value: IntelDocument): void;
-		(event: 'addAttachment', value: Blob): void;
-		(event: 'deleteAttachment', value: number): void;
 		(event: 'close'): void;
-		(event: 'delete'): void;
 	}>();
+
+	const intelInstance = injectIntelInstance();
+
+	const { document: documentRef } = useDocument({
+		intelInstance,
+		document: props.document,
+	});
 
 	const editorContainer = ref<HTMLDivElement | null>(null);
 
@@ -377,16 +399,19 @@
 
 		EditorView.updateListener.of((update) => {
 			if (update.docChanged) {
-				emit('update:document', {
-					...props.document,
-					document_content: editor!.state.doc.toString(),
-				});
+				withHandlingAsync(() => updateDocumentDebounced(
+					{
+						...documentRef.value!,
+						document_content: editor!.state.doc.toString(),
+					},
+					documentRef.value!
+				));
 			}
 		}),
 	];
 
 	watch(
-		() => props.document.document_content,
+		() => documentRef.value?.document_content ?? '',
 		(newDocumentContent) => {
 			if (editor == null) return;
 			if (editor.state.doc.toString() === newDocumentContent) return;
@@ -397,14 +422,34 @@
 		}
 	);
 
+	async function getAttachments() {
+		const attachmentsResponse = await intelInstance.authenticatedFetch(
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
+			{
+				method: 'GET',
+			}
+		);
+		if (!attachmentsResponse.ok) {
+			throw new Error(
+				'Failed to open document attachments. ' +
+					(await attachmentsResponse.text())
+			);
+		}
+		const attachmentsData: IntelDocumentAttachmentFrontend[] =
+			await attachmentsResponse.json();
+		return attachmentsData;
+	}
+
+	const attachmentsPromise =
+		ref<Promise<IntelDocumentAttachmentFrontend[]>>(getAttachments());
 	const attachmentsLoading = ref(true);
 	const attachments = ref<IntelDocumentAttachmentFrontend[]>([]);
 	watch(
-		() => props.attachments,
+		attachmentsPromise,
 		async (newAttachmentsPromise) => {
 			attachmentsLoading.value = true;
 			const newAttachments = await newAttachmentsPromise;
-			if (props.attachments === newAttachmentsPromise) {
+			if (attachmentsPromise.value === newAttachmentsPromise) {
 				attachments.value = newAttachments;
 				attachmentsLoading.value = false;
 			}
@@ -412,22 +457,64 @@
 		{ immediate: true }
 	);
 
-	function addAttachment() {
+	async function addAttachment() {
 		const input = document.createElement('input');
 		input.type = 'file';
 		input.accept = 'image/*';
-		input.onchange = (event) => {
-			const file = (event.target! as HTMLInputElement).files![0];
-			emit('addAttachment', file);
-		};
-		input.click();
+		const blob = await new Promise<Blob>((resolve, reject) => {
+			input.onchange = (event) => {
+				const file = (event.target! as HTMLInputElement).files![0];
+				resolve(file);
+			};
+			input.onclose = () => {
+				reject(new Error('User closed the file picker'));
+			};
+			input.click();
+		});
+		attachmentsPromise.value = attachmentsPromise.value.then(
+			async (attachments) => {
+				const response = await intelInstance.authenticatedFetch(
+					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
+					{
+						method: 'POST',
+						body: blob,
+					}
+				);
+				if (!response.ok) {
+					throw new Error(
+						'Failed to add attachment. ' + (await response.text())
+					);
+				}
+				const data: { id: number } = await response.json();
+
+				const reader = new FileReader();
+				const attachment_content = await new Promise<string>(
+					(resolve, reject) => {
+						reader.onload = () => resolve(reader.result as string);
+						reader.onerror = () =>
+							reject(new Error('Failed to read attachment content'));
+						reader.readAsDataURL(blob);
+					}
+				);
+				attachments.push({
+					id: data.id,
+					instance_id: props.document.instance_id,
+					document_id: props.document.id,
+					mime_type: blob.type,
+					attachment_content,
+				});
+				return attachments;
+			}
+		);
+
+		await attachmentsPromise.value;
 	}
 
 	onMounted(() =>
 		withHandling(() => {
 			editor = new EditorView({
 				state: EditorState.create({
-					doc: props.document.document_content,
+					doc: documentRef.value?.document_content ?? '',
 					extensions,
 				}),
 				parent: editorContainer.value!,
@@ -438,4 +525,72 @@
 	onUnmounted(() => {
 		editor?.destroy();
 	});
+
+	async function updateDocument(
+		newDocument: IntelDocument,
+		oldDocument: IntelDocument
+	) {
+		const updateData: Partial<IntelDocument> = {};
+		for (const key of Object.keys(newDocument) as (keyof IntelDocument)[]) {
+			if (newDocument[key] !== oldDocument[key]) {
+				updateData[key] = newDocument[key] as any;
+			}
+		}
+
+		if (Object.keys(updateData).length === 0) {
+			console.log(
+				'no updates',
+				JSON.parse(JSON.stringify(newDocument)),
+				JSON.parse(JSON.stringify(oldDocument))
+			);
+			return;
+		}
+		oldDocument = newDocument;
+
+		await updatePartialDocument(intelInstance, props.document.id, updateData);
+		emit('update:document', newDocument);
+	}
+
+	const updateDocumentDebounced = debounce(updateDocument, 1000);
+
+	async function deleteDocument() {
+		if (!confirm('Are you sure you want to delete this document?')) return;
+		const response = await intelInstance.authenticatedFetch(
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
+			{
+				method: 'DELETE',
+			}
+		);
+		if (!response.ok) {
+			throw new Error('Failed to delete document. ' + (await response.text()));
+		}
+		emit('close');
+	}
+
+	async function deleteAttachment(attachmentId: number) {
+		if (!confirm('Are you sure you want to delete this attachment?')) return;
+		attachmentsPromise.value = attachmentsPromise.value.then(
+			async (attachments) => {
+				const response = await intelInstance.authenticatedFetch(
+					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment/${encodeURIComponent(attachmentId)}`,
+					{
+						method: 'DELETE',
+					}
+				);
+				if (!response.ok) {
+					throw new Error(
+						'Failed to delete attachment. ' + (await response.text())
+					);
+				}
+				const index = attachments.findIndex(
+					(attachment) => attachment.id === attachmentId
+				);
+				if (index === -1) return attachments;
+				attachments.splice(index, 1);
+				return attachments;
+			}
+		);
+
+		await attachmentsPromise.value;
+	}
 </script>

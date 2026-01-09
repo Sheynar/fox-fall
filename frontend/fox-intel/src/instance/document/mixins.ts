@@ -1,5 +1,5 @@
 import { injectIntelInstance } from '@/lib/intel-instance';
-import { BasicIntelDocument } from '@packages/data/dist/intel';
+import { BasicIntelDocument, IntelDocument } from '@packages/data/dist/intel';
 import { onScopeDispose, ref } from 'vue';
 
 export type UseDocumentsOptions = {
@@ -92,6 +92,56 @@ export function useDocuments(options: UseDocumentsOptions) {
 	return {
 		addDocument,
 		documents,
+		ready,
+	};
+}
+
+export type UseDocumentOptions = {
+	intelInstance: ReturnType<typeof injectIntelInstance>;
+	document: BasicIntelDocument;
+};
+export function useDocument(options: UseDocumentOptions) {
+	const document = ref<IntelDocument | null>(null);
+
+	let lastLoadedTimestamp = 0;
+	async function loadSince(timestamp: number, timeout: number = 10000) {
+		const response = await options.intelInstance.authenticatedFetch(
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/${encodeURIComponent(options.document.id)}/since?timestamp=${timestamp}&timeout=${timeout}`,
+			{
+				method: 'GET',
+			}
+		);
+		if (!response.ok) {
+			throw new Error('Failed to load document. ' + (await response.text()));
+		}
+		const data: { document: IntelDocument; timestamp: number } = await response.json();
+		document.value = data.document;
+		lastLoadedTimestamp = data.timestamp;
+	}
+
+	let scopeDestroyed = false;
+	onScopeDispose(() => {
+		scopeDestroyed = true;
+	});
+
+	async function loop(backoff: number = 1_000, isFirst: boolean = false) {
+		if (scopeDestroyed) return;
+		await loadSince(lastLoadedTimestamp, isFirst ? 0 : undefined)
+			.then(() => {
+				if (scopeDestroyed) return;
+				loop();
+			})
+			.catch(async (err) => {
+				console.error(err);
+				if (scopeDestroyed) return;
+				await new Promise(resolve => setTimeout(resolve, backoff));
+				return loop(Math.min(backoff * 2, 60_000));
+			});
+	}
+	const ready = loop(undefined, true);
+
+	return {
+		document,
 		ready,
 	};
 }

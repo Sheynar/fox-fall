@@ -21,22 +21,10 @@
 	</PositionedElement>
 
 	<DocumentEditor
-		:key="editing?.document.id"
-		v-if="editing != null"
-		:document="editing.document"
-		:attachments="editing.attachments"
-		@update:document="
-			($event) =>
-				withHandlingAsync(() =>
-					updateDocumentDebounced($event, editing!.document)
-				)
-		"
-		@addAttachment="($event) => withHandlingAsync(() => addAttachment($event))"
-		@deleteAttachment="
-			($event) => withHandlingAsync(() => deleteAttachment($event))
-		"
+		:key="props.document.id"
+		v-if="editing"
+		:document="props.document"
 		@close="() => withHandling(() => closeDocument())"
-		@delete="() => withHandlingAsync(() => deleteDocument())"
 	/>
 </template>
 
@@ -69,12 +57,7 @@
 
 <script setup lang="ts">
 	import { Vector } from '@packages/data/dist/artillery/vector';
-	import { debounce } from '@packages/data/dist/helpers';
-	import type {
-		BasicIntelDocument,
-		IntelDocument,
-		IntelDocumentAttachmentFrontend,
-	} from '@packages/data/dist/intel.js';
+	import type { BasicIntelDocument } from '@packages/data/dist/intel.js';
 	import {
 		withHandling,
 		withHandlingAsync,
@@ -85,6 +68,7 @@
 	import { ref, shallowRef } from 'vue';
 	import { injectIntelInstance } from '@/lib/intel-instance';
 	import DocumentEditor from './DocumentEditor.vue';
+	import { updatePartialDocument } from './helpers';
 
 	const documentElement = shallowRef<HTMLDivElement | null>(null);
 
@@ -94,163 +78,13 @@
 
 	const intelInstance = injectIntelInstance();
 
-	async function getAttachments() {
-		const attachmentsResponse = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
-			{
-				method: 'GET',
-			}
-		);
-		if (!attachmentsResponse.ok) {
-			throw new Error(
-				'Failed to open document attachments. ' +
-					(await attachmentsResponse.text())
-			);
-		}
-		const attachmentsData: IntelDocumentAttachmentFrontend[] =
-			await attachmentsResponse.json();
-		return attachmentsData;
-	}
-
-	const editing = ref<{
-		document: IntelDocument;
-		attachments: Promise<IntelDocumentAttachmentFrontend[]>;
-	} | null>(null);
+	const editing = ref<boolean>(false);
 	async function openDocument() {
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
-			{
-				method: 'GET',
-			}
-		);
-		if (!response.ok) {
-			throw new Error('Failed to open document. ' + (await response.text()));
-		}
-		const data: IntelDocument = await response.json();
-		editing.value = { document: data, attachments: getAttachments() };
+		editing.value = true;
 	}
-
-	async function updatePartialDocument(updateData: Partial<IntelDocument>) {
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
-			{
-				method: 'POST',
-				body: JSON.stringify(updateData),
-			}
-		);
-		if (!response.ok) {
-			throw new Error('Failed to update document. ' + (await response.text()));
-		}
-	}
-
-	async function updateDocument(
-		newDocument: IntelDocument,
-		oldDocument: IntelDocument
-	) {
-		const updateData: Partial<IntelDocument> = {};
-		for (const key of Object.keys(newDocument) as (keyof IntelDocument)[]) {
-			if (newDocument[key] !== oldDocument[key]) {
-				updateData[key] = newDocument[key] as any;
-			}
-		}
-
-		if (Object.keys(updateData).length === 0) {
-			console.log(
-				'no updates',
-				JSON.parse(JSON.stringify(newDocument)),
-				JSON.parse(JSON.stringify(oldDocument))
-			);
-			return;
-		}
-		oldDocument = newDocument;
-
-		await updatePartialDocument(updateData);
-	}
-
-	const updateDocumentDebounced = debounce(updateDocument, 1000);
 
 	function closeDocument() {
-		editing.value = null;
-	}
-
-	async function deleteDocument() {
-		if (editing.value == null) return;
-		if (!confirm('Are you sure you want to delete this document?')) return;
-		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
-			{
-				method: 'DELETE',
-			}
-		);
-		if (!response.ok) {
-			throw new Error('Failed to delete document. ' + (await response.text()));
-		}
-		editing.value = null;
-	}
-
-	async function addAttachment(blob: Blob) {
-		if (editing.value == null) return;
-		editing.value.attachments = editing.value.attachments.then(
-			async (attachments) => {
-				const response = await intelInstance.authenticatedFetch(
-					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
-					{
-						method: 'POST',
-						body: blob,
-					}
-				);
-				if (!response.ok) {
-					throw new Error(
-						'Failed to add attachment. ' + (await response.text())
-					);
-				}
-				const data: { id: number } = await response.json();
-
-				const reader = new FileReader();
-				const attachment_content = await new Promise<string>(
-					(resolve, reject) => {
-						reader.onload = () => resolve(reader.result as string);
-						reader.onerror = () =>
-							reject(new Error('Failed to read attachment content'));
-						reader.readAsDataURL(blob);
-					}
-				);
-				attachments.push({
-					id: data.id,
-					instance_id: props.document.instance_id,
-					document_id: props.document.id,
-					mime_type: blob.type,
-					attachment_content,
-				});
-				return attachments;
-			}
-		);
-	}
-
-	async function deleteAttachment(attachmentId: number) {
-		if (editing.value == null) return;
-		if (!confirm('Are you sure you want to delete this attachment?')) return;
-		editing.value.attachments = editing.value.attachments.then(
-			async (attachments) => {
-				const response = await intelInstance.authenticatedFetch(
-					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment/${encodeURIComponent(attachmentId)}`,
-					{
-						method: 'DELETE',
-					}
-				);
-				if (!response.ok) {
-					throw new Error(
-						'Failed to delete attachment. ' + (await response.text())
-					);
-				}
-				const index = attachments.findIndex(
-					(attachment) => attachment.id === attachmentId
-				);
-				if (index === -1) return attachments;
-				attachments.splice(index, 1);
-				return attachments;
-			}
-		);
+		editing.value = false;
 	}
 
 	const MOVE_ACTIVATION_DISTANCE = 5;
@@ -319,7 +153,7 @@
 			withHandlingAsync(openDocument);
 		} else {
 			withHandlingAsync(() =>
-				updatePartialDocument({
+				updatePartialDocument(intelInstance, props.document.id, {
 					document_x: props.document.document_x,
 					document_y: props.document.document_y,
 				})

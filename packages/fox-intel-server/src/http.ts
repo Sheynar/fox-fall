@@ -763,6 +763,57 @@ export async function initialiseHttp(
 
 		return c.json({ success: true });
 	});
+	app.get('/api/v1/instance/:instanceId/document/:documentId/since', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId);
+		if (sessionOutput) return sessionOutput;
+
+		const documentId = parseInt(c.req.param('documentId'));
+		if (isNaN(documentId)) {
+			return c.json({ error: 'Invalid document ID' }, 400);
+		}
+
+		const timestamp = parseInt(c.req.query('timestamp') ?? '');
+		if (isNaN(timestamp)) {
+			return c.json({ error: 'Invalid timestamp' }, 400);
+		}
+		const timeout = parseInt(c.req.query('timeout') ?? '');
+		if (isNaN(timeout)) {
+			return c.json({ error: 'Invalid timeout' }, 400);
+		}
+		const skipDeleted = c.req.query('skipDeleted') === 'true';
+
+		let document = models.intelDocument.get(instanceId, documentId);
+		if (document?.timestamp == null || document.timestamp <= timestamp) {
+			document = await new Promise<IntelDocument | undefined>((resolve) => {
+				if (!pendingDocumentRequests.has(instanceId)) {
+					pendingDocumentRequests.set(instanceId, new Set());
+				}
+
+				const onDocuments = () => {
+					pendingDocumentRequests.get(instanceId)?.delete(onDocuments);
+					resolve(
+						models.intelDocument.get(instanceId, documentId)
+					);
+				};
+
+				pendingDocumentRequests.get(instanceId)!.add(onDocuments);
+				setTimeout(onDocuments, timeout);
+			});
+		}
+
+		if (document == null) {
+			return c.json({ error: 'Document not found' }, 404);
+		}
+
+		return c.json({
+			document,
+			timestamp: Math.max(
+				document.timestamp,
+				timestamp
+			),
+		});
+	});
 
 	app.delete('/api/v1/instance/:instanceId/document/:documentId', async (c) => {
 		const instanceId = c.req.param('instanceId');
