@@ -10,6 +10,8 @@ import './style.css';
 import App from '@/App.vue';
 
 addErrorHandler((error) => {
+	console.error(error);
+	debugger;
 	alert(`Error: ${error}`);
 });
 
