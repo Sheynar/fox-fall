@@ -9,7 +9,6 @@
 			:style="{
 				height: props.size.y + 'px',
 				width: props.size.x + 'px',
-				'--_viewport-zoom': viewport.resolvedZoom,
 			}"
 		>
 			<canvas
@@ -20,14 +19,20 @@
 				@pointermove="onPositionControlPointerMove"
 				@pointerup="onPositionControlPointerUp"
 			/>
-			<div class="ImagePaste__controls">
+			<div class="ImagePaste__actions">
 				<button @pointerdown.stop="emit('delete')">
 					<i class="pi pi-trash" />
 				</button>
-				<button @pointerdown.stop="lockAspectRatio = !lockAspectRatio" :class="{ 'ImagePaste__lock-aspect-ratio-locked': lockAspectRatio }">
+				<button
+					@pointerdown.stop="lockAspectRatio = !lockAspectRatio"
+					:class="{ 'ImagePaste__lock-aspect-ratio-locked': lockAspectRatio }"
+				>
 					<i class="pi pi-lock" /> Aspect ratio
 				</button>
-				<button @pointerdown.stop="lockPosition = !lockPosition" :class="{ 'ImagePaste__lock-position-locked': lockPosition }">
+				<button
+					@pointerdown.stop="lockPosition = !lockPosition"
+					:class="{ 'ImagePaste__lock-position-locked': lockPosition }"
+				>
 					<i class="pi pi-lock" /> Position
 				</button>
 				<button @pointerdown.stop="emit('submit', canvas!)">
@@ -101,8 +106,6 @@
 <style lang="scss">
 	.ImagePaste__container {
 		position: relative;
-
-		pointer-events: none;
 	}
 
 	.ImagePaste__canvas {
@@ -117,7 +120,7 @@
 		}
 	}
 
-	.ImagePaste__controls {
+	.ImagePaste__actions {
 		position: absolute;
 		top: 0;
 		right: 0;
@@ -127,9 +130,6 @@
 		align-items: center;
 		gap: 1em;
 		padding: 1em;
-
-		transform-origin: top right;
-		transform: scale(calc(1 / var(--_viewport-zoom)));
 
 		pointer-events: none;
 		> * {
@@ -151,9 +151,10 @@
 			inset: auto;
 
 			transform: translate(-50%, -50%);
+			transition: transform 0.1s ease-in-out;
 			width: 1em;
 			height: 1em;
-			background-color: var(--color-primary);
+			background-color: var(--color-selected);
 			border-radius: 0.5em;
 			cursor: pointer;
 			pointer-events: initial;
@@ -369,14 +370,26 @@
 			y: resizing.value.startPosition.y,
 		});
 		if (lockPosition.value || resizing.value.verticalAnchor === 'center') {
-			newPosition.y = Math.round(resizing.value.startPosition.y + resizing.value.startSize.y / 2 - newSize.y / 2);
+			newPosition.y = Math.round(
+				resizing.value.startPosition.y +
+					resizing.value.startSize.y / 2 -
+					newSize.y / 2
+			);
 		} else if (resizing.value.verticalAnchor === 'top') {
-			newPosition.y = Math.round(resizing.value.startPosition.y + resizing.value.startSize.y - newSize.y);
+			newPosition.y = Math.round(
+				resizing.value.startPosition.y + resizing.value.startSize.y - newSize.y
+			);
 		}
 		if (lockPosition.value || resizing.value.horizontalAnchor === 'center') {
-			newPosition.x = Math.round(resizing.value.startPosition.x + resizing.value.startSize.x / 2 - newSize.x / 2);
+			newPosition.x = Math.round(
+				resizing.value.startPosition.x +
+					resizing.value.startSize.x / 2 -
+					newSize.x / 2
+			);
 		} else if (resizing.value.horizontalAnchor === 'left') {
-			newPosition.x = Math.round(resizing.value.startPosition.x + resizing.value.startSize.x - newSize.x);
+			newPosition.x = Math.round(
+				resizing.value.startPosition.x + resizing.value.startSize.x - newSize.x
+			);
 		}
 
 		if (
