@@ -118,7 +118,7 @@
 <script setup lang="ts">
 	import { Vue3ColorPicker } from '@cyhnkckali/vue3-color-picker';
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
-	import { MarkerType } from './rendering/marker';
+	import { MarkerType } from './canvas/marker';
 	import {
 		markerColor,
 		markerDisabled,

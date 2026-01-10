@@ -333,15 +333,16 @@
 	import { EditorState, EditorStateConfig } from '@codemirror/state';
 	import { markdown } from '@codemirror/lang-markdown';
 	import { GFM } from '@lezer/markdown';
-	import {
-		withHandling,
-		withHandlingAsync,
-	} from '@packages/frontend-libs/dist/error';
+	import { debounce } from '@packages/data/dist/helpers';
 	import type {
 		BasicIntelDocument,
 		IntelDocument,
 		IntelDocumentAttachmentFrontend,
 	} from '@packages/data/dist/intel';
+	import {
+		withHandling,
+		withHandlingAsync,
+	} from '@packages/frontend-libs/dist/error';
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import {
 		prosemarkBasicSetup,
@@ -350,9 +351,9 @@
 	} from '@prosemark/core';
 	import { htmlBlockExtension } from '@prosemark/render-html';
 	import { onMounted, onUnmounted, ref, watch } from 'vue';
+	import { requestFile } from '@/lib/file';
 	import { injectIntelInstance } from '@/lib/intel-instance';
 	import { useDocument } from './mixins';
-	import { debounce } from '@packages/data/dist/helpers';
 	import { updatePartialDocument } from './helpers';
 
 	const props = defineProps<{
@@ -458,19 +459,7 @@
 	);
 
 	async function addAttachment() {
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.accept = 'image/*';
-		const blob = await new Promise<Blob>((resolve, reject) => {
-			input.onchange = (event) => {
-				const file = (event.target! as HTMLInputElement).files![0];
-				resolve(file);
-			};
-			input.onclose = () => {
-				reject(new Error('User closed the file picker'));
-			};
-			input.click();
-		});
+		const blob = await requestFile('image/*');
 		attachmentsPromise.value = attachmentsPromise.value.then(
 			async (attachments) => {
 				const response = await intelInstance.authenticatedFetch(

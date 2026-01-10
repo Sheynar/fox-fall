@@ -10,9 +10,9 @@
 			class="DocumentInstance__container"
 			:data-document-id="props.document.id"
 			:style="{ '--_document-ui-size': String(props.document.ui_size) }"
-			@pointerdown.stop="onPointerDown"
-			@pointermove.stop="onPointerMove"
-			@pointerup.stop="onPointerUp"
+			@pointerdown="onPointerDown"
+			@pointermove="onPointerMove"
+			@pointerup="onPointerUp"
 			@openDocument="editing = true"
 			:title="props.document.document_name"
 		>

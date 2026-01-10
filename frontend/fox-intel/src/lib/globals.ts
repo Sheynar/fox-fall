@@ -1,6 +1,6 @@
 import { runGlobal } from "@packages/frontend-libs/dist/scope";
 import { ref } from "vue";
-import { MarkerType } from "../instance/rendering/marker";
+import { MarkerType } from "../instance/canvas/marker";
 
 const { markerSize, markerColor, markerType, markerDisabled } = runGlobal(() => {
 	return {

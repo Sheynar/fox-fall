@@ -19,6 +19,16 @@
 				:document="document"
 			/>
 
+			<ImagePaste
+				v-if="addingImage != null"
+				v-model:position="addingImage.position"
+				v-model:size="addingImage.size"
+				v-model:opacity="addingImage.opacity"
+				:image="addingImage.image"
+				@delete="addingImage = null"
+				@submit="($event) => withHandling(() => onAddingImageSubmit($event))"
+			/>
+
 			<PositionedElement
 				v-if="contextMenuPosition != null"
 				:layer="1"
@@ -195,10 +205,12 @@
 	import { AddType, ContextRadial } from './context-menu';
 	import { useDocuments, DocumentInstance } from './document';
 	import MarkerControls from './MarkerControls.vue';
-	import { useHexMap } from './rendering/hex-map';
-	import { useMarker } from './rendering/marker';
+	import { useHexMap } from './canvas/hex-map';
+	import { useMarker } from './canvas/marker';
 	import { useElementBounding } from '@vueuse/core';
 	import { provideIntelInstance, useIntelInstance } from '@/lib/intel-instance';
+	import { requestFile } from '@/lib/file';
+	import ImagePaste from './canvas/ImagePaste';
 
 	const props = defineProps<{
 		instanceId: string;
@@ -248,6 +260,8 @@
 		start: startMarker,
 		stop: stopMarker,
 		canvasElement: markerCanvasElement,
+		storageContext: markerStorageContext,
+		canvasStorage: markerCanvasStorage,
 		activeMarker,
 		ready: markerReady,
 	} = useMarker({
@@ -332,6 +346,13 @@
 		cancelFrame();
 	});
 
+	const addingImage = ref<{
+		image: ImageBitmap;
+		position: Vector;
+		size: Vector;
+		opacity: number;
+	} | null>(null);
+
 	const contextMenuPosition = ref<Vector | null>(null);
 	const onContextMenu = (event: MouseEvent) => {
 		contextMenuPosition.value = viewport.value.toWorldPosition(
@@ -366,7 +387,53 @@
 					})
 				);
 			});
+		} else if (event.value === AddType.Image) {
+			if (
+				addingImage.value != null &&
+				!confirm(
+					'Are you sure you want to overwrite the current pasting image?'
+				)
+			) {
+				return;
+			}
+
+			const blob = await requestFile('image/*');
+			const image = await createImageBitmap(blob);
+
+			const imageSize = Vector.fromCartesianVector({
+				x: image.width,
+				y: image.height,
+			});
+
+			addingImage.value = {
+				image,
+				position: contextMenuPosition.value!.addVector(imageSize.scale(-0.5)),
+				size: imageSize,
+				opacity: 0.5,
+			};
 		}
 		contextMenuPosition.value = null;
+	};
+
+	const onAddingImageSubmit = (canvasElement: HTMLCanvasElement) => {
+		if (addingImage.value == null) return;
+		markerStorageContext.drawImage(
+			canvasElement,
+			addingImage.value.position.x + MAP_SIZE.width / 2,
+			addingImage.value.position.y + MAP_SIZE.height / 2,
+			addingImage.value.size.x,
+			addingImage.value.size.y
+		);
+		markerCanvasStorage.saveArea(
+			addingImage.value.position.x + MAP_SIZE.width / 2,
+			addingImage.value.position.y + MAP_SIZE.height / 2,
+			addingImage.value.position.x +
+				addingImage.value.size.x +
+				MAP_SIZE.width / 2,
+			addingImage.value.position.y +
+				addingImage.value.size.y +
+				MAP_SIZE.height / 2
+		);
+		addingImage.value = null;
 	};
 </script>

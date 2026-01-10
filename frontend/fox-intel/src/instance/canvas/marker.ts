@@ -423,6 +423,8 @@ export function useMarker(options: UseMarkerOptions) {
 		canvasElement,
 		markingCanvas,
 		storageCanvas,
+		storageContext,
+		canvasStorage,
 		start,
 		stop,
 		ready,
