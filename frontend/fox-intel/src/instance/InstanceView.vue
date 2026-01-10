@@ -423,8 +423,14 @@
 		const clipboardContents = await navigator.clipboard.read();
 		for (const clipboardItem of clipboardContents) {
 			for (const type of clipboardItem.types) {
-				console.log(type);
 				if (type.startsWith('image/')) {
+					if (
+						addingImage.value != null &&
+						!confirm(
+							'Are you sure you want to overwrite the current pasting image?'
+						)
+					)
+						return;
 					const blob = await clipboardItem.getType(type);
 					const image = await createImageBitmap(blob);
 					const imageSize = Vector.fromCartesianVector({
