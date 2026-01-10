@@ -20,11 +20,14 @@
 				@pointerup="onPositionControlPointerUp"
 			/>
 			<div class="ImagePaste__actions">
-				<button @pointerdown.stop="emit('delete')">
-					<i class="pi pi-trash" />
+				<button @pointerdown.stop="emit('submit', canvas!)">
+					<i class="pi pi-check" />
 				</button>
 				<button
-					@pointerdown.stop="lockAspectRatio = !lockAspectRatio"
+					@pointerdown.stop="
+						lockAspectRatio = !lockAspectRatio;
+						lockAspectRatio ? resetAspectRatio() : null;
+					"
 					:class="{ 'ImagePaste__lock-aspect-ratio-locked': lockAspectRatio }"
 				>
 					<i class="pi pi-lock" /> Aspect ratio
@@ -35,9 +38,22 @@
 				>
 					<i class="pi pi-lock" /> Position
 				</button>
-				<button @pointerdown.stop="emit('submit', canvas!)">
-					<i class="pi pi-check" />
+				<button @pointerdown.stop="emit('delete')">
+					<i class="pi pi-trash" />
 				</button>
+				<div class="ImagePaste__actions-spacer"></div>
+				<label class="ImagePaste__actions-inputgroup">
+					<div class="ImagePaste__actions-inputgroup-label">Opacity</div>
+					<NumberInput
+						:model-value="props.opacity * 100"
+						@update:model-value="
+							emit('update:opacity', ($event as number) / 100)
+						"
+						:min="0"
+						:max="100"
+						:fraction-digits="0"
+					/>
+				</label>
 			</div>
 			<div class="ImagePaste__size-controls">
 				<a
@@ -89,16 +105,6 @@
 					@pointerup="onSizeControlPointerUp($event)"
 				/>
 			</div>
-			<div class="ImagePaste__opacity-controls" @pointerdown.stop>
-				<Slider
-					class="ImagePaste__opacity-slider"
-					:model-value="props.opacity"
-					@update:model-value="emit('update:opacity', $event as number)"
-					:min="0"
-					:max="1"
-					:step="0.01"
-				/>
-			</div>
 		</div>
 	</PositionedElement>
 </template>
@@ -122,14 +128,16 @@
 
 	.ImagePaste__actions {
 		position: absolute;
-		top: 0;
+		bottom: 100%;
 		right: 0;
+		width: max-content;
+		min-width: 100%;
 
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		gap: 1em;
-		padding: 1em;
+		padding: 1em 0;
 
 		pointer-events: none;
 		> * {
@@ -139,6 +147,23 @@
 		.ImagePaste__lock-aspect-ratio-locked,
 		.ImagePaste__lock-position-locked {
 			background: var(--color-selected);
+		}
+
+		.ImagePaste__actions-spacer {
+			margin: auto;
+		}
+
+		.ImagePaste__actions-inputgroup {
+			display: flex;
+			flex-direction: row;
+			gap: 0.5em;
+			align-items: center;
+			color: var(--color-primary);
+			font-weight: bold;
+
+			.ImagePaste__actions-inputgroup-label {
+				filter: url(#outline-black);
+			}
 		}
 	}
 
@@ -201,27 +226,13 @@
 			}
 		}
 	}
-
-	.ImagePaste__opacity-controls {
-		position: absolute;
-		top: calc(100% + 1em);
-		left: 0;
-		right: 0;
-		width: 100%;
-
-		pointer-events: initial;
-
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: auto;
-	}
 </style>
 
 <script setup lang="ts">
 	import { Vector } from '@packages/data/dist/artillery/vector';
+	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { injectViewport } from '@packages/frontend-libs/dist/viewport/viewport';
-	import Slider from 'primevue/slider';
 	import { ref, shallowRef, watch } from 'vue';
 	import type { Props, Emits } from './types';
 
@@ -253,7 +264,7 @@
 		startPosition: Vector;
 	} | null>(null);
 	const onPositionControlPointerDown = (event: PointerEvent) => {
-		if (lockPosition.value) return;
+		if (lockPosition.value || event.button !== 0) return;
 		event.preventDefault();
 		event.stopPropagation();
 		(event.target as HTMLCanvasElement).setPointerCapture(event.pointerId);
@@ -309,6 +320,7 @@
 		verticalAnchor: VerticalPosition,
 		horizontalAnchor: HorizontalPosition
 	) => {
+		if (event.button !== 0) return;
 		event.preventDefault();
 		event.stopPropagation();
 		(event.target as HTMLCanvasElement).setPointerCapture(event.pointerId);
@@ -334,6 +346,8 @@
 				viewport.value.resolvedZoom,
 		});
 
+		if (lockPosition.value) distanceMoved = distanceMoved.scale(2);
+
 		let newSize = Vector.fromCartesianVector({
 			x: resizing.value.startSize.x,
 			y: resizing.value.startSize.y,
@@ -352,18 +366,29 @@
 		}
 
 		if (lockAspectRatio.value) {
+			const sizePoints: number[] = [];
+
+			if (resizing.value.verticalAnchor !== 'center') {
+				sizePoints.push(newSize.y / props.image.height);
+			}
+			if (resizing.value.horizontalAnchor !== 'center') {
+				sizePoints.push(newSize.x / props.image.width);
+			}
+
+			if (sizePoints.length === 0) {
+				return;
+			}
+
 			const averageSize =
-				(newSize.x / resizing.value.startSize.x +
-					newSize.y / resizing.value.startSize.y) /
-				2;
+				sizePoints.reduce((a, b) => a + b, 0) / sizePoints.length;
 			newSize = Vector.fromCartesianVector({
-				x: Math.round(resizing.value.startSize.x * averageSize),
-				y: Math.round(resizing.value.startSize.y * averageSize),
+				x: Math.round(props.image.width * averageSize),
+				y: Math.round(props.image.height * averageSize),
 			});
 		}
 
-		newSize.x = Math.max(newSize.x, 0);
-		newSize.y = Math.max(newSize.y, 0);
+		newSize.x = Math.max(newSize.x, 10);
+		newSize.y = Math.max(newSize.y, 10);
 
 		const newPosition = Vector.fromCartesianVector({
 			x: resizing.value.startPosition.x,
@@ -410,5 +435,18 @@
 		resizing.value = null;
 		emit('submit:position');
 		emit('submit:size');
+	};
+
+	const resetAspectRatio = () => {
+		const averageSize =
+			(props.size.x / props.image.width + props.size.y / props.image.height) /
+			2;
+		emit(
+			'update:size',
+			Vector.fromCartesianVector({
+				x: Math.round(averageSize * props.image.width),
+				y: Math.round(averageSize * props.image.height),
+			})
+		);
 	};
 </script>
