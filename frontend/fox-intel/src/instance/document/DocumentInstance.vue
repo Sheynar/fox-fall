@@ -13,7 +13,7 @@
 			@pointerdown.stop="onPointerDown"
 			@pointermove.stop="onPointerMove"
 			@pointerup.stop="onPointerUp"
-			@openDocument="() => withHandlingAsync(() => openDocument())"
+			@openDocument="editing = true"
 			:title="props.document.document_name"
 		>
 			<DocumentIcon class="DocumentInstance__icon" />
@@ -24,7 +24,7 @@
 		:key="props.document.id"
 		v-if="editing"
 		:document="props.document"
-		@close="() => withHandling(() => closeDocument())"
+		@close="editing = false"
 	/>
 </template>
 
@@ -59,7 +59,6 @@
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import type { BasicIntelDocument } from '@packages/data/dist/intel.js';
 	import {
-		withHandling,
 		withHandlingAsync,
 	} from '@packages/frontend-libs/dist/error';
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
@@ -79,13 +78,6 @@
 	const intelInstance = injectIntelInstance();
 
 	const editing = ref<boolean>(false);
-	async function openDocument() {
-		editing.value = true;
-	}
-
-	function closeDocument() {
-		editing.value = false;
-	}
 
 	const MOVE_ACTIVATION_DISTANCE = 5;
 	const viewport = injectViewport();
@@ -150,7 +142,7 @@
 		event.stopPropagation();
 
 		if (!moving.value.moveActivated) {
-			withHandlingAsync(openDocument);
+			editing.value = true;
 		} else {
 			withHandlingAsync(() =>
 				updatePartialDocument(intelInstance, props.document.id, {
