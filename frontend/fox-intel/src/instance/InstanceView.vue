@@ -9,6 +9,7 @@
 			contextMenuPosition = null;
 		"
 		@contextmenu.prevent="($event) => withHandling(() => onContextMenu($event))"
+		@paste="($event) => withHandling(() => onPaste($event))"
 	>
 		<canvas ref="canvasElement" :width="width" :height="height" tabindex="0" />
 
@@ -414,6 +415,34 @@
 		}
 		contextMenuPosition.value = null;
 	};
+
+	async function onPaste(event: ClipboardEvent) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		const clipboardContents = await navigator.clipboard.read();
+		for (const clipboardItem of clipboardContents) {
+			for (const type of clipboardItem.types) {
+				console.log(type);
+				if (type.startsWith('image/')) {
+					const blob = await clipboardItem.getType(type);
+					const image = await createImageBitmap(blob);
+					const imageSize = Vector.fromCartesianVector({
+						x: image.width,
+						y: image.height,
+					});
+					addingImage.value = {
+						image,
+						position: viewport.value
+							.toWorldPosition(Vector.zero())
+							.addVector(imageSize.scale(-0.5)),
+						size: imageSize,
+						opacity: 0.5,
+					};
+				}
+			}
+		}
+	}
 
 	const onAddingImageSubmit = (canvasElement: HTMLCanvasElement) => {
 		if (addingImage.value == null) return;
