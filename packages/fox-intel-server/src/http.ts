@@ -189,6 +189,11 @@ export async function initialiseHttp(
 			return c.json({ error: 'Instance already exists' }, 400);
 		}
 
+		const shard = instance.shard;
+		if (typeof shard !== 'string') {
+			return c.json({ error: 'Invalid shard' }, 400);
+		}
+
 		const discordGuildId = instance.discordGuildId;
 		if (typeof discordGuildId !== 'string') {
 			return c.json({ error: 'Invalid discord guild id' }, 400);
@@ -206,7 +211,7 @@ export async function initialiseHttp(
 			}
 		}
 
-		models.intelInstance.create(instanceId, discordGuildId, discordGuildRoles);
+		models.intelInstance.create(instanceId, shard, discordGuildId, discordGuildRoles);
 
 		return generateSession(c, instanceId, {
 			read: true,

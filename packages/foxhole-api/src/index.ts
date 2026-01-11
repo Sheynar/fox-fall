@@ -1,3 +1,10 @@
+export enum Shard {
+	Able = 'Able',
+	Baker = 'Baker',
+	Charlie = 'Charlie',
+	Development = 'Development',
+}
+
 export enum FoxholeApiEndpoint {
 	Able = 'https://war-service-live.foxholeservices.com/api',
 	Baker = 'https://war-service-live-2.foxholeservices.com/api',

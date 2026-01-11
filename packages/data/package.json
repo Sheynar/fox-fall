@@ -12,6 +12,7 @@
   "repository": "https://github.com/KaoSDlanor/fox-fall",
   "author": "KaoSDlanor <KaoSDlanor@gmail.com>",
   "dependencies": {
+    "@packages/foxhole-api": "workspace:*",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

@@ -42,6 +42,7 @@
 	<InstanceEditor
 		v-if="editingInstance"
 		:instance-id="editingInstance.instance.id"
+		:shard="editingInstance.instance.shard"
 		:guild-id="editingInstance.instance.discord_guild_id"
 		:guild-admin-role-ids="
 			editingInstance.discordPermissions

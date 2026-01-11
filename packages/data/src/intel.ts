@@ -1,6 +1,9 @@
+import type { Shard } from '@packages/foxhole-api';
+
 export type IntelInstance = {
 	id: string;
 	discord_guild_id: string;
+	shard: Shard;
 };
 
 export type IntelInstanceDiscordPermissions = {

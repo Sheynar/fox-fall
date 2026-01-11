@@ -25,6 +25,7 @@
     "@lezer/highlight": "^1.2.0",
     "@lezer/markdown": "^1.6.2",
     "@packages/data": "workspace:*",
+    "@packages/foxhole-api": "workspace:*",
     "@packages/frontend-libs": "workspace:*",
     "@primeuix/themes": "^1.0.0",
     "@prosemark/core": "^0.0.4",

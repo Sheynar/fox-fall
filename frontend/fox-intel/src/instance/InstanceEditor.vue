@@ -3,13 +3,28 @@
 		<div class="InstanceCreator__backdrop">
 			<div class="InstanceCreator__container">
 				<div class="InstanceCreator__header">
-					{{ props.instanceId ? 'Edit' : 'Create' }} intel instance {{ props.instanceId }}
+					{{ props.instanceId ? 'Edit' : 'Create' }} intel instance
+					{{ props.instanceId }}
 					<button @click="emit('cancel')">Cancel</button>
 				</div>
 				<div class="InstanceCreator__content">
 					<label>
 						Instance ID
 						<FoxText v-model="instanceName" />
+					</label>
+					<label>
+						Shard
+						<FoxSelect
+							v-model="shard"
+							:options="
+								new Map(
+									Object.entries(Shard).map(([key, value]) => [
+										value,
+										{ label: key },
+									])
+								)
+							"
+						/>
 					</label>
 					<label>
 						Guild
@@ -127,9 +142,11 @@
 	import { onMounted, ref, watch } from 'vue';
 	import { useDiscordAccess } from '@/lib/discord';
 	import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
+	import { Shard } from '@packages/foxhole-api';
 
 	const props = defineProps<{
 		instanceId?: string;
+		shard?: Shard;
 		guildId?: string;
 		guildAdminRoleIds?: string[];
 		guildWriteRoleIds?: string[];
@@ -144,6 +161,7 @@
 	const discordAccess = useDiscordAccess();
 
 	const instanceName = ref<string>(props.instanceId ?? '');
+	const shard = ref<Shard | null>(props.shard ?? null);
 	const guildId = ref<string | undefined>(props.guildId ?? undefined);
 	const guildAdminRoleIds = ref<string[]>(props.guildAdminRoleIds ?? []);
 	const guildWriteRoleIds = ref<string[]>(props.guildWriteRoleIds ?? []);
@@ -292,6 +310,9 @@
 		if (!guildId.value) {
 			throw new Error('Guild ID is required');
 		}
+		if (!shard.value) {
+			throw new Error('Shard is required');
+		}
 		if (guildAdminRoleIds.value.length === 0) {
 			throw new Error('At least one admin role is required');
 		}
@@ -304,6 +325,7 @@
 				method: 'POST',
 				body: JSON.stringify({
 					id: instanceName.value,
+					shard: shard.value,
 					discordGuildId: guildId.value,
 					discordGuildRoles: [
 						...guildAdminRoleIds.value.map((roleId) => ({

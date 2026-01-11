@@ -22,6 +22,7 @@ process.on('exit', () => db.close());
 db.exec(`
 	CREATE TABLE IF NOT EXISTS IntelInstance (
 		id TEXT PRIMARY KEY,
+		shard TEXT NOT NULL,
 		discord_guild_id TEXT NOT NULL
 	);
 
@@ -99,15 +100,16 @@ export const models = {
 	intelInstance: {
 		create: function createIntelInstance(
 			name: string,
+			shard: string,
 			discordGuildId: string,
 			discordGuildRoles: { accessType: string; roleId: string }[]
 		) {
 			db.transaction(() => {
 				db.prepare(
 					`
-					INSERT INTO IntelInstance (id, discord_guild_id) VALUES (?, ?)
+					INSERT INTO IntelInstance (id, shard, discord_guild_id) VALUES (?, ?, ?)
 					`
-				).run(name, discordGuildId);
+				).run(name, shard, discordGuildId);
 				if (discordGuildRoles.length > 0) {
 					db.prepare(
 						`

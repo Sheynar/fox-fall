@@ -907,6 +907,7 @@ __metadata:
     "@lezer/highlight": "npm:^1.2.0"
     "@lezer/markdown": "npm:^1.6.2"
     "@packages/data": "workspace:*"
+    "@packages/foxhole-api": "workspace:*"
     "@packages/frontend-libs": "workspace:*"
     "@primeuix/themes": "npm:^1.0.0"
     "@prosemark/core": "npm:^0.0.4"
@@ -1393,6 +1394,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@packages/data@workspace:packages/data"
   dependencies:
+    "@packages/foxhole-api": "workspace:*"
     prettier: "npm:^3.0.3"
     rimraf: "npm:^6.0.1"
     typescript: "npm:^5.2.2"
@@ -1437,7 +1439,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@packages/foxhole-api@workspace:packages/foxhole-api":
+"@packages/foxhole-api@workspace:*, @packages/foxhole-api@workspace:packages/foxhole-api":
   version: 0.0.0-use.local
   resolution: "@packages/foxhole-api@workspace:packages/foxhole-api"
   dependencies:
