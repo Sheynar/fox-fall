@@ -43,6 +43,7 @@ export function useDiscordAccess() {
 			}
 		);
 		if (!response.ok) {
+			alert('There is a problem with your session token, redirecting to Discord auth');
 			redirectToDiscordAuth();
 		} else {
 			ready.value = true;
