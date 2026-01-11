@@ -76,8 +76,8 @@
 		const response = await fetch('/api/v1/discord/access-token', {
 			method: 'GET',
 			headers: {
-				'X-Discord-Access-Code': discordAccess.code.value,
-				'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+				'X-Discord-Access-Code': discordAccess.code,
+				'X-Discord-Redirect-Uri': discordAccess.redirectUri,
 			},
 		});
 		if (!response.ok) {

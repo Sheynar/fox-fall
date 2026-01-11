@@ -175,8 +175,8 @@
 			const response = await fetch('/api/v1/instance', {
 				method: 'GET',
 				headers: {
-					'X-Discord-Access-Code': discordAccess.code.value,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+					'X-Discord-Access-Code': discordAccess.code,
+					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
 				},
 			});
 
@@ -196,8 +196,8 @@
 			{
 				method: 'GET',
 				headers: {
-					'X-Discord-Access-Code': discordAccess.code.value,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+					'X-Discord-Access-Code': discordAccess.code,
+					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
 				},
 			}
 		);
@@ -216,8 +216,8 @@
 			{
 				method: 'DELETE',
 				headers: {
-					'X-Discord-Access-Code': discordAccess.code.value,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+					'X-Discord-Access-Code': discordAccess.code,
+					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
 				},
 			}
 		);
@@ -233,8 +233,8 @@
 			{
 				method: 'GET',
 				headers: {
-					'X-Discord-Access-Code': discordAccess.code.value,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+					'X-Discord-Access-Code': discordAccess.code,
+					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
 				},
 			}
 		);

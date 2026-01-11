@@ -35,8 +35,8 @@ export function useIntelInstance(options: UseIntelInstanceOptions) {
 					`/api/v1/instance/${encodeURIComponent(options.intelInstanceId.value)}`,
 					{
 						headers: {
-							'X-Discord-Access-Code': discordAccess.code.value,
-							'X-Discord-Redirect-Uri': discordAccess.redirectUri.value,
+							'X-Discord-Access-Code': discordAccess.code,
+							'X-Discord-Redirect-Uri': discordAccess.redirectUri,
 						},
 					}
 				);
