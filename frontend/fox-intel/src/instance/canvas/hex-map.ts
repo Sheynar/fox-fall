@@ -1,11 +1,17 @@
 import { HEX_SIZE } from '@packages/data/dist/artillery/map';
 import { Vector } from '@packages/data/dist/artillery/vector';
-import { watch, Ref, onScopeDispose } from 'vue';
+import { watch, Ref, onScopeDispose, computed } from 'vue';
+import {
+	Hex,
+	HEX_POSITIONS,
+	KNOWN_MAP_NAMES,
+} from '@packages/data/dist/hexMap';
 import {
 	HEX_MAPS,
 	MapSource,
 } from '@packages/frontend-libs/dist/assets/images/hex-maps';
-import { Hex, HEX_POSITIONS } from '@packages/frontend-libs/dist/hexMap';
+import { useWarData } from '@/lib/war-data';
+import { MapMarkerType, Shard } from '@packages/foxhole-api';
 
 export type HexMapOptions = {
 	mapSource: MapSource;
@@ -18,6 +24,9 @@ export type HexMapOptions = {
 	onDispose?: () => void;
 };
 export function useHexMap(options: HexMapOptions) {
+	// TODO : get shard from instance
+	const warData = useWarData({ shard: computed(() => Shard.Able) });
+
 	const backdropCanvas =
 		options.backdropCanvas ?? document.createElement('canvas');
 	const backdropContext = backdropCanvas.getContext('2d')!;
@@ -44,22 +53,33 @@ export function useHexMap(options: HexMapOptions) {
 		frameRequest = requestAnimationFrame(render);
 	};
 
-	watch(options.width, (newWidth) => {
-		backdropCanvas.width = newWidth;
-		foregroundCanvas.width = newWidth;
-	}, { immediate: true });
+	watch(
+		options.width,
+		(newWidth) => {
+			backdropCanvas.width = newWidth;
+			foregroundCanvas.width = newWidth;
+		},
+		{ immediate: true }
+	);
 
-	watch(options.height, (newHeight) => {
-		backdropCanvas.height = newHeight;
-		foregroundCanvas.height = newHeight;
-	}, { immediate: true });
+	watch(
+		options.height,
+		(newHeight) => {
+			backdropCanvas.height = newHeight;
+			foregroundCanvas.height = newHeight;
+		},
+		{ immediate: true }
+	);
 
 	let hexImages: Partial<Record<Hex, HTMLCanvasElement>> = {};
 	watch(
 		() => options.mapSource,
 		async (newMapSource) => {
 			const newHexImages: Partial<Record<Hex, HTMLCanvasElement>> = {};
-			const newHexMap = await (newMapSource && HEX_MAPS[newMapSource] || HEX_MAPS[MapSource.Vanilla])();
+			const newHexMap = await (
+				(newMapSource && HEX_MAPS[newMapSource]) ||
+				HEX_MAPS[MapSource.Vanilla]
+			)();
 			for (const [hex, imageSrc] of Object.entries(newHexMap) as [
 				Hex,
 				string,
@@ -88,8 +108,18 @@ export function useHexMap(options: HexMapOptions) {
 		cancelFrame();
 
 		try {
-			backdropContext.clearRect(0, 0, options.width.value, options.height.value);
-			foregroundContext.clearRect(0, 0, options.width.value, options.height.value);
+			backdropContext.clearRect(
+				0,
+				0,
+				options.width.value,
+				options.height.value
+			);
+			foregroundContext.clearRect(
+				0,
+				0,
+				options.width.value,
+				options.height.value
+			);
 
 			const centerHexPosition = Vector.fromCartesianVector({
 				x:
@@ -105,9 +135,44 @@ export function useHexMap(options: HexMapOptions) {
 				options.width.value / options.zoom.value > HEX_SIZE.width * 1.5 &&
 				options.height.value / options.zoom.value > HEX_SIZE.height * 1.5;
 
-			const forEachHex = (
+			const drawRegionLabels =
+				options.width.value / options.zoom.value < HEX_SIZE.width * 1.5 ||
+				options.height.value / options.zoom.value < HEX_SIZE.height * 1.5;
+
+			const drawMinorLabels =
+				options.width.value / options.zoom.value < HEX_SIZE.width * 0.5 ||
+				options.height.value / options.zoom.value < HEX_SIZE.height * 0.5;
+
+			const hexLabelFontSize = Math.max(15, 200 * options.zoom.value);
+			const regionFontSize = hexLabelFontSize / 5;
+			const minorFontSize = regionFontSize / 2;
+
+			function drawText(text: string, x: number, y: number, fontSize: number, foreground = 'black', background = 'white') {
+				foregroundContext!.fillStyle = background;
+				foregroundContext!.strokeStyle = foreground;
+				foregroundContext!.font = `bold ${fontSize}px sans-serif`;
+				const textMetrics = foregroundContext!.measureText(text);
+				foregroundContext!.fillText(
+					text,
+					x - textMetrics.width / 2,
+					y +
+						(textMetrics.fontBoundingBoxAscent +
+							textMetrics.fontBoundingBoxDescent) /
+							2
+				);
+				foregroundContext!.strokeText(
+					text,
+					x - textMetrics.width / 2,
+					y +
+						(textMetrics.fontBoundingBoxAscent +
+							textMetrics.fontBoundingBoxDescent) /
+							2
+				);
+			}
+
+			function forEachHex(
 				callback: (hex: Hex, x: number, y: number, hexPosition: Vector) => void
-			) => {
+			) {
 				for (let [y, row] of HEX_POSITIONS.entries()) {
 					y -= Math.floor(HEX_POSITIONS.length / 2);
 					for (let [x, hex] of row.entries()) {
@@ -126,7 +191,7 @@ export function useHexMap(options: HexMapOptions) {
 						callback(hex, x, y, hexPosition);
 					}
 				}
-			};
+			}
 
 			forEachHex((hex, _x, _y, hexPosition) => {
 				if (!hexImages[hex]) return;
@@ -139,33 +204,45 @@ export function useHexMap(options: HexMapOptions) {
 				);
 			});
 
+			if (drawMinorLabels) {
+				forEachHex((hex, _x, _y, hexPosition) => {
+					const mapData = warData.staticMapData.value[KNOWN_MAP_NAMES[hex]];
+					if (!mapData) return;
+					for (const textItem of mapData.mapTextItems) {
+						if (textItem.mapMarkerType !== MapMarkerType.Minor) continue;
+						drawText(
+							textItem.text,
+							hexPosition.x + textItem.x * HEX_SIZE.width * options.zoom.value,
+							hexPosition.y + textItem.y * HEX_SIZE.height * options.zoom.value,
+							minorFontSize
+						);
+					}
+				});
+			}
+
+			if (drawRegionLabels) {
+				forEachHex((hex, _x, _y, hexPosition) => {
+					const mapData = warData.staticMapData.value[KNOWN_MAP_NAMES[hex]];
+					if (!mapData) return;
+					for (const textItem of mapData.mapTextItems) {
+						if (textItem.mapMarkerType !== MapMarkerType.Region) continue;
+						drawText(
+							textItem.text,
+							hexPosition.x + textItem.x * HEX_SIZE.width * options.zoom.value,
+							hexPosition.y + textItem.y * HEX_SIZE.height * options.zoom.value,
+							regionFontSize
+						);
+					}
+				});
+			}
+
 			if (drawHexLabels) {
 				forEachHex((hex, _x, _y, hexPosition) => {
-					foregroundContext!.fillStyle = 'white';
-					foregroundContext!.strokeStyle = 'black';
-					foregroundContext!.font = `bold ${Math.max(15, 200 * options.zoom.value)}px sans-serif`;
-					const textMetrics = foregroundContext!.measureText(hex);
-					foregroundContext!.fillText(
+					drawText(
 						hex,
-						hexPosition.x +
-							(HEX_SIZE.width * options.zoom.value) / 2 -
-							textMetrics.width / 2,
-						hexPosition.y +
-							(HEX_SIZE.height * options.zoom.value) / 2 +
-							(textMetrics.fontBoundingBoxAscent +
-								textMetrics.fontBoundingBoxDescent) /
-								2
-					);
-					foregroundContext!.strokeText(
-						hex,
-						hexPosition.x +
-							(HEX_SIZE.width * options.zoom.value) / 2 -
-							textMetrics.width / 2,
-						hexPosition.y +
-							(HEX_SIZE.height * options.zoom.value) / 2 +
-							(textMetrics.fontBoundingBoxAscent +
-								textMetrics.fontBoundingBoxDescent) /
-								2
+						hexPosition.x + (HEX_SIZE.width * options.zoom.value) / 2,
+						hexPosition.y + (HEX_SIZE.height * options.zoom.value) / 2,
+						hexLabelFontSize
 					);
 				});
 			}

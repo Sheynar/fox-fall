@@ -128,8 +128,8 @@ export type WarDetails = {
 	shortRequiredVictoryTowns: number;
 }
 
-export async function getWarDetails(endpoint: FoxholeApiEndpoint): Promise<WarDetails> {
-	const response = await fetch(`${endpoint}/worldconquest/war`);
+export async function getWarDetails(shard: Shard): Promise<WarDetails> {
+	const response = await fetch(`${FoxholeApiEndpoint[shard]}/worldconquest/war`);
 	if (!response.ok) {
 		throw new Error(`Failed to get war details: ${response.statusText}`);
 	}
@@ -137,10 +137,12 @@ export async function getWarDetails(endpoint: FoxholeApiEndpoint): Promise<WarDe
 	return data;
 }
 
-export type WarMaps = ("TheFingersHex" | "TempestIslandHex" | "GreatMarchHex" | "ViperPitHex" | "MarbanHollow" | "BasinSionnachHex" | "StemaLandingHex" | "DeadLandsHex" | "HeartlandsHex" | "EndlessShoreHex" | "WestgateHex" | "OarbreakerHex" | "AcrithiaHex" | "MooringCountyHex" | "WeatheredExpanseHex" | "ReaversPassHex" | "MorgensCrossingHex" | "LochMorHex" | "StonecradleHex" | "AllodsBightHex" | "KalokaiHex" | "RedRiverHex" | "OriginHex" | "HowlCountyHex" | "ClahstraHex" | "SpeakingWoodsHex" | "ShackledChasmHex" | "TerminusHex" | "LinnMercyHex" | "ClansheadValleyHex" | "GodcroftsHex" | "NevishLineHex" | "CallumsCapeHex" | "FishermansRowHex" | "ReachingTrailHex" | "UmbralWildwoodHex" | "StlicanShelfHex" | "CallahansPassageHex" | "KingsCageHex" | "AshFieldsHex" | "FarranacCoastHex" | "DrownedValeHex" | "SableportHex" | string)[];
+export type KnownMapName = "TheFingersHex" | "TempestIslandHex" | "GreatMarchHex" | "ViperPitHex" | "MarbanHollow" | "BasinSionnachHex" | "StemaLandingHex" | "DeadLandsHex" | "HeartlandsHex" | "EndlessShoreHex" | "WestgateHex" | "OarbreakerHex" | "AcrithiaHex" | "MooringCountyHex" | "WeatheredExpanseHex" | "ReaversPassHex" | "MorgensCrossingHex" | "LochMorHex" | "StonecradleHex" | "AllodsBightHex" | "KalokaiHex" | "RedRiverHex" | "OriginHex" | "HowlCountyHex" | "ClahstraHex" | "SpeakingWoodsHex" | "ShackledChasmHex" | "TerminusHex" | "LinnMercyHex" | "ClansheadValleyHex" | "GodcroftsHex" | "NevishLineHex" | "CallumsCapeHex" | "FishermansRowHex" | "ReachingTrailHex" | "UmbralWildwoodHex" | "StlicanShelfHex" | "CallahansPassageHex" | "KingsCageHex" | "AshFieldsHex" | "FarranacCoastHex" | "DrownedValeHex" | "SableportHex";
 
-export async function getWarMaps(endpoint: FoxholeApiEndpoint): Promise<WarMaps> {
-	const response = await fetch(`${endpoint}/worldconquest/maps`);
+export type WarMaps = (KnownMapName | string)[];
+
+export async function getWarMaps(shard: Shard): Promise<WarMaps> {
+	const response = await fetch(`${FoxholeApiEndpoint[shard]}/worldconquest/maps`);
 	if (!response.ok) {
 		throw new Error(`Failed to get war maps: ${response.statusText}`);
 	}
@@ -180,8 +182,8 @@ export type MapData = {
 	version: number;
 };
 
-export async function getMapData(endpoint: FoxholeApiEndpoint, mapId: string, isDynamicData = false, Etag?: string): Promise<MapData> {
-	const response = await fetch(`${endpoint}/worldconquest/maps/${mapId}/${isDynamicData ? 'dynamic/public' : 'static'}`, {
+export async function getMapData(shard: Shard, mapId: string, isDynamicData = false, Etag?: string): Promise<MapData> {
+	const response = await fetch(`${FoxholeApiEndpoint[shard]}/worldconquest/maps/${mapId}/${isDynamicData ? 'dynamic/public' : 'static'}`, {
 		headers: Etag ? { 'If-None-Match': Etag } : undefined,
 	});
 	if (!response.ok) {

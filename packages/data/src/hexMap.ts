@@ -1,3 +1,5 @@
+import type { KnownMapName } from '@packages/foxhole-api';
+
 export enum Hex {
 	BasinSionnach = 'Basin Sionnach',
 	SpeakingWoods = 'Speaking Woods',
@@ -43,6 +45,52 @@ export enum Hex {
 	Acrithia = 'Acrithia',
 	Kalokai = 'Kalokai',
 }
+
+export const KNOWN_MAP_NAMES: Record<Hex, KnownMapName> = {
+	[Hex.BasinSionnach]: 'BasinSionnachHex',
+	[Hex.SpeakingWoods]: 'SpeakingWoodsHex',
+	[Hex.HowlCounty]: 'HowlCountyHex',
+	[Hex.CallumsCape]: 'CallumsCapeHex',
+	[Hex.ReachingTrail]: 'ReachingTrailHex',
+	[Hex.ClansheadValley]: 'ClansheadValleyHex',
+	[Hex.NevishLine]: 'NevishLineHex',
+	[Hex.TheMoors]: 'MooringCountyHex',
+	[Hex.ViperPit]: 'ViperPitHex',
+	[Hex.MorgensCrossing]: 'MorgensCrossingHex',
+	[Hex.TheOarbreakerIsles]: 'OarbreakerHex',
+	[Hex.Stonecradle]: 'StonecradleHex',
+	[Hex.CallahansPassage]: 'CallahansPassageHex',
+	[Hex.WeatheredExpanse]: 'WeatheredExpanseHex',
+	[Hex.Godcrofts]: 'GodcroftsHex',
+	[Hex.FarranacCoast]: 'FarranacCoastHex',
+	[Hex.TheLinnOfMercy]: 'LinnMercyHex',
+	[Hex.MarbanHollow]: 'MarbanHollow',
+	[Hex.StlicanShelf]: 'StlicanShelfHex',
+	[Hex.FishermansRow]: 'FishermansRowHex',
+	[Hex.KingsCage]: 'KingsCageHex',
+	[Hex.Deadlands]: 'DeadLandsHex',
+	[Hex.TheClahstra]: 'ClahstraHex',
+	[Hex.TempestIsland]: 'TempestIslandHex',
+	[Hex.Westgate]: 'WestgateHex',
+	[Hex.LochMor]: 'LochMorHex',
+	[Hex.TheDrownedVale]: 'DrownedValeHex',
+	[Hex.EndlessShore]: 'EndlessShoreHex',
+	[Hex.StemaLanding]: 'StemaLandingHex',
+	[Hex.Sableport]: 'SableportHex',
+	[Hex.UmbralWildwood]: 'UmbralWildwoodHex',
+	[Hex.AllodsBight]: 'AllodsBightHex',
+	[Hex.TheFingers]: 'TheFingersHex',
+	[Hex.Origin]: 'OriginHex',
+	[Hex.TheHeartlands]: 'HeartlandsHex',
+	[Hex.ShackledChasm]: 'ShackledChasmHex',
+	[Hex.ReaversPass]: 'ReaversPassHex',
+	[Hex.AshFields]: 'AshFieldsHex',
+	[Hex.GreatMarch]: 'GreatMarchHex',
+	[Hex.Terminus]: 'TerminusHex',
+	[Hex.RedRiver]: 'RedRiverHex',
+	[Hex.Acrithia]: 'AcrithiaHex',
+	[Hex.Kalokai]: 'KalokaiHex',
+};
 
 export const HEX_POSITIONS = [
 	[undefined,              undefined,              Hex.BasinSionnach,      undefined,              undefined,              ],
