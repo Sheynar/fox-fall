@@ -479,6 +479,20 @@ export const models = {
 			return tags;
 		},
 
+		getTagsSince: function getTagsSince(
+			instanceId: string,
+			timestamp: number,
+			skipDeleted: boolean = false
+		) {
+			const tags = db
+				.prepare<
+					[string, number, 1 | 0],
+					IntelDocumentTag
+				>('SELECT * FROM IntelDocumentTag WHERE instance_id = ? AND timestamp > ? AND (NOT ? OR deleted = FALSE)')
+				.all(instanceId, timestamp, skipDeleted ? 1 : 0);
+			return tags;
+		},
+
 		getDocumentTagsSince: function getDocumentTagsSince(
 			instanceId: string,
 			documentId: number,

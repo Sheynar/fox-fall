@@ -65,9 +65,8 @@
 	import { ref } from 'vue';
 	import InstanceSelector from './instance/InstanceSelector.vue';
 	import InstanceView from './instance/InstanceView.vue';
-	import { provideDiscordAccess, useDiscordAccess } from './lib/discord';
+	import { useDiscordAccess } from './lib/discord';
 
 	const discordAccess = useDiscordAccess();
-	provideDiscordAccess(discordAccess);
 	const selectedInstanceId = ref<string | null>(null);
 </script>

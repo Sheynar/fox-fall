@@ -1,11 +1,12 @@
-import { injectIntelInstance } from '@/lib/intel-instance';
 import type { BasicIntelDocument, IntelDocument, IntelDocumentTag } from '@packages/data/dist/intel';
+import { wrapMixin } from '@packages/frontend-libs/src/reference-cache';
 import { onScopeDispose, ref } from 'vue';
+import { injectIntelInstance } from '@/lib/intel-instance';
 
 export type UseDocumentsOptions = {
 	intelInstance: ReturnType<typeof injectIntelInstance>;
 };
-export function useDocuments(options: UseDocumentsOptions) {
+function _useDocuments(options: UseDocumentsOptions) {
 	const documents = ref<{ [id: BasicIntelDocument['id']]: BasicIntelDocument }>(
 		{}
 	);
@@ -101,12 +102,13 @@ export function useDocuments(options: UseDocumentsOptions) {
 		ready,
 	};
 }
+export const useDocuments = wrapMixin(_useDocuments, (options) => `${options.intelInstance.instanceId.value}-documents`);
 
 export type UseDocumentOptions = {
 	intelInstance: ReturnType<typeof injectIntelInstance>;
 	document: BasicIntelDocument;
 };
-export function useDocument(options: UseDocumentOptions) {
+function _useDocument(options: UseDocumentOptions) {
 	const document = ref<IntelDocument | null>(null);
 
 	let lastLoadedTimestamp = 0;
@@ -152,12 +154,13 @@ export function useDocument(options: UseDocumentOptions) {
 		ready,
 	};
 }
+export const useDocument = wrapMixin(_useDocument, (options) => `${options.intelInstance.instanceId.value}-document-${options.document.id}`);
 
 export type UseDocumentTagsOptions = {
 	intelInstance: ReturnType<typeof injectIntelInstance>;
 	documentId: number;
 };
-export function useDocumentTags(options: UseDocumentTagsOptions) {
+export function _useDocumentTags(options: UseDocumentTagsOptions) {
 	const tags = ref<{ [id: IntelDocumentTag['id']]: IntelDocumentTag }>({});
 
 	let lastLoadedTimestamp = 0;
@@ -213,3 +216,4 @@ export function useDocumentTags(options: UseDocumentTagsOptions) {
 		readyPromise,
 	};
 }
+export const useDocumentTags = wrapMixin(_useDocumentTags, (options) => `${options.intelInstance.instanceId.value}-document-${options.documentId}-tags`);

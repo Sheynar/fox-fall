@@ -863,7 +863,53 @@ export async function initialiseHttp(
 		});
 	});
 
+	const pendingTagsRequests = new Map<string, Set<() => void>>();
+	app.get('/api/v1/instance/:instanceId/tags/since', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId);
+		if (sessionOutput) return sessionOutput;
+
+		const timestamp = parseInt(c.req.query('timestamp') ?? '');
+		if (isNaN(timestamp)) {
+			return c.json({ error: 'Invalid timestamp' }, 400);
+		}
+		const timeout = parseInt(c.req.query('timeout') ?? '');
+		if (isNaN(timeout)) {
+			return c.json({ error: 'Invalid timeout' }, 400);
+		}
+		const skipDeleted = c.req.query('skipDeleted') === 'true';
+
+		let tags = models.intelDocumentTag.getTagsSince(instanceId, timestamp, skipDeleted);
+		if (tags.length === 0) {
+			tags = await new Promise<IntelDocumentTag[]>((resolve) => {
+				if (!pendingTagsRequests.has(instanceId)) {
+					pendingTagsRequests.set(instanceId, new Set());
+				}
+
+				const onTags = () => {
+					pendingTagsRequests.get(instanceId)?.delete(onTags);
+					resolve(
+						models.intelDocumentTag.getTagsSince(instanceId, timestamp, skipDeleted)
+					);
+				};
+
+				pendingTagsRequests.get(instanceId)!.add(onTags);
+				setTimeout(onTags, timeout);
+			});
+		}
+		return c.json({
+			tags,
+			timestamp: Math.max(
+				...tags.map((tag) => tag.timestamp),
+				timestamp
+			),
+		});
+	});
+
 	const pendingDocumentTagRequests = new Map<string, Set<() => void>>();
+	function pendingDocumentTagsRequestId(instanceId: string, documentId: number) {
+		return `${instanceId}-${documentId}-tags`;
+	}
 	app.get('/api/v1/instance/:instanceId/document/:documentId/tags/since', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const sessionOutput = validateSession(c, instanceId);
@@ -887,18 +933,19 @@ export async function initialiseHttp(
 		let tags = models.intelDocumentTag.getDocumentTagsSince(instanceId, documentId, timestamp, skipDeleted);
 		if (tags.length === 0) {
 			tags = await new Promise<IntelDocumentTag[]>((resolve) => {
-				if (!pendingDocumentTagRequests.has(instanceId)) {
-					pendingDocumentTagRequests.set(instanceId, new Set());
+				const pendingKey = pendingDocumentTagsRequestId(instanceId, documentId);
+				if (!pendingDocumentTagRequests.has(pendingKey)) {
+					pendingDocumentTagRequests.set(pendingKey, new Set());
 				}
 
 				const onTags = () => {
-					pendingDocumentTagRequests.get(instanceId)?.delete(onTags);
+					pendingDocumentTagRequests.get(pendingKey)?.delete(onTags);
 					resolve(
 						models.intelDocumentTag.getDocumentTagsSince(instanceId, documentId, timestamp)
 					);
 				};
 
-				pendingDocumentTagRequests.get(instanceId)!.add(onTags);
+				pendingDocumentTagRequests.get(pendingKey)!.add(onTags);
 				setTimeout(onTags, timeout);
 			});
 		}
@@ -928,7 +975,10 @@ export async function initialiseHttp(
 
 		models.intelDocumentTag.addDocumentTag(instanceId, documentId, tag);
 
-		for (const listener of pendingDocumentTagRequests.get(instanceId) ?? []) {
+		for (const listener of pendingTagsRequests.get(instanceId) ?? []) {
+			listener();
+		}
+		for (const listener of pendingDocumentTagRequests.get(pendingDocumentTagsRequestId(instanceId, documentId)) ?? []) {
 			listener();
 		}
 
@@ -952,7 +1002,10 @@ export async function initialiseHttp(
 
 		models.intelDocumentTag.removeDocumentTag(instanceId, documentId, tag);
 
-		for (const listener of pendingDocumentTagRequests.get(instanceId) ?? []) {
+		for (const listener of pendingTagsRequests.get(instanceId) ?? []) {
+			listener();
+		}
+		for (const listener of pendingDocumentTagRequests.get(pendingDocumentTagsRequestId(instanceId, documentId)) ?? []) {
 			listener();
 		}
 

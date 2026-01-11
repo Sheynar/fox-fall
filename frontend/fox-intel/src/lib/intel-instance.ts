@@ -1,11 +1,11 @@
 import { computed, inject, provide, Ref, shallowRef, watch } from 'vue';
-import { injectDiscordAccess } from './discord';
+import { useDiscordAccess } from './discord';
 
 export type UseIntelInstanceOptions = {
 	intelInstanceId: Ref<string>;
 };
 export function useIntelInstance(options: UseIntelInstanceOptions) {
-	const discordAccess = injectDiscordAccess();
+	const discordAccess = useDiscordAccess();
 
 	const session = shallowRef<{
 		sessionId: string;

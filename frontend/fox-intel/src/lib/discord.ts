@@ -1,6 +1,7 @@
-import { inject, InjectionKey, onScopeDispose, provide, ref } from 'vue';
+import { onScopeDispose, ref } from 'vue';
+import { wrapMixin } from '@packages/frontend-libs/src/reference-cache';
 
-export function useDiscordAccess() {
+function _useDiscordAccess() {
 	const url = new URL(location.href);
 	const urlCode = url.searchParams.get('code');
 	if (urlCode) {
@@ -80,18 +81,4 @@ export function useDiscordAccess() {
 	};
 }
 
-const discordAccessSymbol: InjectionKey<ReturnType<typeof useDiscordAccess>> =
-	Symbol('DISCORD_ACCESS');
-export function provideDiscordAccess(
-	discordAccess: ReturnType<typeof useDiscordAccess>
-) {
-	provide(discordAccessSymbol, discordAccess);
-}
-
-export function injectDiscordAccess() {
-	const discordAccess = inject(discordAccessSymbol);
-	if (!discordAccess) {
-		throw new Error('Discord access not found');
-	}
-	return discordAccess;
-}
+export const useDiscordAccess = wrapMixin(_useDiscordAccess, () => 'discord-access');
