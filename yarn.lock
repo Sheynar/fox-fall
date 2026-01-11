@@ -1436,6 +1436,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@packages/foxhole-api@workspace:packages/foxhole-api":
+  version: 0.0.0-use.local
+  resolution: "@packages/foxhole-api@workspace:packages/foxhole-api"
+  dependencies:
+    prettier: "npm:^3.0.3"
+    rimraf: "npm:^6.0.1"
+    typescript: "npm:^5.2.2"
+    uuid: "npm:^13.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@packages/frontend-libs@workspace:*, @packages/frontend-libs@workspace:packages/frontend-libs":
   version: 0.0.0-use.local
   resolution: "@packages/frontend-libs@workspace:packages/frontend-libs"

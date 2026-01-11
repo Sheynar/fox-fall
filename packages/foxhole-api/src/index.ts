@@ -1,0 +1,192 @@
+export enum FoxholeApiEndpoint {
+	Able = 'https://war-service-live.foxholeservices.com/api',
+	Baker = 'https://war-service-live-2.foxholeservices.com/api',
+	Charlie = 'https://war-service-live-3.foxholeservices.com/api',
+	Development = 'https://war-service-dev.foxholeservices.com/api',
+}
+
+export enum MapIconType {
+	/** @deprecated Removed in Update 46 */
+	StaticBase1 = 5,
+	/** @deprecated Removed in Update 46 */
+	StaticBase2 = 6,
+	/** @deprecated Removed in Update 46 */
+	StaticBase3 = 7,
+
+	ForwardBase1 = 8,
+	/** @deprecated Removed in Update 50 */
+	ForwardBase2 = 9,
+	/** @deprecated Removed in Update 50 */
+	ForwardBase3 = 10,
+
+	Hospital = 11,
+	VehicleFactory = 12,
+	/** @deprecated */
+	Armory = 13,
+	/** @deprecated */
+	SupplyStation = 14,
+	/** @deprecated */
+	Workshop = 15,
+	/** @deprecated */
+	ManufacturingPlant = 16,
+	Refinery = 17,
+	Shipyard = 18,
+	TechCenter = 19,
+
+	SalvageField = 20,
+	ComponentField = 21,
+	FuelField = 22,
+	SulfurField = 23,
+	WorldMapTent = 24,
+	TravelTent = 25,
+	TrainingArea = 26,
+	Keep = 27,
+	ObservationTower = 28,
+	Fort = 29,
+	TroopShip = 30,
+	SulfurMine = 32,
+	StorageFacility = 33,
+	Factory = 34,
+	GarrisonStation = 35,
+	/** @deprecated */
+	AmmoFactory = 36,
+	RocketSite = 37,
+	SalvageMine = 38,
+	ConstructionYard = 39,
+	ComponentMine = 40,
+	/** @deprecated Removed in Update 50 */
+	OilWell = 41,
+
+	RelicBase1 = 45,
+	/** @deprecated Removed in Update 52 */
+	RelicBase2 = 46,
+	/** @deprecated Removed in Update 52 */
+	RelicBase3 = 47,
+
+	MassProductionFactory = 51,
+	Seaport = 52,
+	CoastalGun = 53,
+	SoulFactory = 54,
+
+	TownBase1 = 56,
+	TownBase2 = 57,
+	TownBase3 = 58,
+
+	StormCannon = 59,
+	IntelCenter = 60,
+
+	CoalField = 61,
+	OilField = 62,
+
+	RocketTarget = 70,
+	RocketGroundZero = 71,
+	RocketSiteWithRocket = 72,
+
+	FacilityMineOilRig = 75,
+
+	WeatherStation = 83,
+	MortarHouse = 84,
+}
+
+export enum Team {
+	Colonial = 'COLONIALS',
+	Warden = 'WARDENS',
+	None = 'NONE',
+}
+
+export enum TeamColor {
+	Colonial = '#152612',
+	Warden = '#041739',
+	None = '#FFFFFF',
+}
+
+export enum MapFlags {
+	IsVictoryBase = 0x01,
+	/** @deprecated Removed in Update 29 */
+	IsHomeBase = 0x02,
+	IsBuildSite = 0x04,
+	IsScorched = 0x10,
+	IsTownClaimed = 0x20,
+}
+
+export type WarDetails = {
+	warId: string;
+	warNumber: number;
+	winner: Team;
+	conquestStartTime: number;
+	conquestEndTime: number | null;
+	resistanceStartTime: number | null;
+	scheduledConquestEndTime: number | null;
+	requiredVictoryTowns: number;
+	shortRequiredVictoryTowns: number;
+}
+
+export async function getWarDetails(endpoint: FoxholeApiEndpoint): Promise<WarDetails> {
+	const response = await fetch(`${endpoint}/worldconquest/war`);
+	if (!response.ok) {
+		throw new Error(`Failed to get war details: ${response.statusText}`);
+	}
+	const data: WarDetails = await response.json();
+	return data;
+}
+
+export type WarMaps = ("TheFingersHex" | "TempestIslandHex" | "GreatMarchHex" | "ViperPitHex" | "MarbanHollow" | "BasinSionnachHex" | "StemaLandingHex" | "DeadLandsHex" | "HeartlandsHex" | "EndlessShoreHex" | "WestgateHex" | "OarbreakerHex" | "AcrithiaHex" | "MooringCountyHex" | "WeatheredExpanseHex" | "ReaversPassHex" | "MorgensCrossingHex" | "LochMorHex" | "StonecradleHex" | "AllodsBightHex" | "KalokaiHex" | "RedRiverHex" | "OriginHex" | "HowlCountyHex" | "ClahstraHex" | "SpeakingWoodsHex" | "ShackledChasmHex" | "TerminusHex" | "LinnMercyHex" | "ClansheadValleyHex" | "GodcroftsHex" | "NevishLineHex" | "CallumsCapeHex" | "FishermansRowHex" | "ReachingTrailHex" | "UmbralWildwoodHex" | "StlicanShelfHex" | "CallahansPassageHex" | "KingsCageHex" | "AshFieldsHex" | "FarranacCoastHex" | "DrownedValeHex" | "SableportHex" | string)[];
+
+export async function getWarMaps(endpoint: FoxholeApiEndpoint): Promise<WarMaps> {
+	const response = await fetch(`${endpoint}/worldconquest/maps`);
+	if (!response.ok) {
+		throw new Error(`Failed to get war maps: ${response.statusText}`);
+	}
+	const data: WarMaps = await response.json();
+	return data;
+}
+
+export enum MapMarkerType {
+	Region = 'Major',
+	Minor = 'Minor',
+}
+
+export type MapItem = {
+	teamId: Team;
+	iconType: MapIconType;
+	x: number;
+	y: number;
+	flags: number;
+	viewDirection: number;
+}
+
+export type MapTextItem = {
+	text: string;
+	x: number;
+	y: number;
+	mapMarkerType: MapMarkerType;
+};
+
+export type MapData = {
+	regionId: number;
+	scorchedVictoryTowns: number;
+	mapItems: MapItem[];
+	mapItemsC: MapItem[];
+	mapItemsW: MapItem[];
+	mapTextItems: MapTextItem[];
+	lastUpdated: number;
+	version: number;
+};
+
+export async function getMapData(endpoint: FoxholeApiEndpoint, mapId: string, isDynamicData = false, Etag?: string): Promise<MapData> {
+	const response = await fetch(`${endpoint}/worldconquest/maps/${mapId}/${isDynamicData ? 'dynamic/public' : 'static'}`, {
+		headers: Etag ? { 'If-None-Match': Etag } : undefined,
+	});
+	if (!response.ok) {
+		throw new Error(`Failed to get map data: ${response.statusText}`);
+	}
+	const data: MapData = await response.json();
+	return data;
+}
+
+export const WORLD_EXTENTS = {
+	x1: -109199.999997,
+	x2: 109199.999997,
+	y1: -94499.99999580906968410989,
+	y2: 94499.99999580906968410989,
+}
