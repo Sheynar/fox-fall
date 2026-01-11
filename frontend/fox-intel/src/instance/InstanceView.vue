@@ -196,7 +196,7 @@
 	import Viewport from '@packages/frontend-libs/dist/viewport/Viewport.vue';
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { useViewportControl } from '@packages/frontend-libs/dist/viewport/viewport-control';
-	import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+	import { computed, nextTick, onMounted, onScopeDispose, onUnmounted, ref } from 'vue';
 	import {
 		markerSize,
 		markerColor,
@@ -292,6 +292,12 @@
 	});
 
 	const context = computed(() => canvasElement.value?.getContext('2d'));
+
+	let scopeDestroyed = false;
+	onScopeDispose(() => {
+		scopeDestroyed = true;
+	});
+
 	let frameRequest: ReturnType<typeof requestAnimationFrame> | null = null;
 	const cancelFrame = () => {
 		if (frameRequest != null) {
@@ -305,6 +311,7 @@
 	};
 	const render = () => {
 		cancelFrame();
+		if (scopeDestroyed) return;
 		try {
 			if (!context.value) return;
 			context.value.clearRect(0, 0, width.value, height.value);
