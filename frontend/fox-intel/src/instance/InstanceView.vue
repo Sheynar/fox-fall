@@ -1,6 +1,10 @@
 <template>
 	<div
-		class="App__container"
+		class="Instance__container"
+		:class="{
+			Instance__marker: !markerDisabled,
+			Instance__moving: moving != null,
+		}"
 		tabindex="-1"
 		ref="containerElement"
 		@touchstart.prevent
@@ -47,7 +51,7 @@
 			</PositionedElement>
 		</Viewport>
 
-		<MarkerControls />
+		<MarkerControls class="Instance__marker-controls" />
 
 		<svg>
 			<defs>
@@ -129,14 +133,13 @@
 </template>
 
 <style lang="scss">
-	.App__container {
+	.Instance__container {
 		contain: content;
 		position: fixed;
 		left: 0;
 		top: 0;
 		width: 100dvw;
 		height: 100dvh;
-		cursor: initial;
 
 		color: var(--color-primary);
 		background-color: var(--color-primary-contrast);
@@ -144,6 +147,18 @@
 
 		will-change: transform;
 		transform: translateZ(0);
+
+		cursor: grab;
+		&.Instance__marker {
+			cursor: crosshair;
+		}
+		&.Instance__moving {
+			cursor: grabbing;
+		}
+	}
+
+	.Instance__marker-controls {
+		cursor: initial;
 	}
 </style>
 
@@ -423,10 +438,10 @@
 		}
 	}
 
-	const onAddingImageSubmit = (canvasElement: HTMLCanvasElement) => {
+	const onAddingImageSubmit = (imageCanvas: HTMLCanvasElement) => {
 		if (addingImage.value == null) return;
 		markerStorageContext.drawImage(
-			canvasElement,
+			imageCanvas,
 			addingImage.value.position.x + MAP_SIZE.width / 2,
 			addingImage.value.position.y + MAP_SIZE.height / 2,
 			addingImage.value.size.x,
