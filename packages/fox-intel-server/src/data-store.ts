@@ -5,6 +5,7 @@ import type {
 	IntelTag,
 	BasicIntelDocument,
 	IntelDocument,
+	IntelDocumentTag,
 	IntelDocumentAttachment,
 	IntelInstanceDiscordPermissions,
 } from '@packages/data/dist/intel.js';
@@ -74,6 +75,8 @@ db.exec(`
 		instance_id INTEGER NOT NULL,
 		document_id INTEGER NOT NULL,
 		tag TEXT NOT NULL,
+		timestamp INTEGER NOT NULL,
+		deleted BOOLEAN NOT NULL DEFAULT FALSE,
 		FOREIGN KEY (instance_id, document_id) REFERENCES IntelDocument(instance_id, id) ON DELETE CASCADE ON UPDATE CASCADE,
 		FOREIGN KEY (instance_id, tag) REFERENCES IntelTag(instance_id, tag) ON DELETE CASCADE ON UPDATE CASCADE
 	);
@@ -187,7 +190,9 @@ export const models = {
 			accessToken: DiscordAccessToken,
 			instance: IntelInstance
 		) {
-			const allowedRoles = models.intelInstance.getDiscordPermissions(instance.id);
+			const allowedRoles = models.intelInstance.getDiscordPermissions(
+				instance.id
+			);
 
 			const member = await getUserGuildMember(
 				accessToken,
@@ -474,14 +479,19 @@ export const models = {
 			return tags;
 		},
 
-		getTagDocuments: function getTagDocuments(instanceId: string, tag: string) {
-			const documents = db
+		getDocumentTagsSince: function getDocumentTagsSince(
+			instanceId: string,
+			documentId: number,
+			timestamp: number,
+			skipDeleted: boolean = false
+		) {
+			const tags = db
 				.prepare<
-					[string, string],
-					IntelDocument
-				>('SELECT * FROM IntelDocument WHERE id IN (SELECT document_id FROM IntelDocumentTag WHERE instance_id = ? AND tag = ?)')
-				.all(instanceId, tag);
-			return documents;
+					[string, number, number, 1 | 0],
+					IntelDocumentTag
+				>('SELECT * FROM IntelDocumentTag WHERE instance_id = ? AND document_id = ? AND timestamp > ? AND (NOT ? OR deleted = FALSE)')
+				.all(instanceId, documentId, timestamp, skipDeleted ? 1 : 0);
+			return tags;
 		},
 
 		addDocumentTag: function addDocumentTag(
@@ -489,15 +499,22 @@ export const models = {
 			documentId: number,
 			tag: string
 		) {
-			const insertResult = db
-				.prepare(
+			return db.transaction(() => {
+				db.prepare(
 					`
 					INSERT INTO IntelTag (instance_id, tag) VALUES (@instanceId, @tag) ON CONFLICT (instance_id, tag) DO NOTHING;
-					INSERT INTO IntelDocumentTag (instance_id, document_id, tag) VALUES (@instanceId, @documentId, @tag);
 				`
-				)
-				.run({ instanceId, documentId, tag });
-			return insertResult.lastInsertRowid;
+				).run({ instanceId, tag });
+				const insertResult = db
+					.prepare(
+						`
+					INSERT INTO IntelDocumentTag (instance_id, document_id, tag, timestamp) VALUES (@instanceId, @documentId, @tag, @timestamp) ON CONFLICT (instance_id, document_id, tag) DO UPDATE SET timestamp = excluded.timestamp, deleted = FALSE;
+				`
+					)
+					.run({ instanceId, documentId, tag, timestamp: Date.now() });
+
+				return insertResult.lastInsertRowid;
+			})();
 		},
 
 		removeDocumentTag: function removeDocumentTag(
@@ -506,13 +523,12 @@ export const models = {
 			tag: string
 		) {
 			const deleteResult = db
-				.prepare<{ instanceId: string; documentId: number; tag: string }, void>(
+				.prepare<{ instanceId: string; documentId: number; tag: string; timestamp: number }, void>(
 					`
-					DELETE FROM IntelDocumentTag WHERE instance_id = @instanceId AND document_id = @documentId AND tag = @tag;
-					DELETE FROM IntelTag WHERE instance_id = @instanceId AND tag = @tag AND NOT EXISTS (SELECT 1 FROM IntelDocumentTag WHERE instance_id = @instanceId AND tag = @tag);
+					UPDATE IntelDocumentTag SET deleted = TRUE, timestamp = @timestamp WHERE instance_id = @instanceId AND document_id = @documentId AND tag = @tag;
 				`
 				)
-				.run({ instanceId, documentId, tag });
+				.run({ instanceId, documentId, tag, timestamp: Date.now() });
 			return deleteResult.changes;
 		},
 	},

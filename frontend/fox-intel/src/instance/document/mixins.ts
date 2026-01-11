@@ -1,5 +1,5 @@
 import { injectIntelInstance } from '@/lib/intel-instance';
-import { BasicIntelDocument, IntelDocument } from '@packages/data/dist/intel';
+import type { BasicIntelDocument, IntelDocument, IntelDocumentTag } from '@packages/data/dist/intel';
 import { onScopeDispose, ref } from 'vue';
 
 export type UseDocumentsOptions = {
@@ -10,7 +10,13 @@ export function useDocuments(options: UseDocumentsOptions) {
 		{}
 	);
 
-	async function addDocument(documentX: number, documentY: number, uiSize: number, documentName: string, documentContent: string) {
+	async function addDocument(
+		documentX: number,
+		documentY: number,
+		uiSize: number,
+		documentName: string,
+		documentContent: string
+	) {
 		const response = await options.intelInstance.authenticatedFetch(
 			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document`,
 			{
@@ -114,7 +120,8 @@ export function useDocument(options: UseDocumentOptions) {
 		if (!response.ok) {
 			throw new Error('Failed to load document. ' + (await response.text()));
 		}
-		const data: { document: IntelDocument; timestamp: number } = await response.json();
+		const data: { document: IntelDocument; timestamp: number } =
+			await response.json();
 		document.value = data.document;
 		lastLoadedTimestamp = data.timestamp;
 	}
@@ -134,7 +141,7 @@ export function useDocument(options: UseDocumentOptions) {
 			.catch(async (err) => {
 				console.error(err);
 				if (scopeDestroyed) return;
-				await new Promise(resolve => setTimeout(resolve, backoff));
+				await new Promise((resolve) => setTimeout(resolve, backoff));
 				return loop(Math.min(backoff * 2, 60_000));
 			});
 	}
@@ -143,5 +150,66 @@ export function useDocument(options: UseDocumentOptions) {
 	return {
 		document,
 		ready,
+	};
+}
+
+export type UseDocumentTagsOptions = {
+	intelInstance: ReturnType<typeof injectIntelInstance>;
+	documentId: number;
+};
+export function useDocumentTags(options: UseDocumentTagsOptions) {
+	const tags = ref<{ [id: IntelDocumentTag['id']]: IntelDocumentTag }>({});
+
+	let lastLoadedTimestamp = 0;
+	async function loadSince(timestamp: number, timeout: number = 10000) {
+		const response = await options.intelInstance.authenticatedFetch(
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/${encodeURIComponent(options.documentId)}/tags/since?timestamp=${timestamp}&timeout=${timeout}`,
+			{
+				method: 'GET',
+			}
+		);
+		if (!response.ok) {
+			throw new Error(
+				'Failed to load document tags. ' + (await response.text())
+			);
+		}
+		const data: { tags: IntelDocumentTag[]; timestamp: number } = await response.json();
+		for (const tag of data.tags) {
+			if (tag.deleted) {
+				delete tags.value[tag.id];
+			} else {
+				tags.value[tag.id] = tag;
+			}
+		}
+		lastLoadedTimestamp = data.timestamp;
+	}
+
+	let scopeDestroyed = false;
+	onScopeDispose(() => {
+		scopeDestroyed = true;
+	});
+
+	const ready = ref(false);
+	async function loop(backoff: number = 1_000, isFirst: boolean = false) {
+		if (scopeDestroyed) return;
+		await loadSince(lastLoadedTimestamp, isFirst ? 0 : undefined)
+			.then(() => {
+				if (scopeDestroyed) return;
+				ready.value = true;
+				loop();
+			})
+			.catch(async (err) => {
+				console.error(err);
+				if (scopeDestroyed) return;
+				await new Promise((resolve) => setTimeout(resolve, backoff));
+				return loop(Math.min(backoff * 2, 60_000));
+			});
+	}
+	const readyPromise = loop(undefined, true);
+
+	return {
+		tags,
+		ready,
+		readyPromise,
 	};
 }

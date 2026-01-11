@@ -4,6 +4,7 @@ import { generateId } from '@packages/data/dist/id.js';
 import type {
 	BasicIntelDocument,
 	IntelDocument,
+	IntelDocumentTag,
 	IntelMarkerRegion,
 } from '@packages/data/dist/intel.js';
 import { Context, Hono } from 'hono';
@@ -860,6 +861,102 @@ export async function initialiseHttp(
 			...document,
 			document_content: document.document_content,
 		});
+	});
+
+	const pendingDocumentTagRequests = new Map<string, Set<() => void>>();
+	app.get('/api/v1/instance/:instanceId/document/:documentId/tags/since', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId);
+		if (sessionOutput) return sessionOutput;
+
+		const documentId = parseInt(c.req.param('documentId'));
+		if (isNaN(documentId)) {
+			return c.json({ error: 'Invalid document ID' }, 400);
+		}
+
+		const timestamp = parseInt(c.req.query('timestamp') ?? '');
+		if (isNaN(timestamp)) {
+			return c.json({ error: 'Invalid timestamp' }, 400);
+		}
+		const timeout = parseInt(c.req.query('timeout') ?? '');
+		if (isNaN(timeout)) {
+			return c.json({ error: 'Invalid timeout' }, 400);
+		}
+		const skipDeleted = c.req.query('skipDeleted') === 'true';
+
+		let tags = models.intelDocumentTag.getDocumentTagsSince(instanceId, documentId, timestamp, skipDeleted);
+		if (tags.length === 0) {
+			tags = await new Promise<IntelDocumentTag[]>((resolve) => {
+				if (!pendingDocumentTagRequests.has(instanceId)) {
+					pendingDocumentTagRequests.set(instanceId, new Set());
+				}
+
+				const onTags = () => {
+					pendingDocumentTagRequests.get(instanceId)?.delete(onTags);
+					resolve(
+						models.intelDocumentTag.getDocumentTagsSince(instanceId, documentId, timestamp)
+					);
+				};
+
+				pendingDocumentTagRequests.get(instanceId)!.add(onTags);
+				setTimeout(onTags, timeout);
+			});
+		}
+		return c.json({
+			tags,
+			timestamp: Math.max(
+				...tags.map((tag) => tag.timestamp),
+				timestamp
+			),
+		});
+	});
+
+	app.post('/api/v1/instance/:instanceId/document/:documentId/tag/:tag', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId, true);
+		if (sessionOutput) return sessionOutput;
+
+		const documentId = parseInt(c.req.param('documentId'));
+		if (isNaN(documentId)) {
+			return c.json({ error: 'Invalid document ID' }, 400);
+		}
+
+		const tag = c.req.param('tag');
+		if (typeof tag !== 'string') {
+			return c.json({ error: 'Invalid tag' }, 400);
+		}
+
+		models.intelDocumentTag.addDocumentTag(instanceId, documentId, tag);
+
+		for (const listener of pendingDocumentTagRequests.get(instanceId) ?? []) {
+			listener();
+		}
+
+		return c.json({ success: true });
+	});
+
+	app.delete('/api/v1/instance/:instanceId/document/:documentId/tag/:tag', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId, true);
+		if (sessionOutput) return sessionOutput;
+
+		const documentId = parseInt(c.req.param('documentId'));
+		if (isNaN(documentId)) {
+			return c.json({ error: 'Invalid document ID' }, 400);
+		}
+
+		const tag = c.req.param('tag');
+		if (typeof tag !== 'string') {
+			return c.json({ error: 'Invalid tag' }, 400);
+		}
+
+		models.intelDocumentTag.removeDocumentTag(instanceId, documentId, tag);
+
+		for (const listener of pendingDocumentTagRequests.get(instanceId) ?? []) {
+			listener();
+		}
+
+		return c.json({ success: true });
 	});
 
 	/* Document Attachment API */

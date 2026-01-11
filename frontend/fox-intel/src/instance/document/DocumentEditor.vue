@@ -33,6 +33,10 @@
 				</div>
 				<div class="DocumentEditor__metadata">
 					<label class="DocumentEditor__metadata-entry">
+						Tags
+						<DocumentTags v-if="documentRef != null" :document-id="documentRef.id" />
+					</label>
+					<label class="DocumentEditor__metadata-entry">
 						UI Size
 						<NumberInput
 							:model-value="documentRef?.ui_size ?? 0"
@@ -203,9 +207,12 @@
 		.DocumentEditor__metadata {
 			grid-area: metadata;
 			display: flex;
-			flex-direction: column;
+			flex-direction: row;
+			align-items: center;
+			white-space: nowrap;
+			flex-wrap: wrap;
 			padding: 0.5em;
-			gap: 0.5em;
+			gap: 0.25em .5em;
 
 			@include border.border-gradient();
 
@@ -213,6 +220,8 @@
 			border-bottom-width: 0.125em !important;
 
 			.DocumentEditor__metadata-entry {
+				max-width: max-content;
+
 				display: flex;
 				flex-direction: row;
 				align-items: center;
@@ -353,6 +362,7 @@
 	import { onMounted, onUnmounted, ref, watch } from 'vue';
 	import { requestFile } from '@/lib/file';
 	import { injectIntelInstance } from '@/lib/intel-instance';
+	import DocumentTags from './DocumentTags.vue';
 	import { useDocument } from './mixins';
 	import { updatePartialDocument } from './helpers';
 

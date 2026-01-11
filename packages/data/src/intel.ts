@@ -43,6 +43,15 @@ export type IntelTag = {
 	tag: string;
 };
 
+export type IntelDocumentTag = {
+	id: number;
+	instance_id: string;
+	document_id: number;
+	tag: string;
+	timestamp: number;
+	deleted: boolean;
+};
+
 export type BasicIntelDocumentAttachment = {
 	id: number;
 	instance_id: string;
