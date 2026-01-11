@@ -203,7 +203,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 	}
 
 	let lastLoadedTimestamp = 0;
-	async function loadSince(timestamp: number, timeout: number = 10000) {
+	async function loadSince(timestamp: number, timeout: number = 10_000) {
 		const response = await options.intelInstance.authenticatedFetch(
 			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/marker/since?timestamp=${timestamp}&timeout=${timeout}`,
 			{

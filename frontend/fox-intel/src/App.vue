@@ -1,5 +1,5 @@
 <template>
-	<template v-if="ready">
+	<template v-if="discordAccess.ready.value">
 		<InstanceSelector
 			v-if="selectedInstanceId == null"
 			@selectInstance="selectedInstanceId = $event"
@@ -62,32 +62,12 @@
 </style>
 
 <script setup lang="ts">
-	import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
-	import { onMounted, ref } from 'vue';
+	import { ref } from 'vue';
 	import InstanceSelector from './instance/InstanceSelector.vue';
 	import InstanceView from './instance/InstanceView.vue';
-	import { useDiscordAccess } from './lib/discord';
+	import { provideDiscordAccess, useDiscordAccess } from './lib/discord';
 
 	const discordAccess = useDiscordAccess();
-	const ready = ref(false);
+	provideDiscordAccess(discordAccess);
 	const selectedInstanceId = ref<string | null>(null);
-
-	async function initialise() {
-		const response = await fetch('/api/v1/discord/access-token', {
-			method: 'GET',
-			headers: {
-				'X-Discord-Access-Code': discordAccess.code,
-				'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-			},
-		});
-		if (!response.ok) {
-			discordAccess.redirectToDiscordAuth();
-		} else {
-			ready.value = true;
-		}
-	}
-
-	onMounted(() => {
-		withHandlingAsync(initialise);
-	});
 </script>

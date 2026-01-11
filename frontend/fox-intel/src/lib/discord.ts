@@ -1,3 +1,5 @@
+import { inject, InjectionKey, onScopeDispose, provide, ref } from 'vue';
+
 export function useDiscordAccess() {
 	const url = new URL(location.href);
 	const urlCode = url.searchParams.get('code');
@@ -28,10 +30,67 @@ export function useDiscordAccess() {
 		location.href = `https://discord.com/oauth2/authorize?client_id=1454856481945157795&permissions=0&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&integration_type=0&scope=bot+guilds.members.read+guilds`;
 	}
 
+	const ready = ref(false);
+	async function checkAccessToken(timeout: number = 10_000) {
+		const response = await fetch(
+			`/api/v1/discord/access-token?timeout=${timeout}`,
+			{
+				method: 'GET',
+				headers: {
+					'X-Discord-Access-Code': code!,
+					'X-Discord-Redirect-Uri': redirectUri,
+				},
+			}
+		);
+		if (!response.ok) {
+			redirectToDiscordAuth();
+		} else {
+			ready.value = true;
+		}
+	}
+
+	let scopeDestroyed = false;
+	onScopeDispose(() => {
+		scopeDestroyed = true;
+	});
+
+	async function loop(backoff: number = 1_000, isFirst: boolean = false) {
+		if (scopeDestroyed) return;
+		await checkAccessToken(isFirst ? 0 : undefined)
+			.then(() => {
+				if (scopeDestroyed) return;
+				loop();
+			})
+			.catch((err) => {
+				console.error(err);
+				if (scopeDestroyed) return;
+				setTimeout(() => loop(Math.min(backoff * 2, 60_000)), backoff);
+			});
+	}
+	const readyPromise = loop(undefined, true);
+
 	return {
 		redirectToDiscordAuth,
 		redirectToDiscordBotAuth,
 		code,
 		redirectUri,
+		ready,
+		readyPromise,
 	};
+}
+
+const discordAccessSymbol: InjectionKey<ReturnType<typeof useDiscordAccess>> =
+	Symbol('DISCORD_ACCESS');
+export function provideDiscordAccess(
+	discordAccess: ReturnType<typeof useDiscordAccess>
+) {
+	provide(discordAccessSymbol, discordAccess);
+}
+
+export function injectDiscordAccess() {
+	const discordAccess = inject(discordAccessSymbol);
+	if (!discordAccess) {
+		throw new Error('Discord access not found');
+	}
+	return discordAccess;
 }

@@ -43,6 +43,13 @@ export async function initialiseHttp(
 		if (!discordRedirectUri) {
 			return c.json({ error: 'Discord redirect URI is required' }, 401);
 		}
+
+		const timeout = parseInt(c.req.query('timeout') ?? '');
+		if (isNaN(timeout)) {
+			return c.json({ error: 'Invalid timeout' }, 400);
+		}
+		const accessToken = await getAccessToken(discordAccessCode, discordRedirectUri);
+		await new Promise((resolve) => setTimeout(resolve, Math.min(timeout, accessToken.expiresAt - Date.now() - 10_000)));
 		await getAccessToken(discordAccessCode, discordRedirectUri);
 
 		return c.json({ success: true });
