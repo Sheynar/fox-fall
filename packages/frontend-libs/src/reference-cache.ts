@@ -1,6 +1,9 @@
-import { computed, onScopeDispose, watch } from 'vue';
+import EventEmitter from 'node:events';
+import { computed, EffectScope, effectScope, onScopeDispose, watch } from 'vue';
 
-export class ReferenceCache<T> {
+export class ReferenceCache<T> extends EventEmitter<{
+	delete: [key: string, value: T];
+}> {
 	private cache = new Map<string, { refCount: number; value: T }>();
 
 	getReferenceCount(key: string) {
@@ -29,12 +32,9 @@ export class ReferenceCache<T> {
 		}
 		entry.refCount--;
 		if (entry.refCount === 0) {
+			this.emit('delete', key, this.cache.get(key)!.value);
 			this.cache.delete(key);
 		}
-	}
-
-	clear() {
-		this.cache.clear();
 	}
 }
 
@@ -42,12 +42,21 @@ export function wrapMixin<M extends (...args: any[]) => any>(
 	mixin: M,
 	getKey: (...args: Parameters<M>) => string
 ): M {
-	const cache = new ReferenceCache<ReturnType<M>>();
+	type CacheEntry = { scope: EffectScope; value: ReturnType<M> };
+	const cache = new ReferenceCache<CacheEntry>();
+
+	cache.on('delete', (_key, value) => {
+		value.scope.stop();
+	});
 
 	return function wrappedMixin(...args: Parameters<M>) {
 		const key = computed(() => getKey(...args));
 
-		const output = cache.addReference(key.value, () => mixin(...args));
+		const output: CacheEntry = cache.addReference(key.value, () => {
+			const scope = effectScope(true);
+			const value = scope.run(() => mixin(...args))! as ReturnType<M>;
+			return { scope, value };
+		});
 
 		onScopeDispose(() => {
 			cache.removeReference(key.value);
@@ -66,6 +75,6 @@ export function wrapMixin<M extends (...args: any[]) => any>(
 			{ flush: 'sync' }
 		);
 
-		return output;
+		return output.value;
 	} as M;
 }

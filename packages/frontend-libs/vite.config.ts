@@ -1,5 +1,6 @@
 import { globSync } from 'glob';
 import { defineConfig } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import vue from '@vitejs/plugin-vue';
 
 const paths = globSync(['./src/**/*.ts', '!./src/**/*.d.ts', './src/**/*.vue']);
@@ -11,6 +12,10 @@ export default defineConfig({
 	base: './',
 	plugins: [
 		vue(),
+		nodePolyfills({
+			include: ['events'],
+			protocolImports: true,
+		}),
 	],
 	resolve: {
 		alias: {
