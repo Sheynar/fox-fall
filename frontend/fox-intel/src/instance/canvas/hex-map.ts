@@ -151,22 +151,17 @@ export function useHexMap(options: HexMapOptions) {
 				foregroundContext!.fillStyle = background;
 				foregroundContext!.strokeStyle = foreground;
 				foregroundContext!.font = `bold ${fontSize}px sans-serif`;
+				foregroundContext.textBaseline = 'middle';
 				const textMetrics = foregroundContext!.measureText(text);
 				foregroundContext!.fillText(
 					text,
 					x - textMetrics.width / 2,
-					y +
-						(textMetrics.fontBoundingBoxAscent +
-							textMetrics.fontBoundingBoxDescent) /
-							2
+					y
 				);
 				foregroundContext!.strokeText(
 					text,
 					x - textMetrics.width / 2,
-					y +
-						(textMetrics.fontBoundingBoxAscent +
-							textMetrics.fontBoundingBoxDescent) /
-							2
+					y
 				);
 			}
 
