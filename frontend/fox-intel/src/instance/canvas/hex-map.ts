@@ -10,8 +10,9 @@ import {
 	HEX_MAPS,
 	MapSource,
 } from '@packages/frontend-libs/dist/assets/images/hex-maps';
+import { MAP_ICONS } from '@packages/frontend-libs/dist/assets/images/map-icons';
 import { useWarData } from '@/lib/war-data';
-import { MapMarkerType, Shard } from '@packages/foxhole-api';
+import { MapIconType, MapMarkerType, Shard } from '@packages/foxhole-api';
 
 export type HexMapOptions = {
 	mapSource: MapSource;
@@ -103,6 +104,23 @@ export function useHexMap(options: HexMapOptions) {
 		{ immediate: true }
 	);
 
+	const mapIcons: Partial<Record<MapIconType, HTMLCanvasElement>> = {};
+	for (const [_iconType, icon] of Object.entries(MAP_ICONS)) {
+		const iconType = Number(_iconType) as MapIconType;
+		if (!icon) continue;
+		const iconImage = new Image();
+		iconImage.src = icon;
+		iconImage.onload = () => {
+			const canvas = document.createElement('canvas');
+			canvas.width = iconImage.width;
+			canvas.height = iconImage.height;
+			const context = canvas.getContext('2d');
+			if (!context) return;
+			context.drawImage(iconImage, 0, 0, iconImage.width, iconImage.height);
+			mapIcons[iconType] = canvas;
+		};
+	}
+
 	function render() {
 		if (isDisposed) return;
 		cancelFrame();
@@ -147,22 +165,21 @@ export function useHexMap(options: HexMapOptions) {
 			const regionFontSize = hexLabelFontSize / 5;
 			const minorFontSize = regionFontSize / 2;
 
-			function drawText(text: string, x: number, y: number, fontSize: number, foreground = 'black', background = 'white') {
+			function drawText(
+				text: string,
+				x: number,
+				y: number,
+				fontSize: number,
+				foreground = 'black',
+				background = 'white'
+			) {
 				foregroundContext!.fillStyle = background;
 				foregroundContext!.strokeStyle = foreground;
 				foregroundContext!.font = `bold ${fontSize}px sans-serif`;
 				foregroundContext.textBaseline = 'middle';
 				const textMetrics = foregroundContext!.measureText(text);
-				foregroundContext!.fillText(
-					text,
-					x - textMetrics.width / 2,
-					y
-				);
-				foregroundContext!.strokeText(
-					text,
-					x - textMetrics.width / 2,
-					y
-				);
+				foregroundContext!.fillText(text, x - textMetrics.width / 2, y);
+				foregroundContext!.strokeText(text, x - textMetrics.width / 2, y);
 			}
 
 			function forEachHex(
@@ -198,6 +215,24 @@ export function useHexMap(options: HexMapOptions) {
 					HEX_SIZE.height * options.zoom.value
 				);
 			});
+
+			if (!drawHexLabels) {
+				forEachHex((hex, _x, _y, hexPosition) => {
+					const mapData = warData.dynamicMapData.value[KNOWN_MAP_NAMES[hex]];
+					if (!mapData) return;
+					for (const mapItem of mapData.mapItems) {
+						const icon = mapIcons[mapItem.iconType];
+						if (!icon) continue;
+						foregroundContext!.drawImage(
+							icon,
+							hexPosition.x + mapItem.x * HEX_SIZE.width * options.zoom.value - icon.width / 2,
+							hexPosition.y + mapItem.y * HEX_SIZE.height * options.zoom.value - icon.height / 2,
+							icon.width,
+							icon.height
+						);
+					}
+				});
+			}
 
 			if (drawMinorLabels) {
 				forEachHex((hex, _x, _y, hexPosition) => {

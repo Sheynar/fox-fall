@@ -1457,6 +1457,7 @@ __metadata:
     "@kaosdlanor/kanim": "npm:^1.0.1"
     "@kaosdlanor/vue-reactivity": "npm:^1.0.2"
     "@packages/data": "workspace:*"
+    "@packages/foxhole-api": "workspace:*"
     "@types/node": "npm:^22.7.4"
     "@vitejs/plugin-vue": "npm:^4.4.0"
     "@vueuse/core": "npm:^12.2.0"

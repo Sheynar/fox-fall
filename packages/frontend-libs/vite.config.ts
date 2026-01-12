@@ -27,7 +27,7 @@ export default defineConfig({
 		emptyOutDir: true,
 		sourcemap: true,
 		rollupOptions: {
-			external: ['vue', 'primevue', 'primeicons', '@kaosdlanor/kanim', '@kaosdlanor/vue-reactivity', '@packages/data'],
+			external: ['vue', 'primevue', 'primeicons', '@kaosdlanor/kanim', '@kaosdlanor/vue-reactivity', '@packages/data', '@packages/foxhole-api'],
 			output: {
 				dir: './dist',
 				format: 'es',
