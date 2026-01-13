@@ -127,6 +127,18 @@
 						<feMergeNode in="fill-area" />
 					</feMerge>
 				</filter>
+				<filter v-for="team of Object.values(Team)" :id="`team-icon-${team}`">
+					<feColorMatrix
+						in="SourceGraphic"
+						type="matrix"
+						:values="`
+							${TEAM_COLOR[team].r / 255} 0 0 0 0
+              0 ${TEAM_COLOR[team].g / 255} 0 0 0
+              0 0 ${TEAM_COLOR[team].b / 255} 0 0
+              0 0 0 1 0
+						`"
+					/>
+				</filter>
 			</defs>
 		</svg>
 	</div>
@@ -177,7 +189,14 @@
 	import Viewport from '@packages/frontend-libs/dist/viewport/Viewport.vue';
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { useViewportControl } from '@packages/frontend-libs/dist/viewport/viewport-control';
-	import { computed, nextTick, onMounted, onScopeDispose, onUnmounted, ref } from 'vue';
+	import {
+		computed,
+		nextTick,
+		onMounted,
+		onScopeDispose,
+		onUnmounted,
+		ref,
+	} from 'vue';
 	import {
 		markerSize,
 		markerColor,
@@ -193,6 +212,7 @@
 	import { provideIntelInstance, useIntelInstance } from '@/lib/intel-instance';
 	import { requestFile } from '@/lib/file';
 	import ImagePaste from './canvas/ImagePaste';
+	import { Team, TEAM_COLOR } from '@packages/foxhole-api';
 
 	const props = defineProps<{
 		instanceId: string;

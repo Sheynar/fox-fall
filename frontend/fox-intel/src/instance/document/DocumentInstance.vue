@@ -4,6 +4,7 @@
 		:x="props.document.document_x"
 		:y="props.document.document_y"
 		cancel-viewport-rotation
+		cancel-viewport-zoom
 	>
 		<div
 			ref="documentElement"

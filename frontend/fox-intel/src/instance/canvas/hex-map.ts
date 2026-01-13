@@ -12,7 +12,7 @@ import {
 } from '@packages/frontend-libs/dist/assets/images/hex-maps';
 import { MAP_ICONS } from '@packages/frontend-libs/dist/assets/images/map-icons';
 import { useWarData } from '@/lib/war-data';
-import { MapIconType, MapMarkerType, Shard } from '@packages/foxhole-api';
+import { MapIconType, MapMarkerType, Shard, Team } from '@packages/foxhole-api';
 
 export type HexMapOptions = {
 	mapSource: MapSource;
@@ -104,20 +104,28 @@ export function useHexMap(options: HexMapOptions) {
 		{ immediate: true }
 	);
 
-	const mapIcons: Partial<Record<MapIconType, HTMLCanvasElement>> = {};
+	const mapIcons: Partial<Record<Team, Partial<Record<MapIconType, HTMLCanvasElement>>>> = {};
 	for (const [_iconType, icon] of Object.entries(MAP_ICONS)) {
 		const iconType = Number(_iconType) as MapIconType;
 		if (!icon) continue;
 		const iconImage = new Image();
 		iconImage.src = icon;
 		iconImage.onload = () => {
-			const canvas = document.createElement('canvas');
-			canvas.width = iconImage.width;
-			canvas.height = iconImage.height;
-			const context = canvas.getContext('2d');
-			if (!context) return;
-			context.drawImage(iconImage, 0, 0, iconImage.width, iconImage.height);
-			mapIcons[iconType] = canvas;
+			for (const team of Object.values(Team)) {
+				const canvas = document.createElement('canvas');
+				canvas.width = iconImage.width;
+				canvas.height = iconImage.height;
+				const context = canvas.getContext('2d');
+				if (!context) return;
+				context.filter = `url(#team-icon-${team})`;
+				context.drawImage(iconImage, 0, 0, iconImage.width, iconImage.height);
+
+				if (!mapIcons[team]) {
+					mapIcons[team] = {};
+				}
+
+				mapIcons[team]![iconType] = canvas;
+			}
 		};
 	}
 
@@ -157,13 +165,17 @@ export function useHexMap(options: HexMapOptions) {
 				options.width.value / options.zoom.value < HEX_SIZE.width * 1.5 ||
 				options.height.value / options.zoom.value < HEX_SIZE.height * 1.5;
 
+			const drawIcons =
+				options.width.value / options.zoom.value < HEX_SIZE.width * 1.2 ||
+				options.height.value / options.zoom.value < HEX_SIZE.height * 1.2;
+
 			const drawMinorLabels =
 				options.width.value / options.zoom.value < HEX_SIZE.width * 0.5 ||
 				options.height.value / options.zoom.value < HEX_SIZE.height * 0.5;
 
-			const hexLabelFontSize = Math.max(15, 200 * options.zoom.value);
-			const regionFontSize = hexLabelFontSize / 5;
-			const minorFontSize = regionFontSize / 2;
+			const hexLabelFontSize = Math.min(36, 200 * options.zoom.value);
+			const regionFontSize = hexLabelFontSize / 1.5;
+			const minorFontSize = regionFontSize / 1.5;
 
 			function drawText(
 				text: string,
@@ -216,19 +228,19 @@ export function useHexMap(options: HexMapOptions) {
 				);
 			});
 
-			if (!drawHexLabels) {
+			if (drawIcons) {
 				forEachHex((hex, _x, _y, hexPosition) => {
 					const mapData = warData.dynamicMapData.value[KNOWN_MAP_NAMES[hex]];
 					if (!mapData) return;
 					for (const mapItem of mapData.mapItems) {
-						const icon = mapIcons[mapItem.iconType];
+						const icon = mapIcons[mapItem.teamId]?.[mapItem.iconType];
 						if (!icon) continue;
 						foregroundContext!.drawImage(
 							icon,
-							hexPosition.x + mapItem.x * HEX_SIZE.width * options.zoom.value - icon.width / 2,
-							hexPosition.y + mapItem.y * HEX_SIZE.height * options.zoom.value - icon.height / 2,
-							icon.width,
-							icon.height
+							hexPosition.x + mapItem.x * HEX_SIZE.width * options.zoom.value - icon.width / 2 / 1.5,
+							hexPosition.y + mapItem.y * HEX_SIZE.height * options.zoom.value - icon.height / 2 / 1.5,
+							icon.width / 1.5,
+							icon.height / 1.5
 						);
 					}
 				});

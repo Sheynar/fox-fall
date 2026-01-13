@@ -101,10 +101,10 @@ export enum Team {
 	None = 'NONE',
 }
 
-export enum TeamColor {
-	Colonial = '#152612',
-	Warden = '#041739',
-	None = '#FFFFFF',
+export const TEAM_COLOR: Record<Team, { hex: string, r: number, g: number, b: number }> = {
+	[Team.Colonial]: { hex: '#152612', r: 21, g: 38, b: 18 },
+	[Team.Warden]: { hex: '#041739', r: 4, g: 23, b: 57 },
+	[Team.None]: { hex: '#FFFFFF', r: 255, g: 255, b: 255 },
 }
 
 export enum MapFlags {
