@@ -1,3 +1,87 @@
+export type CacheDetails = {
+	maxAge?: number;
+	etag?: string;
+}
+export function parseCache(response: Response): CacheDetails {
+	const output: CacheDetails = {};
+
+	const cacheControl = response.headers.get('Cache-Control');
+	const cacheDirectives = (cacheControl ?? '')
+		.split(',')
+		.filter(directive => directive.trim() !== '')
+		.map(directive => {
+			const [key, ...values] = directive.trim().toLowerCase().split('=');
+			return { key, value: values.join('=') };
+		});
+
+	for (const cacheDirective of cacheDirectives) {
+		switch (cacheDirective.key) {
+			case 'max-age':
+				output.maxAge = parseInt(cacheDirective.value);
+				break;
+			default:
+				break;
+		}
+	}
+
+	if (response.headers.has('ETag')) {
+		output.etag = response.headers.get('ETag')!;
+	}
+
+	return output;
+}
+
+export type CacheableResponse<T> = CacheDetails & {
+	data?: T;
+}
+
+export type RetrySettings = {
+	retryDelay?: number;
+	backoffMultiplier?: number;
+	maxDelay?: number;
+}
+
+export function monitor<T>(_update: (etag?: string) => Promise<CacheableResponse<T>>, callback: (data: T) => void, retrySettings?: RetrySettings): () => void {
+	let etag: string | undefined;
+	const backoffMultiplier = retrySettings?.backoffMultiplier ?? 2;
+	const maxDelay = retrySettings?.maxDelay ?? 10_000;
+
+	async function update(retryDelay: number = retrySettings?.retryDelay ?? 1_000) {
+		try {
+			const updated = await _update(etag);
+			etag = updated.etag;
+			if (updated.data) {
+				try {
+					callback(updated.data);
+				} catch(error) {
+					console.log('Error in monitoring callback');
+					console.error(error);
+				}
+			}
+			const refreshDelay = updated.maxAge ? updated.maxAge * 1000 : retryDelay;
+			queueUpdate(refreshDelay, Math.min(retryDelay * backoffMultiplier, maxDelay));
+		} catch(error) {
+			queueUpdate(retryDelay, Math.min(retryDelay * backoffMultiplier, maxDelay));
+		}
+	}
+
+	let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+	function cancelUpdate() {
+		if (timeoutHandle != null) {
+			clearTimeout(timeoutHandle);
+			timeoutHandle = null;
+		}
+	}
+	function queueUpdate(timeout: number, retryDelay?: number) {
+		cancelUpdate();
+		timeoutHandle = setTimeout(() => update(retryDelay), timeout);
+	}
+
+	update();
+
+	return cancelUpdate;
+}
+
 export enum Shard {
 	Able = 'Able',
 	Baker = 'Baker',
@@ -137,6 +221,25 @@ export async function getWarDetails(shard: Shard): Promise<WarDetails> {
 	return data;
 }
 
+export async function checkWarDetails(shard: Shard, etag?: string): Promise<CacheableResponse<WarDetails>> {
+	const response = await fetch(`${FoxholeApiEndpoint[shard]}/worldconquest/war`, {
+		headers: etag ? { 'If-None-Match': etag } : undefined,
+	});
+	const cacheDetails = parseCache(response);
+	if (response.status === 304) {
+		return cacheDetails;
+	}
+	const data: WarDetails = await response.json();
+	return {
+		...cacheDetails,
+		data,
+	};
+}
+
+export function monitorWarDetails(shard: Shard, callback: (warDetails: WarDetails) => void, retrySettings?: RetrySettings): () => void {
+	return monitor((etag) => checkWarDetails(shard, etag), callback, retrySettings);
+}
+
 export type KnownMapName = "TheFingersHex" | "TempestIslandHex" | "GreatMarchHex" | "ViperPitHex" | "MarbanHollow" | "BasinSionnachHex" | "StemaLandingHex" | "DeadLandsHex" | "HeartlandsHex" | "EndlessShoreHex" | "WestgateHex" | "OarbreakerHex" | "AcrithiaHex" | "MooringCountyHex" | "WeatheredExpanseHex" | "ReaversPassHex" | "MorgensCrossingHex" | "LochMorHex" | "StonecradleHex" | "AllodsBightHex" | "KalokaiHex" | "RedRiverHex" | "OriginHex" | "HowlCountyHex" | "ClahstraHex" | "SpeakingWoodsHex" | "ShackledChasmHex" | "TerminusHex" | "LinnMercyHex" | "ClansheadValleyHex" | "GodcroftsHex" | "NevishLineHex" | "CallumsCapeHex" | "FishermansRowHex" | "ReachingTrailHex" | "UmbralWildwoodHex" | "StlicanShelfHex" | "CallahansPassageHex" | "KingsCageHex" | "AshFieldsHex" | "FarranacCoastHex" | "DrownedValeHex" | "SableportHex";
 
 export type WarMaps = (KnownMapName | string)[];
@@ -148,6 +251,25 @@ export async function getWarMaps(shard: Shard): Promise<WarMaps> {
 	}
 	const data: WarMaps = await response.json();
 	return data;
+}
+
+export async function checkWarMaps(shard: Shard, etag?: string): Promise<CacheableResponse<WarMaps>> {
+	const response = await fetch(`${FoxholeApiEndpoint[shard]}/worldconquest/maps`, {
+		headers: etag ? { 'If-None-Match': etag } : undefined,
+	});
+	const cacheDetails = parseCache(response);
+	if (response.status === 304) {
+		return cacheDetails;
+	}
+	const data: WarMaps = await response.json();
+	return {
+		...cacheDetails,
+		data,
+	};
+}
+
+export function monitorWarMaps(shard: Shard, callback: (warMaps: WarMaps) => void, retrySettings?: RetrySettings): () => void {
+	return monitor((etag) => checkWarMaps(shard, etag), callback, retrySettings);
 }
 
 export enum MapMarkerType {
@@ -191,6 +313,25 @@ export async function getMapData(shard: Shard, mapId: string, isDynamicData = fa
 	}
 	const data: MapData = await response.json();
 	return data;
+}
+
+export async function checkMapData(shard: Shard, mapId: string, isDynamicData = false, etag?: string): Promise<CacheableResponse<MapData>> {
+	const response = await fetch(`${FoxholeApiEndpoint[shard]}/worldconquest/maps/${mapId}/${isDynamicData ? 'dynamic/public' : 'static'}`, {
+		headers: etag ? { 'If-None-Match': etag } : undefined,
+	});
+	const cacheDetails = parseCache(response);
+	if (response.status === 304) {
+		return cacheDetails;
+	}
+	const data: MapData = await response.json();
+	return {
+		...cacheDetails,
+		data,
+	};
+}
+
+export function monitorMapData(shard: Shard, mapId: string, isDynamicData = false, callback: (mapData: MapData) => void, retrySettings?: RetrySettings): () => void {
+	return monitor((etag) => checkMapData(shard, mapId, isDynamicData, etag), callback, retrySettings);
 }
 
 export const WORLD_EXTENTS = {
