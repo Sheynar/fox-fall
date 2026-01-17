@@ -211,7 +211,7 @@ export type MapTextItem = {
 	mapMarkerType: MapMarkerType;
 };
 
-export type MapData = {
+export type WarMapData = {
 	regionId: number;
 	scorchedVictoryTowns: number;
 	mapItems: MapItem[];
@@ -222,18 +222,18 @@ export type MapData = {
 	version: number;
 };
 
-export async function getMapData(shard: Shard, mapId: string, isDynamicData = false, Etag?: string): Promise<MapData> {
+export async function getMapData(shard: Shard, mapId: string, isDynamicData = false, Etag?: string): Promise<WarMapData> {
 	const response = await fetch(`${FoxholeApiEndpoint[shard]}/worldconquest/maps/${mapId}/${isDynamicData ? 'dynamic/public' : 'static'}`, {
 		headers: Etag ? { 'If-None-Match': Etag } : undefined,
 	});
 	if (!response.ok) {
 		throw new Error(`Failed to get map data: ${response.statusText}`);
 	}
-	const data: MapData = await response.json();
+	const data: WarMapData = await response.json();
 	return data;
 }
 
-export async function checkMapData(shard: Shard, mapId: string, isDynamicData = false, etag?: string): Promise<CacheableResponse<MapData>> {
+export async function checkMapData(shard: Shard, mapId: string, isDynamicData = false, etag?: string): Promise<CacheableResponse<WarMapData>> {
 	const response = await fetch(`${FoxholeApiEndpoint[shard]}/worldconquest/maps/${mapId}/${isDynamicData ? 'dynamic/public' : 'static'}`, {
 		headers: etag ? { 'If-None-Match': etag } : undefined,
 	});
@@ -241,14 +241,14 @@ export async function checkMapData(shard: Shard, mapId: string, isDynamicData = 
 	if (response.status === 304) {
 		return cacheDetails;
 	}
-	const data: MapData = await response.json();
+	const data: WarMapData = await response.json();
 	return {
 		...cacheDetails,
 		data,
 	};
 }
 
-export function monitorMapData(shard: Shard, mapId: string, isDynamicData = false, callback: (mapData: MapData) => void, retrySettings?: RetrySettings): () => void {
+export function monitorMapData(shard: Shard, mapId: string, isDynamicData = false, callback: (mapData: WarMapData) => void, retrySettings?: RetrySettings): () => void {
 	return monitor((etag) => checkMapData(shard, mapId, isDynamicData, etag), callback, retrySettings);
 }
 

@@ -5,7 +5,7 @@ import {
 	Shard,
 	WarDetails,
 	WarMaps,
-	MapData,
+	WarMapData,
 } from '@packages/foxhole-api';
 import { wrapMixin } from '@packages/frontend-libs/src/reference-cache';
 import { ref, Ref, watch } from 'vue';
@@ -16,8 +16,8 @@ export type UseWarDataOptions = {
 function _useWarData(options: UseWarDataOptions) {
 	const warDetails = ref<WarDetails | null>(null);
 	const warMaps = ref<WarMaps | null>(null);
-	const staticMapData = ref<Record<string, MapData>>({});
-	const dynamicMapData = ref<Record<string, MapData>>({});
+	const staticMapData = ref<Record<string, WarMapData>>({});
+	const dynamicMapData = ref<Record<string, WarMapData>>({});
 
 	async function fetchInfo() {
 		const [details, maps] = await Promise.all([
