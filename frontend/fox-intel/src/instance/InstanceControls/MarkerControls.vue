@@ -1,44 +1,6 @@
 <template>
 	<div class="MarkerControls__container" @pointerdown.stop @keydown.stop @wheel.stop.prevent>
 		<div class="MarkerControls__entry">
-			<button
-				class="MarkerControls__button"
-				:class="{
-					'MarkerControls__button-active': markerDisabled,
-				}"
-				@pointerdown.stop="markerDisabled = true"
-			>
-				<i class="pi pi-arrows-alt" />
-			</button>
-			<button
-				class="MarkerControls__button"
-				:class="{
-					'MarkerControls__button-active':
-						!markerDisabled && markerType === MarkerType.Pen,
-				}"
-				@pointerdown.stop="
-					markerDisabled = false;
-					markerType = MarkerType.Pen;
-				"
-			>
-				<i class="pi pi-pencil" />
-			</button>
-			<button
-				class="MarkerControls__button"
-				:class="{
-					'MarkerControls__button-active':
-						!markerDisabled && markerType === MarkerType.Erase,
-				}"
-				@pointerdown.stop="
-					markerDisabled = false;
-					markerType = MarkerType.Erase;
-				"
-			>
-				<i class="pi pi-eraser" />
-			</button>
-		</div>
-
-		<div class="MarkerControls__entry">
 			<label>Size</label>
 			<NumberInput v-model="markerSize" />
 		</div>
@@ -58,23 +20,46 @@
 				/>
 			</div>
 		</div>
+		<div class="MarkerControls__entry">
+			<button
+				class="MarkerControls__button"
+				:class="{
+					'MarkerControls__button-active':
+						!markerDisabled && markerType === MarkerType.Pen,
+				}"
+				title="Draw"
+				@pointerdown.stop="
+					markerDisabled = false;
+					markerType = MarkerType.Pen;
+				"
+			>
+				<i class="pi pi-pencil" />
+			</button>
+			<button
+				class="MarkerControls__button"
+				:class="{
+					'MarkerControls__button-active':
+						!markerDisabled && markerType === MarkerType.Erase,
+				}"
+				title="Erase"
+				@pointerdown.stop="
+					markerDisabled = false;
+					markerType = MarkerType.Erase;
+				"
+			>
+				<i class="pi pi-eraser" />
+			</button>
+		</div>
 	</div>
 </template>
 
 <style lang="scss">
 	.MarkerControls__container {
-		position: fixed;
-		bottom: 0;
-		left: 50%;
-		transform: translateX(-50%);
-		background-color: rgba(0, 0, 0, 0.5);
-		padding: 1em;
-		border-radius: 0.5em;
-		gap: 1em;
 		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: center;
+		flex-direction: column;
+		align-items: start;
+		justify-content: start;
+		gap: 1em;
 	}
 
 	.MarkerControls__entry {
@@ -118,18 +103,14 @@
 <script setup lang="ts">
 	import { Vue3ColorPicker } from '@cyhnkckali/vue3-color-picker';
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
-	import { MarkerType } from './canvas/marker';
 	import {
 		markerColor,
 		markerDisabled,
 		markerSize,
 		markerType,
-	} from '../lib/globals';
-	import { shallowRef, watchEffect } from 'vue';
+	} from '../../lib/globals';
+	import { MarkerType } from '../canvas/marker';
+	import { shallowRef } from 'vue';
 
 	const colorPickerContainer = shallowRef<HTMLDivElement | null>(null);
-
-	watchEffect(() => {
-		console.log(markerColor.value);
-	});
 </script>

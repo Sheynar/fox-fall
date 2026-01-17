@@ -51,7 +51,7 @@
 			</PositionedElement>
 		</Viewport>
 
-		<MarkerControls class="Instance__marker-controls" />
+		<InstanceControls class="Instance__instance-controls" @pointerdown.stop @contextmenu.stop />
 
 		<svg>
 			<defs>
@@ -169,8 +169,15 @@
 		}
 	}
 
-	.Instance__marker-controls {
+	.Instance__instance-controls {
+		position: absolute;
+		top: 0;
+		left: 0;
 		cursor: initial;
+
+		&.InstanceControls__container-open {
+			height: 100%;
+		}
 	}
 </style>
 
@@ -198,6 +205,7 @@
 		ref,
 	} from 'vue';
 	import {
+		elementFilters,
 		markerSize,
 		markerColor,
 		markerType,
@@ -205,7 +213,7 @@
 	} from '../lib/globals';
 	import { AddType, ContextRadial } from './context-menu';
 	import { useDocuments, DocumentInstance } from './document';
-	import MarkerControls from './MarkerControls.vue';
+	import InstanceControls from './InstanceControls/InstanceControls.vue';
 	import { useHexMap } from './canvas/hex-map';
 	import { useMarker } from './canvas/marker';
 	import { useElementBounding } from '@vueuse/core';
@@ -257,6 +265,7 @@
 		zoom: computed(() => viewport.value.resolvedZoom),
 		width,
 		height,
+		elementFilters,
 	});
 
 	const {
