@@ -17,7 +17,8 @@ export function parseCache(response: Response): CacheDetails {
 	for (const cacheDirective of cacheDirectives) {
 		switch (cacheDirective.key) {
 			case 'max-age':
-				output.maxAge = parseInt(cacheDirective.value);
+				const parsedMaxAge = parseInt(cacheDirective.value);
+				if (!isNaN(parsedMaxAge)) output.maxAge = parsedMaxAge;
 				break;
 			default:
 				break;
