@@ -1,5 +1,5 @@
 <template>
-	<div class="InstanceControls__container" :class="{ 'InstanceControls__container-open': open }">
+	<div class="InstanceControls__container" :class="{ 'InstanceControls__container-open': open, 'InstanceControls__container-active': !!activeTab }">
 		<div class="InstanceControls__tabs">
 			<button v-if="!open" class="InstanceControls__tab" title="Open" @click="open = true">
 				<i class="pi pi-bars" />
@@ -9,16 +9,16 @@
 			</button>
 			<template v-if="open">
 				<button class="InstanceControls__tab" :class="{ 'InstanceControls__tab-active': activeTab === Tab.Marker }"
-					title="Marker" @click="activeTab = Tab.Marker">
+					title="Marker" @click="activeTab = activeTab === Tab.Marker ? null : Tab.Marker">
 					<i class="pi pi-pencil" />
 				</button>
 				<button class="InstanceControls__tab"
 					:class="{ 'InstanceControls__tab-active': activeTab === Tab.RenderFilters }" title="Render Filters"
-					@click="activeTab = Tab.RenderFilters">
+					@click="activeTab = activeTab === Tab.RenderFilters ? null : Tab.RenderFilters">
 					<i class="pi pi-filter" />
 				</button>
 				<button class="InstanceControls__tab" :class="{ 'InstanceControls__tab-active': activeTab === Tab.Documents }"
-					title="Documents" @click="activeTab = Tab.Documents">
+					title="Documents" @click="activeTab = activeTab === Tab.Documents ? null : Tab.Documents">
 					<i class="pi pi-file" />
 				</button>
 			</template>
@@ -40,11 +40,15 @@
 		'tabs'
 		'active-control';
 	padding: .5em;
-	gap: .5em;
 
 	&.InstanceControls__container-open {
 		background: var(--p-content-background);
 		overflow: auto;
+		border-bottom-right-radius: 0.5em;
+		&.InstanceControls__container-active {
+			border-bottom-right-radius: 0;
+			gap: .5em;
+		}
 	}
 
 	.InstanceControls__tabs {
@@ -90,7 +94,7 @@ enum Tab {
 }
 
 const open = ref(false);
-const activeTab = ref('marker');
+const activeTab = ref<Tab | null>(null);
 
 watch(() => activeTab.value === Tab.Marker && open.value, (markerTabActive) => {
 	markerDisabled.value = !markerTabActive;

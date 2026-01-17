@@ -175,7 +175,7 @@
 		left: 0;
 		cursor: initial;
 
-		&.InstanceControls__container-open {
+		&.InstanceControls__container-active {
 			height: 100%;
 		}
 	}
