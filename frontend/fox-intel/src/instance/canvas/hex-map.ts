@@ -89,6 +89,22 @@ export function useHexMap(options: HexMapOptions) {
 		{ immediate: true }
 	);
 
+	function getHexCanvas() {
+		const canvas = new OffscreenCanvas(HEX_SIZE.width, HEX_SIZE.height);
+		const context = canvas.getContext('2d');
+		if (!context) throw new Error('Failed to get hex canvas context');
+		context.clearRect(0, 0, HEX_SIZE.width, HEX_SIZE.height);
+		context.beginPath();
+		context.moveTo(HEX_SIZE.width / 4, 0);
+		context.lineTo((HEX_SIZE.width * 3) / 4, 0);
+		context.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
+		context.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
+		context.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
+		context.lineTo(0, HEX_SIZE.height / 2);
+		context.clip();
+		return { canvas, context };
+	}
+
 	let hexImages: Partial<Record<Hex, OffscreenCanvas>> = {};
 	watchEffect(
 		async () => {
@@ -104,9 +120,7 @@ export function useHexMap(options: HexMapOptions) {
 				const hexImage = new Image();
 				hexImage.src = imageSrc;
 				hexImage.onload = () => {
-					const canvas = new OffscreenCanvas(HEX_SIZE.width, HEX_SIZE.height);
-					const context = canvas.getContext('2d');
-					if (!context) return;
+					const { canvas, context } = getHexCanvas();
 					context.drawImage(hexImage, 0, 0, HEX_SIZE.width, HEX_SIZE.height);
 					newHexImages[hex] = canvas;
 				};
@@ -166,48 +180,32 @@ export function useHexMap(options: HexMapOptions) {
 				)
 			).voronoi([0, 0, HEX_SIZE.width, HEX_SIZE.height]);
 
-			const hexZonesCanvas = new OffscreenCanvas(
-				HEX_SIZE.width,
-				HEX_SIZE.height
-			);
-			const hexZonesContext = hexZonesCanvas.getContext('2d')!;
-			if (!hexZonesContext) {
-				throw new Error('Failed to get hex zones context');
-			}
-			hexZonesContext.clearRect(0, 0, HEX_SIZE.width, HEX_SIZE.height);
-			hexZonesContext.beginPath();
-			hexZonesContext.moveTo(HEX_SIZE.width / 4, 0);
-			hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, 0);
-			hexZonesContext.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
-			hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
-			hexZonesContext.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
-			hexZonesContext.lineTo(0, HEX_SIZE.height / 2);
-			hexZonesContext.clip();
+			const { canvas, context } = getHexCanvas();
 
-			hexZonesContext.strokeStyle = `#000000`;
-			hexZonesContext.lineWidth = 1;
-			hexZonesContext.beginPath();
-			hexZonesContext.moveTo(HEX_SIZE.width / 4, 0);
-			hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, 0);
-			hexZonesContext.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
-			hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
-			hexZonesContext.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
-			hexZonesContext.lineTo(0, HEX_SIZE.height / 2);
-			hexZonesContext.closePath();
-			hexZonesContext.stroke();
+			context.strokeStyle = `#000000`;
+			context.lineWidth = 1;
+			context.beginPath();
+			context.moveTo(HEX_SIZE.width / 4, 0);
+			context.lineTo((HEX_SIZE.width * 3) / 4, 0);
+			context.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
+			context.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
+			context.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
+			context.lineTo(0, HEX_SIZE.height / 2);
+			context.closePath();
+			context.stroke();
 
 			for (const [index, regionItem] of regionItems.entries()) {
 				const color = TEAM_COLOR[regionItem.teamId];
-				hexZonesContext.fillStyle = `hsla(from ${color.hex} h s 60% / 0.3)`;
-				hexZonesContext.strokeStyle = `hsla(from ${color.hex} h s l / 0.5)`;
-				hexZonesContext.lineWidth = 1;
-				hexZonesContext.beginPath();
-				voronoi.renderCell(index, hexZonesContext);
-				hexZonesContext.fill();
-				hexZonesContext.stroke();
+				context.fillStyle = `hsla(from ${color.hex} h s 60% / 0.3)`;
+				context.strokeStyle = `hsla(from ${color.hex} h s l / 0.5)`;
+				context.lineWidth = 1;
+				context.beginPath();
+				voronoi.renderCell(index, context);
+				context.fill();
+				context.stroke();
 			}
 
-			mapZones.set(hex, hexZonesCanvas);
+			mapZones.set(hex, canvas);
 		}, { immediate: true });
 	}, 'pre');
 
@@ -322,11 +320,11 @@ export function useHexMap(options: HexMapOptions) {
 						foregroundContext!.drawImage(
 							icon,
 							hexPosition.x +
-								mapItem.x * HEX_SIZE.width * options.zoom.value -
-								icon.width / 2 / 1.5,
+							mapItem.x * HEX_SIZE.width * options.zoom.value -
+							icon.width / 2 / 1.5,
 							hexPosition.y +
-								mapItem.y * HEX_SIZE.height * options.zoom.value -
-								icon.height / 2 / 1.5,
+							mapItem.y * HEX_SIZE.height * options.zoom.value -
+							icon.height / 2 / 1.5,
 							icon.width / 1.5,
 							icon.height / 1.5
 						);
