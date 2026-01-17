@@ -7,7 +7,7 @@
 			"@/*": ["./src/*"],
 			"@@/*": ["./*"]
 		},
-		"lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+		"lib": ["esnext", "dom", "ES2020", "dom.iterable", "scripthost"],
 		"composite": false,
 		"declaration": true,
 		"declarationMap": true,

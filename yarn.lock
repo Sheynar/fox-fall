@@ -949,6 +949,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hono/node-server@npm:^1.19.9":
+  version: 1.19.9
+  resolution: "@hono/node-server@npm:1.19.9"
+  peerDependencies:
+    hono: ^4
+  checksum: 10c0/de18c06b6b266dc45fe55fb82053bd1da8fe84939c49b6fbab4d2448b679d54ab5affbf8b15de9bead26f29b1755284d770aafb5ad14a8e4b3cfb4f79334554e
+  languageName: node
+  linkType: hard
+
 "@inquirer/confirm@npm:^2.0.17":
   version: 2.0.17
   resolution: "@inquirer/confirm@npm:2.0.17"
@@ -1426,8 +1435,9 @@ __metadata:
   resolution: "@packages/fox-intel-server@workspace:packages/fox-intel-server"
   dependencies:
     "@frontend/fox-intel": "workspace:*"
-    "@hono/node-server": "npm:^1.11.1"
+    "@hono/node-server": "npm:^1.19.9"
     "@packages/data": "workspace:*"
+    "@packages/foxhole-api": "workspace:*"
     "@types/better-sqlite3": "npm:^7.6.13"
     "@types/node": "npm:^22.7.4"
     "@types/ws": "npm:^8.5.10"

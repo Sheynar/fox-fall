@@ -251,6 +251,7 @@
 		start: startHexMap,
 		stop: stopHexMap,
 	} = useHexMap({
+		instanceId: computed(() => props.instanceId),
 		mapSource: MapSource.ImprovedMapModRustardKnightEdit,
 		position: computed(() => viewport.value.position),
 		zoom: computed(() => viewport.value.resolvedZoom),
@@ -387,7 +388,6 @@
 				const element = document.querySelector(
 					`div[data-document-id="${documentId}"]`
 				);
-				console.log(`div[data-document-id="${documentId}"]`, element);
 				if (element == null) return;
 				(element as HTMLElement).dispatchEvent(
 					new Event('openDocument', {

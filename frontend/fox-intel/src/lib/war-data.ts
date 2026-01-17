@@ -1,8 +1,4 @@
-import {
-	getWarDetails,
-	getWarMaps,
-	getMapData,
-	Shard,
+import type {
 	WarDetails,
 	WarMaps,
 	WarMapData,
@@ -11,7 +7,7 @@ import { wrapMixin } from '@packages/frontend-libs/src/reference-cache';
 import { ref, Ref, watch } from 'vue';
 
 export type UseWarDataOptions = {
-	shard: Ref<Shard>;
+	instanceId: Ref<string>;
 };
 function _useWarData(options: UseWarDataOptions) {
 	const warDetails = ref<WarDetails | null>(null);
@@ -19,66 +15,35 @@ function _useWarData(options: UseWarDataOptions) {
 	const staticMapData = ref<Record<string, WarMapData>>({});
 	const dynamicMapData = ref<Record<string, WarMapData>>({});
 
-	async function fetchInfo() {
-		const [details, maps] = await Promise.all([
-			getWarDetails(options.shard.value),
-			getWarMaps(options.shard.value),
-		]);
-
-		const [staticMapDataList, dynamicMapDataList] = await Promise.all([
-			Promise.all(
-				maps.map(
-					async (map) =>
-						[map, await getMapData(options.shard.value, map, false)] as const
-				)
-			),
-			Promise.all(
-				maps.map(
-					async (map) =>
-						[map, await getMapData(options.shard.value, map, true)] as const
-				)
-			),
-		]);
-
-		return {
-			details,
-			maps,
-			staticMapDataList,
-			dynamicMapDataList,
-		};
-	}
-
-	let loadPromise: Promise<any> = Promise.resolve(null);
-	async function load() {
-		const promise = (loadPromise = fetchInfo());
-		const { details, maps, staticMapDataList, dynamicMapDataList } =
-			await promise;
-		if (promise !== loadPromise) return;
-		const newStaticMapData: typeof staticMapData.value = {};
-		const newDynamicMapData: typeof dynamicMapData.value = {};
-		for (const [mapName, mapData] of staticMapDataList) {
-			newStaticMapData[mapName] = mapData;
+	let sse: EventSource | null = null;
+	watch(options.instanceId, (newInstanceId) => {
+		if (sse) {
+			sse.close();
 		}
-		for (const [mapName, mapData] of dynamicMapDataList) {
-			newDynamicMapData[mapName] = mapData;
-		}
-		warDetails.value = details;
-		warMaps.value = maps;
-		staticMapData.value = newStaticMapData;
-		dynamicMapData.value = newDynamicMapData;
-	}
 
-	watch(options.shard, () => {
-		load();
-	});
+		warDetails.value = null;
+		warMaps.value = null;
+		staticMapData.value = {};
+		dynamicMapData.value = {};
 
-	const ready = ref(false);
-	const readyPromise = load().then(() => {
-		ready.value = true;
-	});
+		sse = new EventSource(`/api/v1/war/sse/${newInstanceId}`);
+		sse.addEventListener('warDetails', (event) => {
+			warDetails.value = JSON.parse(event.data);
+		});
+		sse.addEventListener('warMaps', (event) => {
+			warMaps.value = JSON.parse(event.data);
+		});
+		sse.addEventListener('warMapData', (event) => {
+			const { mapName, isDynamicData, warMapData } = JSON.parse(event.data);
+			if (isDynamicData) {
+				dynamicMapData.value[mapName] = warMapData;
+			} else {
+				staticMapData.value[mapName] = warMapData;
+			}
+		});
+	}, { immediate: true });
+
 	return {
-		ready,
-		readyPromise,
 		warDetails,
 		warMaps,
 		staticMapData,
@@ -86,4 +51,4 @@ function _useWarData(options: UseWarDataOptions) {
 	};
 }
 
-export const useWarData = wrapMixin(_useWarData, (options) => `${options.shard.value}`);
+export const useWarData = wrapMixin(_useWarData, (options) => `${options.instanceId.value}`);

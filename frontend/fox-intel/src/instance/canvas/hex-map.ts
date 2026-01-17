@@ -8,7 +8,6 @@ import {
 import {
 	MapIconType,
 	MapMarkerType,
-	Shard,
 	Team,
 	TEAM_COLOR,
 } from '@packages/foxhole-api';
@@ -17,11 +16,13 @@ import {
 	MapSource,
 } from '@packages/frontend-libs/dist/assets/images/hex-maps';
 import { MAP_ICONS } from '@packages/frontend-libs/dist/assets/images/map-icons';
+import { useScopePerSetEntry } from '@packages/frontend-libs/dist/scope';
 import { Delaunay } from 'd3-delaunay';
-import { watch, Ref, onScopeDispose, computed } from 'vue';
+import { watch, Ref, onScopeDispose, watchEffect, computed } from 'vue';
 import { useWarData } from '@/lib/war-data';
 
 export type HexMapOptions = {
+	instanceId: Ref<string>;
 	mapSource: MapSource;
 	zoom: Ref<number>;
 	position: Ref<Vector>;
@@ -40,8 +41,7 @@ export type HexMapOptions = {
 	onDispose?: () => void;
 };
 export function useHexMap(options: HexMapOptions) {
-	// TODO : get shard from instance
-	const warData = useWarData({ shard: computed(() => Shard.Able) });
+	const warData = useWarData({ instanceId: options.instanceId });
 
 	const backdropCanvas =
 		options.backdropCanvas ??
@@ -90,12 +90,11 @@ export function useHexMap(options: HexMapOptions) {
 	);
 
 	let hexImages: Partial<Record<Hex, OffscreenCanvas>> = {};
-	watch(
-		() => options.mapSource,
-		async (newMapSource) => {
+	watchEffect(
+		async () => {
 			const newHexImages: Partial<Record<Hex, OffscreenCanvas>> = {};
 			const newHexMap = await (
-				(newMapSource && HEX_MAPS[newMapSource]) ||
+				(options.mapSource && HEX_MAPS[options.mapSource]) ||
 				HEX_MAPS[MapSource.Vanilla]
 			)();
 			for (const [hex, imageSrc] of Object.entries(newHexMap) as [
@@ -112,11 +111,10 @@ export function useHexMap(options: HexMapOptions) {
 					newHexImages[hex] = canvas;
 				};
 			}
-			if (newMapSource === options.mapSource) {
+			if (options.mapSource === options.mapSource) {
 				hexImages = newHexImages;
 			}
-		},
-		{ immediate: true }
+		}
 	);
 
 	const mapIcons: Partial<
@@ -147,78 +145,71 @@ export function useHexMap(options: HexMapOptions) {
 	}
 
 	const mapZones = new Map<Hex, OffscreenCanvas>();
-	watch(
-		() => warData.dynamicMapData.value,
-		() => {
-			for (const hex of HEX_POSITIONS.flat()) {
-				if (!hex || !warData.dynamicMapData.value[KNOWN_MAP_NAMES[hex]])
-					continue;
-				const regionItems = warData.dynamicMapData.value[
-					KNOWN_MAP_NAMES[hex]
-				].mapItems.filter(
+	useScopePerSetEntry(computed(() => new Set(Object.keys(KNOWN_MAP_NAMES) as Hex[])), (hex) => {
+		watch(() => warData.dynamicMapData.value[KNOWN_MAP_NAMES[hex]], (newMapData) => {
+			if (!newMapData) return;
+			const regionItems = newMapData.mapItems.filter(
+				(item) =>
+					item.iconType === MapIconType.RelicBase1 ||
+					item.iconType === MapIconType.TownBase1 ||
+					item.iconType === MapIconType.TownBase2 ||
+					item.iconType === MapIconType.TownBase3
+			);
+
+			const voronoi = Delaunay.from(
+				regionItems.map(
 					(item) =>
-						item.iconType === MapIconType.RelicBase1 ||
-						item.iconType === MapIconType.TownBase1 ||
-						item.iconType === MapIconType.TownBase2 ||
-						item.iconType === MapIconType.TownBase3
-				);
+						[item.x * HEX_SIZE.width, item.y * HEX_SIZE.height] as [
+							number,
+							number,
+						]
+				)
+			).voronoi([0, 0, HEX_SIZE.width, HEX_SIZE.height]);
 
-				const voronoi = Delaunay.from(
-					regionItems.map(
-						(item) =>
-							[item.x * HEX_SIZE.width, item.y * HEX_SIZE.height] as [
-								number,
-								number,
-							]
-					)
-				).voronoi([0, 0, HEX_SIZE.width, HEX_SIZE.height]);
+			const hexZonesCanvas = new OffscreenCanvas(
+				HEX_SIZE.width,
+				HEX_SIZE.height
+			);
+			const hexZonesContext = hexZonesCanvas.getContext('2d')!;
+			if (!hexZonesContext) {
+				throw new Error('Failed to get hex zones context');
+			}
+			hexZonesContext.clearRect(0, 0, HEX_SIZE.width, HEX_SIZE.height);
+			hexZonesContext.beginPath();
+			hexZonesContext.moveTo(HEX_SIZE.width / 4, 0);
+			hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, 0);
+			hexZonesContext.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
+			hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
+			hexZonesContext.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
+			hexZonesContext.lineTo(0, HEX_SIZE.height / 2);
+			hexZonesContext.clip();
 
-				const hexZonesCanvas = new OffscreenCanvas(
-					HEX_SIZE.width,
-					HEX_SIZE.height
-				);
-				const hexZonesContext = hexZonesCanvas.getContext('2d')!;
-				if (!hexZonesContext) {
-					throw new Error('Failed to get hex zones context');
-				}
-				hexZonesContext.clearRect(0, 0, HEX_SIZE.width, HEX_SIZE.height);
-				hexZonesContext.beginPath();
-				hexZonesContext.moveTo(HEX_SIZE.width / 4, 0);
-				hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, 0);
-				hexZonesContext.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
-				hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
-				hexZonesContext.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
-				hexZonesContext.lineTo(0, HEX_SIZE.height / 2);
-				hexZonesContext.clip();
+			hexZonesContext.strokeStyle = `#000000`;
+			hexZonesContext.lineWidth = 1;
+			hexZonesContext.beginPath();
+			hexZonesContext.moveTo(HEX_SIZE.width / 4, 0);
+			hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, 0);
+			hexZonesContext.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
+			hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
+			hexZonesContext.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
+			hexZonesContext.lineTo(0, HEX_SIZE.height / 2);
+			hexZonesContext.closePath();
+			hexZonesContext.stroke();
 
-				hexZonesContext.strokeStyle = `#000000`;
+			for (const [index, regionItem] of regionItems.entries()) {
+				const color = TEAM_COLOR[regionItem.teamId];
+				hexZonesContext.fillStyle = `hsla(from ${color.hex} h s 60% / 0.3)`;
+				hexZonesContext.strokeStyle = `hsla(from ${color.hex} h s l / 0.5)`;
 				hexZonesContext.lineWidth = 1;
 				hexZonesContext.beginPath();
-				hexZonesContext.moveTo(HEX_SIZE.width / 4, 0);
-				hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, 0);
-				hexZonesContext.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
-				hexZonesContext.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
-				hexZonesContext.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
-				hexZonesContext.lineTo(0, HEX_SIZE.height / 2);
-				hexZonesContext.closePath();
+				voronoi.renderCell(index, hexZonesContext);
+				hexZonesContext.fill();
 				hexZonesContext.stroke();
-
-				for (const [index, regionItem] of regionItems.entries()) {
-					const color = TEAM_COLOR[regionItem.teamId];
-					hexZonesContext.fillStyle = `hsla(from ${color.hex} h s 60% / 0.3)`;
-					hexZonesContext.strokeStyle = `hsla(from ${color.hex} h s l / 0.5)`;
-					hexZonesContext.lineWidth = 1;
-					hexZonesContext.beginPath();
-					voronoi.renderCell(index, hexZonesContext);
-					hexZonesContext.fill();
-					hexZonesContext.stroke();
-				}
-
-				mapZones.set(hex, hexZonesCanvas);
 			}
-		},
-		{ immediate: true }
-	);
+
+			mapZones.set(hex, hexZonesCanvas);
+		}, { immediate: true });
+	}, 'pre');
 
 	function render() {
 		if (isDisposed) return;

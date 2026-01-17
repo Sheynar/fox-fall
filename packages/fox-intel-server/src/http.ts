@@ -1,4 +1,4 @@
-import { serve } from '@hono/node-server';
+import { Http2Bindings, HttpBindings, serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { generateId } from '@packages/data/dist/id.js';
 import type {
@@ -9,15 +9,18 @@ import type {
 } from '@packages/data/dist/intel.js';
 import { Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { stream } from 'hono/streaming';
 import fs from 'node:fs';
 import { createSecureServer } from 'node:http2';
 import { models } from './data-store.js';
+import { monitorWar } from './foxhole-api.js';
 import {
 	getAccessToken,
 	getGuildRoles,
 	getUserGuildMember,
 	getUserGuilds,
 } from './discord.js';
+import { WarDetails, WarMapData, WarMaps } from '@packages/foxhole-api';
 
 const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 export type Session = {
@@ -102,7 +105,7 @@ export async function initialiseHttp(
 					return c.json({ error: 'Guild not found' }, 404);
 				}
 				return c.json({ error: 'Failed to get guild roles' }, 500);
-			} catch (error) {}
+			} catch (error) { }
 			throw error;
 		}
 	});
@@ -441,6 +444,75 @@ export async function initialiseHttp(
 		}
 		return;
 	}
+
+	/* Foxhole War API */
+	app.get('/api/v1/war/sse/:instanceId', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const existingInstance = models.intelInstance.get(instanceId);
+		if (!existingInstance) {
+			return c.json({ error: 'Instance not found' }, 404);
+		}
+
+		const warMonitoring = monitorWar(existingInstance.shard);
+		const response = await stream(c, async (stream) => {
+			async function sendEvent(event: string, data: string) {
+				await stream.write(`event: ${event}\ndata: ${data}\n\n`);
+			}
+
+			sendEvent('connected', '');
+
+			let lastWarDetails: string = '';
+			async function onWarDetails(warDetails: WarDetails) {
+				const warDetailsString = JSON.stringify(warDetails);
+				if (warDetailsString === lastWarDetails) return;
+				lastWarDetails = warDetailsString;
+				await sendEvent('warDetails', warDetailsString);
+			};
+			warMonitoring.emitter.on('warDetails', onWarDetails);
+			if (warMonitoring.currentData.warDetails) onWarDetails(warMonitoring.currentData.warDetails);
+
+			let lastWarMaps: string = '';
+			async function onWarMaps(warMaps: WarMaps) {
+				const warMapsString = JSON.stringify(warMaps);
+				if (warMapsString === lastWarMaps) return;
+				lastWarMaps = warMapsString;
+				await sendEvent('warMaps', warMapsString);
+			}
+			warMonitoring.emitter.on('warMaps', onWarMaps);
+			if (warMonitoring.currentData.warMaps) onWarMaps(warMonitoring.currentData.warMaps);
+
+			let lastWarMapDetailsMap: Record<string, string> = {};
+			async function onWarMapDetails(mapName: string, isDynamicData: boolean, warMapData: WarMapData) {
+				const warMapDetailsMapString = JSON.stringify({
+					mapName,
+					isDynamicData,
+					warMapData,
+				});
+				const lastLookupKey = `${mapName}-${isDynamicData ? 'dynamic' : 'static'}`;
+				if (warMapDetailsMapString === lastWarMapDetailsMap[lastLookupKey]) return;
+				lastWarMapDetailsMap[lastLookupKey] = warMapDetailsMapString;
+				await sendEvent('warMapData', warMapDetailsMapString);
+			}
+			warMonitoring.emitter.on('warMapDetails', onWarMapDetails);
+			for (const [mapName, dataMap] of Object.entries(warMonitoring.currentData.warMapDetailsMap)) {
+				if (dataMap.static) onWarMapDetails(mapName, false, dataMap.static);
+				if (dataMap.dynamic) onWarMapDetails(mapName, true, dataMap.dynamic);
+			}
+
+			await new Promise<void>((resolve) => {
+				bindingMap.get(c.req.raw)?.incoming.once('close', () => {
+					warMonitoring.stop();
+					resolve();
+				});
+			});
+		});
+
+		response.headers.set('Content-Type', 'text/event-stream');
+		response.headers.set('Cache-Control', 'no-cache');
+		response.headers.delete('Connection');
+		response.headers.set('X-Accel-Buffering', 'no');
+		return response;
+	});
 
 	/* Marker Region API */
 	const pendingMarkerRegionRequests = new Map<string, Set<() => void>>();
@@ -1103,20 +1175,24 @@ export async function initialiseHttp(
 		})
 	);
 
+	const bindingMap = new WeakMap<Request, HttpBindings | Http2Bindings>();
 	await new Promise<void>((resolve) => {
 		serve(
 			{
-				fetch: app.fetch,
+				fetch: (req, bindings) => {
+					bindingMap.set(req, bindings);
+					return app.fetch(req, bindings);
+				},
 				port,
 				createServer: createSecureServer,
 				serverOptions: {
 					cert: fs.readFileSync(
 						process.env.FOX_INTEL_SERVER_CERT_PATH ??
-							'./foxintel.kaosdlanor.dev.pem'
+						'./foxintel.kaosdlanor.dev.pem'
 					),
 					key: fs.readFileSync(
 						process.env.FOX_INTEL_SERVER_KEY_PATH ??
-							'./foxintel.kaosdlanor.dev.key'
+						'./foxintel.kaosdlanor.dev.key'
 					),
 				},
 			},
