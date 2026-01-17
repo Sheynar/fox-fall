@@ -1,42 +1,5 @@
-import EventEmitter from 'node:events';
+import { ReferenceCache } from '@packages/data/dist/reference-cache';
 import { computed, EffectScope, effectScope, onScopeDispose, watch } from 'vue';
-
-export class ReferenceCache<T> extends EventEmitter<{
-	delete: [key: string, value: T];
-}> {
-	private cache = new Map<string, { refCount: number; value: T }>();
-
-	getReferenceCount(key: string) {
-		const entry = this.cache.get(key);
-		if (entry == null) {
-			return 0;
-		}
-		return entry.refCount;
-	}
-
-	addReference(key: string, factory: () => T) {
-		const entry = this.cache.get(key);
-		if (entry == null) {
-			const value = factory();
-			this.cache.set(key, { refCount: 1, value });
-			return value;
-		}
-		entry.refCount++;
-		return entry.value;
-	}
-
-	removeReference(key: string) {
-		const entry = this.cache.get(key);
-		if (entry == null) {
-			return;
-		}
-		entry.refCount--;
-		if (entry.refCount === 0) {
-			this.emit('delete', key, this.cache.get(key)!.value);
-			this.cache.delete(key);
-		}
-	}
-}
 
 export function wrapMixin<M extends (...args: any[]) => any>(
 	mixin: M,
