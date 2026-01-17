@@ -50,7 +50,7 @@ export function wrapFunction<F extends (...args: any[]) => { stop: () => void }>
 	});
 
 
-	(function wrappedFunction(this: ThisParameterType<F>,...args: Parameters<F>): ReturnType<F> {
+	function wrappedFunction(this: ThisParameterType<F>,...args: Parameters<F>): ReturnType<F> {
 		const key = getKey(...args);
 
 		const output = cache.addReference(key, () => basicFunction.call(this, ...args) as ReturnType<F>);
@@ -62,7 +62,7 @@ export function wrapFunction<F extends (...args: any[]) => { stop: () => void }>
 		};
 
 		return output;
-	});
+	};
 
-	return wrapFunction as F;
+	return wrappedFunction as unknown as F;
 }
