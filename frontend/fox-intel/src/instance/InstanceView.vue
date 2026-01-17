@@ -458,7 +458,7 @@
 		}
 	}
 
-	const onAddingImageSubmit = (imageCanvas: HTMLCanvasElement) => {
+	const onAddingImageSubmit = (imageCanvas: HTMLCanvasElement | OffscreenCanvas) => {
 		if (addingImage.value == null) return;
 		markerStorageContext.drawImage(
 			imageCanvas,

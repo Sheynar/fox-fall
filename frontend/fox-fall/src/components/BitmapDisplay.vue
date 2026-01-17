@@ -27,7 +27,7 @@
 		image: ImageBitmap | null;
 	}>();
 
-	const screenCanvas = shallowRef<HTMLCanvasElement | null>(null);
+	const screenCanvas = shallowRef<HTMLCanvasElement | OffscreenCanvas | null>(null);
 
 	watch(
 		() => props.image,

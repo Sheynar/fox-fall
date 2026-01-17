@@ -54,14 +54,18 @@ function _useWarData(options: UseWarDataOptions) {
 		const { details, maps, staticMapDataList, dynamicMapDataList } =
 			await promise;
 		if (promise !== loadPromise) return;
-		warDetails.value = details;
-		warMaps.value = maps;
+		const newStaticMapData: typeof staticMapData.value = {};
+		const newDynamicMapData: typeof dynamicMapData.value = {};
 		for (const [mapName, mapData] of staticMapDataList) {
-			staticMapData.value[mapName] = mapData;
+			newStaticMapData[mapName] = mapData;
 		}
 		for (const [mapName, mapData] of dynamicMapDataList) {
-			dynamicMapData.value[mapName] = mapData;
+			newDynamicMapData[mapName] = mapData;
 		}
+		warDetails.value = details;
+		warMaps.value = maps;
+		staticMapData.value = newStaticMapData;
+		dynamicMapData.value = newDynamicMapData;
 	}
 
 	watch(options.shard, () => {
