@@ -376,10 +376,13 @@
 		value: AddType;
 		path: any[];
 	}) => {
+		const position = contextMenuPosition.value!.clone();
+		contextMenuPosition.value = null;
+
 		if (event.value === AddType.Document) {
 			const documentId = await addDocument(
-				contextMenuPosition.value!.x,
-				contextMenuPosition.value!.y,
+				position.x,
+				position.y,
 				1,
 				'New Document',
 				''
@@ -416,12 +419,11 @@
 
 			addingImage.value = {
 				image,
-				position: contextMenuPosition.value!.addVector(imageSize.scale(-0.5)),
+				position: position.addVector(imageSize.scale(-0.5)),
 				size: imageSize,
 				opacity: 0.5,
 			};
 		}
-		contextMenuPosition.value = null;
 	};
 
 	async function onPaste(event: ClipboardEvent) {
