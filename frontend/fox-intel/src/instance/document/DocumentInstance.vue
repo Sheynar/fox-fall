@@ -9,6 +9,7 @@
 		<div
 			ref="documentElement"
 			class="DocumentInstance__container"
+			:class="{ 'DocumentInstance__container-disabled': !markerDisabled }"
 			:data-document-id="props.document.id"
 			:style="{ '--_document-ui-size': String(props.document.ui_size) }"
 			@pointerdown="onPointerDown"
@@ -47,6 +48,10 @@
 			opacity: 1;
 		}
 
+		&-disabled {
+			pointer-events: none;
+		}
+
 		cursor: pointer;
 	}
 
@@ -66,6 +71,7 @@
 	import { injectViewport } from '@packages/frontend-libs/dist/viewport/viewport';
 	import DocumentIcon from '@packages/frontend-libs/dist/icons/DocumentIcon.vue';
 	import { ref, shallowRef } from 'vue';
+	import { markerDisabled } from '@/lib/globals';
 	import { injectIntelInstance } from '@/lib/intel-instance';
 	import DocumentEditor from './DocumentEditor.vue';
 	import { updatePartialDocument } from './helpers';
