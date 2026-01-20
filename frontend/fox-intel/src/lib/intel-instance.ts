@@ -34,10 +34,7 @@ export function useIntelInstance(options: UseIntelInstanceOptions) {
 				const response = await fetch(
 					`/api/v1/instance/${encodeURIComponent(options.intelInstanceId.value)}`,
 					{
-						headers: {
-							'X-Discord-Access-Code': discordAccess.code,
-							'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-						},
+						headers: discordAccess.getFetchHeaders(),
 					}
 				);
 				if (!response.ok) {

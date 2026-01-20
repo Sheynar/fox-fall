@@ -17,11 +17,7 @@ function _useDiscordAccess() {
 		return url.href;
 	})();
 
-	let code = sessionStorage.getItem('discord-access-code');
-	if (!code) {
-		redirectToDiscordAuth();
-		code = '';
-	}
+	const code = sessionStorage.getItem('discord-access-code');
 
 	function redirectToDiscordAuth() {
 		location.href = `https://discord.com/oauth2/authorize?client_id=1454856481945157795&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=guilds+guilds.members.read`;
@@ -31,7 +27,18 @@ function _useDiscordAccess() {
 		location.href = `https://discord.com/oauth2/authorize?client_id=1454856481945157795&permissions=0&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&integration_type=0&scope=bot+guilds.members.read+guilds`;
 	}
 
-	const ready = ref(false);
+	function getFetchHeaders() {
+		if (!code) {
+			debugger;
+			throw new Error('No Discord access code');
+		}
+		return {
+			'X-Discord-Access-Code': code,
+			'X-Discord-Redirect-Uri': redirectUri,
+		};
+	}
+
+	const discordAuthenticated = ref(false);
 	async function checkAccessToken(timeout: number = 10_000) {
 		const response = await fetch(
 			`/api/v1/discord/access-token?timeout=${timeout}`,
@@ -43,12 +50,7 @@ function _useDiscordAccess() {
 				},
 			}
 		);
-		if (!response.ok) {
-			alert('There is a problem with your session token, redirecting to Discord auth');
-			redirectToDiscordAuth();
-		} else {
-			ready.value = true;
-		}
+		discordAuthenticated.value = response.ok;
 	}
 
 	let scopeDestroyed = false;
@@ -57,7 +59,7 @@ function _useDiscordAccess() {
 	});
 
 	async function loop(backoff: number = 1_000, isFirst: boolean = false) {
-		if (scopeDestroyed) return;
+		if (scopeDestroyed || !code || (ready.value && !discordAuthenticated.value)) return;
 		await checkAccessToken(isFirst ? 0 : undefined)
 			.then(() => {
 				if (scopeDestroyed) return;
@@ -69,13 +71,16 @@ function _useDiscordAccess() {
 				setTimeout(() => loop(Math.min(backoff * 2, 60_000)), backoff);
 			});
 	}
-	const readyPromise = loop(undefined, true);
+	const ready = ref(false);
+	const readyPromise = loop(undefined, true).finally(() => ready.value = true);
 
 	return {
 		redirectToDiscordAuth,
 		redirectToDiscordBotAuth,
+		getFetchHeaders,
 		code,
 		redirectUri,
+		discordAuthenticated,
 		ready,
 		readyPromise,
 	};

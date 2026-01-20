@@ -190,10 +190,7 @@
 
 		const response = await fetch('/api/v1/discord/guild', {
 			method: 'GET',
-			headers: {
-				'X-Discord-Access-Code': discordAccess.code,
-				'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-			},
+			headers: discordAccess.getFetchHeaders(),
 		});
 		if (!response.ok) {
 			throw new Error('Failed to get guilds: ' + (await response.text()));
@@ -216,10 +213,7 @@
 			`/api/v1/discord/guild/${guildId.value}/member`,
 			{
 				method: 'GET',
-				headers: {
-					'X-Discord-Access-Code': discordAccess.code,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-				},
+				headers: discordAccess.getFetchHeaders(),
 			}
 		);
 		if (!response.ok) {
@@ -234,10 +228,7 @@
 			`/api/v1/discord/guild/${guildId.value}/roles`,
 			{
 				method: 'GET',
-				headers: {
-					'X-Discord-Access-Code': discordAccess.code,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-				},
+				headers: discordAccess.getFetchHeaders(),
 			}
 		);
 		if (!response.ok) {
@@ -345,10 +336,7 @@
 						roleId: string;
 					}[],
 				}),
-				headers: {
-					'X-Discord-Access-Code': discordAccess.code,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-				},
+				headers: discordAccess.getFetchHeaders(),
 			}
 		);
 		if (!response.ok) {

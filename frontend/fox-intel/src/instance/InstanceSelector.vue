@@ -175,10 +175,7 @@
 		try {
 			const response = await fetch('/api/v1/instance', {
 				method: 'GET',
-				headers: {
-					'X-Discord-Access-Code': discordAccess.code,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-				},
+				headers: discordAccess.getFetchHeaders(),
 			});
 
 			if (!response.ok) {
@@ -196,10 +193,7 @@
 			`/api/v1/instance/${encodeURIComponent(instance.id)}/permissions`,
 			{
 				method: 'GET',
-				headers: {
-					'X-Discord-Access-Code': discordAccess.code,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-				},
+				headers: discordAccess.getFetchHeaders(),
 			}
 		);
 		if (!response.ok) {
@@ -216,10 +210,7 @@
 			`/api/v1/instance/${encodeURIComponent(instance.id)}`,
 			{
 				method: 'DELETE',
-				headers: {
-					'X-Discord-Access-Code': discordAccess.code,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-				},
+				headers: discordAccess.getFetchHeaders(),
 			}
 		);
 		if (!response.ok) {
@@ -233,10 +224,7 @@
 			`/api/v1/instance/${encodeURIComponent(instanceId)}`,
 			{
 				method: 'GET',
-				headers: {
-					'X-Discord-Access-Code': discordAccess.code,
-					'X-Discord-Redirect-Uri': discordAccess.redirectUri,
-				},
+				headers: discordAccess.getFetchHeaders(),
 			}
 		);
 		if (!response.ok) {

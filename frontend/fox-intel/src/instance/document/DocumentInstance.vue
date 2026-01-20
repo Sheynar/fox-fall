@@ -44,6 +44,7 @@
 		overflow: hidden;
 
 		opacity: 0.7;
+		cursor: pointer;
 		&:hover {
 			opacity: 1;
 		}
@@ -51,8 +52,6 @@
 		&-disabled {
 			pointer-events: none;
 		}
-
-		cursor: pointer;
 	}
 
 	.DocumentInstance__icon {
