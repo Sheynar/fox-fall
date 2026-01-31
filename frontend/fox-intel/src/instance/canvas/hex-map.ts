@@ -277,8 +277,8 @@ export function useHexMap(options: HexMapOptions) {
 			function forEachHex(
 				callback: (hex: Hex, x: number, y: number, hexPosition: Vector) => void
 			) {
-				for (let [y, row] of HEX_POSITIONS.entries()) {
-					y -= Math.floor(HEX_POSITIONS.length / 2);
+				for (let [baseY, row] of HEX_POSITIONS.entries()) {
+					const y = baseY - Math.floor(HEX_POSITIONS.length / 2);
 					for (let [x, hex] of row.entries()) {
 						x -= Math.floor(row.length / 2);
 						if (!hex) continue;
@@ -287,7 +287,7 @@ export function useHexMap(options: HexMapOptions) {
 							x:
 								centerHexPosition.x +
 								x * HEX_SIZE.width * options.zoom.value * 1.5 +
-								(y % 2 === 0 ? 0 : HEX_SIZE.width * options.zoom.value * 0.75),
+								(baseY % 2 === 0 ? 0 : HEX_SIZE.width * options.zoom.value * 0.75),
 							y:
 								centerHexPosition.y +
 								(y * HEX_SIZE.height * options.zoom.value) / 2,
