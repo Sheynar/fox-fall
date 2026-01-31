@@ -1,5 +1,6 @@
 <template>
-	<div class="InstanceControls__container" :class="{ 'InstanceControls__container-open': open, 'InstanceControls__container-active': !!activeTab }">
+	<div class="InstanceControls__container"
+		:class="{ 'InstanceControls__container-open': open, 'InstanceControls__container-active': !!activeTab }">
 		<div class="InstanceControls__tabs">
 			<button v-if="!open" class="InstanceControls__tab" title="Open" @click="open = true">
 				<i class="pi pi-bars" />
@@ -20,6 +21,9 @@
 				<button class="InstanceControls__tab" :class="{ 'InstanceControls__tab-active': activeTab === Tab.Documents }"
 					title="Documents" @click="activeTab = activeTab === Tab.Documents ? null : Tab.Documents">
 					<i class="pi pi-file" />
+				</button>
+				<button class="InstanceControls__tab" title="Exit instance" @click="emit('exitInstance')">
+					<i class="pi pi-sign-out" />
 				</button>
 			</template>
 		</div>
@@ -45,6 +49,7 @@
 		background: var(--p-content-background);
 		overflow: auto;
 		border-bottom-right-radius: 0.5em;
+
 		&.InstanceControls__container-active {
 			border-bottom-right-radius: 0;
 			gap: .5em;
@@ -86,6 +91,10 @@ import { markerDisabled } from '@/lib/globals';
 import DocumentManager from './DocumentManager.vue';
 import MarkerControls from './MarkerControls.vue';
 import RenderFilters from './RenderFilters.vue';
+
+const emit = defineEmits<{
+	(e: 'exitInstance'): void;
+}>();
 
 enum Tab {
 	Marker = 'marker',

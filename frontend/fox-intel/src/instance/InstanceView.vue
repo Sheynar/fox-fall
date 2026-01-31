@@ -51,7 +51,7 @@
 			</PositionedElement>
 		</Viewport>
 
-		<InstanceControls class="Instance__instance-controls" @pointerdown.stop @contextmenu.stop />
+		<InstanceControls class="Instance__instance-controls" @pointerdown.stop @contextmenu.stop @exitInstance="emit('exitInstance')" />
 
 		<svg>
 			<defs>
@@ -224,6 +224,10 @@
 
 	const props = defineProps<{
 		instanceId: string;
+	}>();
+
+	const emit = defineEmits<{
+		(e: 'exitInstance'): void;
 	}>();
 
 	const intelInstance = useIntelInstance({
