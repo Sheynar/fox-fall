@@ -158,20 +158,24 @@ export function useHexMap(options: HexMapOptions) {
 		};
 	}
 
-	const mapZones = new Map<Hex, OffscreenCanvas>();
+	const mapZones = new Map<Hex, { canvas: OffscreenCanvas, context: OffscreenCanvasRenderingContext2D }>();
 	useScopePerSetEntry(computed(() => new Set(Object.keys(KNOWN_MAP_NAMES) as Hex[])), (hex) => {
-		watch(() => warData.dynamicMapData.value[KNOWN_MAP_NAMES[hex]], (newMapData) => {
-			if (!newMapData) return;
-			const regionItems = newMapData.mapItems.filter(
+		const regionItems = computed(() => {
+			const mapItems = warData.dynamicMapData.value[KNOWN_MAP_NAMES[hex]]?.mapItems;
+			if (!mapItems) return [];
+			return mapItems.filter(
 				(item) =>
 					item.iconType === MapIconType.RelicBase1 ||
 					item.iconType === MapIconType.TownBase1 ||
 					item.iconType === MapIconType.TownBase2 ||
 					item.iconType === MapIconType.TownBase3
 			);
+		});
 
-			const voronoi = Delaunay.from(
-				regionItems.map(
+		const voronoi = computed(() => {
+			if (!regionItems.value?.length) return null;
+			return Delaunay.from(
+				regionItems.value.map(
 					(item) =>
 						[item.x * HEX_SIZE.width, item.y * HEX_SIZE.height] as [
 							number,
@@ -179,11 +183,15 @@ export function useHexMap(options: HexMapOptions) {
 						]
 				)
 			).voronoi([0, 0, HEX_SIZE.width, HEX_SIZE.height]);
+		});
 
-			const { canvas, context } = getHexCanvas();
+		watch(() => [voronoi.value, options.zoom.value] as const, ([newVoronoi, zoom]) => {
+			if (!newVoronoi || !regionItems.value?.length) return;
+			const { canvas, context } = mapZones.get(hex) ?? getHexCanvas();
+			context.clearRect(0, 0, HEX_SIZE.width, HEX_SIZE.height);
 
 			context.strokeStyle = `#000000`;
-			context.lineWidth = 1;
+			context.lineWidth = 3 / Math.min(1, zoom);
 			context.beginPath();
 			context.moveTo(HEX_SIZE.width / 4, 0);
 			context.lineTo((HEX_SIZE.width * 3) / 4, 0);
@@ -194,18 +202,18 @@ export function useHexMap(options: HexMapOptions) {
 			context.closePath();
 			context.stroke();
 
-			for (const [index, regionItem] of regionItems.entries()) {
+			for (const [index, regionItem] of regionItems.value.entries()) {
 				const color = TEAM_COLOR[regionItem.teamId];
-				context.fillStyle = `hsla(from ${color.hex} h s 60% / 0.3)`;
-				context.strokeStyle = `hsla(from ${color.hex} h s l / 0.5)`;
-				context.lineWidth = 1;
+				context.fillStyle = `hsla(from ${color.hex} h s 60% / 0.2)`;
+				context.strokeStyle = `hsla(from ${color.hex} h s l / 0.3)`;
+				context.lineWidth = 2 / Math.min(1, zoom);
 				context.beginPath();
-				voronoi.renderCell(index, context);
+				newVoronoi.renderCell(index, context);
 				context.fill();
 				context.stroke();
 			}
 
-			mapZones.set(hex, canvas);
+			mapZones.set(hex, { canvas, context });
 		}, { immediate: true });
 	}, 'pre');
 
@@ -337,7 +345,7 @@ export function useHexMap(options: HexMapOptions) {
 					const mapZone = mapZones.get(hex);
 					if (!mapZone) return;
 					foregroundContext!.drawImage(
-						mapZone,
+						mapZone.canvas,
 						hexPosition.x,
 						hexPosition.y,
 						HEX_SIZE.width * options.zoom.value,
