@@ -205,7 +205,7 @@ export function useHexMap(options: HexMapOptions) {
 			for (const [index, regionItem] of regionItems.value.entries()) {
 				const color = TEAM_COLOR[regionItem.teamId];
 				context.fillStyle = `hsla(from ${color.hex} h s 60% / 0.2)`;
-				context.strokeStyle = `hsla(from ${color.hex} h s l / 0.3)`;
+				context.strokeStyle = `rgba(0 0 0 / 0.3)`;
 				context.lineWidth = 2 / Math.min(1, zoom);
 				context.beginPath();
 				newVoronoi.renderCell(index, context);
