@@ -1,27 +1,35 @@
 <template>
 	<div class="RenderFilters__container">
 		<label class="RenderFilters__entry">
-			<input type="checkbox" v-model="elementFilters.map.value" />
+			<input type="checkbox" v-model="renderFilters.documents.value" />
+			Documents
+		</label>
+		<label class="RenderFilters__entry">
+			<input type="checkbox" v-model="renderFilters.markerLayer.value" />
+			Marker Layer
+		</label>
+		<label class="RenderFilters__entry">
+			<input type="checkbox" v-model="renderFilters.map.value" />
 			Map
 		</label>
 		<label class="RenderFilters__entry">
-			<input type="checkbox" v-model="elementFilters.mapZone.value" />
+			<input type="checkbox" v-model="renderFilters.mapZone.value" />
 			Map Zones
 		</label>
 		<label class="RenderFilters__entry">
-			<input type="checkbox" v-model="elementFilters.mapIcon.value" />
+			<input type="checkbox" v-model="renderFilters.mapIcon.value" />
 			Map Icons
 		</label>
 		<label class="RenderFilters__entry">
-			<input type="checkbox" v-model="elementFilters.hexLabel.value" />
+			<input type="checkbox" v-model="renderFilters.hexLabel.value" />
 			Hex Labels
 		</label>
 		<label class="RenderFilters__entry">
-			<input type="checkbox" v-model="elementFilters.regionLabel.value" />
+			<input type="checkbox" v-model="renderFilters.regionLabel.value" />
 			Region Labels
 		</label>
 		<label class="RenderFilters__entry">
-			<input type="checkbox" v-model="elementFilters.minorLabel.value" />
+			<input type="checkbox" v-model="renderFilters.minorLabel.value" />
 			Minor Labels
 		</label>
 	</div>
@@ -45,5 +53,5 @@
 </style>
 
 <script setup lang="ts">
-import { elementFilters } from '@/lib/globals';
+import { renderFilters } from '@/lib/globals';
 </script>
