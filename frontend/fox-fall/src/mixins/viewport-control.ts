@@ -2,7 +2,7 @@ import { type Ref, computed, nextTick, ref, shallowRef } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import { Vector } from '@packages/data/dist/artillery/vector';
 import type { Viewport } from '@packages/frontend-libs/dist/viewport/viewport';
-import { useMultiPointerDrag } from '@/mixins/multi-pointer';
+import { useMultiPointerDrag } from '@packages/frontend-libs/dist/multi-pointer';
 import { artillery } from '@/lib/globals';
 import { calibrateGrid as _calibrateGrid } from '@/lib/grid-calibration';
 import { settings } from '@/lib/settings';
@@ -22,6 +22,7 @@ export type ViewportControlOptions = {
 export function useViewportControl(options: ViewportControlOptions) {
 	const moving = ref<null | {
 		dragType: DragType;
+		startZoom: number;
 	}>(null);
 
 	const canPan = computed(() => !settings.value.lockPan && !screenShot.value);
@@ -42,6 +43,7 @@ export function useViewportControl(options: ViewportControlOptions) {
 					event.shiftKey || event.button === 2 || !canPan.value
 						? DragType.Rotate
 						: DragType.Translate,
+				startZoom: options.viewport.value.zoom,
 			};
 
 			moving.value = newMove;
@@ -54,14 +56,14 @@ export function useViewportControl(options: ViewportControlOptions) {
 					const rotation =
 						dragStatus.rotationDelta +
 						(dragStatus.transformDelta.x * 720) /
-							window.document.body.clientWidth;
+						window.document.body.clientWidth;
 
 					options.viewport.value.rotateBy(
 						rotation,
 						canPan.value
 							? dragStatus.startPosition.addVector(
-									options.viewport.value.viewportSize.scale(-0.5)
-								)
+								options.viewport.value.viewportSize.scale(-0.5)
+							)
 							: undefined
 					);
 				}
@@ -78,8 +80,8 @@ export function useViewportControl(options: ViewportControlOptions) {
 				);
 
 				if (canZoom.value) {
-					options.viewport.value.zoomBy(
-						dragStatus.zoomDelta,
+					options.viewport.value.zoomTo(
+						moving.value.startZoom * dragStatus.zoom,
 						canPan.value ? centerPoint : undefined
 					);
 				}
@@ -118,9 +120,9 @@ export function useViewportControl(options: ViewportControlOptions) {
 			zoomDelta,
 			canPan.value
 				? Vector.fromCartesianVector({
-						x: event.clientX - options.viewport.value.viewportSize.x / 2,
-						y: event.clientY - options.viewport.value.viewportSize.y / 2,
-					})
+					x: event.clientX - options.viewport.value.viewportSize.x / 2,
+					y: event.clientY - options.viewport.value.viewportSize.y / 2,
+				})
 				: undefined
 		);
 	};

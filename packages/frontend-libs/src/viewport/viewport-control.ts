@@ -21,6 +21,7 @@ export type ViewportControlOptions = {
 export function useViewportControl(options: ViewportControlOptions) {
 	const moving = ref<null | {
 		dragType: DragType;
+		startZoom: number;
 	}>(null);
 
 	const canPan = computed(() => !options.lockPan?.value);
@@ -39,6 +40,7 @@ export function useViewportControl(options: ViewportControlOptions) {
 					event.shiftKey || event.button === 2 || !canPan.value
 						? DragType.Rotate
 						: DragType.Translate,
+				startZoom: options.viewport.value.zoom,
 			};
 
 			moving.value = newMove;
@@ -75,8 +77,8 @@ export function useViewportControl(options: ViewportControlOptions) {
 				);
 
 				if (canZoom.value) {
-					options.viewport.value.zoomBy(
-						dragStatus.zoomDelta,
+					options.viewport.value.zoomTo(
+						moving.value.startZoom * dragStatus.zoom,
 						canPan.value ? centerPoint : undefined
 					);
 				}
