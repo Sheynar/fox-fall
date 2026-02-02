@@ -240,6 +240,7 @@ export function useMarker(options: UseMarkerOptions) {
 		}
 
 		activeMarker.value = null;
+		renderingState.setRenderRequired(true);
 	}
 	function moveMarker(position: Vector) {
 		if (
@@ -265,6 +266,7 @@ export function useMarker(options: UseMarkerOptions) {
 		if (activeMarker.value.type === MarkerType.Erase) {
 			dumpMarkerCanvas();
 		}
+		renderingState.setRenderRequired(true);
 	}
 
 	const eventToVector = (event: PointerEvent) => {
@@ -293,6 +295,7 @@ export function useMarker(options: UseMarkerOptions) {
 	let lastPointerMoveEvent: PointerEvent | null = null;
 	function onPointerMove(event: PointerEvent) {
 		lastPointerMoveEvent = event;
+		renderingState.setRenderRequired(true);
 		if (!activeMarker.value) return;
 
 		moveMarker(eventToVector(event));
@@ -323,6 +326,7 @@ export function useMarker(options: UseMarkerOptions) {
 			options.markerSize.value +
 				(event.deltaY > 0 ? -1 : 1) * (event.shiftKey ? 1 : 5)
 		);
+		renderingState.setRenderRequired(true);
 	}
 
 	useEventListener(options.eventElement, 'pointerdown', onPointerDown);
@@ -427,6 +431,10 @@ export function useMarker(options: UseMarkerOptions) {
 		context: storageContext,
 		regionWidth: ref(100),
 		regionHeight: ref(100),
+	});
+
+	canvasStorage.emitter.on('updated', () => {
+		renderingState.setRenderRequired(true);
 	});
 
 	const ready = ref(false);
