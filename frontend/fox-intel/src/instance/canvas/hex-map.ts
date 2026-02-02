@@ -271,11 +271,13 @@ export function useHexMap(options: HexMapOptions) {
 			) {
 				foregroundContext!.fillStyle = background;
 				foregroundContext!.strokeStyle = foreground;
+				foregroundContext!.lineWidth = 4;
 				foregroundContext!.font = `bold ${fontSize}px sans-serif`;
+				foregroundContext!.lineJoin = 'round';
 				foregroundContext.textBaseline = 'middle';
 				const textMetrics = foregroundContext!.measureText(text);
-				foregroundContext!.fillText(text, x - textMetrics.width / 2, y);
 				foregroundContext!.strokeText(text, x - textMetrics.width / 2, y);
+				foregroundContext!.fillText(text, x - textMetrics.width / 2, y);
 			}
 
 			const centerHexPosition = Vector.fromCartesianVector({
