@@ -1,6 +1,6 @@
 <template>
 	<div class="FilterGroup__container" :class="{ 'FilterGroup__container-open': open }">
-		<i class="FilterGroup__open-icon pi" :class="{ 'pi-chevron-down': open, 'pi-chevron-right': !open }" />
+		<i class="FilterGroup__open-icon pi" :class="{ 'pi-chevron-down': open, 'pi-chevron-right': !open }" @click="open = !open" />
 		<div class="FilterGroup__title" @click="open = !open">
 			<input v-if="props.state != null" type="checkbox" :checked="props.state === FilterGroupState.AllEnabled"
 				:indeterminate="props.state === FilterGroupState.Mixed"
