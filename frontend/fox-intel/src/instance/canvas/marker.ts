@@ -1,9 +1,10 @@
 import { Vector } from '@packages/data/dist/artillery/vector';
+import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
 import { useEventListener } from '@vueuse/core';
 import { computed, onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
 import { injectIntelInstance } from '@/lib/intel-instance';
 import { useCanvasStorage } from './canvas-storage';
-import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
+import { useRenderState } from './render-state';
 
 export enum MarkerType {
 	Pen = 'pen',
@@ -52,6 +53,9 @@ export function useMarker(options: UseMarkerOptions) {
 	if (context == null) {
 		throw new Error('Failed to get context');
 	}
+
+	const renderingState = useRenderState();
+	let running = false;
 
 	watch(
 		() => options.width.value,
@@ -340,6 +344,18 @@ export function useMarker(options: UseMarkerOptions) {
 		frameRequest = requestAnimationFrame(render);
 	};
 
+	watch(computed(() => [
+		options.position.value.x,
+		options.position.value.y,
+		options.zoom.value,
+		options.width.value,
+		options.height.value,
+		options.markerType.value,
+		options.markerColor.value,
+		options.markerSize.value,
+		options.markerDisabled.value
+	]), () => renderingState.setRenderRequired(true), { immediate: true });
+
 	function render() {
 		if (isDisposed) return;
 		cancelFrame();
@@ -386,14 +402,22 @@ export function useMarker(options: UseMarkerOptions) {
 				context.stroke();
 			}
 		} finally {
-			requestFrame();
+			renderingState.setRenderRequired(false);
 		}
 	}
 
+	renderingState.emitter.on('render-required', () => {
+		if (running) {
+			requestFrame();
+		}
+	});
+
 	function start() {
+		running = true;
 		requestFrame();
 	}
 	function stop() {
+		running = false;
 		cancelFrame();
 	}
 
@@ -419,6 +443,7 @@ export function useMarker(options: UseMarkerOptions) {
 	});
 
 	return {
+		renderingState,
 		activeMarker,
 		canvasElement,
 		markingCanvas,

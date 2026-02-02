@@ -20,6 +20,7 @@ import { useScopePerSetEntry } from '@packages/frontend-libs/dist/scope';
 import { Delaunay } from 'd3-delaunay';
 import { watch, Ref, onScopeDispose, watchEffect, computed } from 'vue';
 import { useWarData } from '@/lib/war-data';
+import { useRenderState } from './render-state';
 
 export type HexMapOptions = {
 	instanceId: Ref<string>;
@@ -41,7 +42,23 @@ export type HexMapOptions = {
 	onDispose?: () => void;
 };
 export function useHexMap(options: HexMapOptions) {
+	const renderingState = useRenderState();
+	let running = false;
 	const warData = useWarData({ instanceId: options.instanceId });
+
+	watch(computed(() => [
+		options.position.value.x,
+		options.position.value.y,
+		options.zoom.value,
+		options.width.value,
+		options.height.value,
+		options.elementFilters?.map?.value,
+		options.elementFilters?.mapZone?.value,
+		options.elementFilters?.mapIcon?.value,
+		options.elementFilters?.hexLabel?.value,
+		options.elementFilters?.regionLabel?.value,
+		options.elementFilters?.minorLabel?.value
+	]), () => renderingState.setRenderRequired(true), { immediate: true });
 
 	const backdropCanvas =
 		options.backdropCanvas ??
@@ -124,11 +141,13 @@ export function useHexMap(options: HexMapOptions) {
 						const { canvas, context } = getHexCanvas();
 						context.drawImage(hexImage, 0, 0, HEX_SIZE.width, HEX_SIZE.height);
 						newHexImages[hex] = canvas;
+						renderingState.setRenderRequired(true);
 					});
 				};
 			}
 			if (options.mapSource === options.mapSource) {
 				hexImages = newHexImages;
+				renderingState.setRenderRequired(true);
 			}
 		}
 	);
@@ -157,6 +176,7 @@ export function useHexMap(options: HexMapOptions) {
 					}
 
 					mapIcons[team]![iconType] = canvas;
+					renderingState.setRenderRequired(true);
 				});
 			}
 		};
@@ -189,14 +209,14 @@ export function useHexMap(options: HexMapOptions) {
 			).voronoi([0, 0, HEX_SIZE.width, HEX_SIZE.height]);
 		});
 
-		watch(() => [voronoi.value, options.zoom.value] as const, () => {
+		watch(() => [voronoi.value] as const, () => {
 			requestAnimationFrame(() => {
 				if (!voronoi.value || !regionItems.value?.length) return;
 				const { canvas, context } = mapZones.get(hex) ?? getHexCanvas();
 				context.clearRect(0, 0, HEX_SIZE.width, HEX_SIZE.height);
 
 				context.strokeStyle = `#000000`;
-				context.lineWidth = 3 / Math.min(1, options.zoom.value);
+				context.lineWidth = 3;
 				context.beginPath();
 				context.moveTo(HEX_SIZE.width / 4, 0);
 				context.lineTo((HEX_SIZE.width * 3) / 4, 0);
@@ -211,7 +231,7 @@ export function useHexMap(options: HexMapOptions) {
 					const color = TEAM_COLOR[regionItem.teamId];
 					context.fillStyle = `hsla(from ${color.hex} h s 60% / 0.2)`;
 					context.strokeStyle = `rgba(0 0 0 / 0.3)`;
-					context.lineWidth = 2 / Math.min(1, options.zoom.value);
+					context.lineWidth = 2;
 					context.beginPath();
 					voronoi.value.renderCell(index, context);
 					context.fill();
@@ -219,6 +239,7 @@ export function useHexMap(options: HexMapOptions) {
 				}
 
 				mapZones.set(hex, { canvas, context });
+				renderingState.setRenderRequired(true);
 			});
 		}, { immediate: true });
 	}, 'pre');
@@ -411,16 +432,24 @@ export function useHexMap(options: HexMapOptions) {
 				});
 			}
 		} finally {
-			requestFrame();
+			renderingState.setRenderRequired(false);
 		}
 	}
 
+	renderingState.emitter.on('render-required', () => {
+		if (running) {
+			requestFrame();
+		}
+	});
+
 	function start() {
 		if (isDisposed) return;
+		running = true;
 		requestFrame();
 	}
 
 	function stop() {
+		running = false;
 		cancelFrame();
 	}
 
@@ -431,6 +460,7 @@ export function useHexMap(options: HexMapOptions) {
 	});
 
 	return {
+		renderingState,
 		backdropCanvas,
 		foregroundCanvas,
 		start,

@@ -138,6 +138,7 @@
 <script setup lang="ts">
 import { MAP_SIZE } from '@packages/data/dist/artillery/map';
 import { Vector } from '@packages/data/dist/artillery/vector';
+import { Team, TEAM_COLOR } from '@packages/foxhole-api';
 import { MapSource } from '@packages/frontend-libs/dist/assets/images/hex-maps';
 import {
 	withHandling,
@@ -174,7 +175,7 @@ import { useElementBounding } from '@vueuse/core';
 import { provideIntelInstance, useIntelInstance } from '@/lib/intel-instance';
 import { requestFile } from '@/lib/file';
 import ImagePaste from './canvas/ImagePaste';
-import { Team, TEAM_COLOR } from '@packages/foxhole-api';
+import { useRenderState } from './canvas/render-state';
 
 const props = defineProps<{
 	instanceId: string;
@@ -212,6 +213,7 @@ const { addDocument, documents } = useDocuments({
 provideViewport(viewport);
 
 const {
+	renderingState: hexMapRenderingState,
 	backdropCanvas: hexMapCanvasElement,
 	foregroundCanvas: hexMapForegroundCanvasElement,
 	start: startHexMap,
@@ -227,6 +229,7 @@ const {
 });
 
 const {
+	renderingState: markerRenderingState,
 	start: startMarker,
 	stop: stopMarker,
 	canvasElement: markerCanvasElement,
@@ -278,6 +281,12 @@ const requestFrame = () => {
 	cancelFrame();
 	frameRequest = requestAnimationFrame(() => withHandling(() => render()));
 };
+
+const renderingState = useRenderState();
+let running = false;
+markerRenderingState.emitter.on('render-required', () => renderingState.setRenderRequired(true));
+hexMapRenderingState.emitter.on('render-required', () => renderingState.setRenderRequired(true));
+
 const render = () => {
 	cancelFrame();
 	if (scopeDestroyed) return;
@@ -308,20 +317,28 @@ const render = () => {
 			height.value
 		);
 	} finally {
-		requestFrame();
+		renderingState.setRenderRequired(false);
 	}
 };
+
+renderingState.emitter.on('render-required', () => {
+	if (running) {
+		requestFrame();
+	}
+});
 
 onMounted(() => {
 	if (!canvasElement.value) return;
 	startHexMap();
 	startMarker();
+	running = true;
 	requestFrame();
 });
 
 onUnmounted(() => {
 	stopHexMap();
 	stopMarker();
+	running = false;
 	cancelFrame();
 });
 
