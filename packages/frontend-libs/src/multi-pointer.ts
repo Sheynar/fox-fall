@@ -87,17 +87,15 @@ export function useMultiPointerDrag(options: MultiPointerDragOptions) {
 			rotationDelta += rotationDelta > 0 ? -180 : 180;
 		}
 
-		const zooms = pointers.map((pointer) => {
-			const startFromCenter = pointer.startPointerPosition.addVector(
-				centerPointStart.scale(-1)
-			);
-			const endFromCenter = pointer.pointerPosition.addVector(
-				centerPointEnd.scale(-1)
-			);
+		const startPointerDistances = pointers.map((pointer) => {
+			return pointer.startPointerPosition.addVector(centerPointStart.scale(-1)).distance;
+		}).reduce((a, b) => a + b, 0) / pointers.length;
 
-			return (endFromCenter.distance - startFromCenter.distance) / 100;
-		});
-		const zoom = zooms.reduce((acc, delta) => acc + delta, 0);
+		const endPointerDistances = pointers.map((pointer) => {
+			return pointer.pointerPosition.addVector(centerPointEnd.scale(-1)).distance;
+		}).reduce((a, b) => a + b, 0) / pointers.length;
+
+		const zoom = endPointerDistances / startPointerDistances;
 
 		const newStatus: DragStatus = {
 			pointers: currentDrag.value.pointers,
@@ -105,8 +103,8 @@ export function useMultiPointerDrag(options: MultiPointerDragOptions) {
 			transformDelta:
 				currentDrag.value.lastStatus != null
 					? transform.addVector(
-							currentDrag.value.lastStatus.transform.scale(-1)
-						)
+						currentDrag.value.lastStatus.transform.scale(-1)
+					)
 					: transform,
 			rotation,
 			rotationDelta,

@@ -17,7 +17,7 @@ function _useDiscordAccess() {
 		return url.href;
 	})();
 
-	const code = sessionStorage.getItem('discord-access-code');
+	let code = sessionStorage.getItem('discord-access-code');
 
 	function redirectToDiscordAuth() {
 		location.href = `https://discord.com/oauth2/authorize?client_id=1454856481945157795&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=guilds+guilds.members.read`;
@@ -29,7 +29,6 @@ function _useDiscordAccess() {
 
 	function getFetchHeaders() {
 		if (!code) {
-			debugger;
 			throw new Error('No Discord access code');
 		}
 		return {
@@ -38,14 +37,24 @@ function _useDiscordAccess() {
 		};
 	}
 
+	function signOut() {
+		code = null;
+		discordAuthenticated.value = false;
+		sessionStorage.removeItem('discord-access-code');
+	}
+
 	const discordAuthenticated = ref(false);
 	async function checkAccessToken(timeout: number = 10_000) {
+		if (!code) {
+			discordAuthenticated.value = false;
+			return;
+		}
 		const response = await fetch(
 			`/api/v1/discord/access-token?timeout=${timeout}`,
 			{
 				method: 'GET',
 				headers: {
-					'X-Discord-Access-Code': code!,
+					'X-Discord-Access-Code': code,
 					'X-Discord-Redirect-Uri': redirectUri,
 				},
 			}
@@ -78,6 +87,7 @@ function _useDiscordAccess() {
 		redirectToDiscordAuth,
 		redirectToDiscordBotAuth,
 		getFetchHeaders,
+		signOut,
 		code,
 		redirectUri,
 		discordAuthenticated,

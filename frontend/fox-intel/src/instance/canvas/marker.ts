@@ -1,9 +1,10 @@
 import { Vector } from '@packages/data/dist/artillery/vector';
+import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
 import { useEventListener } from '@vueuse/core';
 import { computed, onScopeDispose, ref, Ref, shallowRef, watch } from 'vue';
 import { injectIntelInstance } from '@/lib/intel-instance';
 import { useCanvasStorage } from './canvas-storage';
-import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
+import { useRenderState } from './render-state';
 
 export enum MarkerType {
 	Pen = 'pen',
@@ -52,6 +53,9 @@ export function useMarker(options: UseMarkerOptions) {
 	if (context == null) {
 		throw new Error('Failed to get context');
 	}
+
+	const renderingState = useRenderState();
+	let running = false;
 
 	watch(
 		() => options.width.value,
@@ -236,6 +240,7 @@ export function useMarker(options: UseMarkerOptions) {
 		}
 
 		activeMarker.value = null;
+		renderingState.setRenderRequired(true);
 	}
 	function moveMarker(position: Vector) {
 		if (
@@ -261,6 +266,7 @@ export function useMarker(options: UseMarkerOptions) {
 		if (activeMarker.value.type === MarkerType.Erase) {
 			dumpMarkerCanvas();
 		}
+		renderingState.setRenderRequired(true);
 	}
 
 	const eventToVector = (event: PointerEvent) => {
@@ -289,6 +295,7 @@ export function useMarker(options: UseMarkerOptions) {
 	let lastPointerMoveEvent: PointerEvent | null = null;
 	function onPointerMove(event: PointerEvent) {
 		lastPointerMoveEvent = event;
+		renderingState.setRenderRequired(true);
 		if (!activeMarker.value) return;
 
 		moveMarker(eventToVector(event));
@@ -319,6 +326,7 @@ export function useMarker(options: UseMarkerOptions) {
 			options.markerSize.value +
 				(event.deltaY > 0 ? -1 : 1) * (event.shiftKey ? 1 : 5)
 		);
+		renderingState.setRenderRequired(true);
 	}
 
 	useEventListener(options.eventElement, 'pointerdown', onPointerDown);
@@ -339,6 +347,18 @@ export function useMarker(options: UseMarkerOptions) {
 		cancelFrame();
 		frameRequest = requestAnimationFrame(render);
 	};
+
+	watch(computed(() => [
+		options.position.value.x,
+		options.position.value.y,
+		options.zoom.value,
+		options.width.value,
+		options.height.value,
+		options.markerType.value,
+		options.markerColor.value,
+		options.markerSize.value,
+		options.markerDisabled.value
+	]), () => renderingState.setRenderRequired(true), { immediate: true });
 
 	function render() {
 		if (isDisposed) return;
@@ -386,14 +406,22 @@ export function useMarker(options: UseMarkerOptions) {
 				context.stroke();
 			}
 		} finally {
-			requestFrame();
+			renderingState.setRenderRequired(false);
 		}
 	}
 
+	renderingState.emitter.on('render-required', () => {
+		if (running) {
+			requestFrame();
+		}
+	});
+
 	function start() {
+		running = true;
 		requestFrame();
 	}
 	function stop() {
+		running = false;
 		cancelFrame();
 	}
 
@@ -403,6 +431,10 @@ export function useMarker(options: UseMarkerOptions) {
 		context: storageContext,
 		regionWidth: ref(100),
 		regionHeight: ref(100),
+	});
+
+	canvasStorage.emitter.on('updated', () => {
+		renderingState.setRenderRequired(true);
 	});
 
 	const ready = ref(false);
@@ -419,6 +451,7 @@ export function useMarker(options: UseMarkerOptions) {
 	});
 
 	return {
+		renderingState,
 		activeMarker,
 		canvasElement,
 		markingCanvas,

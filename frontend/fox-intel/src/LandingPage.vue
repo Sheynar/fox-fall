@@ -40,6 +40,7 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: start;
+	margin: 0 3em;
 }
 
 .LandingPage__disclaimer {

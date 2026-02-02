@@ -1,23 +1,30 @@
 import { runGlobal } from "@packages/frontend-libs/dist/scope";
-import { ref } from "vue";
+import { type Ref, ref } from "vue";
 import { MarkerType } from "../instance/canvas/marker";
-import { HexMapOptions } from "@/instance/canvas/hex-map";
+import type { HexMapOptions } from "@/instance/canvas/hex-map";
 
-const { markerSize, markerColor, markerType, markerDisabled, elementFilters } = runGlobal(() => {
+export type RenderFilters = HexMapOptions['elementFilters'] & {
+	documents?: Ref<boolean>;
+	markerLayer?: Ref<boolean>;
+};
+
+const { markerSize, markerColor, markerType, markerDisabled, renderFilters } = runGlobal(() => {
 	return {
 		markerSize: ref<number>(5),
 		markerColor: ref<string>("#000000"),
 		markerType: ref<MarkerType>(MarkerType.Pen),
 		markerDisabled: ref<boolean>(true),
-		elementFilters: {
+		renderFilters: {
 			map: ref<boolean>(true),
 			mapZone: ref<boolean>(true),
 			mapIcon: ref<boolean>(true),
 			hexLabel: ref<boolean>(true),
 			regionLabel: ref<boolean>(true),
 			minorLabel: ref<boolean>(true),
-		} satisfies HexMapOptions['elementFilters'],
+			documents: ref<boolean>(true),
+			markerLayer: ref<boolean>(true),
+		} satisfies RenderFilters,
 	}
 });
 
-export { markerSize, markerColor, markerType, markerDisabled, elementFilters };
+export { markerSize, markerColor, markerType, markerDisabled, renderFilters };

@@ -4,8 +4,9 @@
 		<InstanceSelector
 			v-else-if="selectedInstanceId == null"
 			@selectInstance="selectedInstanceId = $event"
+			@signOut="discordAccess.signOut()"
 		/>
-		<InstanceView v-else :instanceId="selectedInstanceId" />
+		<InstanceView v-else :instanceId="selectedInstanceId" @exitInstance="selectedInstanceId = null" />
 	</template>
 </template>
 

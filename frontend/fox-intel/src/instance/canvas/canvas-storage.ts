@@ -1,5 +1,6 @@
 import { computed, onScopeDispose, Ref } from 'vue';
 import { injectIntelInstance } from '@/lib/intel-instance';
+import EventEmitter from 'node:events';
 
 export type UseCanvasStorageOptions = {
 	intelInstance: ReturnType<typeof injectIntelInstance>;
@@ -10,6 +11,10 @@ export type UseCanvasStorageOptions = {
 };
 
 export function useCanvasStorage(options: UseCanvasStorageOptions) {
+	const emitter = new EventEmitter<{
+		'updated': [];
+	}>();
+
 	const regionCountX = computed(() =>
 		Math.ceil(options.canvas.width / options.regionWidth.value)
 	);
@@ -253,6 +258,10 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 			// options.context.fillRect(region.region_x * options.regionWidth.value, region.region_y * options.regionHeight.value, options.regionWidth.value, options.regionHeight.value);
 			// options.context.fillStyle = prevFillStyle;
 		}
+
+		if (data.regions.length > 0) {
+			emitter.emit('updated');
+		}
 	}
 
 	let scopeDestroyed = false;
@@ -276,6 +285,7 @@ export function useCanvasStorage(options: UseCanvasStorageOptions) {
 	const ready = loop(undefined, true);
 
 	return {
+		emitter,
 		ready,
 
 		getRegionCount,
