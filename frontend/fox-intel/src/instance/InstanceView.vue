@@ -220,7 +220,7 @@ const {
 	stop: stopHexMap,
 } = useHexMap({
 	instanceId: computed(() => props.instanceId),
-	mapSource: MapSource.ImprovedMapModRustardKnightEdit,
+	mapSource: MapSource.Vanilla,
 	position: computed(() => viewport.value.position),
 	zoom: computed(() => viewport.value.resolvedZoom),
 	width,

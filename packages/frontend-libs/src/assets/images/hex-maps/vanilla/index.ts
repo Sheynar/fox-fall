@@ -42,8 +42,23 @@ import TerminusMap from './MapTerminusHex.png?no-inline';
 import RedRiverMap from './MapRedRiverHex.png?no-inline';
 import AcrithiaMap from './MapAcrithiaHex.png?no-inline';
 import KalokaiMap from './MapKalokaiHex.png?no-inline';
+import OlavisWakeMap from './MapAirborne1Hex.png?no-inline';
+import PariPeakMap from './MapAirborne2Hex.png?no-inline';
+import KuuraStrandMap from './MapAirborne4Hex.png?no-inline';
+import PalantineBermMap from './MapAirborne3Hex.png?no-inline';
+import TheGutterMap from './MapAirborne5Hex.png?no-inline';
+import LycosIsleMap from './MapAirborne8Hex.png?no-inline';
+import TyrantFoothillsMap from './MapAirborne9Hex.png?no-inline';
+import OnyxMap from './MapAirborne7Hex.png?no-inline';
+import PipersEnclaveMap from './MapAirborne10Hex.png?no-inline';
+import WrestaMap from './MapAirborne6Hex.png?no-inline';
 
 export const HEX_ASSETS: Record<Hex, string> = {
+	[Hex.OlavisWake]: OlavisWakeMap,
+	[Hex.PariPeak]: PariPeakMap,
+	[Hex.KuuraStrand]: KuuraStrandMap,
+	[Hex.PalantineBerm]: PalantineBermMap,
+	[Hex.TheGutter]: TheGutterMap,
 	[Hex.BasinSionnach]: BasinSionnachMap,
 	[Hex.SpeakingWoods]: SpeakingWoodsMap,
 	[Hex.HowlCounty]: HowlCountyMap,
@@ -87,4 +102,9 @@ export const HEX_ASSETS: Record<Hex, string> = {
 	[Hex.RedRiver]: RedRiverMap,
 	[Hex.Acrithia]: AcrithiaMap,
 	[Hex.Kalokai]: KalokaiMap,
+	[Hex.LycosIsle]: LycosIsleMap,
+	[Hex.TyrantFoothills]: TyrantFoothillsMap,
+	[Hex.Onyx]: OnyxMap,
+	[Hex.PipersEnclave]: PipersEnclaveMap,
+	[Hex.Wresta]: WrestaMap,
 };
