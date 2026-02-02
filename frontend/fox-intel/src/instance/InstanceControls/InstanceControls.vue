@@ -90,7 +90,7 @@ import { ref, watch } from 'vue';
 import { markerDisabled } from '@/lib/globals';
 import DocumentManager from './DocumentManager.vue';
 import MarkerControls from './MarkerControls.vue';
-import RenderFilters from './RenderFilters.vue';
+import RenderFilters from './RenderFilters/RenderFilters.vue';
 
 const emit = defineEmits<{
 	(e: 'exitInstance'): void;
