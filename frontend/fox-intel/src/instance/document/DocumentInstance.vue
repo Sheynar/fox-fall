@@ -18,7 +18,7 @@
 			@openDocument="editing = true"
 			:title="props.document.document_name"
 		>
-			<DocumentIcon class="DocumentInstance__icon" />
+			<StickyNoteIcon class="DocumentInstance__icon" />
 		</div>
 	</PositionedElement>
 
@@ -32,18 +32,13 @@
 
 <style lang="scss">
 	.DocumentInstance__container {
-		width: calc(2rem * var(--_document-ui-size));
-		height: calc(2rem * var(--_document-ui-size));
-		color: var(--color-primary);
+		width: calc(3rem * var(--_document-ui-size));
+		height: calc(3rem * var(--_document-ui-size));
+		color: var(--color-primary-contrast);
 		transform: translate(-50%, -50%);
 		transform-origin: center center;
-		background: var(--color-primary-contrast);
-		border-radius: 50%;
-		padding: calc(0.1rem * var(--_document-ui-size));
-		border: calc(1px * var(--_document-ui-size)) solid;
 		overflow: hidden;
 
-		opacity: 0.7;
 		cursor: pointer;
 		&:hover {
 			opacity: 1;
@@ -68,7 +63,7 @@
 	} from '@packages/frontend-libs/dist/error';
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
 	import { injectViewport } from '@packages/frontend-libs/dist/viewport/viewport';
-	import DocumentIcon from '@packages/frontend-libs/dist/icons/DocumentIcon.vue';
+	import StickyNoteIcon from '@packages/frontend-libs/dist/icons/StickyNoteIcon.vue';
 	import { ref, shallowRef } from 'vue';
 	import { markerDisabled } from '@/lib/globals';
 	import { injectIntelInstance } from '@/lib/intel-instance';

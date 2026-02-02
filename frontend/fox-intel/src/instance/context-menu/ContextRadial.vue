@@ -13,7 +13,7 @@
 		type Options,
 	} from '@packages/frontend-libs/dist/inputs/RadialMenu.vue';
 	import CameraIcon from '@packages/frontend-libs/dist/icons/CameraIcon.vue';
-	import DocumentIcon from '@packages/frontend-libs/dist/icons/DocumentIcon.vue';
+	import StickyNoteIcon from '@packages/frontend-libs/dist/icons/StickyNoteIcon.vue';
 	import { AddType } from './types';
 
 	export type Payload = AddType;
@@ -34,7 +34,7 @@
 
 		output.set(AddType.Document, {
 			label: 'Document',
-			icon: DocumentIcon,
+			icon: StickyNoteIcon,
 			order: 1,
 		});
 
