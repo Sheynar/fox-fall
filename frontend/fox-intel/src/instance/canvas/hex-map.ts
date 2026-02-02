@@ -120,9 +120,11 @@ export function useHexMap(options: HexMapOptions) {
 				const hexImage = new Image();
 				hexImage.src = imageSrc;
 				hexImage.onload = () => {
-					const { canvas, context } = getHexCanvas();
-					context.drawImage(hexImage, 0, 0, HEX_SIZE.width, HEX_SIZE.height);
-					newHexImages[hex] = canvas;
+					requestAnimationFrame(() => {
+						const { canvas, context } = getHexCanvas();
+						context.drawImage(hexImage, 0, 0, HEX_SIZE.width, HEX_SIZE.height);
+						newHexImages[hex] = canvas;
+					});
 				};
 			}
 			if (options.mapSource === options.mapSource) {
@@ -141,19 +143,21 @@ export function useHexMap(options: HexMapOptions) {
 		iconImage.src = icon;
 		iconImage.onload = () => {
 			for (const team of Object.values(Team)) {
-				const canvas = document.createElement('canvas');
-				canvas.width = iconImage.width;
-				canvas.height = iconImage.height;
-				const context = canvas.getContext('2d');
-				if (!context) return;
-				context.filter = `url(#team-icon-${team})`;
-				context.drawImage(iconImage, 0, 0, iconImage.width, iconImage.height);
+				requestAnimationFrame(() => {
+					const canvas = document.createElement('canvas');
+					canvas.width = iconImage.width;
+					canvas.height = iconImage.height;
+					const context = canvas.getContext('2d');
+					if (!context) return;
+					context.filter = `url(#team-icon-${team})`;
+					context.drawImage(iconImage, 0, 0, iconImage.width, iconImage.height);
 
-				if (!mapIcons[team]) {
-					mapIcons[team] = {};
-				}
+					if (!mapIcons[team]) {
+						mapIcons[team] = {};
+					}
 
-				mapIcons[team]![iconType] = canvas;
+					mapIcons[team]![iconType] = canvas;
+				});
 			}
 		};
 	}
@@ -185,35 +189,37 @@ export function useHexMap(options: HexMapOptions) {
 			).voronoi([0, 0, HEX_SIZE.width, HEX_SIZE.height]);
 		});
 
-		watch(() => [voronoi.value, options.zoom.value] as const, ([newVoronoi, zoom]) => {
-			if (!newVoronoi || !regionItems.value?.length) return;
-			const { canvas, context } = mapZones.get(hex) ?? getHexCanvas();
-			context.clearRect(0, 0, HEX_SIZE.width, HEX_SIZE.height);
+		watch(() => [voronoi.value, options.zoom.value] as const, () => {
+			requestAnimationFrame(() => {
+				if (!voronoi.value || !regionItems.value?.length) return;
+				const { canvas, context } = mapZones.get(hex) ?? getHexCanvas();
+				context.clearRect(0, 0, HEX_SIZE.width, HEX_SIZE.height);
 
-			context.strokeStyle = `#000000`;
-			context.lineWidth = 3 / Math.min(1, zoom);
-			context.beginPath();
-			context.moveTo(HEX_SIZE.width / 4, 0);
-			context.lineTo((HEX_SIZE.width * 3) / 4, 0);
-			context.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
-			context.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
-			context.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
-			context.lineTo(0, HEX_SIZE.height / 2);
-			context.closePath();
-			context.stroke();
-
-			for (const [index, regionItem] of regionItems.value.entries()) {
-				const color = TEAM_COLOR[regionItem.teamId];
-				context.fillStyle = `hsla(from ${color.hex} h s 60% / 0.2)`;
-				context.strokeStyle = `rgba(0 0 0 / 0.3)`;
-				context.lineWidth = 2 / Math.min(1, zoom);
+				context.strokeStyle = `#000000`;
+				context.lineWidth = 3 / Math.min(1, options.zoom.value);
 				context.beginPath();
-				newVoronoi.renderCell(index, context);
-				context.fill();
+				context.moveTo(HEX_SIZE.width / 4, 0);
+				context.lineTo((HEX_SIZE.width * 3) / 4, 0);
+				context.lineTo(HEX_SIZE.width, HEX_SIZE.height / 2);
+				context.lineTo((HEX_SIZE.width * 3) / 4, HEX_SIZE.height);
+				context.lineTo(HEX_SIZE.width / 4, HEX_SIZE.height);
+				context.lineTo(0, HEX_SIZE.height / 2);
+				context.closePath();
 				context.stroke();
-			}
 
-			mapZones.set(hex, { canvas, context });
+				for (const [index, regionItem] of regionItems.value.entries()) {
+					const color = TEAM_COLOR[regionItem.teamId];
+					context.fillStyle = `hsla(from ${color.hex} h s 60% / 0.2)`;
+					context.strokeStyle = `rgba(0 0 0 / 0.3)`;
+					context.lineWidth = 2 / Math.min(1, options.zoom.value);
+					context.beginPath();
+					voronoi.value.renderCell(index, context);
+					context.fill();
+					context.stroke();
+				}
+
+				mapZones.set(hex, { canvas, context });
+			});
 		}, { immediate: true });
 	}, 'pre');
 
