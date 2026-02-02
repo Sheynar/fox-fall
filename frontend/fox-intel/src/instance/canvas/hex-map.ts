@@ -6,6 +6,7 @@ import {
 	KNOWN_MAP_NAMES,
 } from '@packages/data/dist/hexMap';
 import {
+	MapFlags,
 	MapIconType,
 	MapMarkerType,
 	Team,
@@ -15,7 +16,7 @@ import {
 	HEX_MAPS,
 	MapSource,
 } from '@packages/frontend-libs/dist/assets/images/hex-maps';
-import { MAP_ICONS } from '@packages/frontend-libs/dist/assets/images/map-icons';
+import { MapIconName, MAP_ICONS_BY_API, MAP_ICONS_BY_NAME } from '@packages/frontend-libs/dist/assets/images/map-icons';
 import { useScopePerSetEntry } from '@packages/frontend-libs/dist/scope';
 import { Delaunay } from 'd3-delaunay';
 import { watch, Ref, onScopeDispose, watchEffect, computed } from 'vue';
@@ -153,10 +154,13 @@ export function useHexMap(options: HexMapOptions) {
 	);
 
 	const mapIcons: Partial<
-		Record<Team, Partial<Record<MapIconType, HTMLCanvasElement>>>
+		Record<Team, Partial<Record<MapIconType | MapIconName, HTMLCanvasElement>>>
 	> = {};
-	for (const [_iconType, icon] of Object.entries(MAP_ICONS)) {
-		const iconType = Number(_iconType) as MapIconType;
+	const iconSources = [
+		...Object.entries(MAP_ICONS_BY_API).map(([key, value]) => [Number(key) as MapIconType, value] as [MapIconType, string]),
+		...(Object.entries(MAP_ICONS_BY_NAME) as [MapIconName, string][]),
+	]
+	for (const [iconKey, icon] of iconSources) {
 		if (!icon) continue;
 		const iconImage = new Image();
 		iconImage.src = icon;
@@ -175,7 +179,7 @@ export function useHexMap(options: HexMapOptions) {
 						mapIcons[team] = {};
 					}
 
-					mapIcons[team]![iconType] = canvas;
+					mapIcons[team]![iconKey] = canvas;
 					renderingState.setRenderRequired(true);
 				});
 			}
@@ -301,6 +305,20 @@ export function useHexMap(options: HexMapOptions) {
 				foregroundContext!.fillText(text, x - textMetrics.width / 2, y);
 			}
 
+			function drawIcon(icon: HTMLCanvasElement, hexPosition: Vector, x: number, y: number, scale = 1 / 1.5) {
+				foregroundContext!.drawImage(
+					icon,
+					hexPosition.x +
+					x * HEX_SIZE.width * options.zoom.value -
+					icon.width * scale / 2,
+					hexPosition.y +
+					y * HEX_SIZE.height * options.zoom.value -
+					icon.height * scale / 2,
+					icon.width * scale,
+					icon.height * scale
+				);
+			}
+
 			const centerHexPosition = Vector.fromCartesianVector({
 				x:
 					options.position.value.x -
@@ -354,17 +372,13 @@ export function useHexMap(options: HexMapOptions) {
 					for (const mapItem of mapData.mapItems) {
 						const icon = mapIcons[mapItem.teamId]?.[mapItem.iconType];
 						if (!icon) continue;
-						foregroundContext!.drawImage(
-							icon,
-							hexPosition.x +
-							mapItem.x * HEX_SIZE.width * options.zoom.value -
-							icon.width / 2 / 1.5,
-							hexPosition.y +
-							mapItem.y * HEX_SIZE.height * options.zoom.value -
-							icon.height / 2 / 1.5,
-							icon.width / 1.5,
-							icon.height / 1.5
-						);
+
+						const victoryOutline = mapIcons[mapItem.teamId]?.[MapIconName.VictoryOutline];
+						if (mapItem.flags & MapFlags.IsVictoryBase && victoryOutline) {
+							drawIcon(victoryOutline, hexPosition, mapItem.x, mapItem.y, 1);
+						}
+
+						drawIcon(icon, hexPosition, mapItem.x, mapItem.y);
 					}
 				});
 			}
