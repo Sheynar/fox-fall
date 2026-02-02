@@ -15,8 +15,15 @@
 				roles.
 			</p>
 			</p>
-			<button @click="emit('signIn')">Sign In</button>
+			<button @click="signIn()">Sign In</button>
 		</div>
+	</div>
+
+	<div class="LandingPage__pateon-modal" v-if="dismissPatreonModal">
+		<p>Please consider <a target="_blank"
+				href="https://www.patreon.com/cw/KaoSDlanor?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink">supporting
+				me on Patreon</a>. I will soon need to rent a larger server to handle hosting the application</p>
+		<button @click="dismissPatreonModal()">Just sign me in already</button>
 	</div>
 </template>
 
@@ -46,10 +53,35 @@
 .LandingPage__disclaimer {
 	font-size: 0.8em;
 }
+
+.LandingPage__pateon-modal {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	border: 1px solid var(--color-selected);
+	border-radius: 1em;
+
+	display: flex;
+	flex-direction: column;
+	background-color: var(--color-primary-contrast);
+	color: var(--color-primary);
+	padding: 1em;
+}
 </style>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+
 const emit = defineEmits<{
 	(e: 'signIn'): void;
 }>();
+
+const dismissPatreonModal = ref<(() => void) | null>(null);
+async function signIn() {
+	await new Promise<void>((resolve) => {
+		dismissPatreonModal.value = resolve;
+	});
+	emit('signIn');
+}
 </script>
