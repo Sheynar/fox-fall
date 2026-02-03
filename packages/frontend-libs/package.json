@@ -12,6 +12,7 @@
   },
   "author": "Daniel Olivier (KaoSDlanor@gmail.com)",
   "dependencies": {
+    "@cyhnkckali/vue3-color-picker": "^2.1.5",
     "@kaosdlanor/kanim": "^1.0.1",
     "@kaosdlanor/vue-reactivity": "^1.0.2",
     "@packages/data": "workspace:*",

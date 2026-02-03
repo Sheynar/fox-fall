@@ -1466,6 +1466,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@packages/frontend-libs@workspace:packages/frontend-libs"
   dependencies:
+    "@cyhnkckali/vue3-color-picker": "npm:^2.1.5"
     "@kaosdlanor/kanim": "npm:^1.0.1"
     "@kaosdlanor/vue-reactivity": "npm:^1.0.2"
     "@packages/data": "workspace:*"

@@ -19,82 +19,107 @@ const db = new Database('data/foobar.db');
 db.pragma('journal_mode = WAL');
 process.on('exit', () => db.close());
 
-db.exec(`
-	CREATE TABLE IF NOT EXISTS IntelInstance (
-		id TEXT PRIMARY KEY,
-		shard TEXT NOT NULL,
-		discord_guild_id TEXT NOT NULL
-	);
 
-	CREATE TABLE IF NOT EXISTS IntelInstanceDiscordPermissions (
-		instance_id TEXT NOT NULL,
-		access_type TEXT NOT NULL,
-		role_id TEXT NOT NULL,
-		FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE,
-		PRIMARY KEY (instance_id, access_type, role_id)
-	);
 
-	CREATE TABLE IF NOT EXISTS IntelMarkerRegion (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		instance_id INTEGER NOT NULL,
-		region_x INTEGER NOT NULL,
-		region_y INTEGER NOT NULL,
-		timestamp INTEGER NOT NULL,
-		mime_type TEXT NOT NULL,
-		region_data BLOB NOT NULL,
-		FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE
-	);
+let schemaVersion = -1;
+const targetSchemaVersion = 2;
+function getSchemaVersion() {
+	return schemaVersion = db.pragma('user_version', { simple: true }) as number;
+}
 
-	CREATE UNIQUE INDEX IF NOT EXISTS idx_IntelMarkerRegion_instance_id_region_x_region_y ON IntelMarkerRegion (instance_id, region_x, region_y);
+while (getSchemaVersion() !== targetSchemaVersion) {
+	switch(schemaVersion) {
+		case 0:
+			db.exec(`
+				CREATE TABLE IF NOT EXISTS IntelInstance (
+					id TEXT PRIMARY KEY,
+					shard TEXT NOT NULL,
+					discord_guild_id TEXT NOT NULL
+				);
 
-	CREATE TABLE IF NOT EXISTS IntelTag (
-		instance_id INTEGER NOT NULL,
-		tag TEXT NOT NULL,
-		FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE,
-		PRIMARY KEY (instance_id, tag)
-	);
+				CREATE TABLE IF NOT EXISTS IntelInstanceDiscordPermissions (
+					instance_id TEXT NOT NULL,
+					access_type TEXT NOT NULL,
+					role_id TEXT NOT NULL,
+					FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE,
+					PRIMARY KEY (instance_id, access_type, role_id)
+				);
 
-	CREATE UNIQUE INDEX IF NOT EXISTS idx_IntelTag_instance_id_tag ON IntelTag (instance_id, tag);
+				CREATE TABLE IF NOT EXISTS IntelMarkerRegion (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					instance_id INTEGER NOT NULL,
+					region_x INTEGER NOT NULL,
+					region_y INTEGER NOT NULL,
+					timestamp INTEGER NOT NULL,
+					mime_type TEXT NOT NULL,
+					region_data BLOB NOT NULL,
+					FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE
+				);
 
-	CREATE TABLE IF NOT EXISTS IntelDocument (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		instance_id INTEGER NOT NULL,
-		document_x INTEGER NOT NULL,
-		document_y INTEGER NOT NULL,
-		ui_size FLOAT NOT NULL,
-		timestamp INTEGER NOT NULL,
-		deleted BOOLEAN NOT NULL DEFAULT FALSE,
-		document_name TEXT NOT NULL,
-		document_content TEXT NOT NULL,
-		FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE
-	);
+				CREATE UNIQUE INDEX IF NOT EXISTS idx_IntelMarkerRegion_instance_id_region_x_region_y ON IntelMarkerRegion (instance_id, region_x, region_y);
 
-	CREATE UNIQUE INDEX IF NOT EXISTS idx_IntelDocument_instance_id_id ON IntelDocument (instance_id, id);
+				CREATE TABLE IF NOT EXISTS IntelTag (
+					instance_id INTEGER NOT NULL,
+					tag TEXT NOT NULL,
+					FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE,
+					PRIMARY KEY (instance_id, tag)
+				);
 
-	CREATE TABLE IF NOT EXISTS IntelDocumentTag (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		instance_id INTEGER NOT NULL,
-		document_id INTEGER NOT NULL,
-		tag TEXT NOT NULL,
-		timestamp INTEGER NOT NULL,
-		deleted BOOLEAN NOT NULL DEFAULT FALSE,
-		FOREIGN KEY (instance_id, document_id) REFERENCES IntelDocument(instance_id, id) ON DELETE CASCADE ON UPDATE CASCADE,
-		FOREIGN KEY (instance_id, tag) REFERENCES IntelTag(instance_id, tag) ON DELETE CASCADE ON UPDATE CASCADE
-	);
+				CREATE UNIQUE INDEX IF NOT EXISTS idx_IntelTag_instance_id_tag ON IntelTag (instance_id, tag);
 
-	CREATE UNIQUE INDEX IF NOT EXISTS idx_IntelDocumentTag_instance_id_document_id_tag ON IntelDocumentTag (instance_id, document_id, tag);
+				CREATE TABLE IF NOT EXISTS IntelDocument (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					instance_id INTEGER NOT NULL,
+					document_x INTEGER NOT NULL,
+					document_y INTEGER NOT NULL,
+					ui_size FLOAT NOT NULL,
+					timestamp INTEGER NOT NULL,
+					deleted BOOLEAN NOT NULL DEFAULT FALSE,
+					document_name TEXT NOT NULL,
+					document_content TEXT NOT NULL,
+					FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE
+				);
 
-	CREATE TABLE IF NOT EXISTS IntelDocumentAttachment (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		instance_id INTEGER NOT NULL,
-		document_id INTEGER NOT NULL,
-		timestamp INTEGER NOT NULL,
-		mime_type TEXT NOT NULL,
-		attachment_content BLOB NOT NULL,
-		FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE,
-		FOREIGN KEY (instance_id, document_id) REFERENCES IntelDocument(instance_id, id) ON DELETE CASCADE ON UPDATE CASCADE
-	);
-`);
+				CREATE UNIQUE INDEX IF NOT EXISTS idx_IntelDocument_instance_id_id ON IntelDocument (instance_id, id);
+
+				CREATE TABLE IF NOT EXISTS IntelDocumentTag (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					instance_id INTEGER NOT NULL,
+					document_id INTEGER NOT NULL,
+					tag TEXT NOT NULL,
+					timestamp INTEGER NOT NULL,
+					deleted BOOLEAN NOT NULL DEFAULT FALSE,
+					FOREIGN KEY (instance_id, document_id) REFERENCES IntelDocument(instance_id, id) ON DELETE CASCADE ON UPDATE CASCADE,
+					FOREIGN KEY (instance_id, tag) REFERENCES IntelTag(instance_id, tag) ON DELETE CASCADE ON UPDATE CASCADE
+				);
+
+				CREATE UNIQUE INDEX IF NOT EXISTS idx_IntelDocumentTag_instance_id_document_id_tag ON IntelDocumentTag (instance_id, document_id, tag);
+
+				CREATE TABLE IF NOT EXISTS IntelDocumentAttachment (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					instance_id INTEGER NOT NULL,
+					document_id INTEGER NOT NULL,
+					timestamp INTEGER NOT NULL,
+					mime_type TEXT NOT NULL,
+					attachment_content BLOB NOT NULL,
+					FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE,
+					FOREIGN KEY (instance_id, document_id) REFERENCES IntelDocument(instance_id, id) ON DELETE CASCADE ON UPDATE CASCADE
+				);
+
+				PRAGMA user_version = 1;
+			`);
+			break;
+		case 1:
+			db.exec(`
+				ALTER TABLE IntelDocument ADD COLUMN document_color TEXT NOT NULL DEFAULT '#FFFFFF';
+				PRAGMA user_version = 2;
+			`);
+			break;
+		default:
+			throw new Error(`Unknown database schema version: ${schemaVersion}`);
+	}
+}
+
 
 export const models = {
 	intelInstance: {
@@ -376,11 +401,12 @@ export const models = {
 			documentY: number,
 			uiSize: number,
 			documentName: string,
-			documentContent: string
+			documentContent: string,
+			documentColor: string
 		) {
 			const insertResult = db
 				.prepare(
-					'INSERT INTO IntelDocument (instance_id, document_x, document_y, ui_size, timestamp, document_name, document_content) VALUES (?, ?, ?, ?, ?, ?, ?)'
+					'INSERT INTO IntelDocument (instance_id, document_x, document_y, ui_size, timestamp, document_name, document_content, document_color) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
 				)
 				.run(
 					instanceId,
@@ -389,7 +415,8 @@ export const models = {
 					uiSize,
 					Date.now(),
 					documentName,
-					documentContent
+					documentContent,
+					documentColor
 				);
 			return insertResult.lastInsertRowid;
 		},
@@ -425,7 +452,7 @@ export const models = {
 				.prepare<
 					[string, number, 1 | 0],
 					BasicIntelDocument
-				>('SELECT id, instance_id, document_x, document_y, ui_size, document_name, timestamp, deleted FROM IntelDocument WHERE instance_id = ? AND timestamp > ? AND (NOT ? OR deleted = FALSE)')
+				>('SELECT id, instance_id, document_x, document_y, ui_size, document_name, document_color, timestamp, deleted FROM IntelDocument WHERE instance_id = ? AND timestamp > ? AND (NOT ? OR deleted = FALSE)')
 				.all(instanceId, timestamp, skipDeleted ? 1 : 0);
 			return documents;
 		},
@@ -436,11 +463,12 @@ export const models = {
 			documentY: number,
 			uiSize: number,
 			documentName: string,
-			documentContent: string
+			documentContent: string,
+			documentColor: string
 		) {
 			const updateResult = db
 				.prepare(
-					'UPDATE IntelDocument SET document_x = ?, document_y = ?, ui_size = ?, timestamp = ?, document_name = ?, document_content = ? WHERE id = ?'
+					'UPDATE IntelDocument SET document_x = ?, document_y = ?, ui_size = ?, timestamp = ?, document_name = ?, document_content = ?, document_color = ? WHERE id = ?'
 				)
 				.run(
 					documentX,
@@ -449,6 +477,7 @@ export const models = {
 					Date.now(),
 					documentName,
 					documentContent,
+					documentColor,
 					documentId
 				);
 			return updateResult.changes;

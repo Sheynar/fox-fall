@@ -37,6 +37,18 @@
 						<DocumentTags v-if="documentRef != null" :document-id="documentRef.id" />
 					</label>
 					<label class="DocumentEditor__metadata-entry">
+						Color
+						<ColorInput
+							:model-value="documentRef?.document_color ?? '#FFFFFF'"
+							@update:model-value="
+								withHandlingAsync(() => updateDocumentDebounced({
+									...documentRef!,
+									document_color: $event,
+								}, documentRef!))
+							"
+						/>
+					</label>
+					<label class="DocumentEditor__metadata-entry">
 						UI Size
 						<NumberInput
 							:model-value="documentRef?.ui_size ?? 0"
@@ -352,6 +364,7 @@
 		withHandling,
 		withHandlingAsync,
 	} from '@packages/frontend-libs/dist/error';
+	import ColorInput from '@packages/frontend-libs/dist/inputs/ColorInput.vue';
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import {
 		prosemarkBasicSetup,

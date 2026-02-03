@@ -775,6 +775,10 @@ export async function initialiseHttp(
 		if (typeof documentContent !== 'string') {
 			return c.json({ error: 'Invalid document content' }, 400);
 		}
+		const documentColor = body.documentColor;
+		if (typeof documentColor !== 'string') {
+			return c.json({ error: 'Invalid document color' }, 400);
+		}
 
 		const documentId = models.intelDocument.create(
 			instanceId,
@@ -782,7 +786,8 @@ export async function initialiseHttp(
 			documentY,
 			uiSize,
 			documentName,
-			documentContent
+			documentContent,
+			documentColor
 		);
 
 		for (const listener of pendingDocumentRequests.get(instanceId) ?? []) {
@@ -832,6 +837,10 @@ export async function initialiseHttp(
 		if (typeof documentContent !== 'string') {
 			return c.json({ error: 'Invalid document content' }, 400);
 		}
+		const documentColor = body.document_color ?? existingDocument?.document_color;
+		if (typeof documentColor !== 'string') {
+			return c.json({ error: 'Invalid document color' }, 400);
+		}
 
 		models.intelDocument.update(
 			documentId,
@@ -839,7 +848,8 @@ export async function initialiseHttp(
 			documentY,
 			uiSize,
 			documentName,
-			documentContent
+			documentContent,
+			documentColor
 		);
 
 		for (const listener of pendingDocumentRequests.get(instanceId) ?? []) {

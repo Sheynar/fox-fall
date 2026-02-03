@@ -16,7 +16,8 @@ function _useDocuments(options: UseDocumentsOptions) {
 		documentY: number,
 		uiSize: number,
 		documentName: string,
-		documentContent: string
+		documentContent: string,
+		documentColor: string
 	) {
 		const response = await options.intelInstance.authenticatedFetch(
 			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document`,
@@ -28,6 +29,7 @@ function _useDocuments(options: UseDocumentsOptions) {
 					uiSize,
 					documentName,
 					documentContent,
+					documentColor,
 				}),
 			}
 		);
@@ -44,6 +46,7 @@ function _useDocuments(options: UseDocumentsOptions) {
 			document_y: documentY,
 			ui_size: uiSize,
 			document_name: documentName,
+			document_color: documentColor,
 			timestamp: 0,
 			deleted: false,
 		};

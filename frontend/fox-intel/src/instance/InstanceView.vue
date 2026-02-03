@@ -371,7 +371,8 @@ const onContextMenuSubmit = async (event: {
 			position.y,
 			1,
 			'New Document',
-			''
+			'',
+			'#FFFFFF'
 		);
 		nextTick(() => {
 			const element = document.querySelector(

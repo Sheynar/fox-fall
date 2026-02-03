@@ -33,6 +33,7 @@ export type BasicIntelDocument = {
 	document_y: number;
 	ui_size: number;
 	document_name: string;
+	document_color: string;
 	timestamp: number;
 	deleted: boolean;
 };
