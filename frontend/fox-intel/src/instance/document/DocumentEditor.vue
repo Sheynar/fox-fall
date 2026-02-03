@@ -427,9 +427,16 @@
 			if (editor == null) return;
 			if (editor.state.doc.toString() === newDocumentContent) return;
 
-			editor.setState(
-				EditorState.create({ doc: newDocumentContent, extensions })
-			);
+			const selection = editor.state.selection;
+
+			editor.dispatch({
+				changes: {
+					from: 0,
+					to: editor.state.doc.length,
+					insert: newDocumentContent,
+				},
+				selection: selection,
+			});
 		}
 	);
 
