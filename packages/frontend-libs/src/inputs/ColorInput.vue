@@ -26,6 +26,7 @@
 	position-anchor: --color-picker-container;
 	left: calc(anchor(right) + 0.5em);
 	top: anchor(top);
+	position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
 }
 </style>
 
