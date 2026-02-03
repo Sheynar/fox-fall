@@ -1,4 +1,3 @@
-import '@cyhnkckali/vue3-color-picker/dist/style.css'
 import '@packages/frontend-libs/dist/frontend-libs.css';
 import { addErrorHandler } from '@packages/frontend-libs/dist/error';
 import Aura from '@primeuix/themes/aura';

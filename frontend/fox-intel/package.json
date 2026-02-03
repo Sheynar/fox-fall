@@ -19,7 +19,6 @@
     "@codemirror/search": "^6.5.11",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.38.6",
-    "@cyhnkckali/vue3-color-picker": "^2.1.5",
     "@kaosdlanor/kanim": "^1.0.1",
     "@kaosdlanor/vue-reactivity": "^1.0.2",
     "@lezer/highlight": "^1.2.0",
