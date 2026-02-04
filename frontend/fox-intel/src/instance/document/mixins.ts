@@ -113,6 +113,7 @@ export function _useDocumentsByTag(options: UseDocumentsOptions) {
 	const documentsByTag = ref<{ [tag: string]: { [id: BasicIntelDocument['id']]: BasicIntelDocument } }>(
 		{}
 	);
+	const untaggedDocuments = ref<{ [id: BasicIntelDocument['id']]: BasicIntelDocument }>({});
 
 	useScopePerObjectKey(documents, (id) => {
 		const { tagsByName } = useDocumentTags({
@@ -129,18 +130,34 @@ export function _useDocumentsByTag(options: UseDocumentsOptions) {
 				}
 			}
 
-			for (const tag of Object.keys(newTags)) {
-				if (documentsByTag.value[tag] == null) {
-					documentsByTag.value[tag] = {};
+			if (Object.keys(newTags).length === 0) {
+				untaggedDocuments.value[id] = newDocument;
+			} else {
+				delete untaggedDocuments.value[id];
+				for (const tag of Object.keys(newTags)) {
+					if (documentsByTag.value[tag] == null) {
+						documentsByTag.value[tag] = {};
+					}
+					documentsByTag.value[tag][id] = newDocument;
 				}
-				documentsByTag.value[tag][id] = newDocument;
 			}
 		}, { flush: 'sync', immediate: true });
+
+		onScopeDispose(() => {
+			for (const tag of Object.keys(documentsByTag.value)) {
+				delete documentsByTag.value[tag][id];
+				if (Object.keys(documentsByTag.value[tag]).length === 0) {
+					delete documentsByTag.value[tag];
+				}
+			}
+			delete untaggedDocuments.value[id];
+		});
 	}, 'sync');
 
 	return {
 		addDocument,
 		documentsByTag,
+		untaggedDocuments,
 		ready,
 	};
 }
@@ -205,7 +222,7 @@ export type UseDocumentTagsOptions = {
 };
 export function _useDocumentTags(options: UseDocumentTagsOptions) {
 	const tags = ref<{ [id: IntelDocumentTag['id']]: IntelDocumentTag }>({});
-	const tagsByName = ref<{ [name: string]: IntelDocumentTag['id'] }>({});
+	const tagsByName = ref<{ [name: string]: IntelDocumentTag }>({});
 
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
@@ -229,7 +246,7 @@ export function _useDocumentTags(options: UseDocumentTagsOptions) {
 				delete newTagsByName[tag.tag];
 			} else {
 				newTags[tag.id] = tag;
-				newTagsByName[tag.tag] = tag.id;
+				newTagsByName[tag.tag] = tag;
 			}
 		}
 		tags.value = newTags;

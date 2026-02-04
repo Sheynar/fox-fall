@@ -1,6 +1,7 @@
 <template>
 	<div class="DocumentManager__container">
 		<DocumentTagGroup v-for="tag in Object.keys(documentsByTag)" :key="tag" :tag="tag" :documents="documentsByTag[tag]" />
+		<DocumentTagGroup v-if="Object.keys(untaggedDocuments).length > 0" :tag="'<Untagged>'" :documents="untaggedDocuments" />
 	</div>
 </template>
 
@@ -22,7 +23,7 @@ import DocumentTagGroup from './DocumentTagGroup.vue';
 
 const intelInstance = injectIntelInstance();
 
-const { documentsByTag, ready } = useDocumentsByTag({
+const { documentsByTag, untaggedDocuments, ready } = useDocumentsByTag({
 	intelInstance,
 });
 
