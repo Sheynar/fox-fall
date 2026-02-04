@@ -376,7 +376,7 @@ const onContextMenuSubmit = async (event: {
 		);
 		nextTick(() => {
 			const element = document.querySelector(
-				`div[data-document-id="${documentId}"]`
+				`.DocumentInstance__container[data-document-id="${documentId}"]`
 			);
 			if (element == null) return;
 			(element as HTMLElement).dispatchEvent(

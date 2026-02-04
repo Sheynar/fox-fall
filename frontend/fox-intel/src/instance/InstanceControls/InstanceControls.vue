@@ -88,7 +88,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { markerDisabled } from '@/lib/globals';
-import DocumentManager from './DocumentManager.vue';
+import DocumentManager from './DocumentManager/DocumentManager.vue';
 import MarkerControls from './MarkerControls.vue';
 import RenderFilters from './RenderFilters/RenderFilters.vue';
 

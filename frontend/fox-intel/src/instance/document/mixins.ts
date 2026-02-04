@@ -1,6 +1,7 @@
 import type { BasicIntelDocument, IntelDocument, IntelDocumentTag } from '@packages/data/dist/intel';
 import { wrapMixin } from '@packages/frontend-libs/src/reference-cache';
-import { onScopeDispose, ref } from 'vue';
+import { useScopePerObjectKey } from '@packages/frontend-libs/dist/scope';
+import { onScopeDispose, ref, watch } from 'vue';
 import { injectIntelInstance } from '@/lib/intel-instance';
 
 export type UseDocumentsOptions = {
@@ -107,9 +108,48 @@ function _useDocuments(options: UseDocumentsOptions) {
 }
 export const useDocuments = wrapMixin(_useDocuments, (options) => `${options.intelInstance.instanceId.value}-documents`);
 
+export function _useDocumentsByTag(options: UseDocumentsOptions) {
+	const { ready, documents, addDocument } = useDocuments(options);
+	const documentsByTag = ref<{ [tag: string]: { [id: BasicIntelDocument['id']]: BasicIntelDocument } }>(
+		{}
+	);
+
+	useScopePerObjectKey(documents, (id) => {
+		const { tagsByName } = useDocumentTags({
+			intelInstance: options.intelInstance,
+			documentId: id,
+		});
+
+		watch([() => documents.value[id], tagsByName], ([newDocument, newTags], [_, oldTags]) => {
+			for (const tag of Object.keys(oldTags ?? {})) {
+				if (newTags[tag] || !documentsByTag.value[tag]) continue;
+				delete documentsByTag.value[tag][id];
+				if (Object.keys(documentsByTag.value[tag]).length === 0) {
+					delete documentsByTag.value[tag];
+				}
+			}
+
+			for (const tag of Object.keys(newTags)) {
+				if (documentsByTag.value[tag] == null) {
+					documentsByTag.value[tag] = {};
+				}
+				documentsByTag.value[tag][id] = newDocument;
+			}
+		}, { flush: 'sync', immediate: true });
+	}, 'sync');
+
+	return {
+		addDocument,
+		documentsByTag,
+		ready,
+	};
+}
+
+export const useDocumentsByTag = wrapMixin(_useDocumentsByTag, (options) => `${options.intelInstance.instanceId.value}-documents-by-tag`);
+
 export type UseDocumentOptions = {
 	intelInstance: ReturnType<typeof injectIntelInstance>;
-	document: BasicIntelDocument;
+	documentId: number;
 };
 function _useDocument(options: UseDocumentOptions) {
 	const document = ref<IntelDocument | null>(null);
@@ -117,7 +157,7 @@ function _useDocument(options: UseDocumentOptions) {
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
 		const response = await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/id/${encodeURIComponent(options.document.id)}/since?timestamp=${timestamp}&timeout=${timeout}`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/id/${encodeURIComponent(options.documentId)}/since?timestamp=${timestamp}&timeout=${timeout}`,
 			{
 				method: 'GET',
 			}
@@ -157,7 +197,7 @@ function _useDocument(options: UseDocumentOptions) {
 		ready,
 	};
 }
-export const useDocument = wrapMixin(_useDocument, (options) => `${options.intelInstance.instanceId.value}-document-${options.document.id}`);
+export const useDocument = wrapMixin(_useDocument, (options) => `${options.intelInstance.instanceId.value}-document-${options.documentId}`);
 
 export type UseDocumentTagsOptions = {
 	intelInstance: ReturnType<typeof injectIntelInstance>;
@@ -165,6 +205,7 @@ export type UseDocumentTagsOptions = {
 };
 export function _useDocumentTags(options: UseDocumentTagsOptions) {
 	const tags = ref<{ [id: IntelDocumentTag['id']]: IntelDocumentTag }>({});
+	const tagsByName = ref<{ [name: string]: IntelDocumentTag['id'] }>({});
 
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
@@ -180,13 +221,19 @@ export function _useDocumentTags(options: UseDocumentTagsOptions) {
 			);
 		}
 		const data: { tags: IntelDocumentTag[]; timestamp: number } = await response.json();
+		const newTags = {...tags.value};
+		const newTagsByName = {...tagsByName.value};
 		for (const tag of data.tags) {
 			if (tag.deleted) {
-				delete tags.value[tag.id];
+				delete newTags[tag.id];
+				delete newTagsByName[tag.tag];
 			} else {
-				tags.value[tag.id] = tag;
+				newTags[tag.id] = tag;
+				newTagsByName[tag.tag] = tag.id;
 			}
 		}
+		tags.value = newTags;
+		tagsByName.value = newTagsByName;
 		lastLoadedTimestamp = data.timestamp;
 	}
 
@@ -215,6 +262,7 @@ export function _useDocumentTags(options: UseDocumentTagsOptions) {
 
 	return {
 		tags,
+		tagsByName,
 		ready,
 		readyPromise,
 	};

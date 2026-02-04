@@ -392,7 +392,7 @@
 
 	const { document: documentRef } = useDocument({
 		intelInstance,
-		document: props.document,
+		documentId: props.document.id,
 	});
 
 	const editorContainer = ref<HTMLDivElement | null>(null);
