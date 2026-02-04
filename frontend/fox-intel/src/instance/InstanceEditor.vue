@@ -36,11 +36,11 @@
 							:enable-search="true"
 						/>
 					</label>
-					<label v-if="guildRoleOptions" :key="guildId">
+					<label v-if="guildAdminRoleOptions" :key="guildId">
 						Admin roles
 						<FoxSelect
 							v-model="guildAdminRoleIds"
-							:options="guildRoleOptions"
+							:options="guildAdminRoleOptions"
 							placeholder="Select a role"
 							:enable-search="true"
 							:enable-multiple="true"
@@ -248,11 +248,13 @@
 	}
 
 	const guildRoleOptions = ref<Options | null>(null);
+	const guildAdminRoleOptions = ref<Options | null>(null);
 	let guildMemberPromise:
 		| Promise<[DiscordGuildMember, DiscordRole[]]>
 		| undefined = undefined;
 	async function initialiseGuildRoleOptions() {
 		guildRoleOptions.value = null;
+		guildAdminRoleOptions.value = null;
 		if (!guildId.value) return;
 		const localPromise = (guildMemberPromise = Promise.all([
 			getGuildMember(),
@@ -274,19 +276,31 @@
 				order?: number | undefined;
 			}
 		>();
+		const newGuildAdminRoleOptions = new Map<
+			string,
+			{
+				label: string;
+				icon?: any;
+				order?: number | undefined;
+			}
+		>();
 
 		const rolesById = new Map<string, DiscordRole>();
-		for (const role of guildRoles) {
+		for (const [index, role] of guildRoles.entries()) {
 			rolesById.set(role.id, role);
-		}
-
-		for (const [index, role] of guildMember.roles.entries()) {
-			newGuildRoleOptions.set(role, {
-				label: rolesById.get(role)?.name ?? role,
+			newGuildRoleOptions.set(role.id, {
+				label: role.name,
 				order: index,
 			});
+			if (guildMember.roles.includes(role.id)) {
+				newGuildAdminRoleOptions.set(role.id, {
+					label: role.name,
+					order: index,
+				});
+			}
 		}
 		guildRoleOptions.value = newGuildRoleOptions;
+		guildAdminRoleOptions.value = newGuildAdminRoleOptions;
 	}
 
 	watch(
