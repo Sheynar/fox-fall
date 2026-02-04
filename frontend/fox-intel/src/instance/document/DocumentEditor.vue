@@ -557,11 +557,6 @@
 		}
 
 		if (Object.keys(updateData).length === 0) {
-			console.log(
-				'no updates',
-				JSON.parse(JSON.stringify(newDocument)),
-				JSON.parse(JSON.stringify(oldDocument))
-			);
 			return;
 		}
 		oldDocument = newDocument;
