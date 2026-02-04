@@ -3,8 +3,8 @@
 		<i class="DocumentTagGroup__open-icon pi" :class="{ 'pi-chevron-down': open, 'pi-chevron-right': !open }" />
 		<div class="DocumentTagGroup__title">{{ props.tag }}</div>
 		<div class="DocumentTagGroup__documents" v-if="open" @click.stop>
-			<div v-for="document in Object.values(props.documents)" :key="document.id" class="DocumentTagGroup__document">
-				<a @click.prevent.stop="openDocument(document.id)" class="DocumentTagGroup__document-name">{{ document.document_name }}</a>
+			<div v-for="document in Object.values(props.documents)" :key="document.id" class="DocumentTagGroup__document" @click.prevent.stop="openDocument(document.id)">
+				<a class="DocumentTagGroup__document-name">{{ document.document_name }}</a>
 			</div>
 		</div>
 	</div>
