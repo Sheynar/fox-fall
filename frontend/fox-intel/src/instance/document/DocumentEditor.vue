@@ -455,7 +455,7 @@
 
 	async function getAttachments() {
 		const attachmentsResponse = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.document.id)}/attachment`,
 			{
 				method: 'GET',
 			}
@@ -493,7 +493,7 @@
 		attachmentsPromise.value = attachmentsPromise.value.then(
 			async (attachments) => {
 				const response = await intelInstance.authenticatedFetch(
-					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment`,
+					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.document.id)}/attachment`,
 					{
 						method: 'POST',
 						body: blob,
@@ -575,7 +575,7 @@
 	async function deleteDocument() {
 		if (!confirm('Are you sure you want to delete this document?')) return;
 		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.document.id)}`,
 			{
 				method: 'DELETE',
 			}
@@ -591,7 +591,7 @@
 		attachmentsPromise.value = attachmentsPromise.value.then(
 			async (attachments) => {
 				const response = await intelInstance.authenticatedFetch(
-					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.document.id)}/attachment/${encodeURIComponent(attachmentId)}`,
+					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.document.id)}/attachment/${encodeURIComponent(attachmentId)}`,
 					{
 						method: 'DELETE',
 					}

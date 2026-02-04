@@ -797,7 +797,7 @@ export async function initialiseHttp(
 		return c.json({ id: documentId });
 	});
 
-	app.post('/api/v1/instance/:instanceId/document/:documentId', async (c) => {
+	app.post('/api/v1/instance/:instanceId/document/id/:documentId', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const sessionOutput = validateSession(c, instanceId, true);
 		if (sessionOutput) return sessionOutput;
@@ -858,7 +858,7 @@ export async function initialiseHttp(
 
 		return c.json({ success: true });
 	});
-	app.get('/api/v1/instance/:instanceId/document/:documentId/since', async (c) => {
+	app.get('/api/v1/instance/:instanceId/document/id/:documentId/since', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const sessionOutput = validateSession(c, instanceId);
 		if (sessionOutput) return sessionOutput;
@@ -910,7 +910,7 @@ export async function initialiseHttp(
 		});
 	});
 
-	app.delete('/api/v1/instance/:instanceId/document/:documentId', async (c) => {
+	app.delete('/api/v1/instance/:instanceId/document/id/:documentId', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const sessionOutput = validateSession(c, instanceId, true);
 		if (sessionOutput) return sessionOutput;
@@ -929,7 +929,7 @@ export async function initialiseHttp(
 		return c.json({ success: true });
 	});
 
-	app.get('/api/v1/instance/:instanceId/document/:documentId', async (c) => {
+	app.get('/api/v1/instance/:instanceId/document/id/:documentId', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const sessionOutput = validateSession(c, instanceId);
 		if (sessionOutput) return sessionOutput;
@@ -997,7 +997,7 @@ export async function initialiseHttp(
 	function pendingDocumentTagsRequestId(instanceId: string, documentId: number) {
 		return `${instanceId}-${documentId}-tags`;
 	}
-	app.get('/api/v1/instance/:instanceId/document/:documentId/tags/since', async (c) => {
+	app.get('/api/v1/instance/:instanceId/document/id/:documentId/tags/since', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const sessionOutput = validateSession(c, instanceId);
 		if (sessionOutput) return sessionOutput;
@@ -1045,7 +1045,7 @@ export async function initialiseHttp(
 		});
 	});
 
-	app.post('/api/v1/instance/:instanceId/document/:documentId/tag/:tag', async (c) => {
+	app.post('/api/v1/instance/:instanceId/document/id/:documentId/tag/:tag', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const sessionOutput = validateSession(c, instanceId, true);
 		if (sessionOutput) return sessionOutput;
@@ -1072,7 +1072,7 @@ export async function initialiseHttp(
 		return c.json({ success: true });
 	});
 
-	app.delete('/api/v1/instance/:instanceId/document/:documentId/tag/:tag', async (c) => {
+	app.delete('/api/v1/instance/:instanceId/document/id/:documentId/tag/:tag', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const sessionOutput = validateSession(c, instanceId, true);
 		if (sessionOutput) return sessionOutput;
@@ -1101,7 +1101,7 @@ export async function initialiseHttp(
 
 	/* Document Attachment API */
 	app.post(
-		'/api/v1/instance/:instanceId/document/:documentId/attachment',
+		'/api/v1/instance/:instanceId/document/id/:documentId/attachment',
 		async (c) => {
 			const instanceId = c.req.param('instanceId');
 			const sessionOutput = validateSession(c, instanceId, true);
@@ -1124,7 +1124,7 @@ export async function initialiseHttp(
 	);
 
 	app.delete(
-		'/api/v1/instance/:instanceId/document/:documentId/attachment/:attachmentId',
+		'/api/v1/instance/:instanceId/document/id/:documentId/attachment/:attachmentId',
 		async (c) => {
 			const instanceId = c.req.param('instanceId');
 			const sessionOutput = validateSession(c, instanceId, true);
@@ -1150,7 +1150,7 @@ export async function initialiseHttp(
 	);
 
 	app.get(
-		'/api/v1/instance/:instanceId/document/:documentId/attachment',
+		'/api/v1/instance/:instanceId/document/id/:documentId/attachment',
 		async (c) => {
 			const instanceId = c.req.param('instanceId');
 			const sessionOutput = validateSession(c, instanceId);

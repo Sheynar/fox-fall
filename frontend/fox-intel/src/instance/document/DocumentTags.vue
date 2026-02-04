@@ -19,7 +19,7 @@
 	});
 
 	async function addTag(tag: string) {
-		const response = await intelInstance.authenticatedFetch(`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.documentId)}/tag/${encodeURIComponent(tag)}`, {
+		const response = await intelInstance.authenticatedFetch(`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.documentId)}/tag/${encodeURIComponent(tag)}`, {
 			method: 'POST',
 		});
 		if (!response.ok) {
@@ -28,7 +28,7 @@
 	}
 
 	async function removeTag(tag: string) {
-		const response = await intelInstance.authenticatedFetch(`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(props.documentId)}/tag/${encodeURIComponent(tag)}`, {
+		const response = await intelInstance.authenticatedFetch(`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.documentId)}/tag/${encodeURIComponent(tag)}`, {
 			method: 'DELETE',
 		});
 		if (!response.ok) {

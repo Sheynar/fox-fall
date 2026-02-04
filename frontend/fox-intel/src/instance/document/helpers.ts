@@ -7,7 +7,7 @@ export async function updatePartialDocument(
 	updateData: Partial<IntelDocument>
 ) {
 	const response = await intelInstance.authenticatedFetch(
-		`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/${encodeURIComponent(documentId)}`,
+		`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(documentId)}`,
 		{
 			method: 'POST',
 			body: JSON.stringify(updateData),

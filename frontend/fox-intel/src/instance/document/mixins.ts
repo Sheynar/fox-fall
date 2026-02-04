@@ -117,7 +117,7 @@ function _useDocument(options: UseDocumentOptions) {
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
 		const response = await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/${encodeURIComponent(options.document.id)}/since?timestamp=${timestamp}&timeout=${timeout}`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/id/${encodeURIComponent(options.document.id)}/since?timestamp=${timestamp}&timeout=${timeout}`,
 			{
 				method: 'GET',
 			}
@@ -169,7 +169,7 @@ export function _useDocumentTags(options: UseDocumentTagsOptions) {
 	let lastLoadedTimestamp = 0;
 	async function loadSince(timestamp: number, timeout: number = 10000) {
 		const response = await options.intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/${encodeURIComponent(options.documentId)}/tags/since?timestamp=${timestamp}&timeout=${timeout}`,
+			`/api/v1/instance/${encodeURIComponent(options.intelInstance.instanceId.value)}/document/id/${encodeURIComponent(options.documentId)}/tags/since?timestamp=${timestamp}&timeout=${timeout}`,
 			{
 				method: 'GET',
 			}
