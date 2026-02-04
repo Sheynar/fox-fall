@@ -111,7 +111,7 @@ export function useViewportControl(options: ViewportControlOptions) {
 		}
 
 		const zoomDelta =
-			(event.deltaY > 0 ? -0.1 : 0.1) *
+			(event.deltaY / -700) *
 			zoomModifier *
 			options.viewport.value.zoom;
 
