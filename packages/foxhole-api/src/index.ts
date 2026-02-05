@@ -95,6 +95,12 @@ export enum MapIconType {
 
 	WeatherStation = 83,
 	MortarHouse = 84,
+
+	AircraftDepot = 88,
+	AircraftFactory = 89,
+	AircraftRadar = 90,
+	AircraftRunwayT1 = 91,
+	AircraftRunwayT2 = 92,
 }
 
 export enum Team {

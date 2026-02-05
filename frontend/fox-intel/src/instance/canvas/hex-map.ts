@@ -378,7 +378,12 @@ export function useHexMap(options: HexMapOptions) {
 							drawIcon(victoryOutline, hexPosition, mapItem.x, mapItem.y, 1);
 						}
 
-						drawIcon(icon, hexPosition, mapItem.x, mapItem.y);
+						const scorchedTown = mapIcons[mapItem.teamId]?.[MapIconName.ScorchedTown];
+						if (mapItem.flags & MapFlags.IsScorched && scorchedTown) {
+							drawIcon(scorchedTown, hexPosition, mapItem.x, mapItem.y, 1);
+						} else {
+							drawIcon(icon, hexPosition, mapItem.x, mapItem.y);
+						}
 					}
 				});
 			}

@@ -1,47 +1,59 @@
+import FacilityTransferCrateMapIcon from './FacilityTransferCrateMapIcon.png?no-inline';
+import FuelTransferStationMapIcon from './FuelTransferStationMapIcon.png?no-inline';
+import MapIconAircraftDepot from './MapIconAircraftDepot.png?no-inline';
+import MapIconAircraftFactory from './MapIconAircraftFactory.png?no-inline';
+import MapIconAircraftRunwayT1 from './MapIconAircraftRunwayT1.png?no-inline';
+import MapIconAircraftRunwayT2 from './MapIconAircraftRunwayT2.png?no-inline';
 // import MapIconArmory from './MapIconArmory.png?no-inline';
-// import MapIconBorderBase from './MapIconBorderBase.png?no-inline';
-// import MapIconBunkerBaseTier1 from './MapIconBunkerBaseTier1.png?no-inline';
-// import MapIconBunkerBaseTier2 from './MapIconBunkerBaseTier2.png?no-inline';
-// import MapIconBunkerBaseTier3 from './MapIconBunkerBaseTier3.png?no-inline';
-// import MapIconCivicCenter from './MapIconCivicCenter.png?no-inline';
+import MapIconBorderBase from './MapIconBorderBase.png?no-inline';
+import MapIconBunkerBaseTier1 from './MapIconBunkerBaseTier1.png?no-inline';
+import MapIconBunkerBaseTier2 from './MapIconBunkerBaseTier2.png?no-inline';
+import MapIconBunkerBaseTier3 from './MapIconBunkerBaseTier3.png?no-inline';
+import MapIconCivicCenter from './MapIconCivicCenter.png?no-inline';
 import MapIconCoal from './MapIconCoal.png?no-inline';
 import MapIconCoastalGun from './MapIconCoastalGun.png?no-inline';
 import MapIconComponentMine from './MapIconComponentMine.png?no-inline';
 import MapIconComponents from './MapIconComponents.png?no-inline';
 import MapIconConquestC from './MapIconConquestC.png?no-inline';
 import MapIconConstructionYard from './MapIconConstructionYard.png?no-inline';
+// import MapIconEvent from './MapIconEvent.png?no-inline';
+// import MapIconEventC from './MapIconEventC.png?no-inline';
+// import MapIconEventW from './MapIconEventW.png?no-inline';
 import MapIconFacilityMineOilRig from './MapIconFacilityMineOilRig.png?no-inline';
-// import MapIconFacilityModificationCenter from './MapIconFacilityModificationCenter.png?no-inline';
-// import MapIconFacilityVehicleFactory1 from './MapIconFacilityVehicleFactory1.png?no-inline';
-// import MapIconFacilityVehicleFactory2 from './MapIconFacilityVehicleFactory2.png?no-inline';
-// import MapIconFacilityVehicleFactory3 from './MapIconFacilityVehicleFactory3.png?no-inline';
-import MapIcomFactory from './MapIconFactory.png?no-inline';
+import MapIconFacilityModificationCenter from './MapIconFacilityModificationCenter.png?no-inline';
+import MapIconFacilityVehicleFactory1 from './MapIconFacilityVehicleFactory1.png?no-inline';
+import MapIconFacilityVehicleFactory2 from './MapIconFacilityVehicleFactory2.png?no-inline';
+import MapIconFacilityVehicleFactory3 from './MapIconFacilityVehicleFactory3.png?no-inline';
+import MapIconFactory from './MapIconFactory.png?no-inline';
 import MapIconFort from './MapIconFort.png?no-inline';
+import MapIconFortLargeRadar from './MapIconFortLargeRadar.png?no-inline';
 // import MapIconFortCursed from './MapIconFortCursed.png?no-inline';
 import MapIconForwardBase1 from './MapIconForwardBase1.png?no-inline';
 // import MapIconFrontierBase1 from './MapIconFrontierBase1.png?no-inline';
 import MapIconFuel from './MapIconFuel.png?no-inline';
 import MapIconHospital from './MapIconHospital.png?no-inline';
 import MapIconIntelcenter from './MapIconIntelcenter.png?no-inline';
+// import MapIconLargeShipAircraftShip from './MapIconLargeShipAircraftShip.png?no-inline';
 import MapIconLargeShipBaseShip from './MapIconLargeShipBaseShip.png?no-inline';
 // import MapIconLargeShipStorageShip from './MapIconLargeShipStorageShip.png?no-inline';
 import MapIconManufacturing from './MapIconManufacturing.png?no-inline';
 import MapIconMassProductionFactory from './MapIconMassProductionFactory.png?no-inline';
 import MapIconMortarHouse from './MapIconMortarHouse.png?no-inline';
 import MapIconObservationTower from './MapIconObservationTower.png?no-inline';
-// import MapIconOutpost from './MapIconOutpost.png?no-inline';
+import MapIconOutpost from './MapIconOutpost.png?no-inline';
 import MapIconRelicBase from './MapIconRelicBase.png?no-inline';
 import MapIconRocketGroundZero from './MapIconRocketGroundZero.png?no-inline';
 import MapIconRocketSite from './MapIconRocketSite.png?no-inline';
 import MapIconRocketSiteWithRocket from './MapIconRocketSiteWithRocket.png?no-inline';
 import MapIconRocketTarget from './MapIconRocketTarget.png?no-inline';
 import MapIconSafehouse from './MapIconSafehouse.png?no-inline';
-// import MapIconScorchedTown from './MapIconScorchedTown.png?no-inline';
+import MapIconScorchedTown from './MapIconScorchedTown.png?no-inline';
 import MapIconScrapMine from './MapIconScrapMine.png?no-inline';
 import MapIconSeaport from './MapIconSeaport.png?no-inline';
 // import MapIconsFortGarrisonStation from './MapIconsFortGarrisonStation.png?no-inline';
 import MapIconsKeep from './MapIconsKeep.png?no-inline';
-// import MapIconSmallArmsFacility from './MapIconSmallArmsFacility.png?no-inline';
+import MapIconSkirmishC from './MapIconSkirmishC.png?no-inline';
+import MapIconSmallArmsFacility from './MapIconSmallArmsFacility.png?no-inline';
 import MapIconSoulFactory from './MapIconSoulFactory.png?no-inline';
 // import MapIconStaticBase1 from './MapIconStaticBase1.png?no-inline';
 // import MapIconStaticBase2 from './MapIconStaticBase2.png?no-inline';
@@ -57,77 +69,111 @@ import MapIconTownBaseTier1 from './MapIconTownBaseTier1.png?no-inline';
 import MapIconTownBaseTier2 from './MapIconTownBaseTier2.png?no-inline';
 import MapIconTownBaseTier3 from './MapIconTownBaseTier3.png?no-inline';
 // import MapIconTownHallNeutral from './MapIconTownHallNeutral.png?no-inline';
-// import MapIconTunnelNetwork from './MapIconTunnelNetwork.png?no-inline';
+import MapIconTunnelNetwork from './MapIconTunnelNetwork.png?no-inline';
 import MapIconVehicle from './MapIconVehicle.png?no-inline';
 import MapIconWeatherStation from './MapIconWeatherStation.png?no-inline';
 import MapIconVictory from './MapIconVictory.png?no-inline';
-// import MaterialTransferStationMapIcon from './MaterialTransferStationMapIcon.png?no-inline';
-// import ResourceTransferStationMapIcon from './ResourceTransferStationMapIcon.png?no-inline';
+import MapPostCrateFacilityIcon from './MapPostCrateFacilityIcon.png?no-inline';
+import MapPostFacilityIcon from './MapPostFacilityIcon.png?no-inline';
+import MapPostFuelFacilityIcon from './MapPostFuelFacilityIcon.png?no-inline';
+import MapPostMaterialFacilityIcon from './MapPostMaterialFacilityIcon.png?no-inline';
+import MapPostResourceFacilityIcon from './MapPostResourceFacilityIcon.png?no-inline';
+import MapPostVehicleFacilityIcon from './MapPostVehicleFacilityIcon.png?no-inline';
+import MaterialTransferStationMapIcon from './MaterialTransferStationMapIcon.png?no-inline';
+import ResourceTransferStationMapIcon from './ResourceTransferStationMapIcon.png?no-inline';
 import SalvageMapIcon from './SalvageMapIcon.png?no-inline';
 import Shipyard from './Shipyard.png?no-inline';
 
 import { MapIconType } from '@packages/foxhole-api';
 
-export enum MapIconName {
-	VictoryOutline = 'victory-outline',
-	BorderBase = 'border-base',
-	BunkerBaseTier1 = 'bunker-base-tier-1',
-	BunkerBaseTier2 = 'bunker-base-tier-2',
-	BunkerBaseTier3 = 'bunker-base-tier-3',
-	CivicCenter = 'civic-center',
-	CoalField = 'coal-field',
-	CoastalGun = 'coastal-gun',
-	ComponentField = 'component-field',
-	OilField = 'oil-field',
-	SulfurField = 'sulfur-field',
-	WorldMapTent = 'world-map-tent',
-	TravelTent = 'travel-tent',
-	TrainingArea = 'training-area',
-	Keep = 'keep',
-	ObservationTower = 'observation-tower',
-	Fort = 'fort',
-	TroopShip = 'troop-ship',
-	SulfurMine = 'sulfur-mine',
-	StorageFacility = 'storage-facility',
-	Factory = 'factory',
-	GarrisonStation = 'garrison-station',
-	AmmoFactory = 'ammo-factory',
-	RocketSite = 'rocket-site',
-	SalvageMine = 'salvage-mine',
-	ConstructionYard = 'construction-yard',
-	ComponentMine = 'component-mine',
-	OilWell = 'oil-well',
-	RelicBase = 'relic-base',
-	MassProductionFactory = 'mass-production-factory',
-	Seaport = 'seaport',
-	SoulFactory = 'soul-factory',
-	TownBase1 = 'town-base-1',
-	TownBase2 = 'town-base-2',
-	TownBase3 = 'town-base-3',
-	StormCannon = 'storm-cannon',
-	IntelCenter = 'intel-center',
-	RocketTarget = 'rocket-target',
-	RocketGroundZero = 'rocket-ground-zero',
-	RocketSiteWithRocket = 'rocket-site-with-rocket',
-	FacilityMineOilRig = 'facility-mine-oil-rig',
-	WeatherStation = 'weather-station',
-	MortarHouse = 'mortar-house',
+export enum MapPost {
+	CrateFacility = 'Crate facility',
+	FactoryFacility = 'Factory facility',
+	FuelFacility = 'Fuel facility',
+	MaterialFacility = 'Material facility',
+	ResourceFacility = 'Resource facility',
+	VehicleFacility = 'Vehicle facility',
 }
 
-export const MAP_ICONS_BY_NAME: Record<MapIconName, string | false> = {
+export enum MapIconFacility {
+	MaintenanceTunnel = 'Maintenance tunnel',
+	CrateTransferStation = 'Crate transfer station',
+	FuelTransferStation = 'Fuel transfer station',
+	MaterialTransferStation = 'Material transfer station',
+	ResourceTransferStation = 'Resource transfer station',
+	SmallArmsFacility = 'Small arms facility',
+	FieldModificationCenter = 'Field modification center',
+	SmallAssemblyStation = 'Small assembly station',
+	LargeAssemblyStation = 'Large assembly station',
+	DryDock = 'Dry dock',
+}
+
+export enum MapIconFortification {
+	BunkerBaseTier1 = 'Bunker base tier 1',
+	BunkerBaseTier2 = 'Bunker base tier 2',
+	BunkerBaseTier3 = 'Bunker base tier 3',
+	Outpost = 'Outpost',
+}
+
+export enum MapIconName {
+	VictoryOutline = 'Victory outline',
+	ScorchedTown = 'Scorched town',
+	BorderBase = 'Border base',
+	CivicCenter = 'Civic center',
+	CoalField = 'Coal field',
+	CoastalGun = 'Coastal gun',
+	ComponentField = 'Component field',
+	OilField = 'Oil field',
+	SulfurField = 'Sulfur field',
+	WorldMapTent = 'World map tent',
+	TravelTent = 'Travel tent',
+	TrainingArea = 'Training area',
+	Keep = 'Keep',
+	ObservationTower = 'Observation tower',
+	Fort = 'Fort',
+	TroopShip = 'Troop ship',
+	SulfurMine = 'Sulfur mine',
+	StorageFacility = 'Storage facility',
+	Factory = 'factory',
+	SafeHouse = 'Safe house',
+	AmmoFactory = 'Ammo factory',
+	RocketSite = 'Rocket site',
+	SalvageMine = 'Salvage mine',
+	ConstructionYard = 'Construction yard',
+	ComponentMine = 'Component mine',
+	OilRig = 'Oil rig',
+	RelicBase = 'Relic base',
+	MassProductionFactory = 'Mass production factory',
+	Seaport = 'Seaport',
+	SoulFactory = 'Soul factory',
+	TownBase1 = 'Town base 1',
+	TownBase2 = 'Town base 2',
+	TownBase3 = 'Town base 3',
+	StormCannon = 'Storm cannon',
+	IntelCenter = 'Intel center',
+	RocketTarget = 'Rocket target',
+	RocketGroundZero = 'Rocket ground zero',
+	RocketSiteWithRocket = 'Rocket site with rocket',
+	WeatherStation = 'Weather station',
+	MortarHouse = 'Mortar house',
+}
+
+export const MAP_ICONS_BY_NAME: Record<MapIconName | MapPost | MapIconFacility | MapIconFortification, string> = {
+	[MapIconFortification.BunkerBaseTier1]: MapIconBunkerBaseTier1,
+	[MapIconFortification.BunkerBaseTier2]: MapIconBunkerBaseTier2,
+	[MapIconFortification.BunkerBaseTier3]: MapIconBunkerBaseTier3,
+	[MapIconFortification.Outpost]: MapIconOutpost,
 	[MapIconName.VictoryOutline]: MapIconVictory,
-	[MapIconName.BorderBase]: false,
-	[MapIconName.BunkerBaseTier1]: false,
-	[MapIconName.BunkerBaseTier2]: false,
-	[MapIconName.BunkerBaseTier3]: false,
-	[MapIconName.CivicCenter]: false,
+	[MapIconName.ScorchedTown]: MapIconScorchedTown,
+	[MapIconName.BorderBase]: MapIconBorderBase,
+	[MapIconName.CivicCenter]: MapIconCivicCenter,
 	[MapIconName.CoalField]: MapIconCoal,
 	[MapIconName.CoastalGun]: MapIconCoastalGun,
 	[MapIconName.ComponentField]: MapIconComponents,
 	[MapIconName.OilField]: MapIconFuel,
 	[MapIconName.SulfurField]: MapIconSulfur,
-	[MapIconName.WorldMapTent]: false,
-	[MapIconName.TravelTent]: MapIconConquestC,
+	[MapIconName.WorldMapTent]: MapIconConquestC,
+	[MapIconName.TravelTent]: MapIconSkirmishC,
 	[MapIconName.TrainingArea]: MapIconsTrainingGround,
 	[MapIconName.Keep]: MapIconsKeep,
 	[MapIconName.ObservationTower]: MapIconObservationTower,
@@ -135,14 +181,14 @@ export const MAP_ICONS_BY_NAME: Record<MapIconName, string | false> = {
 	[MapIconName.TroopShip]: MapIconLargeShipBaseShip,
 	[MapIconName.SulfurMine]: MapIconSulfurMine,
 	[MapIconName.StorageFacility]: MapIconStorageFacility,
-	[MapIconName.Factory]: MapIcomFactory,
-	[MapIconName.GarrisonStation]: MapIconSafehouse,
-	[MapIconName.AmmoFactory]: false,
+	[MapIconName.Factory]: MapIconFactory,
+	[MapIconName.SafeHouse]: MapIconSafehouse,
+	[MapIconName.AmmoFactory]: MapIconSmallArmsFacility,
 	[MapIconName.RocketSite]: MapIconRocketSite,
 	[MapIconName.SalvageMine]: MapIconScrapMine,
 	[MapIconName.ConstructionYard]: MapIconConstructionYard,
 	[MapIconName.ComponentMine]: MapIconComponentMine,
-	[MapIconName.OilWell]: false,
+	[MapIconName.OilRig]: MapIconFacilityMineOilRig,
 	[MapIconName.RelicBase]: MapIconRelicBase,
 	[MapIconName.MassProductionFactory]: MapIconMassProductionFactory,
 	[MapIconName.Seaport]: MapIconSeaport,
@@ -155,9 +201,24 @@ export const MAP_ICONS_BY_NAME: Record<MapIconName, string | false> = {
 	[MapIconName.RocketTarget]: MapIconRocketTarget,
 	[MapIconName.RocketGroundZero]: MapIconRocketGroundZero,
 	[MapIconName.RocketSiteWithRocket]: MapIconRocketSiteWithRocket,
-	[MapIconName.FacilityMineOilRig]: MapIconFacilityMineOilRig,
 	[MapIconName.WeatherStation]: MapIconWeatherStation,
 	[MapIconName.MortarHouse]: MapIconMortarHouse,
+	[MapPost.CrateFacility]: MapPostCrateFacilityIcon,
+	[MapPost.FactoryFacility]: MapPostFacilityIcon,
+	[MapPost.FuelFacility]: MapPostFuelFacilityIcon,
+	[MapPost.MaterialFacility]: MapPostMaterialFacilityIcon,
+	[MapPost.ResourceFacility]: MapPostResourceFacilityIcon,
+	[MapPost.VehicleFacility]: MapPostVehicleFacilityIcon,
+	[MapIconFacility.MaintenanceTunnel]: MapIconTunnelNetwork,
+	[MapIconFacility.CrateTransferStation]: FacilityTransferCrateMapIcon,
+	[MapIconFacility.FuelTransferStation]: FuelTransferStationMapIcon,
+	[MapIconFacility.MaterialTransferStation]: MaterialTransferStationMapIcon,
+	[MapIconFacility.ResourceTransferStation]: ResourceTransferStationMapIcon,
+	[MapIconFacility.SmallArmsFacility]: MapIconSmallArmsFacility,
+	[MapIconFacility.FieldModificationCenter]: MapIconFacilityModificationCenter,
+	[MapIconFacility.SmallAssemblyStation]: MapIconFacilityVehicleFactory1,
+	[MapIconFacility.LargeAssemblyStation]: MapIconFacilityVehicleFactory2,
+	[MapIconFacility.DryDock]: MapIconFacilityVehicleFactory3,
 }
 
 export const MAP_ICONS_BY_API: Record<MapIconType, string | false> = {
@@ -180,8 +241,8 @@ export const MAP_ICONS_BY_API: Record<MapIconType, string | false> = {
 	[MapIconType.ComponentField]: MapIconComponents,
 	[MapIconType.FuelField]: MapIconFuel,
 	[MapIconType.SulfurField]: MapIconSulfur,
-	[MapIconType.WorldMapTent]: false,
-	[MapIconType.TravelTent]: MapIconConquestC,
+	[MapIconType.WorldMapTent]: MapIconConquestC,
+	[MapIconType.TravelTent]: MapIconSkirmishC,
 	[MapIconType.TrainingArea]: MapIconsTrainingGround,
 	[MapIconType.Keep]: MapIconsKeep,
 	[MapIconType.ObservationTower]: MapIconObservationTower,
@@ -189,7 +250,7 @@ export const MAP_ICONS_BY_API: Record<MapIconType, string | false> = {
 	[MapIconType.TroopShip]: MapIconLargeShipBaseShip,
 	[MapIconType.SulfurMine]: MapIconSulfurMine,
 	[MapIconType.StorageFacility]: MapIconStorageFacility,
-	[MapIconType.Factory]: MapIcomFactory,
+	[MapIconType.Factory]: MapIconFactory,
 	[MapIconType.GarrisonStation]: MapIconSafehouse,
 	[MapIconType.AmmoFactory]: false,
 	[MapIconType.RocketSite]: MapIconRocketSite,
@@ -217,4 +278,9 @@ export const MAP_ICONS_BY_API: Record<MapIconType, string | false> = {
 	[MapIconType.FacilityMineOilRig]: MapIconFacilityMineOilRig,
 	[MapIconType.WeatherStation]: MapIconWeatherStation,
 	[MapIconType.MortarHouse]: MapIconMortarHouse,
+	[MapIconType.AircraftDepot]: MapIconAircraftDepot,
+	[MapIconType.AircraftFactory]: MapIconAircraftFactory,
+	[MapIconType.AircraftRadar]: MapIconFortLargeRadar,
+	[MapIconType.AircraftRunwayT1]: MapIconAircraftRunwayT1,
+	[MapIconType.AircraftRunwayT2]: MapIconAircraftRunwayT2,
 };
