@@ -17,7 +17,7 @@ import { Team } from '@packages/foxhole-api';
 
 mkdirSync('data', { recursive: true });
 
-const db = new Database('data/foobar.db');
+const db = new Database('data/fox-intel.db');
 db.pragma('journal_mode = WAL');
 process.on('exit', () => db.close());
 
