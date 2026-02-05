@@ -1,18 +1,19 @@
 <template>
 	<div class="RenderFilters__container">
 		<RenderFilter description="Documents" v-model:filterState="renderFilters.documents.value" />
-		<RenderFilter description="Marker Layer" v-model:filterState="renderFilters.markerLayer.value" />
+		<RenderFilter description="Marker layer" v-model:filterState="renderFilters.markerLayer.value" />
+		<RenderFilter description="User icons" v-model:filterState="renderFilters.userIcons.value" />
 		<FilterGroup v-model:state="gameMapGroupState">
-			<template #title>FoxHole Game Map</template>
-			<RenderFilter description="Map Layer" v-model:filterState="renderFilters.map.value" />
-			<RenderFilter description="Map Zones" v-model:filterState="renderFilters.mapZone.value" />
-			<RenderFilter description="Map Icons" v-model:filterState="renderFilters.mapIcon.value" />
+			<template #title>FoxHole game map</template>
+			<RenderFilter description="Map layer" v-model:filterState="renderFilters.map.value" />
+			<RenderFilter description="Map zones" v-model:filterState="renderFilters.mapZone.value" />
+			<RenderFilter description="Map icons" v-model:filterState="renderFilters.mapIcon.value" />
 
 			<FilterGroup v-model:state="gameMapLabelsState">
 				<template #title>Labels</template>
-				<RenderFilter description="Hex Labels" v-model:filterState="renderFilters.hexLabel.value" />
-				<RenderFilter description="Region Labels" v-model:filterState="renderFilters.regionLabel.value" />
-				<RenderFilter description="Minor Labels" v-model:filterState="renderFilters.minorLabel.value" />
+				<RenderFilter description="Hex labels" v-model:filterState="renderFilters.hexLabel.value" />
+				<RenderFilter description="Region labels" v-model:filterState="renderFilters.regionLabel.value" />
+				<RenderFilter description="Minor labels" v-model:filterState="renderFilters.minorLabel.value" />
 			</FilterGroup>
 		</FilterGroup>
 	</div>

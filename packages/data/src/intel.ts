@@ -1,4 +1,5 @@
-import type { Shard } from '@packages/foxhole-api';
+import type { Shard, Team } from '@packages/foxhole-api';
+import type { NamedMapIcon } from './map-icons';
 
 export type IntelInstance = {
 	id: string;
@@ -24,6 +25,17 @@ export type IntelMarkerRegion = {
 
 export type IntelMarkerRegionFrontend = Omit<IntelMarkerRegion, 'region_data'> & {
 	region_data: string;
+};
+
+export type IntelIcon = {
+	id: number;
+	instance_id: string;
+	icon_x: number;
+	icon_y: number;
+	icon_type: NamedMapIcon;
+	icon_team: Team;
+	timestamp: number;
+	deleted: boolean;
 };
 
 export type BasicIntelDocument = {

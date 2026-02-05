@@ -5,6 +5,7 @@ import type { HexMapOptions } from "@/instance/canvas/hex-map";
 
 export type RenderFilters = HexMapOptions['elementFilters'] & {
 	documents?: Ref<boolean>;
+	userIcons?: Ref<boolean>;
 	markerLayer?: Ref<boolean>;
 };
 
@@ -22,6 +23,7 @@ const { markerSize, markerColor, markerType, markerDisabled, renderFilters } = r
 			regionLabel: ref<boolean>(true),
 			minorLabel: ref<boolean>(true),
 			documents: ref<boolean>(true),
+			userIcons: ref<boolean>(true),
 			markerLayer: ref<boolean>(true),
 		} satisfies RenderFilters,
 	}

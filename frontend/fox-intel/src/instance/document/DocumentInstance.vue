@@ -2,7 +2,7 @@
 	<PositionedElement :layer="1" :x="props.document.document_x" :y="props.document.document_y" cancel-viewport-rotation
 		cancel-viewport-zoom>
 		<div ref="documentElement" class="DocumentInstance__container"
-			:class="{ 'DocumentInstance__container-disabled': !markerDisabled }" :data-document-id="props.document.id"
+			:class="{ 'DocumentInstance__container-disabled': !markerDisabled, 'DocumentInstance__container-hidden': props.hidden }" :data-document-id="props.document.id"
 			:style="{ '--_document-ui-size': String(props.document.ui_size) }" @pointerdown="onPointerDown"
 			@pointermove="onPointerMove" @pointerup="onPointerUp" @openDocument="editing = true"
 			:title="props.document.document_name">
@@ -32,6 +32,11 @@
 	&-disabled {
 		pointer-events: none;
 	}
+
+	&-hidden {
+		opacity: 0;
+		pointer-events: none;
+	}
 }
 
 .DocumentInstance__icon {
@@ -59,6 +64,7 @@ const documentElement = shallowRef<HTMLDivElement | null>(null);
 
 const props = defineProps<{
 	document: BasicIntelDocument;
+	hidden?: boolean;
 }>();
 
 const intelInstance = injectIntelInstance();

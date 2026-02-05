@@ -5,6 +5,7 @@ import type {
 	BasicIntelDocument,
 	IntelDocument,
 	IntelDocumentTag,
+	IntelIcon,
 	IntelMarkerRegion,
 } from '@packages/data/dist/intel.js';
 import { Context, Hono } from 'hono';
@@ -20,7 +21,7 @@ import {
 	getUserGuildMember,
 	getUserGuilds,
 } from './discord.js';
-import { WarDetails, WarMapData, WarMaps } from '@packages/foxhole-api';
+import { Team, WarDetails, WarMapData, WarMaps } from '@packages/foxhole-api';
 
 const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 export type Session = {
@@ -512,6 +513,164 @@ export async function initialiseHttp(
 		response.headers.delete('Connection');
 		response.headers.set('X-Accel-Buffering', 'no');
 		return response;
+	});
+
+	/* Icon API */
+	const pendingIconRequests = new Map<string, Set<() => void>>();
+	app.get('/api/v1/instance/:instanceId/icon/since', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		validateSession(c, instanceId);
+		const timestamp = parseInt(c.req.query('timestamp') ?? '');
+		if (isNaN(timestamp)) {
+			return c.json({ error: 'Invalid timestamp' }, 400);
+		}
+		const timeout = parseInt(c.req.query('timeout') ?? '');
+		if (isNaN(timeout)) {
+			return c.json({ error: 'Invalid timeout' }, 400);
+		}
+
+		let icons = models.intelIcon.getByTimestamp(instanceId, timestamp);
+		if (icons.length === 0) {
+			icons = await new Promise<IntelIcon[]>((resolve) => {
+				if (!pendingIconRequests.has(instanceId)) {
+					pendingIconRequests.set(instanceId, new Set());
+				}
+
+				const onIcons = () => {
+					pendingIconRequests.get(instanceId)?.delete(onIcons);
+					resolve(models.intelIcon.getByTimestamp(instanceId, timestamp));
+				}
+
+				pendingIconRequests.get(instanceId)!.add(onIcons);
+				setTimeout(onIcons, timeout);
+			});
+		}
+
+		return c.json({
+			icons,
+			timestamp: Math.max(
+				...icons.map((icon) => icon.timestamp),
+				timestamp
+			),
+		});
+	});
+
+	app.post('/api/v1/instance/:instanceId/icon', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId, true);
+		if (sessionOutput) return sessionOutput;
+
+		const body = await c.req.json();
+		const iconX = parseInt(body.iconX);
+		if (isNaN(iconX)) {
+			return c.json({ error: 'Invalid icon X' }, 400);
+		}
+		const iconY = parseInt(body.iconY);
+		if (isNaN(iconY)) {
+			return c.json({ error: 'Invalid icon Y' }, 400);
+		}
+		const iconType = body.iconType;
+		if (typeof iconType !== 'string') {
+			return c.json({ error: 'Invalid icon type' }, 400);
+		}
+		const iconTeam = body.iconTeam;
+		if (typeof iconTeam !== 'string') {
+			return c.json({ error: 'Invalid icon team' }, 400);
+		}
+
+		const iconId = models.intelIcon.create(instanceId, iconX, iconY, iconType, iconTeam as Team);
+
+		for (const listener of pendingIconRequests.get(instanceId) ?? []) {
+			listener();
+		}
+
+		return c.json({ id: iconId });
+	});
+
+	app.post('/api/v1/instance/:instanceId/icon/id/:iconId', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId, true);
+		if (sessionOutput) return sessionOutput;
+
+		const iconId = parseInt(c.req.param('iconId'));
+		if (isNaN(iconId)) {
+			return c.json({ error: 'Invalid icon ID' }, 400);
+		}
+
+		const existingIcon = models.intelIcon.get(instanceId, iconId);
+		const body = (await c.req.json()) as Partial<IntelIcon>;
+
+		const iconX = parseInt(String(body.icon_x ?? existingIcon?.icon_x));
+		if (isNaN(iconX)) {
+			return c.json({ error: 'Invalid icon X' }, 400);
+		}
+
+		const iconY = parseInt(String(body.icon_y ?? existingIcon?.icon_y));
+		if (isNaN(iconY)) {
+			return c.json({ error: 'Invalid icon Y' }, 400);
+		}
+		const iconType = body.icon_type ?? existingIcon?.icon_type;
+		if (typeof iconType !== 'string') {
+			return c.json({ error: 'Invalid icon type' }, 400);
+		}
+		const iconTeam = body.icon_team ?? existingIcon?.icon_team;
+		if (typeof iconTeam !== 'string') {
+			return c.json({ error: 'Invalid icon team' }, 400);
+		}
+
+		models.intelIcon.update(iconId, iconX, iconY, iconType, iconTeam);
+
+		for (const listener of pendingIconRequests.get(instanceId) ?? []) {
+			listener();
+		}
+
+		return c.json({ id: iconId });
+	});
+
+	app.delete('/api/v1/instance/:instanceId/icon/id/:iconId', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId, true);
+		if (sessionOutput) return sessionOutput;
+
+		const iconId = parseInt(c.req.param('iconId'));
+		if (isNaN(iconId)) {
+			return c.json({ error: 'Invalid icon ID' }, 400);
+		}
+
+		models.intelIcon.delete(instanceId, iconId);
+
+		for (const listener of pendingIconRequests.get(instanceId) ?? []) {
+			listener();
+		}
+
+		return c.json({ success: true });
+	});
+
+	app.get('/api/v1/instance/:instanceId/icon/id/:iconId', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId);
+		if (sessionOutput) return sessionOutput;
+
+		const iconId = parseInt(c.req.param('iconId'));
+		if (isNaN(iconId)) {
+			return c.json({ error: 'Invalid icon ID' }, 400);
+		}
+
+		const icon = models.intelIcon.get(instanceId, iconId);
+		if (!icon) {
+			return c.json({ error: 'Icon not found' }, 404);
+		}
+
+		return c.json({ ...icon });
+	});
+
+	app.get('/api/v1/instance/:instanceId/icon', async (c) => {
+		const instanceId = c.req.param('instanceId');
+		const sessionOutput = validateSession(c, instanceId);
+		if (sessionOutput) return sessionOutput;
+
+		const icons = models.intelIcon.getAll(instanceId);
+		return c.json(icons);
 	});
 
 	/* Marker Region API */

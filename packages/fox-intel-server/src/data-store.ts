@@ -8,10 +8,12 @@ import type {
 	IntelDocumentTag,
 	IntelDocumentAttachment,
 	IntelInstanceDiscordPermissions,
+	IntelIcon,
 } from '@packages/data/dist/intel.js';
 import Database from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
 import { getUserGuildMember, getUserGuilds } from './discord.js';
+import { Team } from '@packages/foxhole-api';
 
 mkdirSync('data', { recursive: true });
 
@@ -19,10 +21,8 @@ const db = new Database('data/foobar.db');
 db.pragma('journal_mode = WAL');
 process.on('exit', () => db.close());
 
-
-
 let schemaVersion = -1;
-const targetSchemaVersion = 2;
+const targetSchemaVersion = 3;
 function getSchemaVersion() {
 	return schemaVersion = db.pragma('user_version', { simple: true }) as number;
 }
@@ -113,6 +113,23 @@ while (getSchemaVersion() !== targetSchemaVersion) {
 			db.exec(`
 				ALTER TABLE IntelDocument ADD COLUMN document_color TEXT NOT NULL DEFAULT '#FFFFFF';
 				PRAGMA user_version = 2;
+			`);
+			break;
+		case 2:
+			db.exec(`
+				CREATE TABLE IF NOT EXISTS IntelIcon (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					instance_id INTEGER NOT NULL,
+					icon_x INTEGER NOT NULL,
+					icon_y INTEGER NOT NULL,
+					icon_type TEXT NOT NULL,
+					icon_team TEXT NOT NULL,
+					timestamp INTEGER NOT NULL,
+					deleted BOOLEAN NOT NULL DEFAULT FALSE,
+					FOREIGN KEY (instance_id) REFERENCES IntelInstance(id) ON DELETE CASCADE ON UPDATE CASCADE
+				);
+
+				PRAGMA user_version = 3;
 			`);
 			break;
 		default:
@@ -391,6 +408,83 @@ export const models = {
 						.flat()
 				);
 			return insertResult.lastInsertRowid;
+		},
+	},
+
+	intelIcon: {
+		create: function createIntelIcon(
+			instanceId: string,
+			iconX: number,
+			iconY: number,
+			iconType: string,
+			iconTeam: Team,
+		) {
+			const insertResult = db
+				.prepare(
+					'INSERT INTO IntelIcon (instance_id, icon_x, icon_y, icon_type, icon_team, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+				)
+				.run(instanceId, iconX, iconY, iconType, iconTeam, Date.now());
+			return insertResult.lastInsertRowid;
+		},
+
+		delete: function deleteIntelIcon(
+			instanceId: string,
+			iconId: number
+		) {
+			const deleteResult = db
+				.prepare(
+					'UPDATE IntelIcon SET deleted = TRUE, timestamp = ? WHERE instance_id = ? AND id = ?'
+				)
+				.run(Date.now(), instanceId, iconId);
+			return deleteResult.changes;
+		},
+
+		get: function getIntelIcon(instanceId: string, iconId: number) {
+			const icon = db
+				.prepare<
+					[string, number],
+					IntelIcon
+				>('SELECT * FROM IntelIcon WHERE instance_id = ? AND id = ?')
+				.get(instanceId, iconId);
+			return icon;
+		},
+
+		getAll: function getAllIntelIcons(instanceId: string) {
+			const icons = db
+				.prepare<
+					[string],
+					IntelIcon
+				>('SELECT * FROM IntelIcon WHERE instance_id = ?')
+				.all(instanceId);
+			return icons;
+		},
+
+		getByTimestamp: function getIntelIconsByTimestamp(
+			instanceId: string,
+			timestamp: number
+		) {
+			const icons = db
+				.prepare<
+					[string, number],
+					IntelIcon
+				>('SELECT * FROM IntelIcon WHERE instance_id = ? AND timestamp > ?')
+				.all(instanceId, timestamp);
+			return icons;
+		},
+
+		update: function updateIntelIcon(
+			iconId: number,
+			iconX: number,
+			iconY: number,
+			iconType: string,
+			iconTeam: Team,
+		) {
+			const updateResult = db
+				.prepare(
+					'UPDATE IntelIcon SET icon_x = ?, icon_y = ?, icon_type = ?, icon_team = ?, timestamp = ? WHERE id = ?'
+				)
+				.run(iconX, iconY, iconType, iconTeam, Date.now(), iconId);
+			return updateResult.changes;
 		},
 	},
 

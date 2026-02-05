@@ -11,7 +11,11 @@
 
 		<Viewport>
 			<template v-if="renderFilters.documents.value">
-				<DocumentInstance v-for="document in documents" :key="document.id" :document="document" />
+				<DocumentInstance v-for="document in documents" :key="document.id" :document="document" :hidden="!drawDocuments" />
+			</template>
+
+			<template v-if="renderFilters.userIcons.value && drawIcons">
+				<IconInstance v-for="icon in icons" :key="icon.id" :icon="icon" />
 			</template>
 
 			<ImagePaste v-if="addingImage != null" v-model:position="addingImage.position" v-model:size="addingImage.size"
@@ -166,7 +170,7 @@ import {
 	markerType,
 	markerDisabled,
 } from '../lib/globals';
-import { AddType, ContextRadial } from './context-menu';
+import { AddType, ContextRadial, type Payload as ContextMenuPayload } from './context-menu';
 import { useDocuments, DocumentInstance } from './document';
 import InstanceControls from './InstanceControls/InstanceControls.vue';
 import { useHexMap } from './canvas/hex-map';
@@ -174,8 +178,11 @@ import { useMarker } from './canvas/marker';
 import { useElementBounding } from '@vueuse/core';
 import { provideIntelInstance, useIntelInstance } from '@/lib/intel-instance';
 import { requestFile } from '@/lib/file';
+import { useShouldRender } from '@/lib/lod';
 import ImagePaste from './canvas/ImagePaste';
 import { useRenderState } from './canvas/render-state';
+import { useIcons } from './icon';
+import IconInstance from './icon/IconInstance.vue';
 
 const props = defineProps<{
 	instanceId: string;
@@ -206,7 +213,17 @@ const viewport = ref(
 	)
 );
 
+const { drawIcons, drawDocuments } = useShouldRender({
+	width,
+	height,
+	zoom: computed(() => viewport.value.resolvedZoom),
+});
+
 const { addDocument, documents } = useDocuments({
+	intelInstance,
+});
+
+const { addIcon, icons } = useIcons({
 	intelInstance,
 });
 
@@ -359,13 +376,13 @@ const onContextMenu = (event: MouseEvent) => {
 	);
 };
 const onContextMenuSubmit = async (event: {
-	value: AddType;
+	value: ContextMenuPayload;
 	path: any[];
 }) => {
 	const position = contextMenuPosition.value!.clone();
 	contextMenuPosition.value = null;
 
-	if (event.value === AddType.Document) {
+	if (event.value.type === AddType.Document) {
 		const documentId = await addDocument(
 			position.x,
 			position.y,
@@ -386,7 +403,7 @@ const onContextMenuSubmit = async (event: {
 				})
 			);
 		});
-	} else if (event.value === AddType.Image) {
+	} else if (event.value.type === AddType.Image) {
 		if (
 			addingImage.value != null &&
 			!confirm(
@@ -410,6 +427,8 @@ const onContextMenuSubmit = async (event: {
 			size: imageSize,
 			opacity: 0.5,
 		};
+	} else if (event.value.type === AddType.Icon) {
+		await addIcon(position.x, position.y, event.value.iconType, event.value.iconTeam);
 	}
 };
 

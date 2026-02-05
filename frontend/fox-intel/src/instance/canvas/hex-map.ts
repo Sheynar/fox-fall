@@ -5,6 +5,7 @@ import {
 	HEX_POSITIONS,
 	KNOWN_MAP_NAMES,
 } from '@packages/data/dist/hexMap';
+import { MapIconInternal } from '@packages/data/dist/map-icons';
 import {
 	MapFlags,
 	MapIconType,
@@ -16,10 +17,11 @@ import {
 	HEX_MAPS,
 	MapSource,
 } from '@packages/frontend-libs/dist/assets/images/hex-maps';
-import { MapIconName, MAP_ICONS_BY_API, MAP_ICONS_BY_NAME } from '@packages/frontend-libs/dist/assets/images/map-icons';
+import { MAP_ICONS_BY_API, MAP_ICONS_BY_NAME } from '@packages/frontend-libs/dist/assets/images/map-icons';
 import { useScopePerSetEntry } from '@packages/frontend-libs/dist/scope';
 import { Delaunay } from 'd3-delaunay';
 import { watch, Ref, onScopeDispose, watchEffect, computed } from 'vue';
+import { useShouldRender } from '@/lib/lod';
 import { useWarData } from '@/lib/war-data';
 import { useRenderState } from './render-state';
 
@@ -46,6 +48,12 @@ export function useHexMap(options: HexMapOptions) {
 	const renderingState = useRenderState();
 	let running = false;
 	const warData = useWarData({ instanceId: options.instanceId });
+
+	const { drawHexLabels, drawRegionLabels, drawIcons, drawMinorLabels } = useShouldRender({
+		width: options.width,
+		height: options.height,
+		zoom: options.zoom,
+	});
 
 	watch(computed(() => [
 		options.position.value.x,
@@ -154,11 +162,11 @@ export function useHexMap(options: HexMapOptions) {
 	);
 
 	const mapIcons: Partial<
-		Record<Team, Partial<Record<MapIconType | MapIconName, HTMLCanvasElement>>>
+		Record<Team, Partial<Record<MapIconType | MapIconInternal, HTMLCanvasElement>>>
 	> = {};
 	const iconSources = [
 		...Object.entries(MAP_ICONS_BY_API).map(([key, value]) => [Number(key) as MapIconType, value] as [MapIconType, string]),
-		...(Object.entries(MAP_ICONS_BY_NAME) as [MapIconName, string][]),
+		...(Object.entries(MAP_ICONS_BY_NAME) as [MapIconInternal, string][]),
 	]
 	for (const [iconKey, icon] of iconSources) {
 		if (!icon) continue;
@@ -266,21 +274,7 @@ export function useHexMap(options: HexMapOptions) {
 				options.height.value
 			);
 
-			const drawHexLabels =
-				options.width.value / options.zoom.value > HEX_SIZE.width * 1.5 &&
-				options.height.value / options.zoom.value > HEX_SIZE.height * 1.5;
 
-			const drawRegionLabels =
-				options.width.value / options.zoom.value < HEX_SIZE.width * 1.5 ||
-				options.height.value / options.zoom.value < HEX_SIZE.height * 1.5;
-
-			const drawIcons =
-				options.width.value / options.zoom.value < HEX_SIZE.width * 1.2 ||
-				options.height.value / options.zoom.value < HEX_SIZE.height * 1.2;
-
-			const drawMinorLabels =
-				options.width.value / options.zoom.value < HEX_SIZE.width * 0.5 ||
-				options.height.value / options.zoom.value < HEX_SIZE.height * 0.5;
 
 			const hexLabelFontSize = Math.min(36, 200 * options.zoom.value);
 			const regionFontSize = hexLabelFontSize / 1.5;
@@ -365,7 +359,7 @@ export function useHexMap(options: HexMapOptions) {
 				});
 			}
 
-			if (drawIcons && (options.elementFilters?.mapIcon?.value ?? true)) {
+			if (drawIcons.value && (options.elementFilters?.mapIcon?.value ?? true)) {
 				forEachHex((hex, _x, _y, hexPosition) => {
 					const mapData = warData.dynamicMapData.value[KNOWN_MAP_NAMES[hex]];
 					if (!mapData) return;
@@ -373,12 +367,12 @@ export function useHexMap(options: HexMapOptions) {
 						const icon = mapIcons[mapItem.teamId]?.[mapItem.iconType];
 						if (!icon) continue;
 
-						const victoryOutline = mapIcons[mapItem.teamId]?.[MapIconName.VictoryOutline];
+						const victoryOutline = mapIcons[mapItem.teamId]?.[MapIconInternal.VictoryOutline];
 						if (mapItem.flags & MapFlags.IsVictoryBase && victoryOutline) {
 							drawIcon(victoryOutline, hexPosition, mapItem.x, mapItem.y, 1);
 						}
 
-						const scorchedTown = mapIcons[mapItem.teamId]?.[MapIconName.ScorchedTown];
+						const scorchedTown = mapIcons[mapItem.teamId]?.[MapIconInternal.ScorchedTown];
 						if (mapItem.flags & MapFlags.IsScorched && scorchedTown) {
 							drawIcon(scorchedTown, hexPosition, mapItem.x, mapItem.y, 1);
 						} else {
@@ -403,7 +397,7 @@ export function useHexMap(options: HexMapOptions) {
 			}
 
 			if (
-				drawMinorLabels &&
+				drawMinorLabels.value &&
 				(options.elementFilters?.minorLabel?.value ?? true)
 			) {
 				forEachHex((hex, _x, _y, hexPosition) => {
@@ -422,7 +416,7 @@ export function useHexMap(options: HexMapOptions) {
 			}
 
 			if (
-				drawRegionLabels &&
+				drawRegionLabels.value &&
 				(options.elementFilters?.regionLabel?.value ?? true)
 			) {
 				forEachHex((hex, _x, _y, hexPosition) => {
@@ -440,7 +434,7 @@ export function useHexMap(options: HexMapOptions) {
 				});
 			}
 
-			if (drawHexLabels && (options.elementFilters?.hexLabel?.value ?? true)) {
+			if (drawHexLabels.value && (options.elementFilters?.hexLabel?.value ?? true)) {
 				forEachHex((hex, _x, _y, hexPosition) => {
 					drawText(
 						hex,

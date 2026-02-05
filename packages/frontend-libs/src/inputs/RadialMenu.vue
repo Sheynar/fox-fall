@@ -33,9 +33,14 @@
 			>
 				<div class="RadialMenu__option-intermediate">
 					<div class="RadialMenu__option-inner">
+						<img
+							class="RadialMenu__icon icon"
+							v-if="typeof layer.options.get(value)!.icon === 'string'"
+							:src="(layer.options.get(value)!.icon as string)"
+						>
 						<Component
 							class="RadialMenu__icon"
-							v-if="layer.options.get(value)!.icon"
+							v-else-if="layer.options.get(value)!.icon"
 							:is="layer.options.get(value)!.icon"
 						/>
 					</div>
@@ -331,7 +336,7 @@
 
 	export type Option<T> = {
 		label: string;
-		icon?: Component<any>;
+		icon?: Component<any> | string;
 		disabled?: boolean;
 		order?: number;
 

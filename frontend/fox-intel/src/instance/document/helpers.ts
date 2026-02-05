@@ -1,5 +1,5 @@
 import type { useIntelInstance } from '@/lib/intel-instance';
-import { IntelDocument } from '@packages/data/dist/intel';
+import type { IntelDocument } from '@packages/data/dist/intel';
 
 export async function updatePartialDocument(
 	intelInstance: ReturnType<typeof useIntelInstance>,

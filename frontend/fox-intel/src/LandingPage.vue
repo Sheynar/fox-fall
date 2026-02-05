@@ -32,7 +32,6 @@
 </template>
 
 <style lang="scss">
-
 @keyframes modal-enter {
 	0% {
 		transform-origin: center center;
@@ -55,7 +54,6 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-
 
 	transform-origin: center center;
 	transform: scale(1);
