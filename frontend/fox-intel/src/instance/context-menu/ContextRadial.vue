@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { BuildableSignpostIcon, Colonial, FacilityRefinery2Icon, FortT1BaseIcon, Warden } from '@packages/frontend-libs/dist/assets/images';
+import { BuildableSignpostIcon, Colonial, FacilityRefinery2Icon, FortT1BaseIcon, Shared, Warden } from '@packages/frontend-libs/dist/assets/images';
 import RadialMenu, {
 	// type Option,
 	type Options,
@@ -42,70 +42,70 @@ const options = computed<Options<Payload>>(() => {
 		icon: Icon,
 		order: 2,
 		subOptions: new Map(Object.values(Team).map((iconTeam) => {
-				return [{} as any, {
-					label: iconTeam,
-					icon: iconTeam === Team.Colonial ? Colonial : iconTeam === Team.Warden ? Warden : undefined,
-					order: 0,
-					subOptions: new Map([
-						[{} as any, {
-							label: 'Facility',
-							icon: FacilityRefinery2Icon,
-							order: 0,
-							subOptions: new Map(
-								Object.values(MapIconFacility).map((iconType) => [
-									{ type: AddType.Icon, iconType, iconTeam },
-									{
-										label: iconType,
-										icon: MAP_ICONS_BY_NAME[iconType],
-									},
-								])
-							) satisfies Options<Payload>,
-						}],
-						[{} as any, {
-							label: 'Fortification',
-							icon: FortT1BaseIcon,
-							order: 1,
-							subOptions: new Map(
-								Object.values(MapIconFortification).map((iconType) => [
-									{ type: AddType.Icon, iconType, iconTeam },
-									{
-										label: iconType,
-										icon: MAP_ICONS_BY_NAME[iconType],
-									},
-								])
-							) satisfies Options<Payload>,
-						}],
-						[{} as any, {
-							label: 'Post',
-							icon: MAP_ICONS_BY_NAME[MapPost.FactoryFacility],
-							order: 1,
-							subOptions: new Map(
-								Object.values(MapPost).map((iconType) => [
-									{ type: AddType.Icon, iconType, iconTeam },
-									{
-										label: iconType,
-										icon: MAP_ICONS_BY_NAME[iconType],
-									},
-								])
-							) satisfies Options<Payload>,
-						}],
-						[{} as any, {
-							label: 'Misc',
-							icon: BuildableSignpostIcon,
-							order: 2,
-							subOptions: new Map(
-								Object.values(MapIconMisc).map((iconType) => [
-									{ type: AddType.Icon, iconType, iconTeam },
-									{
-										label: iconType,
-										icon: MAP_ICONS_BY_NAME[iconType],
-									},
-								])
-							) satisfies Options<Payload>,
-						}]
-					]),
-				}];
-			})) satisfies Options<Payload>,
+			return [{} as any, {
+				label: iconTeam,
+				icon: iconTeam === Team.Colonial ? Colonial : iconTeam === Team.Warden ? Warden : Shared,
+				order: 0,
+				subOptions: new Map([
+					[{} as any, {
+						label: 'Facility',
+						icon: FacilityRefinery2Icon,
+						order: 0,
+						subOptions: new Map(
+							Object.values(MapIconFacility).map((iconType) => [
+								{ type: AddType.Icon, iconType, iconTeam },
+								{
+									label: iconType,
+									icon: MAP_ICONS_BY_NAME[iconType],
+								},
+							])
+						) satisfies Options<Payload>,
+					}],
+					[{} as any, {
+						label: 'Fortification',
+						icon: FortT1BaseIcon,
+						order: 1,
+						subOptions: new Map(
+							Object.values(MapIconFortification).map((iconType) => [
+								{ type: AddType.Icon, iconType, iconTeam },
+								{
+									label: iconType,
+									icon: MAP_ICONS_BY_NAME[iconType],
+								},
+							])
+						) satisfies Options<Payload>,
+					}],
+					[{} as any, {
+						label: 'Post',
+						icon: MAP_ICONS_BY_NAME[MapPost.FactoryFacility],
+						order: 1,
+						subOptions: new Map(
+							Object.values(MapPost).map((iconType) => [
+								{ type: AddType.Icon, iconType, iconTeam },
+								{
+									label: iconType,
+									icon: MAP_ICONS_BY_NAME[iconType],
+								},
+							])
+						) satisfies Options<Payload>,
+					}],
+					[{} as any, {
+						label: 'Misc',
+						icon: BuildableSignpostIcon,
+						order: 2,
+						subOptions: new Map(
+							Object.values(MapIconMisc).map((iconType) => [
+								{ type: AddType.Icon, iconType, iconTeam },
+								{
+									label: iconType,
+									icon: MAP_ICONS_BY_NAME[iconType],
+								},
+							])
+						) satisfies Options<Payload>,
+					}]
+				]),
+			}];
+		})) satisfies Options<Payload>,
 	});
 
 	return output;
