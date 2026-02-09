@@ -27,6 +27,7 @@ export enum MapIconFortification {
 	BunkerBaseTier1 = 'Bunker base tier 1',
 	BunkerBaseTier2 = 'Bunker base tier 2',
 	BunkerBaseTier3 = 'Bunker base tier 3',
+	Encampment = 'Encampment',
 	Outpost = 'Outpost',
 }
 

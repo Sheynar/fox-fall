@@ -92,6 +92,7 @@ export const MAP_ICONS_BY_NAME: Record<NamedMapIcon, string> = {
 	[MapIconFortification.BunkerBaseTier1]: MapIconBunkerBaseTier1,
 	[MapIconFortification.BunkerBaseTier2]: MapIconBunkerBaseTier2,
 	[MapIconFortification.BunkerBaseTier3]: MapIconBunkerBaseTier3,
+	[MapIconFortification.Encampment]: MapIconForwardBase1,
 	[MapIconFortification.Outpost]: MapIconOutpost,
 	[MapIconMisc.CivicCenter]: MapIconCivicCenter,
 	// [MapIconMisc.CoalField]: MapIconCoal,
