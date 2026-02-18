@@ -42,16 +42,16 @@ import TerminusMap from './MapTerminusHex.png?no-inline';
 import RedRiverMap from './MapRedRiverHex.png?no-inline';
 import AcrithiaMap from './MapAcrithiaHex.png?no-inline';
 import KalokaiMap from './MapKalokaiHex.png?no-inline';
-import OlavisWakeMap from './MapAirborne1Hex.png?no-inline';
-import PariPeakMap from './MapAirborne2Hex.png?no-inline';
-import KuuraStrandMap from './MapAirborne4Hex.png?no-inline';
-import PalantineBermMap from './MapAirborne3Hex.png?no-inline';
-import TheGutterMap from './MapAirborne5Hex.png?no-inline';
-import LycosIsleMap from './MapAirborne8Hex.png?no-inline';
-import TyrantFoothillsMap from './MapAirborne9Hex.png?no-inline';
-import OnyxMap from './MapAirborne7Hex.png?no-inline';
-import PipersEnclaveMap from './MapAirborne10Hex.png?no-inline';
-import WrestaMap from './MapAirborne6Hex.png?no-inline';
+import OlavisWakeMap from './MapOlavisWakeHex.png?no-inline';
+import PariPeakMap from './MapPariPeakHex.png?no-inline';
+import KuuraStrandMap from './MapKuuraStrandHex.png?no-inline';
+import PalantineBermMap from './MapPalantineBermHex.png?no-inline';
+import TheGutterMap from './MapGutterHex.png?no-inline';
+import LycosIsleMap from './MapLykosIsleHex.png?no-inline';
+import TyrantFoothillsMap from './MapTyrantFoothillsHex.png?no-inline';
+import OnyxMap from './MapOnyxHex.png?no-inline';
+import PipersEnclaveMap from './MapPipersEnclaveHex.png?no-inline';
+import WrestaMap from './MapWrestaHex.png?no-inline';
 
 export const HEX_ASSETS: Record<Hex, string> = {
 	[Hex.OlavisWake]: OlavisWakeMap,
