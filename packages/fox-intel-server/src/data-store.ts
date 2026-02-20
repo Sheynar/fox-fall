@@ -170,6 +170,7 @@ export const models = {
 		update: function updateIntelInstance(
 			oldInstanceId: string,
 			newInstanceId: string,
+			newShard: string,
 			discordGuildId: string,
 			discordGuildRoles: { accessType: string; roleId: string }[]
 		) {
@@ -180,8 +181,8 @@ export const models = {
 				).run(oldInstanceId);
 				db.prepare(
 					`
-					UPDATE IntelInstance SET id = ?, discord_guild_id = ? WHERE id = ?`
-				).run(newInstanceId, discordGuildId, oldInstanceId);
+					UPDATE IntelInstance SET id = ?, shard = ?, discord_guild_id = ? WHERE id = ?`
+				).run(newInstanceId, newShard, discordGuildId, oldInstanceId);
 				if (discordGuildRoles.length > 0) {
 					db.prepare(
 						`

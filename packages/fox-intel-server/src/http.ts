@@ -239,7 +239,7 @@ export async function initialiseHttp(
 		);
 
 		const instanceId = c.req.param('instanceId');
-		const existingInstance = models.intelInstance.getInstanceIfPermitted(accessToken, instanceId);
+		const existingInstance = await models.intelInstance.getInstanceIfPermitted(accessToken, instanceId);
 		if (!existingInstance) {
 			return c.json({ error: 'Instance not found' }, 404);
 		}
@@ -325,23 +325,6 @@ export async function initialiseHttp(
 			return c.json({ error: 'Instance not found' }, 404);
 		}
 
-		const discordGuildId = newInstance.discordGuildId;
-		if (typeof discordGuildId !== 'string') {
-			return c.json({ error: 'Invalid discord guild id' }, 400);
-		}
-		const discordGuildRoles = newInstance.discordGuildRoles;
-		if (!Array.isArray(discordGuildRoles)) {
-			return c.json({ error: 'Invalid discord guild roles' }, 400);
-		}
-		for (const role of discordGuildRoles) {
-			if (
-				typeof role.accessType !== 'string' ||
-				typeof role.roleId !== 'string'
-			) {
-				return c.json({ error: 'Invalid discord guild role' }, 400);
-			}
-		}
-
 		const discordAccessCode = c.req.header('X-Discord-Access-Code');
 		if (!discordAccessCode) {
 			return c.json({ error: 'Discord access code is required' }, 401);
@@ -362,15 +345,31 @@ export async function initialiseHttp(
 			return c.json({ error: 'Unauthorized' }, 401);
 		}
 
-		if (typeof newInstance.id !== 'string') {
+		const newInstanceId = newInstance.id;
+		if (typeof newInstanceId !== 'string') {
 			return c.json({ error: 'Invalid instance id' }, 400);
 		}
-		if (typeof newInstance.discordGuildId !== 'string') {
+		const newShard = newInstance.shard;
+		if (typeof newShard !== 'string') {
+			return c.json({ error: 'Invalid shard' }, 400);
+		}
+		const newDiscordGuildId = newInstance.discordGuildId;
+		if (typeof newDiscordGuildId !== 'string') {
 			return c.json({ error: 'Invalid discord guild id' }, 400);
 		}
-		if (!Array.isArray(newInstance.discordGuildRoles)) {
+		const newDiscordGuildRoles = newInstance.discordGuildRoles;
+		if (!Array.isArray(newDiscordGuildRoles)) {
 			return c.json({ error: 'Invalid discord guild roles' }, 400);
 		}
+		for (const role of newDiscordGuildRoles) {
+			if (
+				typeof role.accessType !== 'string' ||
+				typeof role.roleId !== 'string'
+			) {
+				return c.json({ error: 'Invalid discord guild role' }, 400);
+			}
+		}
+
 		for (const role of newInstance.discordGuildRoles) {
 			if (
 				typeof role.accessType !== 'string' ||
@@ -382,9 +381,10 @@ export async function initialiseHttp(
 
 		models.intelInstance.update(
 			instanceId,
-			newInstance.id,
-			discordGuildId,
-			discordGuildRoles
+			newInstanceId,
+			newShard,
+			newDiscordGuildId,
+			newDiscordGuildRoles
 		);
 
 		return generateSession(c, instanceId, {
