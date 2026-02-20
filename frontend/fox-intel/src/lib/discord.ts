@@ -1,4 +1,4 @@
-import { onScopeDispose, ref } from 'vue';
+import { onScopeDispose, ref, watch } from 'vue';
 import { wrapMixin } from '@packages/frontend-libs/src/reference-cache';
 import router from '@/router';
 
@@ -97,17 +97,15 @@ function _useDiscordAccess() {
 		try {
 			await loop(undefined, true);
 			const returnUrl = sessionStorage.getItem('return-url');
-			if (!discordAuthenticated.value) {
-				setReturnUrl();
-				await router.replace({ name: 'home' });
-			} else if (returnUrl) {
-				sessionStorage.removeItem('return-url');
-				await router.replace(returnUrl);
-			} else if (router.currentRoute.value.name === 'home') {
-				await router.replace({ name: 'instance:select' });
+			if (discordAuthenticated.value) {
+				if (returnUrl) {
+					sessionStorage.removeItem('return-url');
+					await router.replace(returnUrl);
+				} else if (router.currentRoute.value.name === 'home') {
+					await router.replace({ name: 'instance:select' });
+				}
 			}
 		} catch (err) {
-			await router.replace({ name: 'home' });
 			throw err;
 		} finally {
 			ready.value = true;
@@ -115,7 +113,16 @@ function _useDiscordAccess() {
 	}
 	const readyPromise = initialise();
 
+	watch(() => ready.value && !discordAuthenticated.value && router.currentRoute.value.name !== 'home', async (mustReturnHome) => {
+		if (mustReturnHome) {
+			setReturnUrl();
+			await router.replace({ name: 'home' });
+			location.reload();
+		}
+	}, { immediate: true });
+
 	return {
+		setReturnUrl,
 		redirectToDiscordAuth,
 		redirectToDiscordBotAuth,
 		getFetchHeaders,
