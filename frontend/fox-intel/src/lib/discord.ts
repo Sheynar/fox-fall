@@ -21,7 +21,7 @@ function _useDiscordAccess() {
 	let code = sessionStorage.getItem('discord-access-code');
 
 	function setReturnUrl() {
-		if (router.currentRoute.value.name !== 'home') {
+		if (router.currentRoute.value.name !== 'home' && router.currentRoute.value.path !== '/') {
 			window.sessionStorage.setItem('return-url', router.currentRoute.value.fullPath);
 		}
 	}
@@ -97,13 +97,14 @@ function _useDiscordAccess() {
 		try {
 			await loop(undefined, true);
 			const returnUrl = sessionStorage.getItem('return-url');
-			if (discordAuthenticated.value) {
-				if (returnUrl) {
-					sessionStorage.removeItem('return-url');
-					await router.replace(returnUrl);
-				} else if (router.currentRoute.value.name === 'home') {
-					await router.replace({ name: 'instance:select' });
-				}
+			if (!discordAuthenticated.value) {
+				setReturnUrl();
+				await router.replace({ name: 'home' });
+			} else if (returnUrl) {
+				sessionStorage.removeItem('return-url');
+				await router.replace(returnUrl);
+			} else if (router.currentRoute.value.name === 'home') {
+				await router.replace({ name: 'instance:select' });
 			}
 		} catch (err) {
 			throw err;
