@@ -309,6 +309,18 @@ export const models = {
 			// }
 			// return output;
 		},
+
+		getInstanceIfPermitted: async function getInstanceIfPermitted(
+			accessToken: DiscordAccessToken,
+			instanceId: string
+		) {
+			const guilds = await getUserGuilds(accessToken);
+			const instance = models.intelInstance.get(instanceId);
+			if (!guilds.some((guild) => guild.id === instance?.discord_guild_id)) {
+				return null;
+			}
+			return instance;
+		},
 	},
 
 	intelMarkerRegion: {

@@ -4,14 +4,12 @@
 		<div ref="documentElement" class="DocumentInstance__container"
 			:class="{ 'DocumentInstance__container-disabled': !markerDisabled, 'DocumentInstance__container-hidden': props.hidden }" :data-document-id="props.document.id"
 			:style="{ '--_document-ui-size': String(props.document.ui_size) }" @pointerdown="onPointerDown"
-			@pointermove="onPointerMove" @pointerup="onPointerUp" @openDocument="editing = true"
+			@pointermove="onPointerMove" @pointerup="onPointerUp" @openDocument="withHandlingAsync(() => openDocument())"
 			:title="props.document.document_name">
 			<StickyNoteIcon :style="{ '--icon-background-color': props.document.document_color }"
 				class="DocumentInstance__icon" />
 		</div>
 	</PositionedElement>
-
-	<DocumentEditor :key="props.document.id" v-if="editing" :document="props.document" @close="editing = false" />
 </template>
 
 <style lang="scss">
@@ -57,7 +55,7 @@ import StickyNoteIcon from '@packages/frontend-libs/dist/icons/StickyNoteIcon.vu
 import { ref, shallowRef } from 'vue';
 import { markerDisabled } from '@/lib/globals';
 import { injectIntelInstance } from '@/lib/intel-instance';
-import DocumentEditor from './DocumentEditor.vue';
+import router from '@/router';
 import { updatePartialDocument } from './helpers';
 
 const documentElement = shallowRef<HTMLDivElement | null>(null);
@@ -68,8 +66,6 @@ const props = defineProps<{
 }>();
 
 const intelInstance = injectIntelInstance();
-
-const editing = ref<boolean>(false);
 
 const MOVE_ACTIVATION_DISTANCE = 5;
 const viewport = injectViewport();
@@ -134,7 +130,7 @@ function onPointerUp(event: PointerEvent) {
 	event.stopPropagation();
 
 	if (!moving.value.moveActivated) {
-		editing.value = true;
+		withHandlingAsync(() => openDocument());
 	} else {
 		withHandlingAsync(() =>
 			updatePartialDocument(intelInstance, props.document.id, {
@@ -146,5 +142,9 @@ function onPointerUp(event: PointerEvent) {
 
 	moving.value = null;
 	documentElement.value.releasePointerCapture(event.pointerId);
+}
+
+async function openDocument() {
+	await router.push({ name: 'document:edit', params: { instanceId: props.document.instance_id, documentId: props.document.id } });
 }
 </script>

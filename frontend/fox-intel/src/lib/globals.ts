@@ -1,7 +1,7 @@
 import { runGlobal } from "@packages/frontend-libs/dist/scope";
 import { type Ref, ref } from "vue";
-import { MarkerType } from "../instance/canvas/marker";
-import type { HexMapOptions } from "@/instance/canvas/hex-map";
+import { MarkerType } from "../router/instance/view/components/canvas/marker";
+import type { HexMapOptions } from "@/router/instance/view/components/canvas/hex-map";
 
 export type RenderFilters = HexMapOptions['elementFilters'] & {
 	documents?: Ref<boolean>;

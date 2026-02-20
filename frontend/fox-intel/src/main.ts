@@ -7,6 +7,10 @@ import 'primeicons/primeicons.css';
 import PrimeVue from 'primevue/config';
 import './style.css';
 import App from '@/App.vue';
+import { localLinksOpenInWindow } from '@/lib/disgusting-stuff';
+import router from '@/router';
+
+localLinksOpenInWindow();
 
 addErrorHandler((error) => {
 	console.error(error);
@@ -18,6 +22,7 @@ const pinia = createPinia();
 const app = createApp(App);
 
 app.use(pinia);
+app.use(router);
 app.use(PrimeVue, {
 	theme: {
 		preset: Aura,
@@ -26,5 +31,7 @@ app.use(PrimeVue, {
 		},
 	},
 });
+
+(<any>window).router = router;
 
 app.mount('#app');

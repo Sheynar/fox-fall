@@ -350,13 +350,17 @@
 </style>
 
 <script setup lang="ts">
-	import { EditorView } from '@codemirror/view';
-	import { EditorState, EditorStateConfig } from '@codemirror/state';
+	import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete";
+	import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 	import { markdown } from '@codemirror/lang-markdown';
+	import { bracketMatching, foldGutter, foldKeymap, indentOnInput } from "@codemirror/language";
+	import { lintKeymap } from "@codemirror/lint";
+	import { searchKeymap } from "@codemirror/search";
+	import { EditorState, EditorStateConfig } from '@codemirror/state';
+	import { EditorView, dropCursor, keymap } from "@codemirror/view";
 	import { GFM } from '@lezer/markdown';
 	import { debounce } from '@packages/data/dist/helpers';
 	import type {
-		BasicIntelDocument,
 		IntelDocument,
 		IntelDocumentAttachmentFrontend,
 	} from '@packages/data/dist/intel';
@@ -367,20 +371,27 @@
 	import ColorInput from '@packages/frontend-libs/dist/inputs/ColorInput.vue';
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import {
-		prosemarkBasicSetup,
+		clickLinkHandler,
 		prosemarkBaseThemeSetup,
 		prosemarkMarkdownSyntaxExtensions,
+		defaultHideExtensions,
+		defaultFoldableSyntaxExtensions,
+		revealBlockOnArrowExtension,
+		clickLinkExtension,
+		softIndentExtension,
+		codeBlockDecorationsExtension,
 	} from '@prosemark/core';
 	import { htmlBlockExtension } from '@prosemark/render-html';
 	import { onMounted, onUnmounted, ref, watch } from 'vue';
 	import { requestFile } from '@/lib/file';
 	import { injectIntelInstance } from '@/lib/intel-instance';
 	import DocumentTags from './DocumentTags.vue';
-	import { useDocument } from './mixins';
+	import { useDocument } from '../../mixins';
 	import { updatePartialDocument } from './helpers';
 
 	const props = defineProps<{
-		document: BasicIntelDocument;
+		documentId: number;
+		instanceId: string;
 	}>();
 
 	const emit = defineEmits<{
@@ -392,7 +403,7 @@
 
 	const { document: documentRef } = useDocument({
 		intelInstance,
-		documentId: props.document.id,
+		documentId: props.documentId,
 	});
 
 	const editorContainer = ref<HTMLDivElement | null>(null);
@@ -414,8 +425,42 @@
 				prosemarkMarkdownSyntaxExtensions,
 			],
 		}),
+
+
 		// Basic prosemark extensions
-		prosemarkBasicSetup(),
+		defaultHideExtensions,
+		defaultFoldableSyntaxExtensions,
+		revealBlockOnArrowExtension,
+		clickLinkExtension,
+		clickLinkHandler.of((link) => {
+			const url = new URL(link, location.origin);
+			if (url.origin === location.origin) {
+				window.location.href = url.href;
+			} else {
+				window.open(url.href, '_blank');
+			}
+		}),
+		softIndentExtension,
+		codeBlockDecorationsExtension,
+		history(),
+		dropCursor(),
+		indentOnInput(),
+		bracketMatching(),
+		closeBrackets(),
+		autocompletion(),
+		keymap.of([
+			...closeBracketsKeymap,
+			...defaultKeymap,
+			...searchKeymap,
+			...historyKeymap,
+			...foldKeymap,
+			...completionKeymap,
+			...lintKeymap,
+			indentWithTab
+		]),
+		foldGutter(),
+		EditorView.lineWrapping,
+
 		// Theme extensions
 		prosemarkBaseThemeSetup(),
 		// Render HTML blocks (optional)
@@ -455,7 +500,7 @@
 
 	async function getAttachments() {
 		const attachmentsResponse = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.document.id)}/attachment`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.documentId)}/attachment`,
 			{
 				method: 'GET',
 			}
@@ -493,7 +538,7 @@
 		attachmentsPromise.value = attachmentsPromise.value.then(
 			async (attachments) => {
 				const response = await intelInstance.authenticatedFetch(
-					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.document.id)}/attachment`,
+					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.documentId)}/attachment`,
 					{
 						method: 'POST',
 						body: blob,
@@ -517,8 +562,8 @@
 				);
 				attachments.push({
 					id: data.id,
-					instance_id: props.document.instance_id,
-					document_id: props.document.id,
+					instance_id: props.instanceId,
+					document_id: props.documentId,
 					mime_type: blob.type,
 					attachment_content,
 				});
@@ -561,7 +606,7 @@
 		}
 		oldDocument = newDocument;
 
-		await updatePartialDocument(intelInstance, props.document.id, updateData);
+		await updatePartialDocument(intelInstance, props.documentId, updateData);
 		emit('update:document', newDocument);
 	}
 
@@ -570,7 +615,7 @@
 	async function deleteDocument() {
 		if (!confirm('Are you sure you want to delete this document?')) return;
 		const response = await intelInstance.authenticatedFetch(
-			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.document.id)}`,
+			`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.documentId)}`,
 			{
 				method: 'DELETE',
 			}
@@ -586,7 +631,7 @@
 		attachmentsPromise.value = attachmentsPromise.value.then(
 			async (attachments) => {
 				const response = await intelInstance.authenticatedFetch(
-					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.document.id)}/attachment/${encodeURIComponent(attachmentId)}`,
+					`/api/v1/instance/${encodeURIComponent(intelInstance.instanceId.value)}/document/id/${encodeURIComponent(props.documentId)}/attachment/${encodeURIComponent(attachmentId)}`,
 					{
 						method: 'DELETE',
 					}

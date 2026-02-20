@@ -1,5 +1,6 @@
 import { onScopeDispose, ref } from 'vue';
 import { wrapMixin } from '@packages/frontend-libs/src/reference-cache';
+import router from '@/router';
 
 function _useDiscordAccess() {
 	const url = new URL(location.href);
@@ -19,11 +20,19 @@ function _useDiscordAccess() {
 
 	let code = sessionStorage.getItem('discord-access-code');
 
+	function setReturnUrl() {
+		if (router.currentRoute.value.name !== 'home') {
+			window.sessionStorage.setItem('return-url', router.currentRoute.value.fullPath);
+		}
+	}
+
 	function redirectToDiscordAuth() {
+		setReturnUrl();
 		location.href = `https://discord.com/oauth2/authorize?client_id=1454856481945157795&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=guilds+guilds.members.read`;
 	}
 
 	function redirectToDiscordBotAuth() {
+		setReturnUrl();
 		location.href = `https://discord.com/oauth2/authorize?client_id=1454856481945157795&permissions=0&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&integration_type=0&scope=bot+guilds.members.read+guilds`;
 	}
 
@@ -41,6 +50,8 @@ function _useDiscordAccess() {
 		code = null;
 		discordAuthenticated.value = false;
 		sessionStorage.removeItem('discord-access-code');
+		sessionStorage.removeItem('return-url');
+		router.replace({ name: 'home' });
 	}
 
 	const discordAuthenticated = ref(false);
@@ -80,8 +91,29 @@ function _useDiscordAccess() {
 				setTimeout(() => loop(Math.min(backoff * 2, 60_000)), backoff);
 			});
 	}
+
 	const ready = ref(false);
-	const readyPromise = loop(undefined, true).finally(() => ready.value = true);
+	async function initialise() {
+		try {
+			await loop(undefined, true);
+			const returnUrl = sessionStorage.getItem('return-url');
+			if (!discordAuthenticated.value) {
+				setReturnUrl();
+				await router.replace({ name: 'home' });
+			} else if (returnUrl) {
+				sessionStorage.removeItem('return-url');
+				await router.replace(returnUrl);
+			} else if (router.currentRoute.value.name === 'home') {
+				await router.replace({ name: 'instance:select' });
+			}
+		} catch (err) {
+			await router.replace({ name: 'home' });
+			throw err;
+		} finally {
+			ready.value = true;
+		}
+	}
+	const readyPromise = initialise();
 
 	return {
 		redirectToDiscordAuth,

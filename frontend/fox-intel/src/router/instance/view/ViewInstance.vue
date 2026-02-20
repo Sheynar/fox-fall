@@ -31,7 +31,7 @@
 		</Viewport>
 
 		<InstanceControls class="Instance__instance-controls" @pointerdown.stop @contextmenu.stop
-			@exitInstance="emit('exitInstance')" />
+			@exitInstance="withHandlingAsync(() => router.push({ name: 'instance:select' }))" />
 
 		<svg>
 			<defs>
@@ -97,6 +97,8 @@
 				</filter>
 			</defs>
 		</svg>
+
+		<RouterView />
 	</div>
 </template>
 
@@ -163,33 +165,31 @@ import {
 	onUnmounted,
 	ref,
 } from 'vue';
+import { useElementBounding } from '@vueuse/core';
+import { requestFile } from '@/lib/file';
 import {
 	renderFilters,
 	markerSize,
 	markerColor,
 	markerType,
 	markerDisabled,
-} from '../lib/globals';
-import { AddType, ContextRadial, type Payload as ContextMenuPayload } from './context-menu';
-import { useDocuments, DocumentInstance } from './document';
-import InstanceControls from './InstanceControls/InstanceControls.vue';
-import { useHexMap } from './canvas/hex-map';
-import { useMarker } from './canvas/marker';
-import { useElementBounding } from '@vueuse/core';
+} from '@/lib/globals';
 import { provideIntelInstance, useIntelInstance } from '@/lib/intel-instance';
-import { requestFile } from '@/lib/file';
 import { useShouldRender } from '@/lib/lod';
-import ImagePaste from './canvas/ImagePaste';
-import { useRenderState } from './canvas/render-state';
-import { useIcons } from './icon';
-import IconInstance from './icon/IconInstance.vue';
+import router from '@/router';
+import { useHexMap } from './components/canvas/hex-map';
+import ImagePaste from './components/canvas/ImagePaste';
+import { useMarker } from './components/canvas/marker';
+import { useRenderState } from './components/canvas/render-state';
+import { AddType, ContextRadial, type Payload as ContextMenuPayload } from './components/context-menu';
+import DocumentInstance from './components/document/DocumentInstance.vue';
+import { useIcons } from './components/icon';
+import IconInstance from './components/icon/IconInstance.vue';
+import InstanceControls from './components/InstanceControls/InstanceControls.vue';
+import { useDocuments } from './mixins';
 
 const props = defineProps<{
 	instanceId: string;
-}>();
-
-const emit = defineEmits<{
-	(e: 'exitInstance'): void;
 }>();
 
 const intelInstance = useIntelInstance({

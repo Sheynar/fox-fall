@@ -1,15 +1,15 @@
 <template>
-	<Teleport to="body" v-if="!addingInstance">
+	<Teleport to="body">
 		<div class="InstanceSelector__backdrop">
 			<div class="InstanceSelector__container">
 				<div class="InstanceSelector__header">
 					Select intel instance
 					<div class="InstanceSelector__header-separator" />
-					<button @click="emit('signOut')">
+					<button @click="withHandlingAsync(() => signOut())">
 						<i class="pi pi-sign-out" />
 						Sign out
 					</button>
-					<button @click="addingInstance = true">
+					<button @click="withHandlingAsync(() => addInstance())">
 						<i class="pi pi-plus" />
 						Add new instance
 					</button>
@@ -17,7 +17,7 @@
 				<div class="InstanceSelector__content" :class="{ 'InstanceSelector__content--loading': !ready }">
 					<div class="InstanceSelector__instance" v-for="instance in instances" :key="instance.id">
 						<div class="InstanceSelector__instance__buttons">
-							<button @click="withHandlingAsync(() => editInstance(instance))" title="Edit instance">
+							<button @click="withHandlingAsync(() => editInstance(instance.id))" title="Edit instance">
 								<i class="pi pi-pencil" />
 							</button>
 							<button @click="withHandlingAsync(() => deleteInstance(instance))" title="Delete instance">
@@ -33,18 +33,6 @@
 			</div>
 		</div>
 	</Teleport>
-	<InstanceEditor v-if="addingInstance" @submit="emit('selectInstance', $event)" @cancel="addingInstance = false" />
-	<InstanceEditor v-if="editingInstance" :instance-id="editingInstance.instance.id"
-		:shard="editingInstance.instance.shard" :guild-id="editingInstance.instance.discord_guild_id" :guild-admin-role-ids="editingInstance.discordPermissions
-				.filter((role) => role.access_type === 'admin')
-				.map((role) => role.role_id)
-			" :guild-write-role-ids="editingInstance.discordPermissions
-				.filter((role) => role.access_type === 'write')
-				.map((role) => role.role_id)
-			" :guild-read-role-ids="editingInstance.discordPermissions
-				.filter((role) => role.access_type === 'read')
-				.map((role) => role.role_id)
-			" @submit="editingInstance = null" @cancel="editingInstance = null" />
 </template>
 
 <style lang="scss">
@@ -146,29 +134,18 @@
 <script setup lang="ts">
 import type {
 	IntelInstance,
-	IntelInstanceDiscordPermissions,
 } from '@packages/data/dist/intel';
 import { onMounted, ref } from 'vue';
 import { useDiscordAccess } from '@/lib/discord';
-import InstanceEditor from './InstanceEditor.vue';
 import { withHandlingAsync } from '@packages/frontend-libs/dist/error';
-
-const emit = defineEmits<{
-	(e: 'selectInstance', instanceId: string): void;
-	(e: 'signOut'): void;
-}>();
+import router from '..';
 
 const discordAccess = useDiscordAccess();
 
 const instances = ref<IntelInstance[]>([]);
 const ready = ref(false);
-const addingInstance = ref(false);
-const editingInstance = ref<{
-	instance: IntelInstance;
-	discordPermissions: IntelInstanceDiscordPermissions[];
-} | null>(null);
 
-async function initialise() {
+async function initialiseSelectInstance() {
 	ready.value = false;
 	try {
 		const response = await fetch('/api/v1/instance', {
@@ -186,20 +163,12 @@ async function initialise() {
 	}
 }
 
-async function editInstance(instance: IntelInstance) {
-	const response = await fetch(
-		`/api/v1/instance/${encodeURIComponent(instance.id)}/permissions`,
-		{
-			method: 'GET',
-			headers: discordAccess.getFetchHeaders(),
-		}
-	);
-	if (!response.ok) {
-		throw new Error('Failed to get permissions: ' + (await response.text()));
-	}
-	const discordPermissions: IntelInstanceDiscordPermissions[] =
-		await response.json();
-	editingInstance.value = { instance, discordPermissions };
+async function addInstance() {
+	await router.push({ name: 'instance:add' });
+}
+
+async function editInstance(instanceId: string) {
+	await router.push({ name: 'instance:admin', params: { instanceId } });
 }
 
 async function deleteInstance(instance: IntelInstance) {
@@ -218,20 +187,15 @@ async function deleteInstance(instance: IntelInstance) {
 }
 
 async function selectInstance(instanceId: string) {
-	const response = await fetch(
-		`/api/v1/instance/${encodeURIComponent(instanceId)}`,
-		{
-			method: 'GET',
-			headers: discordAccess.getFetchHeaders(),
-		}
-	);
-	if (!response.ok) {
-		throw new Error('Failed to select instance: ' + (await response.text()));
-	}
-	emit('selectInstance', instanceId);
+	await router.push({ name: 'instance:view', params: { instanceId } });
+}
+
+async function signOut() {
+	await discordAccess.signOut();
+	await router.push({ name: 'home' });
 }
 
 onMounted(() => {
-	withHandlingAsync(initialise);
+	withHandlingAsync(initialiseSelectInstance);
 });
 </script>

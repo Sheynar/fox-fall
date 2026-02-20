@@ -69,6 +69,6 @@ import {
 	markerDisabled,
 	markerSize,
 	markerType,
-} from '../../lib/globals';
+} from '../../../../../lib/globals';
 import { MarkerType } from '../canvas/marker';
 </script>

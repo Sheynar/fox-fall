@@ -1,13 +1,13 @@
 <template>
 	<Teleport to="body">
-		<div class="InstanceCreator__backdrop">
-			<div class="InstanceCreator__container">
-				<div class="InstanceCreator__header">
+		<div class="InstanceEditor__backdrop">
+			<div class="InstanceEditor__container">
+				<div class="InstanceEditor__header">
 					{{ props.instanceId ? 'Edit' : 'Create' }} intel instance
 					{{ props.instanceId }}
 					<button @click="emit('cancel')">Cancel</button>
 				</div>
-				<div class="InstanceCreator__content">
+				<div class="InstanceEditor__content">
 					<label>
 						Instance ID
 						<FoxText v-model="instanceName" />
@@ -81,7 +81,7 @@
 </template>
 
 <style lang="scss">
-	.InstanceCreator__backdrop {
+	.InstanceEditor__backdrop {
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -92,7 +92,7 @@
 		display: flex;
 	}
 
-	.InstanceCreator__container {
+	.InstanceEditor__container {
 		width: 90%;
 		height: 90%;
 		margin: auto;
@@ -109,7 +109,7 @@
 			'content';
 	}
 
-	.InstanceCreator__header {
+	.InstanceEditor__header {
 		grid-area: header;
 		padding: 0.5em;
 		font-size: 1.5em;
@@ -121,7 +121,7 @@
 		justify-content: space-between;
 	}
 
-	.InstanceCreator__content {
+	.InstanceEditor__content {
 		grid-area: content;
 		padding: 0.5em;
 

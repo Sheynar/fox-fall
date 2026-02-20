@@ -32,7 +32,7 @@ export function useIntelInstance(options: UseIntelInstanceOptions) {
 					return session.value.sessionId;
 				}
 				const response = await fetch(
-					`/api/v1/instance/${encodeURIComponent(options.intelInstanceId.value)}`,
+					`/api/v1/instance/${encodeURIComponent(options.intelInstanceId.value)}/session`,
 					{
 						headers: discordAccess.getFetchHeaders(),
 					}

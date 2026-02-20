@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 	import TagInput from '@packages/frontend-libs/dist/inputs/TagInput.vue';
-	import { useDocumentTags } from './mixins';
+	import { useDocumentTags } from '../../mixins';
 	import { injectIntelInstance } from '@/lib/intel-instance';
 
 	const props = defineProps<{

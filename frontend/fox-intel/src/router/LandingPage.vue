@@ -112,17 +112,17 @@
 </style>
 
 <script setup lang="ts">
+import { useDiscordAccess } from '@/lib/discord';
 import { ref } from 'vue';
 
-const emit = defineEmits<{
-	(e: 'signIn'): void;
-}>();
+const discordAccess = useDiscordAccess();
 
 const dismissPatreonModal = ref<(() => void) | null>(null);
+
 async function signIn() {
 	await new Promise<void>((resolve) => {
 		dismissPatreonModal.value = resolve;
 	});
-	emit('signIn');
+	discordAccess.redirectToDiscordAuth()
 }
 </script>

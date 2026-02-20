@@ -225,6 +225,28 @@ export async function initialiseHttp(
 	});
 
 	app.get('/api/v1/instance/:instanceId', async (c) => {
+		const discordAccessCode = c.req.header('X-Discord-Access-Code');
+		if (!discordAccessCode) {
+			return c.json({ error: 'Discord access code is required' }, 401);
+		}
+		const discordRedirectUri = c.req.header('X-Discord-Redirect-Uri');
+		if (!discordRedirectUri) {
+			return c.json({ error: 'Discord redirect URI is required' }, 401);
+		}
+		const accessToken = await getAccessToken(
+			discordAccessCode,
+			discordRedirectUri
+		);
+
+		const instanceId = c.req.param('instanceId');
+		const existingInstance = models.intelInstance.getInstanceIfPermitted(accessToken, instanceId);
+		if (!existingInstance) {
+			return c.json({ error: 'Instance not found' }, 404);
+		}
+		return c.json(existingInstance);
+	});
+
+	app.get('/api/v1/instance/:instanceId/session', async (c) => {
 		const instanceId = c.req.param('instanceId');
 		const discordAccessCode = c.req.header('X-Discord-Access-Code');
 		if (!discordAccessCode) {

@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { injectIntelInstance } from '@/lib/intel-instance';
 import { ref } from 'vue';
-import { useDocumentsByTag } from '../../document/mixins';
+import { useDocumentsByTag } from '../../../mixins';
 import DocumentTagGroup from './DocumentTagGroup.vue';
 
 const intelInstance = injectIntelInstance();
