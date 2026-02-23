@@ -33,9 +33,13 @@
 		@pointerdown="contextMenuPosition = null"
 		tabindex="-1"
 	>
-		<Grid v-if="settings.backdropMode === BackdropMode.Grid" :layer="LAYER.BACKDROP" :gridLineWidth="settings.gridLineWidth" :gridDashLength="settings.gridDashLength" :gridDashGap="settings.gridDashGap" />
 
-		<Viewport>
+	<div ref="gridContainer" class="App__grid-container"></div>
+
+	<Viewport>
+			<Teleport v-if="gridContainer != null" :to="gridContainer">
+				<Grid v-if="settings.backdropMode === BackdropMode.Grid" :layer="LAYER.BACKDROP" :gridLineWidth="settings.gridLineWidth" :gridDashLength="settings.gridDashLength" :gridDashGap="settings.gridDashGap" />
+			</Teleport>
 			<PositionedElement
 				v-if="contextMenuPosition != null"
 				:layer="LAYER.HUD"
@@ -185,7 +189,7 @@
 </style>
 
 <script setup lang="ts">
-	import { ref, watch } from 'vue';
+	import { ref, shallowRef, watch } from 'vue';
 	import { Vector } from '@packages/data/dist/artillery/vector';
 	import Grid from '@packages/frontend-libs/dist/Grid.vue';
 	import PositionedElement from '@packages/frontend-libs/dist/viewport/PositionedElement.vue';
@@ -201,6 +205,8 @@
 	import { BackdropMode, settings } from '@/lib/settings';
 	import { getUnitResolvedVector } from '@/lib/unit';
 	import { LAYER } from './lib/constants/ui';
+
+	const gridContainer = shallowRef<HTMLDivElement | null>(null);
 
 	const onPointerMove = (event: PointerEvent) => {
 		artillery.cursor.value.cartesianVector = {

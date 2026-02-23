@@ -1,9 +1,9 @@
 <template>
 	<FoxDialog
-		v-show="artillery.overlayOpen.value || pinned"
 		v-bind="$attrs"
 		class="UnitSettings__dialog"
-		v-model:visible="visible"
+		:visible="(visible && artillery.overlayOpen.value) || pinned"
+		@update:visible="visible = $event"
 		v-model:pinned="pinned"
 		:default-position-override="
 			props.defaultPositionOverride ?? { top: 50, right: 0, centerY: true }
@@ -432,7 +432,7 @@
 				<div
 					class="UnitSettings__actions"
 					v-if="
-						unit.type === UnitType.LandingZone && artillery.overlayOpen.value
+						unit.type === UnitType.LandingZone && !hideDetails
 					"
 				>
 					<PrimeButton
@@ -629,7 +629,7 @@
 	>(null);
 
 	const visible = defineModel('visible', { type: Boolean, default: true });
-	const pinned = defineModel('pinned', { type: Boolean });
+	const pinned = defineModel('pinned', { type: Boolean, default: false });
 	const hideDetails = defineModel('hideDetails', { type: Boolean });
 	const langingZoneFiringSolution = ref(
 		Vector.fromCartesianVector({ x: 0, y: 0 })

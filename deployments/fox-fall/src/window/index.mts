@@ -96,7 +96,7 @@ export async function initialise() {
 			height: display.bounds.height,
 		};
 	});
-	ipcMain.handle(ElectronApiCommand.GetUpdateConfig, function getUpdateConfig() {
+	ipcMain.handle(ElectronApiCommand.GetUpdateConfig, function _getUpdateConfig() {
 		return getUpdateConfig();
 	});
 	ipcMain.handle(

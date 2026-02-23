@@ -3,8 +3,8 @@
 		persist-position-id="firing-solution"
 		:default-position-override="{ top: 0, left: 50, centerX: true }"
 		:disable-close="true"
-		:visible="true"
-		:pinned="true"
+		:visible="pinned || artillery.overlayOpen.value"
+		:pinned="pinned"
 		class="FiringSolution__dialog"
 	>
 		<template #header>
@@ -97,13 +97,15 @@
 </style>
 
 <script setup lang="ts">
-	import { computed } from 'vue';
+	import { computed, shallowRef } from 'vue';
 	import FoxDialog from '@packages/frontend-libs/dist/FoxDialog.vue';
 	import DirectionInput from '@packages/frontend-libs/dist/inputs/DirectionInput/DirectionInput.vue';
 	import DistanceInput from '@packages/frontend-libs/dist/inputs/DistanceInput.vue';
 	import { artillery } from '@/lib/globals';
 	import { getUnitLabel, getUnitSpecs } from '@/lib/unit';
 	import { Vector } from '@packages/data/dist/artillery/vector';
+
+	const pinned = shallowRef(true);
 
 	const specs = computed(() => {
 		const artilleryId = artillery.selectedFiringPair.value?.artillery;

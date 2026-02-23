@@ -3,7 +3,8 @@
 		persist-position-id="wind-settings"
 		:default-position-override="{ bottom: 0, left: 0 }"
 		:disable-close="true"
-		:visible="true"
+		:visible="pinned || artillery.overlayOpen.value"
+		v-model:pinned="pinned"
 		class="WindSettings__dialog"
 		@pointerdown.stop
 		@wheel.stop
@@ -110,6 +111,7 @@
 	import { getUnitSpecs } from '@/lib/unit';
 	import { useFieldGroup } from '@/mixins/form';
 
+	const pinned = defineModel('pinned', { default: false, type: Boolean });
 	const directionInput = shallowRef<InstanceType<typeof DirectionInput>>(null!);
 	const tierInput = shallowRef<InstanceType<typeof NumberInput>>(null!);
 

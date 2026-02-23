@@ -381,7 +381,7 @@
 			pinned.value ||
 			moving.value != null ||
 			focusedRecently.value ||
-			visible.value
+			(visible.value)
 		);
 	});
 

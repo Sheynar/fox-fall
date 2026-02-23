@@ -1,7 +1,9 @@
 <template>
 	<FoxDialog
 		class="Settings__dialog"
-		v-model:visible="visible"
+		:visible="(visible && artillery.overlayOpen.value) || pinned"
+		@update:visible="visible = $event"
+		v-model:pinned="pinned"
 		:default-position-override="{ top: 50, left: 50, centerX: true, centerY: true }"
 		@pointerdown.stop
 		@wheel.stop
@@ -378,6 +380,7 @@
 	import NumberInput from '@packages/frontend-libs/dist/inputs/NumberInput.vue';
 	import ElectronKeyboardShortcut from '@/components/inputs/KeyboardShortcut/ElectronKeyboardShortcut.vue';
 	import { isOverlay } from '@/lib/constants';
+	import { artillery } from '@/lib/globals';
 	import {
 		BackdropMode,
 		saveSettings,
@@ -386,6 +389,7 @@
 	} from '@/lib/settings';
 
 	const visible = defineModel('visible', { default: false, type: Boolean });
+	const pinned = defineModel('pinned', { default: false, type: Boolean });
 
 	const updateConfig = ref<UpdateConfig | null>(null);
 	window.electronApi?.getUpdateConfig().then((config) => {

@@ -31,12 +31,14 @@
 	</PrimePopover>
 
 	<Settings
-		:visible="interfaceVisibility.settings"
+		v-if="interfaceVisibility.settings"
+		:visible="true"
 		@update:visible="interfaceVisibility.settings = $event"
 	/>
 
 	<SyncSettings
-		:visible="interfaceVisibility.syncSettings"
+		v-if="interfaceVisibility.syncSettings"
+		:visible="true"
 		@update:visible="interfaceVisibility.syncSettings = $event"
 	/>
 </template>
