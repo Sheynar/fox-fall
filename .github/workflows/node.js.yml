@@ -34,12 +34,12 @@ jobs:
     - name: Install dependencies
       run: yarn install --immutable
     - name: Build binary
-      run: yarn run build:nocache --filter=./packages/overlay
+      run: yarn run build:nocache --filter=./deployments/fox-fall
     - name: Create release
       uses: softprops/action-gh-release@v2
       with:
         draft: true
         files: |
-          packages/overlay/out/FoxFall Overlay/win/FoxFall-*-win-x64.exe
-          packages/overlay/out/FoxFall Overlay/win/FoxFall-*-win-x64.exe.blockmap
-          packages/overlay/out/FoxFall Overlay/win/latest.yml
+          deployments/fox-fall/out/FoxFall Overlay/win/FoxFall-*-win-x64.exe
+          deployments/fox-fall/out/FoxFall Overlay/win/FoxFall-*-win-x64.exe.blockmap
+          deployments/fox-fall/out/FoxFall Overlay/win/latest.yml
